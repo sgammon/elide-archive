@@ -1,0 +1,13 @@
+{
+  "name": "GUST",
+  "version": "1.0.0",
+  "description": "The Little Framework that Could",
+  "repository": "https://github.com/sgammon/gust",
+  "author": "Sam Gammon <sam@momentum.io>",
+  "license": "MIT",
+  "devDependencies": {
+    "@bazel/karma": "^1.0.1",
+    "@bazel/typescript": "^1.0.1",
+    "karma": "^4.4.1"
+  }
+}

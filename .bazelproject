@@ -1,0 +1,28 @@
+directories:
+  defs
+  external
+  java
+  javatests
+  tools
+  types
+  -node_modules/
+
+workspace_type: java
+java_language_level: 11
+
+targets:
+  //java/...
+
+ts_config_rules:
+  //:tsconfig.json
+
+test_sources:
+  - */tests/*
+  - */test/*
+  - */javatests/*
+
+additional_languages:
+  kotlin
+  javascript
+  typescript
+

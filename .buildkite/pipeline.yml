@@ -1,0 +1,4 @@
+steps:
+  - command: "make build CI=yes"
+    label: "Build"
+
