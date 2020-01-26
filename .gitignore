@@ -2,3 +2,7 @@ node_modules/
 dist/
 yarn-error.log
 bazel-out
+.ijwb/.idea/
+.ijwb/.blaze/
+.DS_Store
+*.DS_Store
