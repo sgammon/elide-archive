@@ -49,9 +49,13 @@ def _process_install_deps(deps):
                       commit = repo["target"],
                       shallow_since = repo.get("seal"))
                 else:
+                    if repo.get("directory") != None:
+                        renderedTarget = "%s/%s" % (repo["target"], repo["directory"])
+                    else:
+                        renderedTarget = repo["target"]
                     _http_archive(
                         name = key,
-                        strip_prefix = "%s-%s" % (repoName, repo["target"]),
+                        strip_prefix = "%s-%s" % (repoName, renderedTarget),
                         sha256 = repo.get("seal"),
                         build_file = repo.get("overlay"),
                         url = "https://github.com/%s/archive/%s.tar.gz" % (repo["repo"], repo["target"]))
@@ -61,10 +65,15 @@ def _github_repo(name, repo, tag, sha256 = None):
     if native.existing_rule(name):
         return
 
+    if repo.get("directory") != None:
+        renderedTarget = "%s/%s" % (tag, repo["directory"])
+    else:
+        renderedTarget = tag
+
     _, project_name = repo.split("/")
     _http_archive(
         name = name,
-        strip_prefix = "%s-%s" % (project_name, tag),
+        strip_prefix = "%s-%s" % (project_name, renderedTarget),
         url = "https://github.com/%s/archive/%s.zip" % (repo, tag),
         sha256 = sha256)
 

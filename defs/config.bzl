@@ -53,3 +53,23 @@ JAVA_TEMPLATES = True
 ## ------------------------------------
 ## Set to `True` to generate server-side templates for Python by default.
 PYTHON_TEMPLATES = True
+
+## `CHROMIUM` enable/disable flag.
+## ------------------------------------
+## Set to `True` to run tests on Chromium via WebDriver.
+CHROMIUM = True
+
+## `FIREFOX` enable/disable flag.
+## ------------------------------------
+## Set to `True` to run tests on Firefox via WebDriver.
+FIREFOX = True
+
+## `SAUCE` enable/disable flag.
+## ------------------------------------
+## Set to `True` to run tests on SauceLabs, as configured.
+SAUCE = True
+
+## Browser package version.
+## ------------------------------------
+## Assigned to the latest version at: https://github.com/bazelbuild/rules_webtesting/blob/master/web/versioned.
+BROWSERS_VERSION = "0.3.2"

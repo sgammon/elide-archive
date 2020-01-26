@@ -10,26 +10,15 @@ install_dependencies()
 #
 
 
-## J2CL
-load("@com_google_j2cl//build_defs:rules.bzl", "setup_j2cl_workspace")
-setup_j2cl_workspace()
-
-## SASS
-load("@rules_sass//:package.bzl", "rules_sass_dependencies")
-rules_sass_dependencies()
-
-load("@rules_sass//:defs.bzl", "sass_repositories")
-sass_repositories()
-
 ## NodeJS
-load("@build_bazel_rules_nodejs//:defs.bzl",
+load("@build_bazel_rules_nodejs//:index.bzl",
      "node_repositories",
      "yarn_install")
 
 node_repositories(
     package_json = ["//:package.json"],
-    node_version = "12.4.0",
-    yarn_version = "1.17.3")
+    node_version = "10.13.0",
+    yarn_version = "1.12.1")
 
 yarn_install(
     name = "npm",
@@ -40,6 +29,32 @@ load("@npm//:install_bazel_dependencies.bzl",
      "install_bazel_dependencies")
 
 install_bazel_dependencies()
+
+# Setup TypeScript toolchain
+#load("@npm_bazel_typescript//:index.bzl", "ts_setup_workspace")
+#ts_setup_workspace()
+
+## SASS
+load("@rules_sass//:package.bzl", "rules_sass_dependencies")
+rules_sass_dependencies()
+
+load("@rules_sass//:defs.bzl", "sass_repositories")
+sass_repositories()
+
+## J2CL
+load("@com_google_j2cl//build_defs:rules.bzl", "setup_j2cl_workspace")
+setup_j2cl_workspace()
+
+## Web Testing
+load("@io_bazel_rules_webtesting//web:repositories.bzl", "web_test_repositories")
+web_test_repositories()
+
+load("@io_bazel_rules_webtesting//web:py_repositories.bzl", "py_repositories")
+py_repositories()
+
+load("//defs:config.bzl", "CHROMIUM", "FIREFOX", "SAUCE")
+load("@io_bazel_rules_webtesting//web/versioned:browsers-0.3.2.bzl", "browser_repositories")
+browser_repositories(chromium=CHROMIUM, firefox=FIREFOX, sauce=SAUCE)
 
 ## Docker
 load("@io_bazel_rules_docker//repositories:repositories.bzl",

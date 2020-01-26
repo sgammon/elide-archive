@@ -1,8 +1,14 @@
 
-load("@io_bazel_rules_closure//closure:defs.bzl",
-     _closure_proto_library = "closure_proto_library")
+load(
+    "@io_bazel_rules_closure//closure:defs.bzl",
+     _closure_proto_library = "closure_proto_library",
+    _closure_js_proto_library = "closure_js_proto_library",
+)
 
-load("@rules_proto//proto:defs.bzl", _proto_library="proto_library")
+load(
+    "@rules_proto//proto:defs.bzl",
+    _proto_library="proto_library"
+)
 
 _JSPROTO_POSTFIX = "jsproto"
 _JAVAPROTO_POSTFIX = "java_proto"

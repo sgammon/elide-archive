@@ -1,3 +1,17 @@
 package(
     default_visibility = ["//visibility:public"],
 )
+
+load(
+    "//defs/toolchain:frontend.bzl",
+    "js_app",
+)
+
+
+js_app(
+    name = "example",
+    entry_points = ["gust.boot"],
+    deps = [
+        "//js/gust:boot",
+        "//java/gust:Core-j2cl"],
+)

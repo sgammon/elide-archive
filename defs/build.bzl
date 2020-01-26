@@ -8,6 +8,13 @@ load(
 
 
 DEPS = {
+    # Rules: NodeJS
+    "build_bazel_rules_nodejs": {
+        "type": "github",
+        "repo": "bazelbuild/rules_nodejs",
+        "target": "1.2.0",
+        "seal": "a74ed5df2c2437bc8a4f5b29cda3d9ad4f36f2f325cc61769b4c7653a6b76e8c"},
+
     # Bazel: Skylib
     "bazel_skylib": {
         "type": "github",
@@ -25,9 +32,17 @@ DEPS = {
     # Rules: Closure
     "io_bazel_rules_closure": {
         "type": "github",
-        "repo": "bazelbuild/rules_closure",
-        "target": "9de67f151743d4d54963f3a8184259c8b5326677",
-        "seal": "2746b2bc570104ce48f5fd58ac6101dd810d6ba3de8c7d6cd39382bd92ec12c4"},
+        "repo": "sgammon/rules_closure",
+        "target": "06af65abad5f1351b46c93578e21147486c0b03b",
+        "seal": "80975218961db517448551bccd951e4a6d3fb8c100a8eaa134d366fc7ab832a6",
+        "local": "/workspace/GUST/vendor/rules_closure"},
+
+    # Rules: SASS
+    "io_bazel_rules_sass": {
+        "type": "github",
+        "repo": "bazelbuild/rules_sass",
+        "target": "7e798ffb0f4a6147b766ee2a62d7f18b8155452e",
+        "seal": None},
 
     # Rules: Protobuf
     "rules_proto": {
@@ -57,6 +72,13 @@ DEPS = {
         "target": "3762b89ad8b1d71007a4a07b194a48d505613c15",
         "seal": "ea0efefaab44e96ff04778fc291145096de91f619cade08b65dbdd4c46056baa"},
 
+    # Rules: Web Testing
+    "io_bazel_rules_webtesting": {
+        "type": "github",
+        "repo": "bazelbuild/rules_webtesting",
+        "target": "528c49b5be3bca7b835f8c42ccf326f882e825e9",
+        "seal": "c017dfe15e60a3f7e3a774484fee8d0573aed6e0fe304bac9aa5b9e5eef36368"},
+
     # Rules: SCSS/SASS
     "rules_sass": {
         "type": "github",
@@ -74,9 +96,16 @@ DEPS = {
     # Google: J2CL (Java-to-Closure)
     "com_google_j2cl": {
         "type": "github",
-        "repo": "google/j2cl",
-        "target": "333b142943bae6a115d537cd8dc2cc8b10604f98",
-        "seal": "7cf86f05009f886c491c5d8e4c82ce2906b81efb30b71022fe0c6082924fa1e6"},
+        "repo": "sgammon/j2cl",
+        "target": "8d9c65fecaa9b8a1d893506d8682c9c21c26a945",
+        "seal": "2959270e60fbdd1e6297dc4bdc12479ad70607c04a10a99128ef0dd6081f6527"},
+
+    # Google: Clutz
+    "io_angular_clutz": {
+        "type": "github",
+        "repo": "angular/clutz",
+        "target": "c11cbb41595d8274dea6dbb983e2fba07580535e",
+        "seal": None},
 
     # Google: Elemental2
     "com_google_elemental2": {
@@ -111,7 +140,7 @@ DEPS = {
         "type": "github",
         "repo": "stackb/rules_proto",
         "target": "0a888dbeacebfe06acb7ba740e0723b1adb0dd52",
-        "seal": "966316838b6454ca2f51718d6a801f8ebf7d1d41c82a51ac24af4d92115fa323"}
+        "seal": "966316838b6454ca2f51718d6a801f8ebf7d1d41c82a51ac24af4d92115fa323"},
 }
 
 

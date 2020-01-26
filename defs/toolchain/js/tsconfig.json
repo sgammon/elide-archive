@@ -18,7 +18,10 @@
     "module": "ES2015",
     "experimentalDecorators": true,
     "moduleResolution": "node",
-    "types": [[
+    "types": [],
+    "paths": {
+      "closure:*": ["./node_modules/closure-library.d.ts/index.d.ts"]
+    }
   },
   "include": [
     "js/**/*.ts"

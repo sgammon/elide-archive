@@ -1,0 +1,21 @@
+package(
+    default_visibility = ["//visibility:public"],
+)
+
+load(
+    "//defs/toolchain:frontend.bzl",
+    "js_module",
+    "ts_module",
+)
+
+
+## Module: `core`
+## ------------------------------------
+## Supplies core structures, definitions, and code used across all modules.
+js_module(
+    name = "boot",
+    srcs = ["boot.js"],
+    deps = [
+        "//java/gust:Core-j2cl",
+    ],
+)

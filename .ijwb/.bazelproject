@@ -13,4 +13,4 @@ directories:
   javatests
   tools
   types
-  -node_modules
+  node_modules
