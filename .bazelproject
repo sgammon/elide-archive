@@ -6,12 +6,15 @@ directories:
   tools
   types
   -node_modules/
+  -vendor/
 
 workspace_type: java
 java_language_level: 11
 
 targets:
+  //proto/...
   //java/...
+  //js/...
 
 ts_config_rules:
   //:tsconfig.json
@@ -22,7 +25,9 @@ test_sources:
   - */javatests/*
 
 additional_languages:
+  java
   kotlin
+  python
   javascript
   typescript
 
