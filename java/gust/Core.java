@@ -17,7 +17,6 @@ public class Core {
    * @returns Version assigned for the currently-running application.
    **/
   public static String getVersion() {
-    return System.getProperty("APP_VERSION", "0.0.1-alpha1");
+    return System.getProperty("APP_VERSION", "alpha-1b0");
   }
 }
-

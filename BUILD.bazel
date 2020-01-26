@@ -1,0 +1,15 @@
+package(
+    default_visibility = ["//visibility:public"],
+)
+
+
+alias(
+    name = "tsconfig.json",
+    actual = "//defs/toolchain/js:tsconfig.json",
+)
+
+alias(
+    name = "jdk9",
+    actual = "//defs/toolchain:java",
+)
+

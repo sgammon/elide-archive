@@ -1,0 +1,32 @@
+package(
+    default_visibility = ["//visibility:public"],
+)
+
+load(
+    "@rules_java//java:defs.bzl",
+    "java_runtime",
+)
+
+
+## Java Runtime: `zulu`
+## ------------------------
+## Activates when we are running in IntelliJ/locally.
+java_runtime(
+    name = "zulu_runtime",
+    java_home = "$(ZULUBASE)",
+    visibility = ["//visibility:private"],
+)
+
+## -- Public Interface -- ##
+
+
+## Java Runtime
+## ------------------------
+## References the active Java runtime.
+alias(
+    name = "java_runtime",
+    actual = select({
+        "//defs/conditions:zulu": ":zulu_runtime",
+        "//conditions:default": "@bazel_tools//tools/jdk:current_java_runtime",
+    }),
+)

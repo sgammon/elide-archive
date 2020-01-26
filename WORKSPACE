@@ -28,8 +28,8 @@ load("@build_bazel_rules_nodejs//:defs.bzl",
 
 node_repositories(
     package_json = ["//:package.json"],
-    node_version = "10.13.0",
-    yarn_version = "1.12.1")
+    node_version = "12.4.0",
+    yarn_version = "1.17.3")
 
 yarn_install(
     name = "npm",

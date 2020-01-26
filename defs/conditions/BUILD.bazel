@@ -1,0 +1,13 @@
+package(
+    default_visibility = ["//visibility:public"],
+)
+
+
+## Condition: `zulu`
+## ------------------------
+## Activates when we are running in IntelliJ/locally.
+config_setting(
+    name = "zulu",
+    values = {"define": "jdk=zulu"},
+    visibility = ["//visibility:public"],
+)

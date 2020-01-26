@@ -1,0 +1,15 @@
+package(
+    default_visibility = ["//visibility:public"],
+)
+
+
+## -- Public Interface -- ##
+
+
+## Java Runtime
+## ------------------------
+## References the active Java runtime.
+alias(
+    name = "java",
+    actual = "//defs/toolchain/java:java_runtime",
+)

@@ -1,0 +1,14 @@
+package(
+    default_visibility = ["//visibility:public"],
+)
+
+load(
+    "//defs/toolchain:crosslib.bzl",
+    "cross_lib",
+)
+
+
+cross_lib(
+    name = "Core",
+    srcs = ["Core.java"],
+)

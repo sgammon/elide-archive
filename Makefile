@@ -4,15 +4,17 @@
 ##
 
 BAZELISK ?= $(shell which bazelisk)
+TARGETS ?= //java/... //proto/... //js/...
+TESTS ?= //javatests/...
 
 
 all: build test
 
 build:  ## Build all framework targets.
-	$(BAZELISK) build //...
+	$(BAZELISK) build $(TARGETS)
 
 test:  ## Run all framework testsuites.
-	$(BAZELISK) test //...
+	$(BAZELISK) test $(TESTS)
 
 help:  ## Show this help text.
 	$(info GUST Framework Tools:)

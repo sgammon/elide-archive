@@ -1,0 +1,22 @@
+package(
+    default_visibility = ["//visibility:public"],
+)
+
+load(
+    "//defs:proto.bzl",
+    "proto",
+    "module",
+)
+
+## Core
+proto(
+    name = "Datamodel",
+    srcs = ["Datamodel.proto"],
+    deps = ["@com_google_protobuf//:descriptor_proto"],
+)
+
+
+module(
+    name = "core",
+    deps = [":Datamodel"],
+)
