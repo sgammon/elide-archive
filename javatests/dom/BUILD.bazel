@@ -8,6 +8,11 @@ load(
 )
 
 load(
+    "//defs/toolchain/java:testing.bzl",
+    "browser_test_java",
+)
+
+load(
     "//defs/toolchain:deps.bzl",
     "closure",
 )
@@ -15,6 +20,7 @@ load(
 load(
     "//defs/toolchain:frontend.bzl",
     "js_app",
+    "js_test",
     "js_module",
 )
 
@@ -25,18 +31,21 @@ cross_lib(
     elemental = ["dom"],
 )
 
-js_module(
-    name = "main",
-    srcs = ["main.js"],
+js_test(
+    name = "basic-dom-js-test",
+    srcs = ["dom_test.js"],
     deps = [
         ":DomOperation-j2cl",
         "//java/gust:Core-j2cl",
         closure("dom"),
+        closure("dom", "TagName"),
     ],
+    html = "dom_test.html",
+    entry_points = ["javatests.dom.dom_test"],
 )
 
-js_app(
-    name = "example",
-    entry_points = ["main"],
-    deps = [":main"],
+browser_test_java(
+    name = "basic-dom-browser-test",
+    srcs = ["DomBrowserTest.java"],
+    test_class = "javatests.dom.DomBrowserTest",
 )

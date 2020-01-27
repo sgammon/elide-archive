@@ -8,13 +8,6 @@ load(
 
 
 DEPS = {
-    # Rules: NodeJS
-    "build_bazel_rules_nodejs": {
-        "type": "github",
-        "repo": "bazelbuild/rules_nodejs",
-        "target": "1.2.0",
-        "seal": "a74ed5df2c2437bc8a4f5b29cda3d9ad4f36f2f325cc61769b4c7653a6b76e8c"},
-
     # Bazel: Skylib
     "bazel_skylib": {
         "type": "github",
@@ -28,6 +21,20 @@ DEPS = {
         "repo": "bazelbuild/bazel-gazelle",
         "target": "dd3ccdc3d36a76d76215f64f1dacb2d230504a27",
         "seal": "a1f89662ebd4c081d3e66c9560ada11d6a0c93660568a46e4a9063670d81f986"},
+
+    # Bazel: Toolchains
+    "bazel_toolchains": {
+        "type": "github",
+        "repo": "bazelbuild/bazel-toolchains",
+        "target": "b7e3d4ca4f1d34ad394d8ed53872b827d178f9a9",
+        "seal": "a3d702305458418ed63479c75f0b376bad4c01da06eb9d9e35778ad8a49241aa"},
+
+    # Rules: NodeJS
+    "build_bazel_rules_nodejs": {
+        "type": "github",
+        "repo": "bazelbuild/rules_nodejs",
+        "target": "1.2.0",
+        "seal": "a74ed5df2c2437bc8a4f5b29cda3d9ad4f36f2f325cc61769b4c7653a6b76e8c"},
 
     # Rules: Closure
     "io_bazel_rules_closure": {
@@ -58,6 +65,14 @@ DEPS = {
         "target": "32ddd6c4f0ad38a54169d049ec05febc393b58fc",
         "seal": "1969a89e8da396eb7754fd0247b7df39b6df433c3dcca0095b4ba30a5409cc9d"},
 
+    # Rules: GraalVM
+    "rules_graal": {
+        "type": "github",
+        "repo": "sgammon/rules_graal",
+        "target": "c3aef368424448593a0a72e61582855515f85961",
+        "seal": "2181d13a59cf0c25ed88f538d384773c09e6093a78ce6cc72b071f66c5e71e0b",
+        "local": "/workspace/GUST/vendor/bazel/rules_graal"},
+
     # Rules: Kotlin
     "io_bazel_rules_kotlin": {
         "type": "github",
@@ -69,8 +84,8 @@ DEPS = {
     "rules_jvm_external": {
         "type": "github",
         "repo": "bazelbuild/rules_jvm_external",
-        "target": "0a58d828a5788c3f156435540fe24337ccee8616",
-        "seal": "1ebe327ead0075a716f83f06266c2b22c629f3065327c84c547b87544958fe65"},
+        "target": "0a7cc6a0b6764232a0ddd31ad87b489e1d47b166",
+        "seal": "3d0e809a5a14cfe7e1071103e9e53528f2fa93e72b175fb43a8bdea74156382d"},
 
     # Rules: Go
     "io_bazel_rules_go": {
@@ -104,8 +119,8 @@ DEPS = {
     "com_google_j2cl": {
         "type": "github",
         "repo": "sgammon/j2cl",
-        "target": "8d9c65fecaa9b8a1d893506d8682c9c21c26a945",
-        "seal": "2959270e60fbdd1e6297dc4bdc12479ad70607c04a10a99128ef0dd6081f6527",
+        "target": "7e23248cc36ed25f8c8866083999e62d73f767b6",
+        "seal": "e59f94fc887de6e02ed7919e6f1459a1993310964632ff87d3b53d421ab68139",
         "local": "/workspace/GUST/vendor/bazel/j2cl"},
 
     # Google: Clutz
@@ -142,6 +157,20 @@ DEPS = {
         "repo": "googleapis/gapic-generator",
         "target": "cd919793e439d2d21505900aa08ef9f99519d8fa",
         "seal": "117af9da41fe3a35d7576b192ff8ac309222309ad8e356bd667113e0e07e5c54"},
+
+    # Google: GWT
+    "org_gwtproject_gwt": {
+        "type": "github",
+        "repo": "gwtproject/gwt",
+        "target": "cb9b374f2da7611f80db8fcfe36b113057ff35ab",
+        "seal": "fc4a5ee51baa4a691f060a171d6aa03a67d0d31b3b4a9e020f2efdeb360f7eb1"},
+
+    # Google: JS Interop
+    "com_google_jsinterop_annotations_head": {
+        "type": "github",
+        "repo": "google/jsinterop-annotations",
+        "target": "8b6080dd1b0b9f60f4175243ea8038bf7fb8a557",
+        "seal": "51aa1d36cbe736fc98fa53a825eff25c6e0811dc656d23979d837721f72e78cf"},
 
     # BuildStack: Protobuf Rules
     "build_stack_rules_proto": {

@@ -3,6 +3,7 @@ workspace(
   managed_directories = {"@npm": ["node_modules"]})
 
 load("//defs:build.bzl", "install_dependencies")
+load("//defs:config.bzl", "CHROMIUM", "FIREFOX", "SAUCE", "GRAALVM_VERSION", "GRAALVM_JDK_VERSION")
 install_dependencies()
 
 #
@@ -31,8 +32,8 @@ load("@npm//:install_bazel_dependencies.bzl",
 install_bazel_dependencies()
 
 # Setup TypeScript toolchain
-#load("@npm_bazel_typescript//:index.bzl", "ts_setup_workspace")
-#ts_setup_workspace()
+load("@npm_bazel_typescript//:index.bzl", "ts_setup_workspace")
+ts_setup_workspace()
 
 ## SASS
 load("@rules_sass//:package.bzl", "rules_sass_dependencies")
@@ -43,21 +44,49 @@ sass_repositories()
 
 ## J2CL
 load("@com_google_j2cl//build_defs:rules.bzl", "setup_j2cl_workspace")
-setup_j2cl_workspace()
+setup_j2cl_workspace(
+    #omit_org_gwtproject_gwt=True,
+    omit_com_google_jsinterop_annotations_head = True)
 
 ## Kotlin
 load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kotlin_repositories", "kt_register_toolchains")
 kotlin_repositories()
 kt_register_toolchains()
 
+## GraalVM
+load("@rules_graal//graal:graal_bindist.bzl", "graal_bindist_repository")
+
+graal_bindist_repository(
+  name = "graal",
+  version = GRAALVM_VERSION,
+  java_version = GRAALVM_JDK_VERSION,
+)
+
+## Java Testing
+load("//defs/toolchain/java:repos.bzl", "gust_java_repositories")
+gust_java_repositories()
+
+load(
+    "@maven//:defs.bzl",
+    "pinned_maven_install",
+)
+
+pinned_maven_install()
+
 ## Web Testing
 load("@io_bazel_rules_webtesting//web:repositories.bzl", "web_test_repositories")
 web_test_repositories()
 
+load("@io_bazel_rules_webtesting//web:go_repositories.bzl", "go_repositories", "go_internal_repositories")
+go_repositories()
+go_internal_repositories()
+
+load("@io_bazel_rules_webtesting//web:java_repositories.bzl", "java_repositories")
+java_repositories()
+
 load("@io_bazel_rules_webtesting//web:py_repositories.bzl", "py_repositories")
 py_repositories()
 
-load("//defs:config.bzl", "CHROMIUM", "FIREFOX", "SAUCE")
 load("@io_bazel_rules_webtesting//web/versioned:browsers-0.3.2.bzl", "browser_repositories")
 browser_repositories(chromium=CHROMIUM, firefox=FIREFOX, sauce=SAUCE)
 
@@ -112,16 +141,7 @@ browser_repositories(
     firefox = True,
 )
 
-## Maven
-load("@rules_jvm_external//:defs.bzl", "maven_install")
-
-maven_install(
-    name = "maven",
-    artifacts = [
-        "junit:junit:4.12"],
-    repositories = [
-        "https://maven.google.com",
-        "https://repo1.maven.org/maven2",
-    ],
-    fetch_sources = True)
+## Toolchains (RBE)
+load("@bazel_toolchains//rules:rbe_repo.bzl", "rbe_autoconfig")
+rbe_autoconfig(name = "rbe_default")
 
