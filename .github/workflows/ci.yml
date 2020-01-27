@@ -42,7 +42,11 @@ jobs:
 
       - name: Build & Test
         run: |
-          "${GITHUB_WORKSPACE}/bin/bazelisk" build test ${BUILD_TARGETS}
+          "${GITHUB_WORKSPACE}/bin/bazelisk" build ${BUILD_TARGETS}
+
+      - name: Testsuite (Java)
+        run: |
+          "${GITHUB_WORKSPACE}/bin/bazelisk" test ${JAVA_TEST_TARGETS}
 
   docs:
     name: "Documentation"
