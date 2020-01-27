@@ -1,0 +1,42 @@
+package(
+    default_visibility = ["//visibility:public"],
+)
+
+load(
+    "//defs/toolchain:crosslib.bzl",
+    "cross_lib",
+)
+
+load(
+    "//defs/toolchain:deps.bzl",
+    "closure",
+)
+
+load(
+    "//defs/toolchain:frontend.bzl",
+    "js_app",
+    "js_module",
+)
+
+
+cross_lib(
+    name = "DomOperation",
+    srcs = ["DomOperation.java"],
+    elemental = ["dom"],
+)
+
+js_module(
+    name = "main",
+    srcs = ["main.js"],
+    deps = [
+        ":DomOperation-j2cl",
+        "//java/gust:Core-j2cl",
+        closure("dom"),
+    ],
+)
+
+js_app(
+    name = "example",
+    entry_points = ["main"],
+    deps = [":main"],
+)

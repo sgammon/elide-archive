@@ -4,14 +4,12 @@ package(
 
 load(
     "//defs/toolchain:frontend.bzl",
-    "js_app",
+    _js_app = "js_app",
+    _js_test = "js_test",
+    _js_module = "js_module",
 )
 
 
-js_app(
-    name = "example",
-    entry_points = ["gust.boot"],
-    deps = [
-        "//js/gust:boot",
-        "//java/gust:Core-j2cl"],
-)
+js_app = _js_app
+js_test = _js_test
+js_module = _js_module

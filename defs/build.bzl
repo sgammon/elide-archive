@@ -35,7 +35,7 @@ DEPS = {
         "repo": "sgammon/rules_closure",
         "target": "06af65abad5f1351b46c93578e21147486c0b03b",
         "seal": "80975218961db517448551bccd951e4a6d3fb8c100a8eaa134d366fc7ab832a6",
-        "local": "/workspace/GUST/vendor/rules_closure"},
+        "local": "/workspace/GUST/vendor/bazel/rules_closure"},
 
     # Rules: SASS
     "io_bazel_rules_sass": {
@@ -57,6 +57,13 @@ DEPS = {
         "repo": "bazelbuild/rules_java",
         "target": "32ddd6c4f0ad38a54169d049ec05febc393b58fc",
         "seal": "1969a89e8da396eb7754fd0247b7df39b6df433c3dcca0095b4ba30a5409cc9d"},
+
+    # Rules: Kotlin
+    "io_bazel_rules_kotlin": {
+        "type": "github",
+        "repo": "bazelbuild/rules_kotlin",
+        "target": "686518ffd8e58609a21f258616d154ba2934a8e8",
+        "seal": "110df9613694dab1cc15f1b6f181ce67e743ce2b1316e82f0f546c8fed9711a3"},
 
     # Rules: External JVM
     "rules_jvm_external": {
@@ -98,7 +105,8 @@ DEPS = {
         "type": "github",
         "repo": "sgammon/j2cl",
         "target": "8d9c65fecaa9b8a1d893506d8682c9c21c26a945",
-        "seal": "2959270e60fbdd1e6297dc4bdc12479ad70607c04a10a99128ef0dd6081f6527"},
+        "seal": "2959270e60fbdd1e6297dc4bdc12479ad70607c04a10a99128ef0dd6081f6527",
+        "local": "/workspace/GUST/vendor/bazel/j2cl"},
 
     # Google: Clutz
     "io_angular_clutz": {

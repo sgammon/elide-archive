@@ -45,6 +45,11 @@ sass_repositories()
 load("@com_google_j2cl//build_defs:rules.bzl", "setup_j2cl_workspace")
 setup_j2cl_workspace()
 
+## Kotlin
+load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kotlin_repositories", "kt_register_toolchains")
+kotlin_repositories()
+kt_register_toolchains()
+
 ## Web Testing
 load("@io_bazel_rules_webtesting//web:repositories.bzl", "web_test_repositories")
 web_test_repositories()
