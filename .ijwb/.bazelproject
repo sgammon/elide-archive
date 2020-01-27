@@ -13,6 +13,7 @@ directories:
   javatests
   tools
   types
+  .github
   node_modules
 
 targets:

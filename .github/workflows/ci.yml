@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  push: {}
+
+env:
+  BUILD_TARGETS: //java/... //js/... //proto/...
+  TEST_TARGETS: //javatests/...
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Sources
+        uses: actions/checkout@v1
+
+      - name: Mount Cache
+        uses: actions/cache@v1
+        with:
+          path: "/home/runner/.cache/bazel"
+          key: bazel
+
+      - name: Install Bazelisk
+        run: |
+          curl -LO "https://github.com/bazelbuild/bazelisk/releases/download/v1.1.0/bazelisk-linux-amd64"
+          mkdir -p "${GITHUB_WORKSPACE}/bin/"
+          mv bazelisk-linux-amd64 "${GITHUB_WORKSPACE}/bin/bazelisk"
+          chmod +x "${GITHUB_WORKSPACE}/bin/bazelisk"
+
+      - name: Build
+        run: |
+          "${GITHUB_WORKSPACE}/bin/bazelisk" build ${BUILD_TARGETS}
+
+      #- name: Test
+      #  run: |
+      #    "${GITHUB_WORKSPACE}/bin/bazelisk" test ${TEST_TARGETS}
