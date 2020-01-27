@@ -6,3 +6,4 @@ bazel-out
 .ijwb/.blaze/
 .DS_Store
 *.DS_Store
+vendor/bazel/
