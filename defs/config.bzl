@@ -73,3 +73,13 @@ SAUCE = True
 ## ------------------------------------
 ## Assigned to the latest version at: https://github.com/bazelbuild/rules_webtesting/blob/master/web/versioned.
 BROWSERS_VERSION = "0.3.2"
+
+## GraalVM version.
+## ------------------------------------
+## Assigned to the latest available CE VM.
+GRAALVM_VERSION = "19.3.1"
+
+## GraalVM JDK version.
+## ------------------------------------
+## Specifies the version of the underlying VM JDK.
+GRAALVM_JDK_VERSION = "8"

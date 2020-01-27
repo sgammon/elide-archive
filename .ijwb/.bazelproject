@@ -1,8 +1,7 @@
 import .bazelproject
 
 build_flags:
-  --define=jdk=zulu
-  --host_javabase=//defs/toolchain:java
+  --config=dev
 
 directories:
   defs

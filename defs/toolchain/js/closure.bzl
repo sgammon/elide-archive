@@ -20,7 +20,7 @@ def _js_test(name, srcs = None, deps = None, **kwargs):
     _closure_js_test(
         name = name,
         srcs = srcs or [],
-        deps = deps or [],
+        deps = (deps or []) + ["@io_bazel_rules_closure//closure/library:testing"],
         **kwargs
     )
 

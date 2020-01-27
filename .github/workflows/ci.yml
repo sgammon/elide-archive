@@ -4,12 +4,20 @@ on:
   push: {}
 
 env:
+  BAZELISK_VERSION: v1.2.1
   BUILD_TARGETS: //java/... //js/... //proto/...
-  TEST_TARGETS: //javatests/...
+  JAVA_TEST_TARGETS: //javatests/...
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    name: "Build & Test (Bazel ${{ matrix.bazel }} on ${{ matrix.os[0] }})"
+
+    strategy:
+      matrix:
+        os: [["Ubuntu", "ubuntu-latest", "linux-amd64"], ["macOS Catalina", "macos-latest", "darwin-amd64"]]
+        bazel: ["1.0.0", "2.0.0"]
+
+    runs-on: ${{ matrix.os[1] }}
 
     steps:
       - name: Checkout Sources
@@ -19,19 +27,27 @@ jobs:
         uses: actions/cache@v1
         with:
           path: "/home/runner/.cache/bazel"
-          key: bazel
+          key: bazel-${{ matrix.bazel }}-${{ matrix.os[2] }}
 
       - name: Install Bazelisk
         run: |
-          curl -LO "https://github.com/bazelbuild/bazelisk/releases/download/v1.1.0/bazelisk-linux-amd64"
+          curl -LO "https://github.com/bazelbuild/bazelisk/releases/download/${BAZELISK_VERSION}/bazelisk-${{ matrix.os[2] }}"
           mkdir -p "${GITHUB_WORKSPACE}/bin/"
-          mv bazelisk-linux-amd64 "${GITHUB_WORKSPACE}/bin/bazelisk"
+          mv bazelisk-${{ matrix.os[2] }} "${GITHUB_WORKSPACE}/bin/bazelisk"
           chmod +x "${GITHUB_WORKSPACE}/bin/bazelisk"
 
-      - name: Build
+      - name: Select Bazel v${{ matrix.bazel }}
         run: |
-          "${GITHUB_WORKSPACE}/bin/bazelisk" build ${BUILD_TARGETS}
+          echo "${{ matrix.bazel }}" > .bazelversion
 
-      #- name: Test
-      #  run: |
-      #    "${GITHUB_WORKSPACE}/bin/bazelisk" test ${TEST_TARGETS}
+      - name: Build & Test
+        run: |
+          "${GITHUB_WORKSPACE}/bin/bazelisk" build test ${BUILD_TARGETS}
+
+  docs:
+    name: "Documentation"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Sources
+        uses: actions/checkout@v1

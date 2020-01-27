@@ -1,3 +1,14 @@
 [submodule "protobuf"]
 	path = vendor/google/protobuf
 	url = git@github.com:protocolbuffers/protobuf.git
+	shallow = true
+[submodule "J2CL"]
+	path = vendor/bazel/j2cl
+	url = git@github.com:sgammon/j2cl.git
+[submodule "rules_closure"]
+	path = vendor/bazel/rules_closure
+	url = git@github.com:sgammon/rules_closure.git
+[submodule "rules_graal"]
+	path = vendor/bazel/rules_graal
+	url = git@github.com:sgammon/rules_graal.git
+	branch = feature/ee
