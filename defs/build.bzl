@@ -15,6 +15,13 @@ DEPS = {
         "target": "4b25373d12887f5add565197c4a163e9f1d9b716",
         "seal": "67bd836ea57bc80e70473c1f840048a4f7cffc9b1530b05c81eb3e85de60f06f"},
 
+    # Bazel: Stardoc
+    "io_bazel_stardoc": {
+        "type": "github",
+        "repo": "bazelbuild/stardoc",
+        "target": "f13e3cac7022bd8bdd32233d1dae95a56df01a51",
+        "seal": "2dc75b384cf5cf5306aa1f6530b6e629f4547182d2203cfe8196d01ee4c6c23c"},
+
     # Bazel: Gazelle
     "bazel_gazelle": {
         "type": "github",
