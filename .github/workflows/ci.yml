@@ -34,10 +34,13 @@ jobs:
 
       - name: Build & Test
         run: |
+          echo "$SERVICE_KEY" > service-key.json
+          export
           make build BAZELISK="${GITHUB_WORKSPACE}/bin/bazelisk" CI=yes CACHE=yes
           make test BAZELISK="${GITHUB_WORKSPACE}/bin/bazelisk" CI=yes CACHE=yes
         env:
-          GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+          SERVICE_KEY: ${{ secrets.GOOGLE_CREDENTIALS }}
+          GOOGLE_APPLICATION_CREDENTIALS: service-key.json
 
   docs:
     name: "Documentation"
