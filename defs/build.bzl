@@ -12,8 +12,8 @@ DEPS = {
     "bazel_skylib": {
         "type": "github",
         "repo": "bazelbuild/bazel-skylib",
-        "target": "327d61b5eaa15c11a868a1f7f3f97cdf07d31c58",
-        "seal": "4542fed7aafdda95ee356dcb6bb5cc74cc6e5da1e54344ab206e550335804264"},
+        "target": "4b25373d12887f5add565197c4a163e9f1d9b716",
+        "seal": "67bd836ea57bc80e70473c1f840048a4f7cffc9b1530b05c81eb3e85de60f06f"},
 
     # Bazel: Gazelle
     "bazel_gazelle": {
