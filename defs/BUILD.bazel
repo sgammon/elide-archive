@@ -1,3 +1,35 @@
 package(
     default_visibility = ["//visibility:public"],
 )
+
+load(
+    "@io_bazel_stardoc//stardoc:stardoc.bzl",
+    "stardoc",
+)
+
+
+stardoc(
+    name = "gust-docs",
+    input = "docs.bzl",
+    out = "docs.md",
+    symbol_names = [
+        # Frontend: JS
+        "js_test",
+        "js_module",
+        "js_app",
+
+        # Backend: JDK (Java/Kotlin)
+        "jdk_test",
+        "jdk_library",
+        "jdk_binary",
+
+        # Backend: Micronaut
+        "micronaut_test",
+        "micronaut_library",
+        "micronaut_application",
+
+        # Tools: Protos
+        "proto",
+        "proto_module",
+    ],
+)

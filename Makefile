@@ -81,6 +81,10 @@ forceclean: distclean  ## Clean everything, and sanitize the codebase (DANGEROUS
 test:  ## Run all framework testsuites.
 	$(BAZELISK) $(BAZELISK_ARGS) $(TEST_COMMAND) $(TAG) $(BASE_ARGS) $(TEST_ARGS) $(TESTS)
 
+docs:  ## Build documentation for the framework.
+	@echo "Building GUST docs..."
+	$(BAZELISK) $(BAZELISK_ARGS) build $(TAG) $(BASE_ARGS) //:docs
+
 help:  ## Show this help text.
 	$(info GUST Framework Tools:)
 	@grep -E '^[a-z1-9A-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'

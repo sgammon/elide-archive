@@ -4,7 +4,8 @@ load(
     _j2cl_application = "j2cl_application",
 )
 
-load("@io_bazel_rules_closure//closure:defs.bzl",
+load(
+    "@io_bazel_rules_closure//closure:defs.bzl",
     _closure_js_test = "closure_js_test",
     _closure_js_library = "closure_js_library",
     _closure_js_binary = "closure_js_binary",
