@@ -36,6 +36,7 @@ INJECTED_MICRONAUT_DEPS = [
     maven("io.micronaut:micronaut-tracing"),
     maven("io.micronaut:micronaut-security"),
     maven("io.micronaut:micronaut-multitenancy"),
+    maven("io.micronaut.configuration:micronaut-redis-lettuce"),
 ]
 
 INJECTED_MICRONAUT_RUNTIME_DEPS = [
