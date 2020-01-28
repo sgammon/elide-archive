@@ -21,12 +21,6 @@ jobs:
       - name: Checkout Sources
         uses: actions/checkout@v1
 
-      - name: Mount Cache
-        uses: actions/cache@v1
-        with:
-          path: "/home/runner/.cache/bazel"
-          key: v1-bazel-${{ matrix.bazel }}-${{ matrix.os[2] }}
-
       - name: Install Bazelisk
         run: |
           curl -LO "https://github.com/bazelbuild/bazelisk/releases/download/${BAZELISK_VERSION}/bazelisk-${{ matrix.os[2] }}"
