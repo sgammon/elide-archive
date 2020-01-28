@@ -5,11 +5,11 @@ package(
 
 load(
     "//defs/toolchain/java:testing.bzl",
-    "java_test",
+    "jdk_test",
 )
 
 
-java_test(
+jdk_test(
     name = "DualStackTest",
     srcs = ["DualStackTest.java"],
     deps = ["//java/gust:Core"],

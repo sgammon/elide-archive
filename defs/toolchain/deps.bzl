@@ -16,4 +16,16 @@ def _closure_path(*path):
     return "@io_bazel_rules_closure//closure/library/%s" % genpath
 
 
+def _maven(path):
+
+    """ Computes a Maven dependency path, based on the coordinates
+        for the artifact. """
+
+    return ("@maven//:" + path
+            .replace(":", "_")
+            .replace(".", "_")
+            .replace("-", "_"))
+
+
+maven = _maven
 closure = _closure_path

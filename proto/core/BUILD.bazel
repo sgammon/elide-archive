@@ -5,7 +5,7 @@ package(
 load(
     "//defs:proto.bzl",
     "proto",
-    "module",
+    "proto_module",
 )
 
 ## Core
@@ -16,7 +16,7 @@ proto(
 )
 
 
-module(
+proto_module(
     name = "core",
     deps = [":Datamodel"],
 )

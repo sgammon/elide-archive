@@ -28,7 +28,6 @@ public class DomBrowserTest {
     }
   }
 
-  // your tests here
   @Test
   public void newWebDriverSession() {
     WebTest wt = new WebTest();

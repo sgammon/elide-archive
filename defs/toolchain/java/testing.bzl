@@ -1,13 +1,37 @@
 
 load(
     "@rules_java//java:defs.bzl",
-    _java_library = "java_library",
     _java_test = "java_test",
+    _java_library = "java_library",
+)
+
+load(
+    "@io_bazel_rules_kotlin//kotlin:kotlin.bzl",
+    _kt_jvm_test = "kt_jvm_test",
+    _kt_jvm_library = "kt_jvm_library",
 )
 
 load(
     "@io_bazel_rules_webtesting//web:java.bzl",
     _java_web_test_suite = "java_web_test_suite",
+)
+
+load(
+    "@io_bazel_rules_webtesting//web:kotlin.bzl",
+    _kotlin_web_test_suite = "kotlin_web_test_suite",
+)
+
+load(
+    "//defs/toolchain/java:rules.bzl",
+    "dedupe_deps_",
+    "ensure_types_",
+    "INJECTED_MICRONAUT_DEPS",
+    "INJECTED_MICRONAUT_RUNTIME_DEPS",
+)
+
+load(
+    "//defs/toolchain:deps.bzl",
+    "maven",
 )
 
 DEFAULT_BROWSERS = [
@@ -25,6 +49,21 @@ INJECTED_TEST_DEPS = [
     "@io_bazel_rules_webtesting//java/com/google/testing/web",
 ]
 
+INJECTED_KOTLIN_TEST_DEPS = [
+    "@com_github_jetbrains_kotlin//:kotlin-test",
+]
+
+INJECTED_MICRONAUT_TEST_DEPS = [
+    maven("io.micronaut:micronaut-http"),
+    maven("io.micronaut:micronaut-http-client"),
+    maven("io.micronaut.test:micronaut-test-core"),
+    maven("io.micronaut.test:micronaut-test-kotlintest"),
+]
+
+INJECTED_MICRONAUT_TEST_RUNTIME_DEPS = [
+    # No runtime deps yet.
+]
+
 
 def _browser_test_java(name,
                        srcs,
@@ -39,7 +78,7 @@ def _browser_test_java(name,
     _java_library(
         name = "%s-java" % name,
         srcs = srcs,
-        deps = (deps or DEFAULT_TEST_DEPS) + INJECTED_TEST_DEPS,
+        deps = dedupe_deps_((deps or DEFAULT_TEST_DEPS) + INJECTED_TEST_DEPS),
     )
 
     _java_web_test_suite(
@@ -48,9 +87,94 @@ def _browser_test_java(name,
         test_class = test_class,
         browsers = browsers or DEFAULT_BROWSERS,
         local = local,
-        deps = (deps or DEFAULT_TEST_DEPS) + INJECTED_TEST_DEPS,
+        deps = dedupe_deps_((deps or DEFAULT_TEST_DEPS) + INJECTED_TEST_DEPS),
     )
 
 
-java_test = _java_test
+def _jdk_test(name,
+              srcs,
+              test_class,
+              deps = [],
+              runtime_deps = [],
+              **kwargs):
+
+    """ Wrap a regular Java test so it can support Kotlin. """
+
+    if srcs[0].endswith(".kt"):
+        # process as kotlin
+        ensure_types_(srcs, ".kt")
+        _kt_jvm_test(
+            name = name,
+            srcs = srcs,
+            test_class = test_class,
+            deps = dedupe_deps_(deps),
+            runtime_deps = dedupe_deps_(runtime_deps),
+            **kwargs
+        )
+
+    else:
+        ensure_types_(srcs, ".java")
+        _java_test(
+            name = name,
+            srcs = srcs,
+            test_class = test_class,
+            deps = dedupe_deps_(deps),
+            runtime_deps = dedupe_deps_(runtime_deps),
+            **kwargs
+        )
+
+
+def _micronaut_test(name,
+                    srcs,
+                    test_class,
+                    deps = [],
+                    runtime_deps = [],
+                    browser = False,
+                    browsers = None,
+                    local = True,
+                    **kwargs):
+
+    """ Run a backend test on a Micronaut app. Basically wraps a regular JDK test,
+        but with injected Micronaut dependencies and plugins. """
+
+    if not browser:
+        _jdk_test(
+            name = name,
+            srcs = srcs,
+            test_class = test_class,
+            deps = deps + INJECTED_MICRONAUT_DEPS + INJECTED_MICRONAUT_TEST_DEPS,
+            runtime_deps = runtime_deps + INJECTED_MICRONAUT_RUNTIME_DEPS + INJECTED_MICRONAUT_TEST_RUNTIME_DEPS,
+            **kwargs
+        )
+    else:
+        if srcs[0].endswith(".kt"):
+            # process as kotlin
+            ensure_types_(srcs, ".kt")
+            _kotlin_web_test_suite(
+                name = name,
+                srcs = srcs,
+                test_class = test_class,
+                browsers = browsers or DEFAULT_BROWSERS,
+                local = local,
+                deps = dedupe_deps_((deps or DEFAULT_TEST_DEPS)
+                        + INJECTED_TEST_DEPS + INJECTED_MICRONAUT_TEST_DEPS + INJECTED_KOTLIN_TEST_DEPS),
+                **kwargs
+            )
+        else:
+            # process as java
+            ensure_types_(srcs, ".java")
+            _java_web_test_suite(
+                name = name,
+                srcs = srcs,
+                test_class = test_class,
+                browsers = browsers or DEFAULT_BROWSERS,
+                local = local,
+                deps = dedupe_deps_((deps or DEFAULT_TEST_DEPS)
+                                        + INJECTED_TEST_DEPS + INJECTED_MICRONAUT_TEST_DEPS),
+                **kwargs
+            )
+
+
+jdk_test = _java_test
+micronaut_test = _micronaut_test
 browser_test_java = _browser_test_java

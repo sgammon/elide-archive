@@ -1,0 +1,54 @@
+package(
+    default_visibility = ["//visibility:public"],
+)
+
+load(
+    "//defs/toolchain:backend.bzl",
+    "micronaut_test",
+    "micronaut_library",
+    "micronaut_application",
+)
+
+
+micronaut_library(
+    name = "BasicJavaController",
+    srcs = ["BasicJavaController.java"],
+    deps = ["//java/gust:Core"],
+)
+
+micronaut_library(
+    name = "BasicKotlinController",
+    srcs = ["BasicKotlinController.kt"],
+    deps = ["//java/gust:Core"],
+)
+
+micronaut_application(
+    name = "BasicTestApplication",
+    main_class = "gust.backend.Application",
+    runtime_deps = [
+        ":BasicJavaController",
+        ":BasicKotlinController",
+    ],
+)
+
+
+micronaut_test(
+    name = "BasicServerTest",
+    srcs = ["BasicServerTest.java"],
+    test_class = "javatests.server.BasicServerTest",
+    deps = [
+        ":BasicJavaController",
+        ":BasicKotlinController",
+    ],
+)
+
+micronaut_test(
+    name = "BrowserBasicServerTest",
+    srcs = ["BrowserBasicServerTest.kt"],
+    browser = True,  # run this test in the browser
+    test_class = "javatests.server.BrowserBasicServerTest",
+    deps = [
+        ":BasicJavaController",
+        ":BasicKotlinController",
+    ],
+)

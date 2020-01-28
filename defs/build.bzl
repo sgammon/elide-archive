@@ -12,8 +12,15 @@ DEPS = {
     "bazel_skylib": {
         "type": "github",
         "repo": "bazelbuild/bazel-skylib",
-        "target": "327d61b5eaa15c11a868a1f7f3f97cdf07d31c58",
-        "seal": "4542fed7aafdda95ee356dcb6bb5cc74cc6e5da1e54344ab206e550335804264"},
+        "target": "4b25373d12887f5add565197c4a163e9f1d9b716",
+        "seal": "67bd836ea57bc80e70473c1f840048a4f7cffc9b1530b05c81eb3e85de60f06f"},
+
+    # Bazel: Stardoc
+    "io_bazel_stardoc": {
+        "type": "github",
+        "repo": "bazelbuild/stardoc",
+        "target": "f13e3cac7022bd8bdd32233d1dae95a56df01a51",
+        "seal": "2dc75b384cf5cf5306aa1f6530b6e629f4547182d2203cfe8196d01ee4c6c23c"},
 
     # Bazel: Gazelle
     "bazel_gazelle": {
@@ -97,9 +104,10 @@ DEPS = {
     # Rules: Web Testing
     "io_bazel_rules_webtesting": {
         "type": "github",
-        "repo": "bazelbuild/rules_webtesting",
-        "target": "528c49b5be3bca7b835f8c42ccf326f882e825e9",
-        "seal": "c017dfe15e60a3f7e3a774484fee8d0573aed6e0fe304bac9aa5b9e5eef36368"},
+        "repo": "sgammon/rules_webtesting",
+        "target": "0a1cbf2c5bb878eb2ccbc304342b6a3619ba6e7d",
+        "seal": "01a8fd568b26dff2c8afd68a673890c38d2ea5324d2259580106e7b8ad3f8e95",
+        "local": "/workspace/GUST/vendor/bazel/rules_webtesting"},
 
     # Rules: SCSS/SASS
     "rules_sass": {

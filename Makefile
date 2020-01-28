@@ -4,7 +4,7 @@
 ##
 
 CI ?= no
-CACHE ?= no
+CACHE ?= yes
 REMOTE ?= no
 VERBOSE ?= no
 STRICT ?= no
@@ -13,11 +13,11 @@ PROJECT ?= bloom-sandbox
 RBE_INSTANCE ?= default_instance
 CACHE_KEY ?= GustBuild
 
-TARGETS ?= //java/... //proto/... //js/...
+TARGETS ?= //java/... //proto/... //js/... //style/...
 TESTS ?= //javatests/...
 
 TAG ?= --config=dev
-TEST_ARGS ?= --combined_report=lcov
+TEST_ARGS ?= --test_output=errors
 BUILD_ARGS ?=
 
 BAZELISK ?= $(shell which bazelisk)
@@ -81,6 +81,10 @@ forceclean: distclean  ## Clean everything, and sanitize the codebase (DANGEROUS
 test:  ## Run all framework testsuites.
 	$(BAZELISK) $(BAZELISK_ARGS) $(TEST_COMMAND) $(TAG) $(BASE_ARGS) $(TEST_ARGS) $(TESTS)
 
+docs:  ## Build documentation for the framework.
+	@echo "Building GUST docs..."
+	$(BAZELISK) $(BAZELISK_ARGS) build $(TAG) $(BASE_ARGS) //:docs
+
 help:  ## Show this help text.
 	$(info GUST Framework Tools:)
 	@grep -E '^[a-z1-9A-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
@@ -91,7 +95,7 @@ devtools:  ## Install local development dependencies.
 
 update-deps:  ## Re-seal and update all dependencies.
 	@echo "Updating devtools..."
-	git submodule update --remote --init --recursive
+	git submodule update --remote --init
 	@echo "Re-pinning Maven dependencies..."
 	$(BAZELISK) $(BAZELISK_ARGS) run @unpinned_maven//:pin
 

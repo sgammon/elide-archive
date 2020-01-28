@@ -13,3 +13,8 @@ alias(
     actual = "//defs/toolchain:java",
 )
 
+alias(
+    name = "docs",
+    actual = "//defs:gust-docs",
+)
+

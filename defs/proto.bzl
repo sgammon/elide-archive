@@ -89,4 +89,4 @@ def _module(name, **kwargs):
 
 
 proto = _proto
-module = _module
+proto_module = _module

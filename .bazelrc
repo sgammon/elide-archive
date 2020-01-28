@@ -8,6 +8,8 @@ build --watchfs
 build --symlink_prefix=dist/
 build --workspace_status_command=./tools/bazel_stamp_vars.sh
 
+build:ci --spawn_strategy=local
+
 build:dev --spawn_strategy=local
 build:dev --strategy=J2cl=worker
 build:dev --strategy=Closure=worker
