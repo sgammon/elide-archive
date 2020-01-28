@@ -14,7 +14,7 @@ public class Core {
    * Retrieve the application version setting, which is applied via the JVM system property
    * <pre>`APP_VERSION</pre>.
    *
-   * @returns Version assigned for the currently-running application.
+   * @return Version assigned for the currently-running application.
    **/
   public static String getVersion() {
     return System.getProperty("APP_VERSION", "alpha-1b0");

@@ -104,9 +104,11 @@ container_repositories()
 container_deps()
 _java_image_repos()
 
-## Elemental2
-load("@com_google_elemental2//build_defs:workspace.bzl", "setup_elemental2_workspace")
-setup_elemental2_workspace()
+## JS Interop
+load("@com_google_jsinterop_generator//build_defs:rules.bzl", "setup_jsinterop_generator_workspace")
+load("@com_google_jsinterop_generator//build_defs:repository.bzl", "load_jsinterop_generator_repo_deps")
+load_jsinterop_generator_repo_deps()
+setup_jsinterop_generator_workspace()
 
 ## Closure
 load("@io_bazel_rules_closure//closure:repositories.bzl", "rules_closure_dependencies", "rules_closure_toolchains")

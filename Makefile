@@ -13,11 +13,11 @@ PROJECT ?= bloom-sandbox
 RBE_INSTANCE ?= default_instance
 CACHE_KEY ?= GustBuild
 
-TARGETS ?= //java/... //proto/... //js/...
+TARGETS ?= //java/... //proto/... //js/... //style/...
 TESTS ?= //javatests/...
 
 TAG ?= --config=dev
-TEST_ARGS ?= --combined_report=lcov
+TEST_ARGS ?= --test_output=errors
 BUILD_ARGS ?=
 
 BAZELISK ?= $(shell which bazelisk)
@@ -91,7 +91,7 @@ devtools:  ## Install local development dependencies.
 
 update-deps:  ## Re-seal and update all dependencies.
 	@echo "Updating devtools..."
-	git submodule update --remote --init --recursive
+	git submodule update --remote --init
 	@echo "Re-pinning Maven dependencies..."
 	$(BAZELISK) $(BAZELISK_ARGS) run @unpinned_maven//:pin
 

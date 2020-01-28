@@ -1,0 +1,80 @@
+package(
+    default_visibility = ["//visibility:public"],
+)
+
+load(
+    "@rules_java//java:defs.bzl",
+    "java_plugin",
+    "java_library",
+)
+
+load(
+    "//defs/toolchain:deps.bzl",
+    "maven",
+)
+
+
+java_library(
+    name = "micronaut-inject",
+    exports = [
+        maven("io.micronaut:micronaut-core"),
+        maven("io.micronaut:micronaut-inject"),
+        maven("io.micronaut:micronaut-inject-java"),
+        maven("io.micronaut:micronaut-validation"),
+    ],
+    runtime_deps = [
+        maven("io.micronaut:micronaut-core"),
+        maven("io.micronaut:micronaut-inject"),
+        maven("io.micronaut:micronaut-inject-java"),
+        maven("io.micronaut:micronaut-validation"),
+    ]
+)
+
+java_library(
+    name = "dagger_compiler",
+    exports = ["//external:jar/com/google/dagger/dagger_compiler"],
+    runtime_deps = [
+        ":dagger",
+        ":dagger_producers",
+        "//third_party/java/com/google/code/findbugs:jsr305",
+        "//third_party/java/com/google/googlejavaformat:google_java_format",
+        "//third_party/java/com/google/guava",
+        "//third_party/java/com/squareup:javapoet",
+        "//third_party/java/javax/inject:javax_inject",
+    ],
+)
+
+java_plugin(
+    name = "micronaut-beans",
+    generates_api = True,
+    processor_class = "io.micronaut.annotation.processing.BeanDefinitionInjectProcessor",
+    deps = [":micronaut-inject"],
+)
+
+java_plugin(
+    name = "micronaut-types",
+    generates_api = True,
+    processor_class = "io.micronaut.annotation.processing.TypeElementVisitorProcessor",
+    deps = [":micronaut-inject"],
+)
+
+java_plugin(
+    name = "micronaut-config",
+    generates_api = True,
+    processor_class = "io.micronaut.annotation.processing.PackageConfigurationInjectProcessor",
+    deps = [":micronaut-inject"],
+)
+
+java_library(
+    name = "micronaut",
+    exports = [
+        maven("io.micronaut:micronaut-core"),
+        maven("io.micronaut:micronaut-inject"),
+        maven("io.micronaut:micronaut-inject-java"),
+    ],
+    exported_plugins = [
+        ":micronaut-beans",
+        ":micronaut-types",
+        ":micronaut-config"
+    ],
+)

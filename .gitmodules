@@ -2,6 +2,7 @@
 	path = vendor/google/protobuf
 	url = git@github.com:protocolbuffers/protobuf.git
 	shallow = true
+	ignore = dirty
 [submodule "J2CL"]
 	path = vendor/bazel/j2cl
 	url = git@github.com:sgammon/j2cl.git
@@ -12,3 +13,6 @@
 	path = vendor/bazel/rules_graal
 	url = git@github.com:sgammon/rules_graal.git
 	branch = feature/ee
+[submodule "rules_webtesting"]
+	path = vendor/bazel/rules_webtesting
+	url = git@github.com:sgammon/rules_webtesting.git

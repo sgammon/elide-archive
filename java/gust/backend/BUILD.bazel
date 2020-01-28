@@ -1,0 +1,20 @@
+package(
+    default_visibility = ["//visibility:public"],
+)
+
+load(
+    "//defs/toolchain/java:rules.bzl",
+    "jdk_library",
+)
+
+
+jdk_library(
+    name = "Application",
+    srcs = ["Application.java"],
+    deps = [
+        "@maven//:io_micronaut_micronaut_runtime",
+    ],
+    runtime_deps = [
+        "@maven//:io_micronaut_micronaut_runtime",
+    ],
+)

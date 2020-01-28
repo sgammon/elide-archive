@@ -97,9 +97,10 @@ DEPS = {
     # Rules: Web Testing
     "io_bazel_rules_webtesting": {
         "type": "github",
-        "repo": "bazelbuild/rules_webtesting",
-        "target": "528c49b5be3bca7b835f8c42ccf326f882e825e9",
-        "seal": "c017dfe15e60a3f7e3a774484fee8d0573aed6e0fe304bac9aa5b9e5eef36368"},
+        "repo": "sgammon/rules_webtesting",
+        "target": "0a1cbf2c5bb878eb2ccbc304342b6a3619ba6e7d",
+        "seal": "01a8fd568b26dff2c8afd68a673890c38d2ea5324d2259580106e7b8ad3f8e95",
+        "local": "/workspace/GUST/vendor/bazel/rules_webtesting"},
 
     # Rules: SCSS/SASS
     "rules_sass": {
