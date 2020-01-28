@@ -4,7 +4,7 @@
 ##
 
 CI ?= no
-CACHE ?= no
+CACHE ?= yes
 REMOTE ?= no
 VERBOSE ?= no
 STRICT ?= no

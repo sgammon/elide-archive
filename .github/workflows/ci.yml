@@ -5,8 +5,6 @@ on:
 
 env:
   BAZELISK_VERSION: v1.2.1
-  BUILD_TARGETS: //java/... //js/... //proto/...
-  JAVA_TEST_TARGETS: //javatests/...
 
 jobs:
   build:
@@ -15,19 +13,13 @@ jobs:
     strategy:
       matrix:
         os: [["Ubuntu", "ubuntu-latest", "linux-amd64"], ["macOS Catalina", "macos-latest", "darwin-amd64"]]
-        bazel: ["1.0.0", "2.0.0"]
+        bazel: ["2.0.0", "1.0.0"]
 
     runs-on: ${{ matrix.os[1] }}
 
     steps:
       - name: Checkout Sources
         uses: actions/checkout@v1
-
-      - name: Mount Cache
-        uses: actions/cache@v1
-        with:
-          path: "/home/runner/.cache/bazel"
-          key: bazel-${{ matrix.bazel }}-${{ matrix.os[2] }}
 
       - name: Install Bazelisk
         run: |
@@ -42,11 +34,10 @@ jobs:
 
       - name: Build & Test
         run: |
-          "${GITHUB_WORKSPACE}/bin/bazelisk" build ${BUILD_TARGETS}
-
-      - name: Testsuite (Java)
-        run: |
-          "${GITHUB_WORKSPACE}/bin/bazelisk" test ${JAVA_TEST_TARGETS}
+          make build BAZELISK="${GITHUB_WORKSPACE}/bin/bazelisk" CI=yes CACHE=yes
+          make test BAZELISK="${GITHUB_WORKSPACE}/bin/bazelisk" CI=yes CACHE=yes
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
 
   docs:
     name: "Documentation"
