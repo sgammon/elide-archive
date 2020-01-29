@@ -16,13 +16,15 @@ CACHE_KEY ?= GustBuild
 TARGETS ?= //java/... //proto/... //js/... //style/...
 TESTS ?= //javatests/...
 
-TAG ?= --config=dev
+TAG ?=
 TEST_ARGS ?= --test_output=errors
 BUILD_ARGS ?=
 
 BAZELISK ?= $(shell which bazelisk)
 BAZELISK_ARGS ?=
 BASE_ARGS ?= --google_default_credentials=true
+
+_DEFAULT_JAVA_HOME = $(shell echo $$JAVA_HOME)
 
 
 # Flag: `COVERAGE`
@@ -51,11 +53,14 @@ ifeq ($(CACHE),no)
 BASE_ARGS += --remote_instance_name=projects/$(PROJECT)/instances/$(RBE_INSTANCE)
 endif
 else
+endif
 
 # Flag: `CI`
 ifeq ($(CI),yes)
 TAG += --config=ci
-endif
+BASE_ARGS += --define=ZULUBASE=$(_DEFAULT_JAVA_HOME) --define=jdk=zulu
+else
+TAG += --config=dev
 endif
 
 # Flag: `VERBOSE`

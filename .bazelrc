@@ -3,19 +3,33 @@
 # Base Settings
 ##
 
-build --watchfs
+common --experimental_allow_incremental_repository_updates
 
+build --watchfs
 build --symlink_prefix=dist/
+build --nolegacy_external_runfiles
+build --disk_cache=~/.cache/bazel-disk-cache
 build --workspace_status_command=./tools/bazel_stamp_vars.sh
+build --incompatible_strict_action_env
+
+run --incompatible_strict_action_env
 
 build:ci --spawn_strategy=local
+build:ci --javabase=//defs/toolchain/java:java_runtime
 
+build:release --compilation_mode=opt
+
+build:dev --compilation_mode=dbg
 build:dev --spawn_strategy=local
 build:dev --strategy=J2cl=worker
 build:dev --strategy=Closure=worker
 build:dev --strategy=TypeScriptCompile=worker
 build:dev --experimental_persistent_javac
+build:dev --define=jdk=zulu
 build:dev --define=ZULUBASE=/Library/Java/JavaVirtualMachines/zulu-12.jdk/Contents/Home
+build:dev --javabase=//defs/toolchain/java:java_runtime
+
+run:dev --define=VERBOSE_LOGS=1 -- --node_options=--inspect-brk
 
 query --output=label_kind
 
@@ -59,4 +73,6 @@ build:remote --remote_timeout=3600
 # default. You can use --google_credentials=some_file.json to use a service
 # account credential instead.
 build:remote --google_default_credentials=true
+
+try-import %workspace%/.bazelrc.user
 

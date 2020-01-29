@@ -1,3 +1,19 @@
 package(
     default_visibility = ["//visibility:public"],
 )
+
+load(
+    "//defs/toolchain:frontend.bzl",
+    "style_library",
+)
+
+
+exports_files([
+    "_vars.sass",
+])
+
+
+style_library(
+    name = "vars",
+    srcs = ["_vars.sass"],
+)

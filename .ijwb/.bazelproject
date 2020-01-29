@@ -14,6 +14,7 @@ directories:
   types
   style
   .github
+  .develop
   node_modules
 
 targets:

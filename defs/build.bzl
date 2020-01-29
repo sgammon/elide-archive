@@ -36,13 +36,6 @@ DEPS = {
         "target": "b7e3d4ca4f1d34ad394d8ed53872b827d178f9a9",
         "seal": "a3d702305458418ed63479c75f0b376bad4c01da06eb9d9e35778ad8a49241aa"},
 
-    # Rules: NodeJS
-    "build_bazel_rules_nodejs": {
-        "type": "github",
-        "repo": "bazelbuild/rules_nodejs",
-        "target": "1.2.0",
-        "seal": "a74ed5df2c2437bc8a4f5b29cda3d9ad4f36f2f325cc61769b4c7653a6b76e8c"},
-
     # Rules: Closure
     "io_bazel_rules_closure": {
         "type": "github",
@@ -56,7 +49,7 @@ DEPS = {
         "type": "github",
         "repo": "bazelbuild/rules_sass",
         "target": "7e798ffb0f4a6147b766ee2a62d7f18b8155452e",
-        "seal": None},
+        "seal": "bf228b61d852fd38688ca4c1b9148b6bdc888053c4a86bffc451853124f5b2b1"},
 
     # Rules: Protobuf
     "rules_proto": {
@@ -127,16 +120,9 @@ DEPS = {
     "com_google_j2cl": {
         "type": "github",
         "repo": "sgammon/j2cl",
-        "target": "7e23248cc36ed25f8c8866083999e62d73f767b6",
-        "seal": "e59f94fc887de6e02ed7919e6f1459a1993310964632ff87d3b53d421ab68139",
+        "target": "df3883236f91c3675603c5cb636880c38e7b8b5a",
+        "seal": "4db10efb0a4010ac06dcc923fbb7974b69b8a06f1492de40137d8ce6ae08311c",
         "local": "/workspace/GUST/vendor/bazel/j2cl"},
-
-    # Google: Clutz
-    "io_angular_clutz": {
-        "type": "github",
-        "repo": "angular/clutz",
-        "target": "c11cbb41595d8274dea6dbb983e2fba07580535e",
-        "seal": None},
 
     # Google: Elemental2
     "com_google_elemental2": {
@@ -186,6 +172,55 @@ DEPS = {
         "repo": "stackb/rules_proto",
         "target": "0a888dbeacebfe06acb7ba740e0723b1adb0dd52",
         "seal": "966316838b6454ca2f51718d6a801f8ebf7d1d41c82a51ac24af4d92115fa323"},
+
+    # HTML5 Boilerplate
+    "org_html5_boilerplate": {
+        "type": "github",
+        "repo": "h5bp/html5-boilerplate",
+        "target": "36c8988392777cd3c2c6718bfa1114c79b344601",
+        "overlay": "h5bp.bzl",
+        "seal": None},
+
+    # Normalize CSS
+    "org_normalize_css": {
+        "type": "github",
+        "repo": "necolas/normalize.css",
+        "target": "fc091cce1534909334c1911709a39c22d406977b",
+        "overlay": "normalize.bzl",
+        "seal": None},
+
+    # Material Design Lite
+    "com_google_mdl": {
+        "type": "github",
+        "repo": "bloombox/material-design-lite",
+        "target": "7e10595660b9c56ab67203f8ba966cb4883e1547",
+        "overlay": "mdl.bzl",
+        "seal": "f65b744aa0865bce2f9727b1b116fadf10639b63f4b511165a2ab65afa6d1046"},
+
+    # Google: Closure Stylesheets
+    "com_google_closure_stylesheets": {
+        "type": "java",
+        "licenses": ["notice"],
+        "targets": [
+            "https://storage.googleapis.com/bloom-software/closure-stylesheets-1.6.0-b4.jar",
+        ],
+        "seal": "364f10a71163e56e86ee5233d9080d42fd45706345dafa3ffdeb333c1ba44e2c",
+        "deps": [
+            "@args4j",
+            "@com_google_javascript_closure_compiler",
+            "@com_google_code_gson",
+            "@com_google_guava",
+            "@com_google_code_findbugs_jsr305",
+        ],
+        "inject": "\n".join([
+            "java_binary(",
+            "    name = \"ClosureCommandLineCompiler\",",
+            "    main_class = \"com.google.common.css.compiler.commandline.ClosureCommandLineCompiler\",",
+            "    output_licenses = [\"unencumbered\"],",
+            "    runtime_deps = [\":com_google_closure_stylesheets\"],",
+            ")",
+        ])
+    },
 }
 
 
@@ -197,4 +232,3 @@ def _install_dependencies():
 
 
 install_dependencies = _install_dependencies
-

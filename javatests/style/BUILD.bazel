@@ -1,0 +1,107 @@
+
+package(
+    default_visibility = ["//visibility:public"],
+)
+
+load(
+    "@io_bazel_rules_sass//:defs.bzl",
+    "sass_binary",
+)
+
+load(
+    "//defs/toolchain/style:rules.bzl",
+    "style_binary",
+    "style_library",
+)
+
+load(
+    "//defs/toolchain/testing:file_test.bzl",
+    "file_test",
+)
+
+
+style_library(
+    name = "example1",
+    srcs = ["_example1.scss"],
+)
+
+style_library(
+    name = "example2",
+    srcs = ["_example2.sass"],
+)
+
+style_binary(
+    name = "basic",
+    src = "basic.scss",
+    deps = [
+        ":example1",
+        ":example2",
+    ],
+)
+
+sass_binary(
+    name = "sass_compressed",
+    src = "basic.scss",
+    sourcemap = False,
+    output_name = "sass_compressed.css",
+    output_style = "compressed",
+    deps = [
+        ":example1",
+        ":example2",
+    ],
+)
+
+style_binary(
+    name = "vendor",
+    src = "vendor.scss",
+    plugins = ["autoprefixer"],
+    deps = [
+        ":example1",
+        ":example2",
+    ],
+)
+
+
+file_test(
+    name = "basic_test",
+    file = ":basic.css",
+    content = """.hello {
+  background: yellow;
+}
+.hello .inner {
+  background: red;
+}
+.hello .inner p {
+  background: purple;
+}
+.hello .inner p span {
+  background: green;
+}""",
+)
+
+file_test(
+    name = "compressed_test",
+    file = "sass_compressed.css",
+    content = ".hello{background:#ff0}.hello .inner{background:red}.hello .inner p{background:purple}.hello .inner p span{background:green}",
+)
+
+file_test(
+    name = "autoprefixer_test",
+    file = "vendor.css",
+    content = """.hello {
+  background: yellow;
+}
+.hello .inner {
+  background: red;
+}
+.hello .inner p {
+  background: purple;
+}
+.hello .inner p span {
+  background: green;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
+}""",
+)

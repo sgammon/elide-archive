@@ -16,3 +16,6 @@
 [submodule "rules_webtesting"]
 	path = vendor/bazel/rules_webtesting
 	url = git@github.com:sgammon/rules_webtesting.git
+[submodule "bazel-ij"]
+	path = vendor/bazel/intellij
+	url = git@github.com:bazelbuild/intellij.git
