@@ -50,6 +50,7 @@ def _style_library(name,
 
 def _style_opt(name,
                src,
+               config = None,
                plugins = _DEFAULT_POSTCSS_PLUGINS,
                sourcemap = True):
 
@@ -60,6 +61,7 @@ def _style_opt(name,
         name = name,
         src = src,
         plugins = plugins,
+        config = config,
         sourcemap = sourcemap,
     )
 
@@ -69,6 +71,7 @@ def _style_binary(name,
                   deps = [],
                   data = [],
                   debug = False,
+                  config = None,
                   sourcemap = True,
                   output_name = None,
                   output_style = "expanded",  ## leave this be: helps with GSS compilation
@@ -107,7 +110,7 @@ def _style_binary(name,
         )
 
         _closure_css_binary(
-            name = "%s-bin" % name,
+            name = "%s-gss" % name,
             deps = [":%s-lib" % name],
             defs = BASE_GSS_DEFS + defs,
             renaming = renaming_state,
@@ -117,7 +120,7 @@ def _style_binary(name,
     elif src == None or (src.endswith(".gss") or src.endswith(".css")):
         # process as normal CSS/GSS
         _closure_css_binary(
-            name = "%s-bin" % name,
+            name = "%s-gss" % name,
             deps = deps,
             defs = BASE_GSS_DEFS + defs,
             renaming = renaming_state,
@@ -128,9 +131,10 @@ def _style_binary(name,
 
     _style_opt(
         name = name,
-        src = "%s-bin.css" % name,
+        src = "%s-gss.css" % name,
         plugins = plugins,
         sourcemap = sourcemap,
+        config = config,
     )
 
 

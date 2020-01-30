@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const DEBUG = true;
+const DEBUG = false;
 
 const args = require('args');
 const postcss = require('postcss');
@@ -24,7 +24,7 @@ function execute(config, source, target, plugins, debug, opt, sourcemap) {
     console.log('PostCSS Invoked', {
       config, source, target, plugins, debug, opt, sourcemap});
 
-  const configFile = fs.readFile(config, (configErr, configJson) => {
+  fs.readFile(config, (configErr, configJson) => {
     if (configErr) {
       console.error(`Failed to load PostCSS config file at '${config}'.`);
       process.exitCode = 1;
@@ -32,15 +32,20 @@ function execute(config, source, target, plugins, debug, opt, sourcemap) {
       const configData = JSON.parse(configJson);
 
       // step one: load plugins
-      const resolvedPlugins = [].map.call(plugins, (pluginName) => {
+      const resolvedPlugins = [].map.call(plugins.split(','), (pluginName) => {
         try {
           if (DEBUG)
             console.log(`Loading PostCSS plugin "${pluginName}"...`);
           return require(pluginName)(Object.assign({},
               configData ? (configData[pluginName] || {}) : {}));
         } catch (err) {
-          console.error(`Failed to load PostCSS plugin "${pluginName}". Is it installed?`);
-          process.exit(1);
+          try {
+            return require(`postcss-${pluginName}`)(Object.assign({},
+                configData ? (configData[pluginName] || {}) : {}));
+          } catch (err) {
+            console.error(`Failed to load PostCSS plugin "${pluginName}". Is it installed?`);
+            process.exit(1);
+          }
         }
       });
 
@@ -78,7 +83,7 @@ args
     .option('source', 'Source file to optimize.')
     .option('target', 'Target file in which to place the optimized style code.')
     .option('config', 'Configuration file to load and apply to enabled plugins.')
-    .option('plugins', 'Selection of plugins to `require()` and add to the PostCSS build pipeline.', [])
+    .option('plugins', 'Selection of plugins to `require()` and add to the PostCSS build pipeline.')
     .option('debug', 'Whether we are operating in debug mode. Defaults to `false`.', false)
     .option('opt', 'Whether we are operating in release mode. Defaults to `false`.', false)
     .option('sourcemap', 'Whether we should generate source maps alongside targets. Defaults to `true`.', true);

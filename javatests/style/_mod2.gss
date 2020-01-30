@@ -3,6 +3,10 @@
 @require 'style.sample.mod1';
 
 
+.hello {
+    user-select: none;
+}
+
 .goodbye {
-    background: COLOR;
+    background: green;
 }

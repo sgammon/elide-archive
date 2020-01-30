@@ -3,6 +3,10 @@
 @def COLOR pink;
 
 
+.test {
+    color: blue;
+}
+
 .hello {
     background: COLOR;
 }

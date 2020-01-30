@@ -24,6 +24,7 @@ So the example above will output `final.min.css` and `final.min.css.map` (since
 DEFAULT_POSTCSS_PLUGINS = [
     "autoprefixer",
     "cssnano",
+    "svgo",
 ]
 
 _POSTCSS_ATTRS = {
@@ -93,7 +94,7 @@ def _postcss(ctx):
     args.append("--source"); args.append(inputs[0].path)
     args.append("--target"); args.append(outputs[0].path)
     args.append("--config"); args.append(ctx.file.config.path)
-    args.append("--plugins"); args.extend(ctx.attr.plugins or DEFAULT_POSTCSS_PLUGINS)
+    args.append("--plugins"); args.append(",".join(ctx.attr.plugins or DEFAULT_POSTCSS_PLUGINS))
 
     if ctx.attr.debug or ctx.var["COMPILATION_MODE"] == "dbg":
         args.append("--debug")

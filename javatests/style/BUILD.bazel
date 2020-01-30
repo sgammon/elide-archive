@@ -20,6 +20,8 @@ load(
 )
 
 
+## -- Tests -- ##
+
 style_library(
     name = "example1",
     srcs = ["_example1.scss"],
@@ -80,22 +82,35 @@ style_binary(
     ],
 )
 
+style_binary(
+    name = "gss_opt_default_example",
+    plugins = ["autoprefixer", "cssnano"],
+    deps = [
+        ":mod1",
+        ":mod2",
+    ],
+)
+
+style_binary(
+    name = "gss_opt_advanced_example",
+    config = "postcss_advanced.json",
+    plugins = [
+        "autoprefixer",
+        "cssnano",
+    ],
+    deps = [
+        ":mod1",
+        ":mod2",
+    ],
+)
+
+
+## -- Tests -- ##
 
 file_test(
     name = "basic_test",
     file = ":basic.css",
-    content = """.hello {
-  background: yellow;
-}
-.hello .inner {
-  background: red;
-}
-.hello .inner p {
-  background: purple;
-}
-.hello .inner p span {
-  background: green;
-}""",
+    content = ".hello{background:#ff0}.hello .inner{background:red}.hello .inner p{background:purple}.hello .inner p span{background:green}",
 )
 
 file_test(
@@ -127,11 +142,32 @@ file_test(
 
 file_test(
     name = "gss_test",
-    file = "gss_example-bin.css",
-    content = """.hello {
+    file = ":gss_example",
+    content = """.test {
+  color: blue;
+}
+.hello {
   background: pink;
 }
+.hello {
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
+}
 .goodbye {
-  background: pink;
+  background: green;
 }""",
+)
+
+file_test(
+    name = "gss_opt_default_test",
+    file = ":gss_opt_default_example",
+    content = ".test{color:#00f}.hello{background:pink;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}.goodbye{background:green}",
+)
+
+file_test(
+    name = "gss_opt_advanced_test",
+    file = ":gss_opt_advanced_example",
+    content = ".test{color:#00f}.hello{background:pink;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}.goodbye{background:green}",
 )
