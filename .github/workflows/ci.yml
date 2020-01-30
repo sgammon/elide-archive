@@ -12,8 +12,10 @@ jobs:
 
     strategy:
       matrix:
-        os: [["Ubuntu", "ubuntu-latest", "linux-amd64"], ["macOS Catalina", "macos-latest", "darwin-amd64"]]
-        bazel: ["2.0.0", "1.0.0"]
+        #os: [["Ubuntu", "ubuntu-latest", "linux-amd64"], ["macOS Catalina", "macos-latest", "darwin-amd64"]]
+        #bazel: ["2.0.0", "1.0.0"]
+        os: [["Ubuntu", "ubuntu-latest", "linux-amd64"]]
+        bazel: ["2.0.0"]
 
     runs-on: ${{ matrix.os[1] }}
 
