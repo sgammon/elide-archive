@@ -6,7 +6,6 @@ load(
     "git_repository",
 )
 
-
 DEPS = {
     # Bazel: Skylib
     "bazel_skylib": {
@@ -39,9 +38,9 @@ DEPS = {
     # Rules: Closure
     "io_bazel_rules_closure": {
         "type": "github",
-        "repo": "sgammon/rules_closure",
-        "target": "06af65abad5f1351b46c93578e21147486c0b03b",
-        "seal": "80975218961db517448551bccd951e4a6d3fb8c100a8eaa134d366fc7ab832a6",
+        "repo": "bazelbuild/rules_closure",
+        "target": "614e1ebc38249c6793eab2e078bceb0fb12a1a42",
+        "seal": "de46d49c9f7ba14ed4093cc34c342f72d4a17a8af0b9c9afe5ed519b1975fc67",
         "local": "/workspace/GUST/vendor/bazel/rules_closure"},
 
     # Rules: SASS
@@ -201,9 +200,7 @@ DEPS = {
     "com_google_closure_stylesheets": {
         "type": "java",
         "licenses": ["notice"],
-        "targets": [
-            "https://storage.googleapis.com/bloom-software/closure-stylesheets-1.6.0-b4.jar",
-        ],
+        "targets": ["https://storage.googleapis.com/bloom-software/closure-stylesheets-1.6.0-b4.jar",],
         "seal": "364f10a71163e56e86ee5233d9080d42fd45706345dafa3ffdeb333c1ba44e2c",
         "deps": [
             "@args4j",
@@ -219,8 +216,58 @@ DEPS = {
             "    output_licenses = [\"unencumbered\"],",
             "    runtime_deps = [\":com_google_closure_stylesheets\"],",
             ")",
-        ])
+        ]),
     },
+
+    # Google: Soy
+    "com_google_template_soy": {
+        "type": "java",
+        "licenses": ["notice"],
+        "targets": ["https://storage.googleapis.com/bloom-software/frontend/soy/soy-lib-b16.jar"],
+        "seal": "f719336079d0aa5e4c4a038f9a835c53c86d28e53887325aa98cd374d970b479",
+        "deps": [
+            "@args4j",
+            "@com_google_code_findbugs_jsr305",
+            "@com_google_code_gson",
+            "@com_google_common_html_types",
+            "@com_google_guava",
+            "@com_google_inject_extensions_guice_assistedinject",
+            "@com_google_inject_extensions_guice_multibindings",
+            "@com_google_inject_guice",
+            "@com_google_protobuf//:protobuf_java",
+            "@com_ibm_icu_icu4j",
+            "@javax_inject",
+            "@org_json",
+            "@org_ow2_asm",
+            "@org_ow2_asm_analysis",
+            "@org_ow2_asm_commons",
+            "@org_ow2_asm_util",
+        ],
+        "inject": "\n".join([
+            ("java_binary(\n" +
+             "    name = \"%s\",\n" +
+             "    main_class = \"com.google.template.soy.%s\",\n" +
+             "    output_licenses = [\"unencumbered\"],\n" +
+             "    runtime_deps = [\":com_google_template_soy\"],\n" +
+             ")\n") % (name, name)
+            for name in (
+                "SoyParseInfoGenerator",
+                "SoyToJbcSrcCompiler",
+                "SoyToJsSrcCompiler",
+                "SoyHeaderCompiler",
+                "SoyToIncrementalDomSrcCompiler",
+                "SoyToPySrcCompiler",
+            )
+        ]),
+    },
+
+    # Google: Soy (JS Sources)
+    "com_google_template_soy_jssrc": {
+        "type": "archive",
+        "format": "zip",
+        "overlay": "//closure/templates:soy_jssrc.BUILD",
+        "targets": ["https://storage.googleapis.com/bloom-software/frontend/soy/soy-jssrc-b16.jar"],
+        "seal": "1b9242a31d1c9f19261a7f723bfe0fef1b333dfb10da274a24990df6594e1927"},
 }
 
 
@@ -229,6 +276,5 @@ def _install_dependencies():
     """ Install all dependencies into the current WORKSPACE. """
 
     dependencies(DEPS)
-
 
 install_dependencies = _install_dependencies

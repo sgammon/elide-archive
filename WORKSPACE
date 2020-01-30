@@ -6,16 +6,12 @@ load("//defs:build.bzl", "install_dependencies")
 load("//defs:config.bzl", "CHROMIUM", "FIREFOX", "SAUCE", "GRAALVM_VERSION", "GRAALVM_JDK_VERSION")
 install_dependencies()
 
-#
-# RULES
-#
+load("//defs:workspace.bzl", "setup_workspace")
+setup_workspace()
 
-## Closure
-load("@io_bazel_rules_closure//closure:repositories.bzl", "rules_closure_dependencies", "rules_closure_toolchains")
-rules_closure_dependencies(
-    omit_com_google_auto_common = True,
-    omit_com_google_closure_stylesheets = True)
-rules_closure_toolchains()
+#
+# Extensions
+#
 
 ## NodeJS
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
@@ -54,13 +50,6 @@ rules_sass_dependencies()
 
 load("@rules_sass//:defs.bzl", "sass_repositories")
 sass_repositories()
-
-## J2CL
-load("@com_google_j2cl//build_defs:rules.bzl", "setup_j2cl_workspace")
-setup_j2cl_workspace(
-    omit_org_gwtproject_gwt=True,
-    omit_com_google_jsinterop_annotations_head = True,
-    omit_com_google_closure_stylesheets = True)
 
 ## Kotlin
 load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kotlin_repositories", "kt_register_toolchains")

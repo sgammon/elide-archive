@@ -30,6 +30,25 @@ def _process_install_deps(deps):
             _process_github_dep(key, repo)
         elif repo["type"] == "java":
             _process_java_dep(key, repo)
+        elif repo["type"] == "archive":
+            _process_archive_dep(key, repo)
+        else:
+            fail(("Unrecognized dependency type: '%s' for package '%s'."
+                    % (repo["type"], key)))
+
+
+def _process_archive_dep(key, repo):
+
+    """ Process an external archive dependency. """
+
+    _http_archive(
+        name = key,
+        url = repo.get("target"),
+        urls = repo.get("targets"),
+        strip_prefix = repo.get("strip"),
+        sha256 = repo.get("seal"),
+        build_file = repo.get("overlay"),
+    )
 
 
 def _process_java_dep(key, repo):
