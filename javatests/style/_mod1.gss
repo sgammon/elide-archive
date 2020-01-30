@@ -1,0 +1,8 @@
+
+@provide 'style.sample.mod1';
+@def COLOR pink;
+
+
+.hello {
+    background: COLOR;
+}

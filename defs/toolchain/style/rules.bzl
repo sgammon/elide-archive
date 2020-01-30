@@ -32,12 +32,20 @@ def _style_library(name,
     """ Wrap a style source in SASS/SCSS processing rules (if needed). Affix any dependencies that
         should be injected globally. """
 
-    # structure as a SASS library regardless of dialect
-    _sass_library(
-        name = name,
-        srcs = srcs,
-        deps = deps,
-    )
+    if srcs[0].endswith(".sass") or srcs[0].endswith(".scss"):
+        # structure as a SASS library regardless of dialect
+        _sass_library(
+            name = name,
+            srcs = srcs,
+            deps = deps,
+        )
+    elif srcs[0].endswith(".gss") or srcs[0].endswith(".css"):
+        # structure as a CSS/GSS library regardless of dialect
+        _closure_css_library(
+            name = name,
+            srcs = srcs,
+            deps = deps,
+        )
 
 
 def _style_opt(name,
@@ -57,7 +65,7 @@ def _style_opt(name,
 
 
 def _style_binary(name,
-                  src,
+                  src = None,
                   deps = [],
                   data = [],
                   debug = False,
@@ -70,35 +78,53 @@ def _style_binary(name,
     """ Wrap a style target in SASS/SCSS output rules (if needed). Gather and process the target
        with GSS after compilation, and then any applicable. post-processors. """
 
-    _sass_binary(
-        name = "%s-sass" % name,
-        src = src,
-        deps = deps,
-        output_name = "%s-inter.css" % name,
-        output_style = output_style,
-        sourcemap = debug,
-    )
+    renaming_state = select({
+        "//defs/config:release": True,
+        "//defs/config:debug": False,
+        "//conditions:default": False
+    })
 
-    _closure_css_library(
-        name = "%s-lib" % name,
-        srcs = [":%s-sass" % name],
-    )
+    debug_state = select({
+        "//defs/config:release": False,
+        "//defs/config:debug": True,
+        "//conditions:default": True
+    })
 
-    _closure_css_binary(
-        name = "%s-bin" % name,
-        deps = [":%s-lib" % name],
-        defs = BASE_GSS_DEFS + defs,
-        renaming = select({
-            "//defs/config:release": True,
-            "//defs/config:debug": False,
-            "//conditions:default": False
-        }),
-        debug = select({
-            "//defs/config:release": False,
-            "//defs/config:debug": True,
-            "//conditions:default": True
-        }),
-    )
+    if src != None and (src.endswith(".sass") or src.endswith(".scss")):
+        # process as normal SASS/SCSS
+        _sass_binary(
+            name = "%s-sass" % name,
+            src = src,
+            deps = deps,
+            output_name = "%s-inter.css" % name,
+            output_style = output_style,
+            sourcemap = debug,
+        )
+
+        _closure_css_library(
+            name = "%s-lib" % name,
+            srcs = [":%s-sass" % name],
+        )
+
+        _closure_css_binary(
+            name = "%s-bin" % name,
+            deps = [":%s-lib" % name],
+            defs = BASE_GSS_DEFS + defs,
+            renaming = renaming_state,
+            debug = debug_state,
+        )
+
+    elif src == None or (src.endswith(".gss") or src.endswith(".css")):
+        # process as normal CSS/GSS
+        _closure_css_binary(
+            name = "%s-bin" % name,
+            deps = deps,
+            defs = BASE_GSS_DEFS + defs,
+            renaming = renaming_state,
+            debug = debug_state,
+        )
+    else:
+        fail("Unrecognized style_binary src file.")
 
     _style_opt(
         name = name,

@@ -61,6 +61,25 @@ style_binary(
     ],
 )
 
+style_library(
+    name = "mod1",
+    srcs = ["_mod1.gss"],
+)
+
+style_library(
+    name = "mod2",
+    srcs = ["_mod2.gss"],
+)
+
+style_binary(
+    name = "gss_example",
+    plugins = ["autoprefixer"],
+    deps = [
+        ":mod1",
+        ":mod2",
+    ],
+)
+
 
 file_test(
     name = "basic_test",
@@ -103,5 +122,16 @@ file_test(
      -moz-user-select: none;
       -ms-user-select: none;
           user-select: none;
+}""",
+)
+
+file_test(
+    name = "gss_test",
+    file = "gss_example-bin.css",
+    content = """.hello {
+  background: pink;
+}
+.goodbye {
+  background: pink;
 }""",
 )
