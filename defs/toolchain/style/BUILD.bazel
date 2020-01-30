@@ -3,7 +3,33 @@ package(
 )
 
 load(
-    "@io_bazel_rules_sass//:defs.bzl",
-    _sass_binray = "sass_binary",
-    _sass_library = "sass_libary",
+    "@bazel_skylib//:bzl_library.bzl",
+    "bzl_library",
+)
+
+load(
+    "@build_bazel_rules_nodejs//:index.bzl",
+    "nodejs_binary",
+)
+
+
+exports_files([
+    "postcss_default_config.json",
+])
+
+bzl_library(
+    name = "rules",
+    srcs = [
+        "rules.bzl",
+    ],
+)
+
+nodejs_binary(
+    name = "postcss",
+    args = ["--node_options=--expose-gc"],
+    entry_point = ":postcss.js",
+    data = [
+        "@npm//:node_modules",
+        "postcss.js",
+    ]
 )

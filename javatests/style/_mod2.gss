@@ -1,0 +1,12 @@
+
+@provide 'style.sample.mod2';
+@require 'style.sample.mod1';
+
+
+.hello {
+    user-select: none;
+}
+
+.goodbye {
+    background: green;
+}

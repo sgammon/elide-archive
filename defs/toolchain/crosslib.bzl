@@ -44,7 +44,7 @@ def _bridge_lib(name, srcs, deps = [], elemental = [], **kwargs):
         ] + computed_j2cl_deps,
     )
 
-def _cross_java_lib(name, srcs, deps = [], elemental = [], **kwargs):
+def _cross_java_lib(name, srcs, deps = [], jdeps = [], elemental = [], **kwargs):
 
     """ Prepare a library for both Java (server-side) and J2CL (client-side). """
 
@@ -63,7 +63,7 @@ def _cross_java_lib(name, srcs, deps = [], elemental = [], **kwargs):
             srcs = srcs,
             deps = [
                 "@com_google_j2cl//:jsinterop-annotations",
-            ] + computed_deps,
+            ] + computed_deps + jdeps,
         )
 
         j2cl_library(
@@ -83,7 +83,7 @@ def _cross_java_lib(name, srcs, deps = [], elemental = [], **kwargs):
             srcs = srcs,
             deps = [
                 "@com_google_j2cl//:jsinterop-annotations",
-            ] + deps,
+            ] + deps + jdeps,
         )
 
         j2cl_library(

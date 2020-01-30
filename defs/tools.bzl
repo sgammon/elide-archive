@@ -10,8 +10,13 @@ load(
 )
 
 load(
+    "@bazel_tools//tools/build_defs/repo:java.bzl",
+    _java_import_external = "java_import_external",
+)
+
+load(
     "//defs:config.bzl",
-    "LOCAL",
+    _LOCAL = "LOCAL",
 )
 
 
@@ -21,47 +26,90 @@ def _process_install_deps(deps):
 
     for key in deps.keys():
         repo = deps[key]
-        if repo["type"] != "github":
-            fail("Dependencies only supports github repos, for now.")
+        if repo["type"] == "github":
+            _process_github_dep(key, repo)
+        elif repo["type"] == "java":
+            _process_java_dep(key, repo)
+        elif repo["type"] == "archive":
+            _process_archive_dep(key, repo)
         else:
-            org = repo["repo"].split("/")[0]
-            repoName = repo["repo"].split("/")[1]
+            fail(("Unrecognized dependency type: '%s' for package '%s'."
+                    % (repo["type"], key)))
 
-            if LOCAL == True and repo.get("local") != None:
-                # local override
-                if repo.get("overlay") != None:
-                    # local new
-                    native.new_local_repository(
-                        name = key,
-                        build_file = "//external:%s" % repo["overlay"],
-                        path = repo["local"])
-                else:
-                    # regular local
-                    native.local_repository(
-                        name = key,
-                        path = repo["local"])
 
+def _process_archive_dep(key, repo):
+
+    """ Process an external archive dependency. """
+
+    _http_archive(
+        name = key,
+        url = repo.get("target"),
+        urls = repo.get("targets"),
+        strip_prefix = repo.get("strip"),
+        sha256 = repo.get("seal"),
+        build_file = repo.get("overlay"),
+    )
+
+
+def _process_java_dep(key, repo):
+
+    """ Process an external Java dependency. """
+
+    _java_import_external(
+        name = key,
+        licenses = repo.get("licenses"),
+        jar_urls = repo["targets"],
+        jar_sha256 = repo.get("seal"),
+        deps = repo.get("deps", []),
+        extra_build_file_content = repo.get("inject"),
+    )
+
+
+def _process_github_dep(key, repo):
+
+    """ Process a dependency declaration from Github. """
+
+    org = repo["repo"].split("/")[0]
+    repoName = repo["repo"].split("/")[1]
+
+    if _LOCAL == True and repo.get("local") != None:
+        # local override
+        if repo.get("overlay") != None:
+            # local new
+            native.new_local_repository(
+                name = key,
+                build_file = "//external:%s" % repo["overlay"],
+                path = repo["local"])
+        else:
+            # regular local
+            native.local_repository(
+                name = key,
+                path = repo["local"])
+
+    else:
+        if repo.get("private") == True:
+            _git_repository(
+              name = key,
+              remote = "git@github.com:" + repo["repo"] + ".git",
+              commit = repo["target"],
+              shallow_since = repo.get("seal"))
+        else:
+            if repo.get("directory") != None:
+                renderedTarget = "%s/%s" % (repo["target"], repo["directory"])
             else:
-                if repo.get("private") == True:
-                    _git_repository(
-                      name = key,
-                      remote = "git@github.com:" + repo["repo"] + ".git",
-                      commit = repo["target"],
-                      shallow_since = repo.get("seal"))
-                else:
-                    if repo.get("directory") != None:
-                        renderedTarget = "%s/%s" % (repo["target"], repo["directory"])
-                    else:
-                        renderedTarget = repo["target"]
-                    _http_archive(
-                        name = key,
-                        strip_prefix = "%s-%s" % (repoName, renderedTarget),
-                        sha256 = repo.get("seal"),
-                        build_file = repo.get("overlay"),
-                        url = "https://github.com/%s/archive/%s.tar.gz" % (repo["repo"], repo["target"]))
+                renderedTarget = repo["target"]
+            _http_archive(
+                name = key,
+                strip_prefix = "%s-%s" % (repoName, renderedTarget),
+                sha256 = repo.get("seal"),
+                build_file = repo.get("overlay"),
+                url = "https://github.com/%s/archive/%s.tar.gz" % (repo["repo"], repo["target"]))
 
 
 def _github_repo(name, repo, tag, sha256 = None):
+
+    """ Declare a Github repository. """
+
     if native.existing_rule(name):
         return
 

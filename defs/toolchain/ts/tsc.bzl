@@ -1,8 +1,8 @@
 
-load(
-    "@npm_bazel_typescript//:index.bzl",
-    _ts_library = "ts_library",
-)
+#load(
+#    "@npm_bazel_typescript//:index.bzl",
+#    _ts_library = "ts_library",
+#)
 
 load(
     "//defs/toolchain/js:closure.bzl",

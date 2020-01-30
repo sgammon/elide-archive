@@ -1,17 +1,26 @@
 workspace(
-  name = "GUST",
+  name = "gust",
   managed_directories = {"@npm": ["node_modules"]})
 
 load("//defs:build.bzl", "install_dependencies")
 load("//defs:config.bzl", "CHROMIUM", "FIREFOX", "SAUCE", "GRAALVM_VERSION", "GRAALVM_JDK_VERSION")
 install_dependencies()
 
-#
-# RULES
-#
+load("//defs:workspace.bzl", "setup_workspace")
+setup_workspace()
 
+#
+# Extensions
+#
 
 ## NodeJS
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+http_archive(
+    name = "build_bazel_rules_nodejs",
+    sha256 = "591d2945b09ecc89fde53e56dd54cfac93322df3bc9d4747cb897ce67ba8cdbf",
+    urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/1.2.0/rules_nodejs-1.2.0.tar.gz"],
+)
+
 load("@build_bazel_rules_nodejs//:index.bzl",
      "node_repositories",
      "yarn_install")
@@ -42,12 +51,6 @@ rules_sass_dependencies()
 load("@rules_sass//:defs.bzl", "sass_repositories")
 sass_repositories()
 
-## J2CL
-load("@com_google_j2cl//build_defs:rules.bzl", "setup_j2cl_workspace")
-setup_j2cl_workspace(
-    #omit_org_gwtproject_gwt=True,
-    omit_com_google_jsinterop_annotations_head = True)
-
 ## Kotlin
 load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kotlin_repositories", "kt_register_toolchains")
 kotlin_repositories()
@@ -66,11 +69,7 @@ graal_bindist_repository(
 load("//defs/toolchain/java:repos.bzl", "gust_java_repositories")
 gust_java_repositories()
 
-load(
-    "@maven//:defs.bzl",
-    "pinned_maven_install",
-)
-
+load("@maven//:defs.bzl", "pinned_maven_install")
 pinned_maven_install()
 
 ## Web Testing
@@ -110,11 +109,6 @@ load("@com_google_jsinterop_generator//build_defs:repository.bzl", "load_jsinter
 load_jsinterop_generator_repo_deps()
 setup_jsinterop_generator_workspace()
 
-## Closure
-load("@io_bazel_rules_closure//closure:repositories.bzl", "rules_closure_dependencies", "rules_closure_toolchains")
-rules_closure_dependencies()
-rules_closure_toolchains()
-
 ## API Codegen
 load("@com_google_api_codegen//rules_gapic/java:java_gapic_repositories.bzl", "java_gapic_repositories")
 java_gapic_repositories()
@@ -150,4 +144,3 @@ rbe_autoconfig(name = "rbe_default")
 ## Stardoc
 load("@io_bazel_stardoc//:setup.bzl", "stardoc_repositories")
 stardoc_repositories()
-

@@ -3,19 +3,39 @@
 # Base Settings
 ##
 
-build --watchfs
+common --experimental_allow_incremental_repository_updates
 
+build --watchfs
 build --symlink_prefix=dist/
+build --nolegacy_external_runfiles
+build --disk_cache=~/.cache/bazel-disk-cache
 build --workspace_status_command=./tools/bazel_stamp_vars.sh
+build --incompatible_strict_action_env
+build --javacopt="-source 8 -target 8 -encoding UTF-8"
+build --strict_java_deps=strict
+build --use_ijars
+build --interface_shared_objects
+build --java_toolchain=@bazel_tools//tools/jdk:toolchain_java11
+build --host_java_toolchain=@bazel_tools//tools/jdk:toolchain_java11
+
+run --incompatible_strict_action_env
 
 build:ci --spawn_strategy=local
+build:ci --javabase=//defs/toolchain/java:java_runtime
 
+build:release --compilation_mode=opt
+
+build:dev --compilation_mode=dbg
 build:dev --spawn_strategy=local
 build:dev --strategy=J2cl=worker
 build:dev --strategy=Closure=worker
 build:dev --strategy=TypeScriptCompile=worker
 build:dev --experimental_persistent_javac
+build:dev --define=jdk=zulu
 build:dev --define=ZULUBASE=/Library/Java/JavaVirtualMachines/zulu-12.jdk/Contents/Home
+build:dev --javabase=//defs/toolchain/java:java_runtime
+
+run:dev --define=VERBOSE_LOGS=1 -- --node_options=--inspect-brk
 
 query --output=label_kind
 
@@ -39,6 +59,7 @@ build:remote --host_java_toolchain=@bazel_tools//tools/jdk:toolchain_hostjdk8
 build:remote --java_toolchain=@bazel_tools//tools/jdk:toolchain_hostjdk8
 build:remote --crosstool_top=@rbe_default//cc:toolchain
 build:remote --action_env=BAZEL_DO_NOT_DETECT_CPP_TOOLCHAIN=1
+build:remote --spawn_strategy=remote
 
 # Starting with Bazel 0.27.0 strategies do not need to be explicitly
 # defined. See https://github.com/bazelbuild/bazel/issues/7480
@@ -59,4 +80,6 @@ build:remote --remote_timeout=3600
 # default. You can use --google_credentials=some_file.json to use a service
 # account credential instead.
 build:remote --google_default_credentials=true
+
+try-import %workspace%/.bazelrc.user
 

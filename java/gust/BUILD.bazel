@@ -7,8 +7,21 @@ load(
     "cross_lib",
 )
 
+load(
+    "@rules_java//java:defs.bzl",
+    "java_library",
+)
+
+
+java_library(
+    name = "package-info",
+    srcs = ["package-info.java"],
+)
 
 cross_lib(
     name = "Core",
     srcs = ["Core.java"],
+    jdeps = [
+        ":package-info",
+    ],
 )

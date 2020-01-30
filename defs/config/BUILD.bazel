@@ -18,7 +18,7 @@ config_setting(
 ## Activates when we are running in debug mode.
 config_setting(
     name = "debug",
-    values = {"compilation_level": "dbg"},
+    values = {"compilation_mode": "dbg"},
     visibility = ["//visibility:public"],
 )
 
@@ -28,7 +28,7 @@ config_setting(
 ## Activates when we are running in production build mode.
 config_setting(
     name = "release",
-    values = {"compilation_level": "opt"},
+    values = {"compilation_mode": "opt"},
     visibility = ["//visibility:public"],
 )
 
@@ -38,7 +38,7 @@ config_setting(
 ## Activates when we are running in production build mode.
 config_setting(
     name = "dev",
-    values = {"compilation_level": "dbg"},
+    values = {"compilation_mode": "dbg"},
     define_values = {"dev": "enabled"},
     visibility = ["//visibility:public"],
 )

@@ -6,7 +6,6 @@ load(
     "git_repository",
 )
 
-
 DEPS = {
     # Bazel: Skylib
     "bazel_skylib": {
@@ -19,15 +18,15 @@ DEPS = {
     "io_bazel_stardoc": {
         "type": "github",
         "repo": "bazelbuild/stardoc",
-        "target": "f13e3cac7022bd8bdd32233d1dae95a56df01a51",
-        "seal": "2dc75b384cf5cf5306aa1f6530b6e629f4547182d2203cfe8196d01ee4c6c23c"},
+        "target": "7c18f436bcb2b9fa38d0a4353faacf0e2b214c4f",
+        "seal": "6cceb8bdb4b75ba7c779ef2cbb3bd81c842fb7afeeb2f3895c041393e58ef025"},
 
     # Bazel: Gazelle
     "bazel_gazelle": {
         "type": "github",
         "repo": "bazelbuild/bazel-gazelle",
-        "target": "dd3ccdc3d36a76d76215f64f1dacb2d230504a27",
-        "seal": "a1f89662ebd4c081d3e66c9560ada11d6a0c93660568a46e4a9063670d81f986"},
+        "target": "0d378ccadef1b527e3b927aabdeaae38f5d46156",
+        "seal": "95dd34badf22cd5ba2b8ccfe457774f2cfcccfe550d02eec8875f0bc479f90e7"},
 
     # Bazel: Toolchains
     "bazel_toolchains": {
@@ -36,19 +35,12 @@ DEPS = {
         "target": "b7e3d4ca4f1d34ad394d8ed53872b827d178f9a9",
         "seal": "a3d702305458418ed63479c75f0b376bad4c01da06eb9d9e35778ad8a49241aa"},
 
-    # Rules: NodeJS
-    "build_bazel_rules_nodejs": {
-        "type": "github",
-        "repo": "bazelbuild/rules_nodejs",
-        "target": "1.2.0",
-        "seal": "a74ed5df2c2437bc8a4f5b29cda3d9ad4f36f2f325cc61769b4c7653a6b76e8c"},
-
     # Rules: Closure
     "io_bazel_rules_closure": {
         "type": "github",
-        "repo": "sgammon/rules_closure",
-        "target": "06af65abad5f1351b46c93578e21147486c0b03b",
-        "seal": "80975218961db517448551bccd951e4a6d3fb8c100a8eaa134d366fc7ab832a6",
+        "repo": "bazelbuild/rules_closure",
+        "target": "614e1ebc38249c6793eab2e078bceb0fb12a1a42",
+        "seal": "de46d49c9f7ba14ed4093cc34c342f72d4a17a8af0b9c9afe5ed519b1975fc67",
         "local": "/workspace/GUST/vendor/bazel/rules_closure"},
 
     # Rules: SASS
@@ -56,14 +48,14 @@ DEPS = {
         "type": "github",
         "repo": "bazelbuild/rules_sass",
         "target": "7e798ffb0f4a6147b766ee2a62d7f18b8155452e",
-        "seal": None},
+        "seal": "bf228b61d852fd38688ca4c1b9148b6bdc888053c4a86bffc451853124f5b2b1"},
 
     # Rules: Protobuf
     "rules_proto": {
         "type": "github",
         "repo": "bazelbuild/rules_proto",
-        "target": "2c0468366367d7ed97a1f702f9cd7155ab3f73c5",
-        "seal": "73ebe9d15ba42401c785f9d0aeebccd73bd80bf6b8ac78f74996d31f2c0ad7a6"},
+        "target": "d7666ec475c1f8d4a6803cbc0a0b6b4374360868",
+        "seal": "3cd625058dc989f6fac0bf8cf7c3cac6d654052500bd8ffea15de1b47bd3d20d"},
 
     # Rules: Java
     "rules_java": {
@@ -91,15 +83,15 @@ DEPS = {
     "rules_jvm_external": {
         "type": "github",
         "repo": "bazelbuild/rules_jvm_external",
-        "target": "0a7cc6a0b6764232a0ddd31ad87b489e1d47b166",
-        "seal": "3d0e809a5a14cfe7e1071103e9e53528f2fa93e72b175fb43a8bdea74156382d"},
+        "target": "62e0a4c34a43867988bbe351fc9ede1389eb2291",
+        "seal": "b983fd7e06b751729e4cc7321b334b03c93ccfc74bf0c5ba931b9a0b7a528dd3"},
 
     # Rules: Go
     "io_bazel_rules_go": {
         "type": "github",
         "repo": "bazelbuild/rules_go",
-        "target": "3762b89ad8b1d71007a4a07b194a48d505613c15",
-        "seal": "ea0efefaab44e96ff04778fc291145096de91f619cade08b65dbdd4c46056baa"},
+        "target": "5474789768ede024a294137d8f249d5cb5b60627",
+        "seal": "ba01f366cc3bfd4fc1f0b822461af1b3e46aa9cf0952e833c1459a563b30693f"},
 
     # Rules: Web Testing
     "io_bazel_rules_webtesting": {
@@ -120,23 +112,16 @@ DEPS = {
     "io_bazel_rules_docker": {
         "type": "github",
         "repo": "bazelbuild/rules_docker",
-        "target": "50ab10c32f43724f2647b894ec13c644ef727455",
-        "seal": "c2510cf3e15340f24d8c6c57ae776ef899569bf7ef16952eeede4e9aea67cb12"},
+        "target": "77eee135e16f50d72c3197512d224a1820915b6a",
+        "seal": "a52094a81b4d413b75b1529af71ca43e4ebdc787bc40e58f3848c2630875ab14"},
 
     # Google: J2CL (Java-to-Closure)
     "com_google_j2cl": {
         "type": "github",
         "repo": "sgammon/j2cl",
-        "target": "7e23248cc36ed25f8c8866083999e62d73f767b6",
-        "seal": "e59f94fc887de6e02ed7919e6f1459a1993310964632ff87d3b53d421ab68139",
+        "target": "473aa0a2eafbebbd782f7b4da67ff6107133c7ef",
+        "seal": "7311d53272697fcf85113e0d58a8d407672067344999760246aa4f06aae7f808",
         "local": "/workspace/GUST/vendor/bazel/j2cl"},
-
-    # Google: Clutz
-    "io_angular_clutz": {
-        "type": "github",
-        "repo": "angular/clutz",
-        "target": "c11cbb41595d8274dea6dbb983e2fba07580535e",
-        "seal": None},
 
     # Google: Elemental2
     "com_google_elemental2": {
@@ -156,15 +141,15 @@ DEPS = {
     "com_google_api": {
         "type": "github",
         "repo": "googleapis/googleapis",
-        "target": "91ef2d9dd69807b0b79555f22566fb2d81e49ff9",
-        "seal": "b6cebc82e6c37b5cb01b4bcff131d325aafef854cd4336a716e5778d91a254dc"},
+        "target": "3ca2c014e24eb5111c8e7248b1e1eb833977c83d",
+        "seal": "705e55c145a1e40c61816af04d1b49ed19ecb1fa182c062d46379d367d00db66"},
 
     # Google: API (Codegen)
     "com_google_api_codegen": {
         "type": "github",
         "repo": "googleapis/gapic-generator",
-        "target": "cd919793e439d2d21505900aa08ef9f99519d8fa",
-        "seal": "117af9da41fe3a35d7576b192ff8ac309222309ad8e356bd667113e0e07e5c54"},
+        "target": "b7033a61dbfc7f1ad856b17299cf8aeb688a94f4",
+        "seal": "311e0a01fc222902de084dfb7b03a2402b64f62e139dc451c8f4b0c60fcab207"},
 
     # Google: GWT
     "org_gwtproject_gwt": {
@@ -184,8 +169,105 @@ DEPS = {
     "build_stack_rules_proto": {
         "type": "github",
         "repo": "stackb/rules_proto",
-        "target": "0a888dbeacebfe06acb7ba740e0723b1adb0dd52",
-        "seal": "966316838b6454ca2f51718d6a801f8ebf7d1d41c82a51ac24af4d92115fa323"},
+        "target": "6b334ece48828fb8e45052976d3516f808819ac7",
+        "seal": "2c62ecc133ee0400d969750a5591909a9b3839af402f9c9d148cffb0ce9b374b"},
+
+    # HTML5 Boilerplate
+    "org_html5_boilerplate": {
+        "type": "github",
+        "repo": "h5bp/html5-boilerplate",
+        "target": "36c8988392777cd3c2c6718bfa1114c79b344601",
+        "overlay": "h5bp.bzl",
+        "seal": None},
+
+    # Normalize CSS
+    "org_normalize_css": {
+        "type": "github",
+        "repo": "necolas/normalize.css",
+        "target": "fc091cce1534909334c1911709a39c22d406977b",
+        "overlay": "normalize.bzl",
+        "seal": None},
+
+    # Material Design Lite
+    "com_google_mdl": {
+        "type": "github",
+        "repo": "bloombox/material-design-lite",
+        "target": "7e10595660b9c56ab67203f8ba966cb4883e1547",
+        "overlay": "mdl.bzl",
+        "seal": "f65b744aa0865bce2f9727b1b116fadf10639b63f4b511165a2ab65afa6d1046"},
+
+    # Google: Closure Stylesheets
+    "com_google_closure_stylesheets": {
+        "type": "java",
+        "licenses": ["notice"],
+        "targets": ["https://storage.googleapis.com/bloom-software/closure-stylesheets-1.6.0-b4.jar",],
+        "seal": "364f10a71163e56e86ee5233d9080d42fd45706345dafa3ffdeb333c1ba44e2c",
+        "deps": [
+            "@args4j",
+            "@com_google_javascript_closure_compiler",
+            "@com_google_code_gson",
+            "@com_google_guava",
+            "@com_google_code_findbugs_jsr305",
+        ],
+        "inject": "\n".join([
+            "java_binary(",
+            "    name = \"ClosureCommandLineCompiler\",",
+            "    main_class = \"com.google.common.css.compiler.commandline.ClosureCommandLineCompiler\",",
+            "    output_licenses = [\"unencumbered\"],",
+            "    runtime_deps = [\":com_google_closure_stylesheets\"],",
+            ")",
+        ]),
+    },
+
+    # Google: Soy
+    "com_google_template_soy": {
+        "type": "java",
+        "licenses": ["notice"],
+        "targets": ["https://storage.googleapis.com/bloom-software/frontend/soy/soy-lib-b16.jar"],
+        "seal": "f719336079d0aa5e4c4a038f9a835c53c86d28e53887325aa98cd374d970b479",
+        "deps": [
+            "@args4j",
+            "@com_google_code_findbugs_jsr305",
+            "@com_google_code_gson",
+            "@com_google_common_html_types",
+            "@com_google_guava",
+            "@com_google_inject_extensions_guice_assistedinject",
+            "@com_google_inject_extensions_guice_multibindings",
+            "@com_google_inject_guice",
+            "@com_google_protobuf//:protobuf_java",
+            "@com_ibm_icu_icu4j",
+            "@javax_inject",
+            "@org_json",
+            "@org_ow2_asm",
+            "@org_ow2_asm_analysis",
+            "@org_ow2_asm_commons",
+            "@org_ow2_asm_util",
+        ],
+        "inject": "\n".join([
+            ("java_binary(\n" +
+             "    name = \"%s\",\n" +
+             "    main_class = \"com.google.template.soy.%s\",\n" +
+             "    output_licenses = [\"unencumbered\"],\n" +
+             "    runtime_deps = [\":com_google_template_soy\"],\n" +
+             ")\n") % (name, name)
+            for name in (
+                "SoyParseInfoGenerator",
+                "SoyToJbcSrcCompiler",
+                "SoyToJsSrcCompiler",
+                "SoyHeaderCompiler",
+                "SoyToIncrementalDomSrcCompiler",
+                "SoyToPySrcCompiler",
+            )
+        ]),
+    },
+
+    # Google: Soy (JS Sources)
+    "com_google_template_soy_jssrc": {
+        "type": "archive",
+        "format": "zip",
+        "overlay": "//closure/templates:soy_jssrc.BUILD",
+        "targets": ["https://storage.googleapis.com/bloom-software/frontend/soy/soy-jssrc-b16.jar"],
+        "seal": "1b9242a31d1c9f19261a7f723bfe0fef1b333dfb10da274a24990df6594e1927"},
 }
 
 
@@ -195,6 +277,4 @@ def _install_dependencies():
 
     dependencies(DEPS)
 
-
 install_dependencies = _install_dependencies
-
