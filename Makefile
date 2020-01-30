@@ -24,8 +24,6 @@ BAZELISK ?= $(shell which bazelisk)
 BAZELISK_ARGS ?=
 BASE_ARGS ?= --google_default_credentials=true
 
-_DEFAULT_JAVA_HOME = $(shell echo $$JAVA_HOME)
-
 
 # Flag: `COVERAGE`
 ifeq ($(COVERAGE),yes)
@@ -58,6 +56,7 @@ endif
 # Flag: `CI`
 ifeq ($(CI),yes)
 TAG += --config=ci
+_DEFAULT_JAVA_HOME = $(shell echo $$JAVA_HOME_12_X64)
 BASE_ARGS += --define=ZULUBASE=$(_DEFAULT_JAVA_HOME) --define=jdk=zulu
 else
 TAG += --config=dev

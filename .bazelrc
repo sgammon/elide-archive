@@ -11,6 +11,12 @@ build --nolegacy_external_runfiles
 build --disk_cache=~/.cache/bazel-disk-cache
 build --workspace_status_command=./tools/bazel_stamp_vars.sh
 build --incompatible_strict_action_env
+build --javacopt="-source 8 -target 8 -encoding UTF-8"
+build --strict_java_deps=strict
+build --use_ijars
+build --interface_shared_objects
+build --java_toolchain=@bazel_tools//tools/jdk:toolchain_java11
+build --host_java_toolchain=@bazel_tools//tools/jdk:toolchain_java11
 
 run --incompatible_strict_action_env
 
@@ -53,6 +59,7 @@ build:remote --host_java_toolchain=@bazel_tools//tools/jdk:toolchain_hostjdk8
 build:remote --java_toolchain=@bazel_tools//tools/jdk:toolchain_hostjdk8
 build:remote --crosstool_top=@rbe_default//cc:toolchain
 build:remote --action_env=BAZEL_DO_NOT_DETECT_CPP_TOOLCHAIN=1
+build:remote --spawn_strategy=remote
 
 # Starting with Bazel 0.27.0 strategies do not need to be explicitly
 # defined. See https://github.com/bazelbuild/bazel/issues/7480
