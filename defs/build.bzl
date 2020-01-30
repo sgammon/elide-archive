@@ -18,15 +18,15 @@ DEPS = {
     "io_bazel_stardoc": {
         "type": "github",
         "repo": "bazelbuild/stardoc",
-        "target": "f13e3cac7022bd8bdd32233d1dae95a56df01a51",
-        "seal": "2dc75b384cf5cf5306aa1f6530b6e629f4547182d2203cfe8196d01ee4c6c23c"},
+        "target": "7c18f436bcb2b9fa38d0a4353faacf0e2b214c4f",
+        "seal": "6cceb8bdb4b75ba7c779ef2cbb3bd81c842fb7afeeb2f3895c041393e58ef025"},
 
     # Bazel: Gazelle
     "bazel_gazelle": {
         "type": "github",
         "repo": "bazelbuild/bazel-gazelle",
-        "target": "dd3ccdc3d36a76d76215f64f1dacb2d230504a27",
-        "seal": "a1f89662ebd4c081d3e66c9560ada11d6a0c93660568a46e4a9063670d81f986"},
+        "target": "0d378ccadef1b527e3b927aabdeaae38f5d46156",
+        "seal": "95dd34badf22cd5ba2b8ccfe457774f2cfcccfe550d02eec8875f0bc479f90e7"},
 
     # Bazel: Toolchains
     "bazel_toolchains": {
@@ -54,8 +54,8 @@ DEPS = {
     "rules_proto": {
         "type": "github",
         "repo": "bazelbuild/rules_proto",
-        "target": "2c0468366367d7ed97a1f702f9cd7155ab3f73c5",
-        "seal": "73ebe9d15ba42401c785f9d0aeebccd73bd80bf6b8ac78f74996d31f2c0ad7a6"},
+        "target": "d7666ec475c1f8d4a6803cbc0a0b6b4374360868",
+        "seal": "3cd625058dc989f6fac0bf8cf7c3cac6d654052500bd8ffea15de1b47bd3d20d"},
 
     # Rules: Java
     "rules_java": {
@@ -83,15 +83,15 @@ DEPS = {
     "rules_jvm_external": {
         "type": "github",
         "repo": "bazelbuild/rules_jvm_external",
-        "target": "0a7cc6a0b6764232a0ddd31ad87b489e1d47b166",
-        "seal": "3d0e809a5a14cfe7e1071103e9e53528f2fa93e72b175fb43a8bdea74156382d"},
+        "target": "62e0a4c34a43867988bbe351fc9ede1389eb2291",
+        "seal": "b983fd7e06b751729e4cc7321b334b03c93ccfc74bf0c5ba931b9a0b7a528dd3"},
 
     # Rules: Go
     "io_bazel_rules_go": {
         "type": "github",
         "repo": "bazelbuild/rules_go",
-        "target": "3762b89ad8b1d71007a4a07b194a48d505613c15",
-        "seal": "ea0efefaab44e96ff04778fc291145096de91f619cade08b65dbdd4c46056baa"},
+        "target": "5474789768ede024a294137d8f249d5cb5b60627",
+        "seal": "ba01f366cc3bfd4fc1f0b822461af1b3e46aa9cf0952e833c1459a563b30693f"},
 
     # Rules: Web Testing
     "io_bazel_rules_webtesting": {
@@ -112,15 +112,15 @@ DEPS = {
     "io_bazel_rules_docker": {
         "type": "github",
         "repo": "bazelbuild/rules_docker",
-        "target": "50ab10c32f43724f2647b894ec13c644ef727455",
-        "seal": "c2510cf3e15340f24d8c6c57ae776ef899569bf7ef16952eeede4e9aea67cb12"},
+        "target": "77eee135e16f50d72c3197512d224a1820915b6a",
+        "seal": "a52094a81b4d413b75b1529af71ca43e4ebdc787bc40e58f3848c2630875ab14"},
 
     # Google: J2CL (Java-to-Closure)
     "com_google_j2cl": {
         "type": "github",
         "repo": "sgammon/j2cl",
-        "target": "df3883236f91c3675603c5cb636880c38e7b8b5a",
-        "seal": "4db10efb0a4010ac06dcc923fbb7974b69b8a06f1492de40137d8ce6ae08311c",
+        "target": "473aa0a2eafbebbd782f7b4da67ff6107133c7ef",
+        "seal": "7311d53272697fcf85113e0d58a8d407672067344999760246aa4f06aae7f808",
         "local": "/workspace/GUST/vendor/bazel/j2cl"},
 
     # Google: Elemental2
@@ -141,15 +141,15 @@ DEPS = {
     "com_google_api": {
         "type": "github",
         "repo": "googleapis/googleapis",
-        "target": "91ef2d9dd69807b0b79555f22566fb2d81e49ff9",
-        "seal": "b6cebc82e6c37b5cb01b4bcff131d325aafef854cd4336a716e5778d91a254dc"},
+        "target": "3ca2c014e24eb5111c8e7248b1e1eb833977c83d",
+        "seal": "705e55c145a1e40c61816af04d1b49ed19ecb1fa182c062d46379d367d00db66"},
 
     # Google: API (Codegen)
     "com_google_api_codegen": {
         "type": "github",
         "repo": "googleapis/gapic-generator",
-        "target": "cd919793e439d2d21505900aa08ef9f99519d8fa",
-        "seal": "117af9da41fe3a35d7576b192ff8ac309222309ad8e356bd667113e0e07e5c54"},
+        "target": "b7033a61dbfc7f1ad856b17299cf8aeb688a94f4",
+        "seal": "311e0a01fc222902de084dfb7b03a2402b64f62e139dc451c8f4b0c60fcab207"},
 
     # Google: GWT
     "org_gwtproject_gwt": {
@@ -169,8 +169,8 @@ DEPS = {
     "build_stack_rules_proto": {
         "type": "github",
         "repo": "stackb/rules_proto",
-        "target": "0a888dbeacebfe06acb7ba740e0723b1adb0dd52",
-        "seal": "966316838b6454ca2f51718d6a801f8ebf7d1d41c82a51ac24af4d92115fa323"},
+        "target": "6b334ece48828fb8e45052976d3516f808819ac7",
+        "seal": "2c62ecc133ee0400d969750a5591909a9b3839af402f9c9d148cffb0ce9b374b"},
 
     # HTML5 Boilerplate
     "org_html5_boilerplate": {
