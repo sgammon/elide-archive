@@ -9,13 +9,8 @@ load(
 
 
 bzl_library(
-    name = "js-toolchain",
+    name = "soy-toolchain",
     srcs = [
         "rules.bzl",
     ],
 )
-
-
-exports_files([
-    "tsconfig.json",
-])

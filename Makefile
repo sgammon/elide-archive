@@ -13,6 +13,7 @@ PROJECT ?= bloom-sandbox
 RBE_INSTANCE ?= default_instance
 CACHE_KEY ?= GustBuild
 
+APP ?=
 TARGETS ?= //java/... //proto/... //js/... //style/...
 TESTS ?= //javatests/...
 
@@ -70,10 +71,13 @@ endif
 
 all: devtools build test
 
-build:  ## Build all framework targets.
+b build:  ## Build all framework targets.
 	$(BAZELISK) $(BAZELISK_ARGS) build $(TAG) $(BASE_ARGS) $(BUILD_ARGS) $(TARGETS)
 
-clean:  ## Clean ephemeral targets.
+r run:  ## Run the specified target.
+	$(BAZELISK) $(BAZELISK_ARGS) run $(TAG) $(BASE_ARGS) $(BUILD_ARGS) $(APP)
+
+c clean:  ## Clean ephemeral targets.
 	$(BAZELISK) $(BAZELISK_ARGS) clean
 
 distclean:  ## Clean targets, caches and dependencies.
@@ -98,8 +102,6 @@ devtools:  ## Install local development dependencies.
 	@git submodule update --init --recursive
 
 update-deps:  ## Re-seal and update all dependencies.
-	@echo "Updating devtools..."
-	git submodule update --remote --init
 	@echo "Re-pinning Maven dependencies..."
 	$(BAZELISK) $(BAZELISK_ARGS) run @unpinned_maven//:pin
 

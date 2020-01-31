@@ -6,3 +6,9 @@ load(
     "@rules_java//java:defs.bzl",
     "java_library",
 )
+
+
+alias(
+    name = "entrypoint",
+    actual = "//java/gust/backend:backend",
+)

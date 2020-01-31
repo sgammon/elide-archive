@@ -15,7 +15,7 @@ directories:
   style
   .github
   .develop
-  node_modules
+  -node_modules
 
 targets:
   //proto/...

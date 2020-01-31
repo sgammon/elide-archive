@@ -1,0 +1,28 @@
+
+{namespace gust.backend}
+
+
+/**
+ * Base template for a generic HTML5 page. Content can be injected into the body or the head. The page title is also
+ * lifted as its own argument. This makes it a required parameter for render.
+ */
+{template .page}
+    {@param title: string}  /** Page title to specify in the head. */
+    {@param content: html}  /** HTML content to inject into the page body. */
+    {@param? head: html}  /** Head content to provide. */
+    {@param? pageClass: string}  /** CSS class string to apply to the body. */
+
+    <!doctype html>
+    <html>
+        <head>
+            <meta charset="utf-8">
+            <title>{$title}</title>
+            {if isNonnull($head)}
+              {$head}
+            {/if}
+        </head>
+        <body{if isNonnull($pageClass)}{sp}class="{$pageClass}"{/if}>
+            {$content}
+        </body>
+    </html>
+{/template}

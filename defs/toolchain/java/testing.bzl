@@ -47,10 +47,12 @@ INJECTED_TEST_DEPS = [
     "@junit_junit",
     "@org_seleniumhq_selenium_selenium_api",
     "@io_bazel_rules_webtesting//java/com/google/testing/web",
+    "//defs/toolchain/java/plugins:micronaut",
 ]
 
 INJECTED_KOTLIN_TEST_DEPS = [
     "@com_github_jetbrains_kotlin//:kotlin-test",
+    "//defs/toolchain/java/plugins:micronaut",
 ]
 
 INJECTED_MICRONAUT_TEST_DEPS = [
@@ -132,23 +134,43 @@ def _micronaut_test(name,
                     browser = False,
                     browsers = None,
                     local = True,
+                    resources = [],
+                    config = str(Label("@gust//java/gust:application.yml")),
+                    template_loader = str(Label("@gust//java/gust/backend:TemplateProvider")),
                     **kwargs):
 
     """ Run a backend test on a Micronaut app. Basically wraps a regular JDK test,
         but with injected Micronaut dependencies and plugins. """
 
     if not browser:
-        _jdk_test(
-            name = name,
-            srcs = srcs,
-            test_class = test_class,
-            deps = deps + INJECTED_MICRONAUT_DEPS + INJECTED_MICRONAUT_TEST_DEPS,
-            runtime_deps = runtime_deps + INJECTED_MICRONAUT_RUNTIME_DEPS + INJECTED_MICRONAUT_TEST_RUNTIME_DEPS,
-            **kwargs
-        )
+        if srcs[0].endswith(".kt"):
+            _kt_jvm_test(
+                name = name,
+                srcs = srcs,
+                test_class = test_class,
+                deps = dedupe_deps_((deps or DEFAULT_TEST_DEPS) + [template_loader]
+                       + INJECTED_TEST_DEPS + INJECTED_MICRONAUT_TEST_DEPS + INJECTED_KOTLIN_TEST_DEPS),
+               runtime_deps = dedupe_deps_(
+                    INJECTED_TEST_DEPS + INJECTED_MICRONAUT_RUNTIME_DEPS + runtime_deps + [template_loader]),
+                resources = resources,
+                **kwargs
+            )
+        else:
+            ensure_types_(srcs, ".java")
+            _jdk_test(
+                name = name,
+                srcs = srcs,
+                test_class = test_class,
+                deps = dedupe_deps_((deps or DEFAULT_TEST_DEPS) + [template_loader]
+                    + INJECTED_MICRONAUT_DEPS + INJECTED_MICRONAUT_TEST_DEPS),
+                runtime_deps = dedupe_deps_(
+                    INJECTED_TEST_DEPS + INJECTED_MICRONAUT_RUNTIME_DEPS + runtime_deps + [template_loader]),
+                resources = resources,
+                classpath_resources = [config],
+                **kwargs
+            )
     else:
         if srcs[0].endswith(".kt"):
-            # process as kotlin
             ensure_types_(srcs, ".kt")
             _kotlin_web_test_suite(
                 name = name,
@@ -156,12 +178,14 @@ def _micronaut_test(name,
                 test_class = test_class,
                 browsers = browsers or DEFAULT_BROWSERS,
                 local = local,
-                deps = dedupe_deps_((deps or DEFAULT_TEST_DEPS)
+                deps = dedupe_deps_((deps or DEFAULT_TEST_DEPS) + [template_loader]
                         + INJECTED_TEST_DEPS + INJECTED_MICRONAUT_TEST_DEPS + INJECTED_KOTLIN_TEST_DEPS),
+                runtime_deps = dedupe_deps_(
+                    INJECTED_TEST_DEPS + INJECTED_MICRONAUT_RUNTIME_DEPS + runtime_deps + [template_loader]),
+                resources = resources,
                 **kwargs
             )
         else:
-            # process as java
             ensure_types_(srcs, ".java")
             _java_web_test_suite(
                 name = name,
@@ -169,8 +193,12 @@ def _micronaut_test(name,
                 test_class = test_class,
                 browsers = browsers or DEFAULT_BROWSERS,
                 local = local,
-                deps = dedupe_deps_((deps or DEFAULT_TEST_DEPS)
+                deps = dedupe_deps_((deps or DEFAULT_TEST_DEPS) + [template_loader]
                                         + INJECTED_TEST_DEPS + INJECTED_MICRONAUT_TEST_DEPS),
+                runtime_deps = dedupe_deps_(
+                    INJECTED_TEST_DEPS + INJECTED_MICRONAUT_RUNTIME_DEPS + runtime_deps + [template_loader]),
+                resources = resources,
+                classpath_resources = [config],
                 **kwargs
             )
 

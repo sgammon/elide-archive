@@ -83,3 +83,13 @@ GRAALVM_VERSION = "19.3.1"
 ## ------------------------------------
 ## Specifies the version of the underlying VM JDK.
 GRAALVM_JDK_VERSION = "8"
+
+## Java version.
+## ------------------------------------
+## Sets the language level for JVM output.
+JAVA_LANGUAGE_LEVEL = "11"
+
+## Kotlin version.
+## ------------------------------------
+## Sets the Kotlin API and runtime version.
+KOTLIN_LANGUAGE_LEVEL = "1.3"

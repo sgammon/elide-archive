@@ -8,14 +8,20 @@ load(
 )
 
 
-bzl_library(
-    name = "js-toolchain",
-    srcs = [
-        "rules.bzl",
-    ],
+exports_files(glob([
+    "*.txt",
+]))
+
+filegroup(
+    name = "requirements",
+    srcs = glob(["*.txt"]),
 )
 
-
-exports_files([
-    "tsconfig.json",
-])
+bzl_library(
+    name = "python-toolchain",
+    srcs = [
+        "repos.bzl",
+        "rules.bzl",
+        "testing.bzl",
+    ],
+)

@@ -1,0 +1,6 @@
+
+micronaut:
+  views:
+    soy:
+      enabled: true
+      engine: sauce
