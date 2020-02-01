@@ -55,6 +55,7 @@ DEPS = {
         "type": "github",
         "repo": "bazelbuild/rules_proto",
         "target": "d7666ec475c1f8d4a6803cbc0a0b6b4374360868",
+        "local": "/workspace/GUST/vendor/bazel/rules_proto",
         "seal": "3cd625058dc989f6fac0bf8cf7c3cac6d654052500bd8ffea15de1b47bd3d20d"},
 
     # Rules: Python
@@ -62,6 +63,7 @@ DEPS = {
         "type": "github",
         "repo": "bazelbuild/rules_python",
         "target": "38f86fb55b698c51e8510c807489c9f4e047480e",
+        "local": "/workspace/GUST/vendor/bazel/rules_python",
         "seal": "c911dc70f62f507f3a361cbc21d6e0d502b91254382255309bc60b7a0f48de28"},
 
     # Rules: Java
@@ -69,6 +71,7 @@ DEPS = {
         "type": "github",
         "repo": "bazelbuild/rules_java",
         "target": "32ddd6c4f0ad38a54169d049ec05febc393b58fc",
+        "local": "/workspace/GUST/vendor/bazel/rules_java",
         "seal": "1969a89e8da396eb7754fd0247b7df39b6df433c3dcca0095b4ba30a5409cc9d"},
 
     # Rules: GraalVM
@@ -76,8 +79,8 @@ DEPS = {
         "type": "github",
         "repo": "sgammon/rules_graal",
         "target": "c3aef368424448593a0a72e61582855515f85961",
-        "seal": "2181d13a59cf0c25ed88f538d384773c09e6093a78ce6cc72b071f66c5e71e0b",
-        "local": "/workspace/GUST/vendor/bazel/rules_graal"},
+        "local": "/workspace/GUST/vendor/bazel/rules_graal",
+        "seal": "2181d13a59cf0c25ed88f538d384773c09e6093a78ce6cc72b071f66c5e71e0b"},
 
     # Rules: Kotlin
     "io_bazel_rules_kotlin": {

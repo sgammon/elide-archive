@@ -19,3 +19,12 @@
 [submodule "bazel-ij"]
 	path = vendor/bazel/intellij
 	url = git@github.com:bazelbuild/intellij.git
+[submodule "rules_java"]
+	path = vendor/bazel/rules_java
+	url = git@github.com:sgammon/rules_java.git
+[submodule "rules_proto"]
+	path = vendor/bazel/rules_proto
+	url = git@github.com:sgammon/rules_proto.git
+[submodule "rules_python"]
+	path = vendor/bazel/rules_python
+	url = git@github.com:sgammon/rules_python.git

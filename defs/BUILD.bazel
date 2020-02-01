@@ -12,25 +12,31 @@ stardoc(
     name = "gust-docs",
     input = "docs.bzl",
     out = "docs.md",
+    deps = [
+        "@rules_java//:bzl",
+        "@rules_proto//:bzl",
+        "@rules_python//:bzl",
+        "@io_bazel_rules_closure//:bzl",
+    ],
     symbol_names = [
         # Frontend: JS
-        "js_test",
-        "js_module",
-        "js_app",
+#        "js_test",
+#        "js_module",
+#        "js_app",
 
         # Frontend: Styles
-        "style_library",
-        "style_binary",
+#        "style_library",
+#        "style_binary",
 
         # Backend: JDK (Java/Kotlin)
-        "jdk_test",
-        "jdk_library",
-        "jdk_binary",
+#        "jdk_test",
+#        "jdk_library",
+#        "jdk_binary",
 
         # Backend: Micronaut
-        "micronaut_test",
-        "micronaut_library",
-        "micronaut_application",
+#        "micronaut_test",
+#        "micronaut_library",
+#        "micronaut_application",
 
         # Tools: Protos
         "proto",

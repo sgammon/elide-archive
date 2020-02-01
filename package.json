@@ -1,8 +1,8 @@
 {
-  "name": "GUST",
+  "name": "@elide/gust",
   "version": "1.0.0",
   "description": "The Little Framework that Could",
-  "repository": "https://github.com/sgammon/gust",
+  "repository": "https://github.com/elide-ai/gust",
   "author": "Sam Gammon <sam@momentum.io>",
   "license": "MIT",
   "scripts": {
@@ -38,7 +38,7 @@
     "svgo": "^1.3.2",
     "terser": "4.6.3",
     "tsickle": "0.38.0",
-    "typescript": "3.7.2"
+    "typescript": "3.7.5"
   },
   "dependencies": {},
   "bazelWorkspaces": {
