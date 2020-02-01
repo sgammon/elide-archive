@@ -18,7 +18,7 @@ exports_files([
 ])
 
 bzl_library(
-    name = "rules",
+    name = "style-toolchain",
     srcs = [
         "rules.bzl",
     ],

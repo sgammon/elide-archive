@@ -1,0 +1,14 @@
+
+{namespace javatests.soy.second}
+
+
+{template .helloTwice}
+    {@param context: javatests.soy.TemplateContext}
+
+    {call javatests.soy.simple.hello}
+        {param name: $context.salutation.name /}
+    {/call}
+    {call javatests.soy.simple.hello}
+        {param name: $context.salutation.name /}
+    {/call}
+{/template}

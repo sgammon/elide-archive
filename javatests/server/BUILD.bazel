@@ -4,21 +4,25 @@ package(
 
 load(
     "//defs/toolchain:backend.bzl",
+    "werkzeug_test",
+    "werkzeug_library",
+    "werkzeug_application",
     "micronaut_test",
     "micronaut_library",
     "micronaut_application",
 )
 
 
+## Server: Java
 micronaut_library(
     name = "BasicJavaController",
-    srcs = ["BasicJavaController.java"],
+    srcs = ["JavaController.java"],
     deps = ["//java/gust:Core"],
 )
 
 micronaut_library(
     name = "BasicKotlinController",
-    srcs = ["BasicKotlinController.kt"],
+    srcs = ["KotlinController.kt"],
     deps = ["//java/gust:Core"],
 )
 
@@ -32,6 +36,14 @@ micronaut_application(
 )
 
 
+## Server: Python
+werkzeug_application(
+    name = "basic_py",
+    entry_point = "basic.py",
+)
+
+
+## Tests: Micronaut
 micronaut_test(
     name = "BasicServerTest",
     srcs = ["BasicServerTest.java"],

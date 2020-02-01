@@ -10,9 +10,8 @@ load(
     _proto_library="proto_library"
 )
 
-_JSPROTO_POSTFIX = "jsproto"
-_JAVAPROTO_POSTFIX = "java_proto"
-_CLOSUREPROTO_POSTFIX = "closure_proto"
+JAVAPROTO_POSTFIX_ = "java_proto"
+CLOSUREPROTO_POSTFIX_ = "closure_proto"
 _PROTO_ROOT = "/proto"
 
 _native_proto = _proto_library
@@ -25,7 +24,7 @@ def __declare_lang_protos(name, kwargs):
     """ Declare Java and CC proto libraries. """
 
     ckwargs = {}
-    ckwargs["name"] = "%s-%s" % (name, _JAVAPROTO_POSTFIX)
+    ckwargs["name"] = "%s-%s" % (name, JAVAPROTO_POSTFIX_)
     ckwargs["deps"] = [":%s" % kwargs["name"]]
     _native_java_proto(
         **ckwargs
@@ -46,7 +45,7 @@ def __declare_closure_proto(name, kwargs):
     """ Declare a target as a Closure proto library. """
 
     ckwargs = {}
-    ckwargs["name"] = "%s-%s" % (kwargs["name"], _CLOSUREPROTO_POSTFIX)
+    ckwargs["name"] = "%s-%s" % (kwargs["name"], CLOSUREPROTO_POSTFIX_)
     ckwargs["deps"] = [":%s" % kwargs["name"]]
     _closure_proto_library(
         **ckwargs
@@ -63,8 +62,6 @@ def _proto(name, **kwargs):
     :returns: Nothing - defines rules instead.
     """
 
-    if "strip_import_prefix" not in kwargs:
-        kwargs["strip_import_prefix"] = "/proto"
     __declare_native(name, kwargs)
     __declare_closure_proto(name, kwargs)
     __declare_lang_protos(name, kwargs)
@@ -81,12 +78,10 @@ def _module(name, **kwargs):
     :returns: Nothing - defines rules instead.
     """
 
-    if "strip_import_prefix" not in kwargs:
-        kwargs["strip_import_prefix"] = "/proto"
     __declare_native(name, kwargs)
     __declare_closure_proto(name, kwargs)
     __declare_lang_protos(name, kwargs)
 
 
-proto = _proto
-proto_module = _module
+model = _proto
+model_package = _module

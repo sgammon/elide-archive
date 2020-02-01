@@ -9,7 +9,7 @@ import io.micronaut.http.annotation.Get
  * Basic Kotlin-language Micronaut controller, used for testing.
  */
 @Controller("/kotlin")
-class BasicKotlinController {
+class KotlinController {
   @Get(produces = [MediaType.TEXT_PLAIN])
   fun index(): String {
     return "Hello from Kotlin!"

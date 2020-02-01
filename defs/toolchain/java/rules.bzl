@@ -12,6 +12,12 @@ load(
 )
 
 load(
+    "//defs/toolchain:schema.bzl",
+    "JAVAPROTO_POSTFIX_",
+    "CLOSUREPROTO_POSTFIX_",
+)
+
+load(
     "//defs/toolchain:deps.bzl",
     "maven",
 )
@@ -19,6 +25,8 @@ load(
 
 INJECTED_MICRONAUT_DEPS = [
     "//defs/toolchain/java/plugins:micronaut",
+    maven("com.google.guava:guava"),
+    maven("com.google.template:soy"),
     maven("io.micronaut:micronaut-aop"),
     maven("io.micronaut:micronaut-core"),
     maven("io.micronaut:micronaut-http"),
@@ -40,6 +48,7 @@ INJECTED_MICRONAUT_DEPS = [
 ]
 
 INJECTED_MICRONAUT_RUNTIME_DEPS = [
+    "@gust//java:entrypoint",
     maven("io.micronaut:micronaut-runtime"),
 ]
 
@@ -68,7 +77,7 @@ def _ensure_types(srcs, ext):
 
 def _jdk_binary(name,
                 srcs = [],
-                deps = [],
+                deps = None,
                 data = [],
                 **kwargs):
 
@@ -98,14 +107,14 @@ def _jdk_binary(name,
 
 
 def _jdk_library(name,
-                 srcs,
-                 deps = [],
+                 srcs = [],
+                 deps = None,
                  data = [],
                  **kwargs):
 
     """ Generate a JDK binary, with support for both Java and Kotlin. """
 
-    if srcs[0].endswith(".kt"):
+    if len(srcs) > 0 and srcs[0].endswith(".kt"):
         # process as kotlin
         _ensure_types(srcs, ".kt")
         _kt_jvm_library(
@@ -129,10 +138,13 @@ def _jdk_library(name,
 
 
 def _micronaut_library(name,
-                       srcs,
+                       srcs = [],
                        deps = [],
+                       proto_deps = [],
                        runtime_deps = [],
                        data = [],
+                       templates = [],
+                       exports = [],
                        **kwargs):
 
     """ Wraps a regular JDK library with injected Micronaut dependencies and plugins. """
@@ -140,35 +152,84 @@ def _micronaut_library(name,
     _jdk_library(
         name = name,
         srcs = srcs,
-        deps = _dedupe_deps(deps + INJECTED_MICRONAUT_DEPS),
-        runtime_deps = _dedupe_deps(runtime_deps + INJECTED_MICRONAUT_RUNTIME_DEPS),
+        deps = _dedupe_deps(deps + INJECTED_MICRONAUT_DEPS) + [("%s-%s" % (
+           p, JAVAPROTO_POSTFIX_
+        )) for p in proto_deps],
+        runtime_deps = _dedupe_deps(runtime_deps + INJECTED_MICRONAUT_RUNTIME_DEPS + [
+          ("%s-java" % t) for t in templates
+        ] + [
+          ("%s-java_jcompiled" % t) for t in templates
+        ]),
+        exports = _dedupe_deps([("%s-%s" % (
+          p, JAVAPROTO_POSTFIX_
+        )) for p in proto_deps] + [
+          ("%s-java" % t) for t in templates
+        ] + [
+          ("%s-java_jcompiled" % t) for t in templates
+        ] + exports),
+        data = data,
+        **kwargs
+    )
+
+
+def _micronaut_controller(name,
+                          srcs,
+                          deps = [],
+                          protos = [],
+                          templates = [],
+                          proto_deps = [],
+                          runtime_deps = [],
+                          data = [],
+                          **kwargs):
+
+    """ Wraps a regular Micronaut JDK library which is intended to be used as a
+        controller, potentially with templates to inject. """
+
+    _micronaut_library(
+        name = name,
+        srcs = srcs,
+        proto_deps = protos,
+        templates = templates,
+        runtime_deps = runtime_deps,
         data = data,
         **kwargs
     )
 
 
 def _micronaut_application(name,
-                           main_class,
+                           main_class = None,
+                           config = str(Label("@gust//java/gust:application.yml")),
+                           template_loader = str(Label("@gust//java/gust/backend:TemplateProvider")),
                            srcs = [],
-                           deps = [],
+                           controllers = [],
+                           deps = None,
+                           proto_deps = [],
                            data = [],
+                           resources = [],
                            runtime_deps = [],
                            **kwargs):
 
     """ Wraps a regular JDK application with injected Micronaut dependencies and plugins. """
 
     if len(srcs) > 0:
-        computed_deps = _dedupe_deps(deps + INJECTED_MICRONAUT_DEPS)
+        computed_deps = _dedupe_deps(deps + INJECTED_MICRONAUT_DEPS + controllers + template_loader)
+        extra_runtime_deps = [template_loader]
     else:
         computed_deps = None
+        extra_runtime_deps = (
+            _dedupe_deps((deps or []) + INJECTED_MICRONAUT_DEPS + controllers + [template_loader]))
 
     _jdk_binary(
         name = name,
         srcs = srcs,
         deps = computed_deps,
-        runtime_deps = _dedupe_deps(runtime_deps + INJECTED_MICRONAUT_RUNTIME_DEPS),
+        runtime_deps = _dedupe_deps(runtime_deps + INJECTED_MICRONAUT_RUNTIME_DEPS + [("%s-%s" % (
+          p, JAVAPROTO_POSTFIX_
+        )) for p in proto_deps] + controllers + extra_runtime_deps),
         data = data,
-        main_class = main_class,
+        resources = resources,
+        classpath_resources = [config],
+        main_class = main_class or "gust.backend.Application",
         **kwargs
     )
 
@@ -180,4 +241,5 @@ ensure_types_ = _ensure_types
 jdk_binary = _jdk_binary
 jdk_library = _jdk_library
 micronaut_library = _micronaut_library
+micronaut_controller = _micronaut_controller
 micronaut_application = _micronaut_application

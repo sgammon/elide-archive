@@ -39,9 +39,9 @@ DEPS = {
     "io_bazel_rules_closure": {
         "type": "github",
         "repo": "bazelbuild/rules_closure",
-        "target": "614e1ebc38249c6793eab2e078bceb0fb12a1a42",
-        "seal": "de46d49c9f7ba14ed4093cc34c342f72d4a17a8af0b9c9afe5ed519b1975fc67",
-        "local": "/workspace/GUST/vendor/bazel/rules_closure"},
+        "target": "3fd839565aa5920a1420169daa3b2a230dc04395",
+        "local": "/workspace/GUST/vendor/bazel/rules_closure",
+        "seal": "a57a9fc9abdc953477e6f6617444866f3e25bb202273e3155075051cb4341054"},
 
     # Rules: SASS
     "io_bazel_rules_sass": {
@@ -56,6 +56,13 @@ DEPS = {
         "repo": "bazelbuild/rules_proto",
         "target": "d7666ec475c1f8d4a6803cbc0a0b6b4374360868",
         "seal": "3cd625058dc989f6fac0bf8cf7c3cac6d654052500bd8ffea15de1b47bd3d20d"},
+
+    # Rules: Python
+    "rules_python": {
+        "type": "github",
+        "repo": "bazelbuild/rules_python",
+        "target": "38f86fb55b698c51e8510c807489c9f4e047480e",
+        "seal": "c911dc70f62f507f3a361cbc21d6e0d502b91254382255309bc60b7a0f48de28"},
 
     # Rules: Java
     "rules_java": {
@@ -223,8 +230,8 @@ DEPS = {
     "com_google_template_soy": {
         "type": "java",
         "licenses": ["notice"],
-        "targets": ["https://storage.googleapis.com/bloom-software/frontend/soy/soy-lib-b16.jar"],
-        "seal": "f719336079d0aa5e4c4a038f9a835c53c86d28e53887325aa98cd374d970b479",
+        "targets": ["https://storage.googleapis.com/bloom-software/frontend/soy/soy-lib-b25.jar"],
+        "seal": "3222dc45b2ec908d49b595c6476b8b98be354e5c73501db4393bc90aa49313ae",
         "deps": [
             "@args4j",
             "@com_google_code_findbugs_jsr305",
@@ -265,9 +272,9 @@ DEPS = {
     "com_google_template_soy_jssrc": {
         "type": "archive",
         "format": "zip",
-        "overlay": "//closure/templates:soy_jssrc.BUILD",
-        "targets": ["https://storage.googleapis.com/bloom-software/frontend/soy/soy-jssrc-b16.jar"],
-        "seal": "1b9242a31d1c9f19261a7f723bfe0fef1b333dfb10da274a24990df6594e1927"},
+        "overlay": "@io_bazel_rules_closure//closure/templates:soy_jssrc.BUILD",
+        "targets": ["https://storage.googleapis.com/bloom-software/frontend/soy/soy-jssrc-b25.jar"],
+        "seal": "f14f8428776fa3388d7c81258ca219f38e7d74d103e7b632f77d6f70ef5d1ed2"},
 }
 
 

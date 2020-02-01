@@ -1,0 +1,21 @@
+package(
+    default_visibility = ["//visibility:public"],
+)
+
+load(
+    "@io_bazel_rules_kotlin//kotlin:kotlin.bzl",
+    "define_kt_toolchain",
+)
+
+load(
+    "//defs:config.bzl",
+    "JAVA_LANGUAGE_LEVEL",
+    "KOTLIN_LANGUAGE_LEVEL",
+)
+
+define_kt_toolchain(
+    name = "kotlin_toolchain",
+    api_version = KOTLIN_LANGUAGE_LEVEL,
+    jvm_target = JAVA_LANGUAGE_LEVEL,
+    language_version = KOTLIN_LANGUAGE_LEVEL,
+)

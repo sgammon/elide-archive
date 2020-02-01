@@ -1,0 +1,12 @@
+
+syntax = "proto3";
+package javatests.ssr;
+
+import "javatests/ssr/salutation.proto";
+
+
+// Example template context via proto.
+message Context {
+  // Salutation details.
+  Salutation salutation = 1;
+}

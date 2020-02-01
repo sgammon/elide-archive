@@ -3,20 +3,20 @@ package(
 )
 
 load(
-    "//defs:proto.bzl",
-    "proto",
-    "proto_module",
+    "//defs/toolchain:schema.bzl",
+    "model",
+    "model_package",
 )
 
 ## Core
-proto(
+model(
     name = "Datamodel",
     srcs = ["Datamodel.proto"],
     deps = ["@com_google_protobuf//:descriptor_proto"],
 )
 
 
-proto_module(
+model_package(
     name = "core",
     deps = [":Datamodel"],
 )

@@ -18,6 +18,10 @@ stardoc(
         "js_module",
         "js_app",
 
+        # Frontend: Styles
+        "style_library",
+        "style_binary",
+
         # Backend: JDK (Java/Kotlin)
         "jdk_test",
         "jdk_library",

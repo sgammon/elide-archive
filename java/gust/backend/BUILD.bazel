@@ -5,16 +5,48 @@ package(
 load(
     "//defs/toolchain/java:rules.bzl",
     "jdk_library",
+    "micronaut_library",
 )
 
+load(
+    "//defs/toolchain:templates.bzl",
+    "template_library",
+)
+
+load(
+    "//defs/toolchain:deps.bzl",
+    "maven",
+)
+
+
+template_library(
+    name = "page",
+    srcs = ["page.soy"],
+)
+
+micronaut_library(
+    name = "TemplateProvider",
+    srcs = ["TemplateProvider.kt"],
+    templates = [":page"],
+)
 
 jdk_library(
     name = "Application",
     srcs = ["Application.java"],
     deps = [
-        "@maven//:io_micronaut_micronaut_runtime",
+        maven("io.micronaut:micronaut-runtime"),
     ],
     runtime_deps = [
-        "@maven//:io_micronaut_micronaut_runtime",
+        maven("io.micronaut:micronaut-runtime"),
+    ],
+)
+
+jdk_library(
+    name = "backend",
+    runtime_deps = [
+        ":Application",
+    ],
+    exports = [
+        ":Application",
     ],
 )

@@ -12,14 +12,17 @@ load(
 
 _RULES_CLOSURE_OMIT = [
     "com_google_auto_common",
-    "com_google_closure_stylesheets",
-    "com_google_template_soy_jssrc",
     "com_google_template_soy",
+    "com_google_template_soy_jssrc",
+    "com_google_closure_stylesheets",
+    "rules_java",
+    "rules_proto",
+    "rules_python",
 ]
 
 _J2CL_CLOSURE_OMIT = [i for i in _RULES_CLOSURE_OMIT if "auto_common" not in i] + [
-    "org_gwtproject_gwt",
     "com_google_jsinterop_annotations_head",
+    "org_gwtproject_gwt",
 ]
 
 

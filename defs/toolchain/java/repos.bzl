@@ -15,6 +15,13 @@ load(
 )
 
 
+ASM_VERSION = "7.0"
+SLF4J_VERSION = "1.7.25"
+ANNOTATIONS_VERSION = "1.3.2"
+
+SOY_VERSION = "2019-10-08"
+GUAVA_VERSION = "25.1-jre"
+
 MICRONAUT_VERSION = "1.3.0.RC1"
 MICRONAUT_TEST_VERSION = "1.1.2"
 MICRONAUT_REDIS_VERSION = "1.2.0"
@@ -27,11 +34,13 @@ REPOSITORIES = [
 ]
 
 BUILD_ARTIFACTS = [
-    "org.slf4j:slf4j-jdk14:1.7.25",
-    "javax.annotation:javax.annotation-api:1.3.2",
+    "org.ow2.asm:asm:%s" % ASM_VERSION,
+    "org.slf4j:slf4j-jdk14:%s" % SLF4J_VERSION,
+    "javax.annotation:javax.annotation-api:%s" % ANNOTATIONS_VERSION,
 ]
 
 MICRONAUT_BUILD_ARTIFACTS = [
+    "com.google.guava:guava:%s" % GUAVA_VERSION,
     "io.micronaut:micronaut-aop:%s" % MICRONAUT_VERSION,
     "io.micronaut:micronaut-core:%s" % MICRONAUT_VERSION,
     "io.micronaut:micronaut-http:%s" % MICRONAUT_VERSION,
@@ -50,6 +59,7 @@ MICRONAUT_BUILD_ARTIFACTS = [
     "io.micronaut:micronaut-security:%s" % MICRONAUT_VERSION,
     "io.micronaut:micronaut-multitenancy:%s" % MICRONAUT_VERSION,
     "io.micronaut.configuration:micronaut-redis-lettuce:%s" % MICRONAUT_REDIS_VERSION,
+    maven.artifact("com.google.template", "soy", SOY_VERSION, neverlink = True),
 ]
 
 RUNTIME_ARTIFACTS = [
@@ -57,7 +67,7 @@ RUNTIME_ARTIFACTS = [
 ]
 
 MICRONAUT_RUNTIME_ARTIFACTS = [
-    "io.micronaut:micronaut-runtime:1.3.0.RC1",
+    "io.micronaut:micronaut-runtime:%s" % MICRONAUT_VERSION,
 ]
 
 TEST_ARTIFACTS = [
@@ -76,10 +86,10 @@ def _gust_java_deps(micronaut = True):
 
     artifacts = BUILD_ARTIFACTS + RUNTIME_ARTIFACTS + TEST_ARTIFACTS
     if micronaut:
-        artifacts += (
+        artifacts += [i for i in (
             MICRONAUT_BUILD_ARTIFACTS +
             MICRONAUT_RUNTIME_ARTIFACTS +
-            MICRONAUT_TEST_ARTIFACTS)
+            MICRONAUT_TEST_ARTIFACTS) if i not in artifacts]
 
     maven_install(
         artifacts = artifacts,

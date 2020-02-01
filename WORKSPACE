@@ -54,7 +54,7 @@ sass_repositories()
 ## Kotlin
 load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kotlin_repositories", "kt_register_toolchains")
 kotlin_repositories()
-kt_register_toolchains()
+register_toolchains("//defs/toolchain/kt:kotlin_toolchain")
 
 ## GraalVM
 load("@rules_graal//graal:graal_bindist.bzl", "graal_bindist_repository")
@@ -65,7 +65,7 @@ graal_bindist_repository(
   java_version = GRAALVM_JDK_VERSION,
 )
 
-## Java Testing
+## Java Repos/Deps
 load("//defs/toolchain/java:repos.bzl", "gust_java_repositories")
 gust_java_repositories()
 
@@ -144,3 +144,23 @@ rbe_autoconfig(name = "rbe_default")
 ## Stardoc
 load("@io_bazel_stardoc//:setup.bzl", "stardoc_repositories")
 stardoc_repositories()
+
+## Python
+load("@rules_python//python:repositories.bzl", "py_repositories")
+py_repositories()
+
+load("@rules_python//python:pip.bzl", "pip_repositories")
+pip_repositories()
+
+load("@rules_python//python:pip.bzl", pip_import = "pip3_import")
+
+pip_import(
+    name = "py",
+    requirements = "//defs/toolchain/python:requirements_base.txt")
+
+pip_import(
+    name = "werkzeug",
+    requirements = "//defs/toolchain/python:requirements_werkzeug.txt")
+
+load("//defs/toolchain/python:repos.bzl", "gust_python_repositories")
+gust_python_repositories()

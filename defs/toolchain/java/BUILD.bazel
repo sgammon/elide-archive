@@ -14,7 +14,7 @@ load(
 
 
 bzl_library(
-    name = "rules",
+    name = "java-toolchain",
     srcs = [
         "repos.bzl",
         "rules.bzl",

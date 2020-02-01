@@ -1,0 +1,8 @@
+
+syntax = "proto3";
+package javatests.soy;
+
+message PersonName {
+  // Someone's name.
+  string name = 1;
+}
