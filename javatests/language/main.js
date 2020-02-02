@@ -11,7 +11,7 @@ const JavaObject = goog.require('javatests.language.JavaObject');
  * @private
  */
 function main() {
-  console.log(`Hello from Gust, version ${Core.getVersion()}!`);
+  console.log(`Hello from Gust, version ${Core.getGustVersion()}!`);
   console.log(`Also, hello from ${JavaObject.hello()}`);
 }
 

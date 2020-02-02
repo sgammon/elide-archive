@@ -13,6 +13,6 @@ public class DualStackTest {
   public void testDualStackObject() {
     assertNotNull(
       "Core object should produce version",
-      Core.getVersion());
+      Core.getGustVersion());
   }
 }

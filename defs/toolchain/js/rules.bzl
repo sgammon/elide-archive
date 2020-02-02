@@ -13,15 +13,23 @@ load(
     _closure_js_deps = "closure_js_deps",
 )
 
+load(
+    "//defs/toolchain/context:props.bzl",
+    _annotate_defs_dict = "annotate_defs_dict",
+    _annotate_defs_flags = "annotate_defs_flags",
+)
 
-def _js_test(name, srcs = None, deps = None, **kwargs):
+
+def _js_test(name, srcs = None, deps = None, defs = {}, **kwargs):
 
     """ Build a closure JS test. """
 
+    overlay_defs = _annotate_defs_flags(defs)
     _closure_js_test(
         name = name,
         srcs = srcs or [],
         deps = (deps or []) + ["@io_bazel_rules_closure//closure/library:testing"],
+        defs = overlay_defs,
         **kwargs
     )
 
@@ -42,9 +50,13 @@ def _js_app(name,
             entry_points,
             modules = None,
             deps = None,
+            defs = {},
+            flags = [],
             **kwargs):
 
     """ Build a combined frontend application target. """
+
+    overlay_defs = _annotate_defs_dict(defs)
 
     _j2cl_application(
         name = name,
@@ -52,6 +64,8 @@ def _js_app(name,
         deps = deps,
         rewrite_polyfills = True,
         dependency_mode = "PRUNE",
+        extra_flags = flags,
+        closure_defines = overlay_defs,
         **kwargs
     )
 
