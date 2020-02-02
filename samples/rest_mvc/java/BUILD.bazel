@@ -1,0 +1,17 @@
+
+load(
+    "@gust//defs/toolchain:backend.bzl",
+    "micronaut_controller",
+    "micronaut_application",
+)
+
+
+micronaut_controller(
+    name = "SampleController",
+    srcs = ["SampleController.kt"],
+)
+
+micronaut_application(
+    name = "MicronautMVCSample",
+    controllers = [":SampleController"],
+)
