@@ -13,6 +13,7 @@ directories:
   tools
   types
   style
+  samples
   .github
   .develop
   -node_modules

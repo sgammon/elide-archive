@@ -10,6 +10,7 @@ load(
     "setup_j2cl_workspace",
 )
 
+
 _RULES_CLOSURE_OMIT = [
     "com_google_auto_common",
     "com_google_template_soy",

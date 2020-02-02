@@ -30,7 +30,7 @@ load(
 
 
 INJECTED_MICRONAUT_DEPS = [
-    "//defs/toolchain/java/plugins:micronaut",
+    "@gust//defs/toolchain/java/plugins:micronaut",
     maven("com.google.guava:guava"),
     maven("com.google.template:soy"),
     maven("io.micronaut:micronaut-aop"),
