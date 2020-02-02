@@ -51,4 +51,12 @@ public class BasicServerTest {
     String response = client.toBlocking().retrieve(HttpRequest.GET("/kotlin"));
     assertEquals("response from Kotlin controller should be expected string", "Hello from Kotlin!", response);
   }
+
+  @Test
+  public void testVersionBackend() {
+    assertNotNull("should have access to injected HTTP client", client);
+    assertNotNull("should have access to injected HTTP server", server);
+    String response = client.toBlocking().retrieve(HttpRequest.GET("/version"));
+    assertNotEquals("response from version output controller should not be default", "alpha", response);
+  }
 }

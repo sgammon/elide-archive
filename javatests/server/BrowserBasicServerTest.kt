@@ -15,6 +15,7 @@ import org.openqa.selenium.WebDriver
 
 import kotlin.test.assertNotNull
 import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
 
 
 /**
@@ -87,6 +88,21 @@ class BrowserBasicServerTest {
       "Hello from Kotlin!",
       driver?.title,
       "HTML page title from Kotlin controller should contain expected title string")
+    driver?.quit()
+    result.stop()
+  }
+
+  @Test
+  fun testLoadVersionFromBrowser() {
+    val result = ApplicationContext.run().start()
+    val wt = WebTest()
+    assertNotNull(driver) { "should have access to WebDriver" }
+    assertNotNull(server) { "should have access to injected HTTP server" }
+    driver?.get(wt.HTTPAddress().resolve(server.url.toString() + "/version").toString())
+    assertNotEquals(
+      "alpha",
+      driver?.pageSource,
+      "page source for version endpoint should not be default string")
     driver?.quit()
     result.stop()
   }

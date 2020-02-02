@@ -30,6 +30,11 @@ load(
 )
 
 load(
+    "//defs/toolchain/context:props.bzl",
+    _annotate_jvm_flags = "annotate_jvm_flags",
+)
+
+load(
     "//defs/toolchain:deps.bzl",
     "maven",
 )
@@ -72,10 +77,13 @@ def _browser_test_java(name,
                        test_class,
                        deps = None,
                        browsers = None,
-                       local = True):
+                       local = True,
+                       jvm_flags = []):
 
     """ Run a full-stack test using `WebDriver`, and a Java test spec.
         Uses the default set of browsers if unspecified (Chromium and Gecko). """
+
+    computed_jvm_flags = _annotate_jvm_flags([i for i in jvm_flags])
 
     _java_library(
         name = "%s-java" % name,
@@ -90,6 +98,7 @@ def _browser_test_java(name,
         browsers = browsers or DEFAULT_BROWSERS,
         local = local,
         deps = dedupe_deps_((deps or DEFAULT_TEST_DEPS) + INJECTED_TEST_DEPS),
+        jvm_flags = computed_jvm_flags,
     )
 
 
@@ -98,9 +107,12 @@ def _jdk_test(name,
               test_class,
               deps = [],
               runtime_deps = [],
+              jvm_flags = [],
               **kwargs):
 
     """ Wrap a regular Java test so it can support Kotlin. """
+
+    computed_jvm_flags = _annotate_jvm_flags([i for i in jvm_flags])
 
     if srcs[0].endswith(".kt"):
         # process as kotlin
@@ -111,6 +123,7 @@ def _jdk_test(name,
             test_class = test_class,
             deps = dedupe_deps_(deps),
             runtime_deps = dedupe_deps_(runtime_deps),
+            jvm_flags = computed_jvm_flags,
             **kwargs
         )
 
@@ -122,6 +135,7 @@ def _jdk_test(name,
             test_class = test_class,
             deps = dedupe_deps_(deps),
             runtime_deps = dedupe_deps_(runtime_deps),
+            jvm_flags = computed_jvm_flags,
             **kwargs
         )
 

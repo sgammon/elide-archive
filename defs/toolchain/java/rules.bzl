@@ -20,6 +20,7 @@ load(
 load(
     "//defs/toolchain/context:props.bzl",
     _annotate_defs_dict = "annotate_defs_dict",
+    _annotate_jvm_flags = "annotate_jvm_flags",
 )
 
 load(
@@ -218,14 +219,7 @@ def _micronaut_application(name,
 
     """ Wraps a regular JDK application with injected Micronaut dependencies and plugins. """
 
-    overlay_defs = _annotate_defs_dict(defs)
-    computed_jvm_flags = [i for i in jvm_flags]
-    for define in overlay_defs.keys():
-        val = overlay_defs[define]
-        if type(val) == bool:
-            computed_jvm_flags.append("-D%s=%s" % (define, (val and "true") or "false"))
-        else:
-            computed_jvm_flags.append("-D%s=%s" % (define, val))
+    computed_jvm_flags = _annotate_jvm_flags([i for i in jvm_flags], defs)
 
     if len(srcs) > 0:
         computed_deps = _dedupe_deps(deps + INJECTED_MICRONAUT_DEPS + controllers + template_loader)

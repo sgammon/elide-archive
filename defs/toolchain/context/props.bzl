@@ -79,5 +79,22 @@ def _annotate_defs_flags(props, override = {}):
     return _dedupe(BASE_CLOSURE_FLAGS + flags)
 
 
+def _annotate_jvm_flags(flags, defs = {}, override = {}):
+
+    """ Annotate an existing set of flags, and a defs dictionary, with the provided properties, default state, and any
+        overrides specified. The resulting set of flags should be suitable for use with invocation of a Java binary. """
+
+    computed_jvm_flags = [i for i in flags]
+    overlay_defs = _annotate_defs_dict(defs, override)
+    for define in overlay_defs.keys():
+        val = overlay_defs[define]
+        if type(val) == bool:
+            computed_jvm_flags.append("-D%s=%s" % (define, (val and "true") or "false"))
+        else:
+            computed_jvm_flags.append("-D%s=%s" % (define, val))
+    return computed_jvm_flags
+
+
+annotate_jvm_flags = _annotate_jvm_flags
 annotate_defs_dict = _annotate_defs_dict
 annotate_defs_flags = _annotate_defs_flags
