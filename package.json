@@ -1,6 +1,6 @@
 {
-  "name": "GUST",
-  "version": "1.0.0",
+  "name": "@elide-ai/gust",
+  "version": "1.0.0-alpha1",
   "description": "The Little Framework that Could",
   "repository": "https://github.com/sgammon/gust",
   "author": "Sam Gammon <sam@momentum.io>",
