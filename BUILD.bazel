@@ -3,6 +3,10 @@ package(
 )
 
 
+exports_files([
+    "maven_install.json",
+])
+
 alias(
     name = "tsconfig.json",
     actual = "//defs/toolchain/js:tsconfig.json",

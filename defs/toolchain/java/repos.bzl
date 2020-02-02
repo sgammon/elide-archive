@@ -94,7 +94,7 @@ def _gust_java_deps(micronaut = True):
     maven_install(
         artifacts = artifacts,
         repositories = REPOSITORIES,
-        maven_install_json = "@//:maven_install.json",
+        maven_install_json = "@gust//:maven_install.json",
         generate_compat_repositories = True,
     )
 
