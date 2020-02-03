@@ -35,6 +35,7 @@ jdk_library(
     srcs = ["Application.java"],
     deps = [
         maven("io.micronaut:micronaut-runtime"),
+        maven("com.google.code.findbugs:jsr305"),
     ],
     runtime_deps = [
         maven("io.micronaut:micronaut-runtime"),

@@ -25,6 +25,7 @@ load(
 
 exports_files([
     "application.yml",
+    "log4j2.xml",
 ])
 
 java_library(

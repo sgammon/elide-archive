@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="INFO">
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout
+                    pattern="%d{HH:mm:ss} %highlight{[%level]: %msg%n}{FATAL=white, ERROR=red, WARN=yellow, INFO=cyan, DEBUG=magenta, TRACE=blue}"/>
+        </Console>
+    </Appenders>
+    <Loggers>
+        <Root level="DEBUG">
+            <AppenderRef ref="STDOUT"/>
+        </Root>
+        <Logger name="io.micronaut.context.condition" level="DEBUG"/>
+        <Logger name="io.micronaut.runtime.Micronaut" level="DEBUG" />
+        <!--        <Logger level="trace" name="io.micronaut.views.soy.SoySauceViewsRenderer">-->
+        <!--            <AppenderRef ref="STDOUT" />-->
+        <!--        </Logger>-->
+        <!--        <Logger level="trace" name="io.micronaut.views.soy.SoyResponseBuffer">-->
+        <!--            <AppenderRef ref="STDOUT" />-->
+        <!--        </Logger>-->
+        <!--        <Logger level="trace" name="io.micronaut.views.soy.SoyRender">-->
+        <!--            <AppenderRef ref="STDOUT" />-->
+        <!--        </Logger>-->
+        <!--        <Logger name="io.micronaut.http.server.netty.RoutingInBoundHandler" level="trace">-->
+        <!--            <AppenderRef ref="STDOUT" />-->
+        <!--        </Logger>-->
+    </Loggers>
+</Configuration>
