@@ -18,15 +18,22 @@ load(
 )
 
 load(
+    "//defs/toolchain/context:props.bzl",
+    _annotate_defs_dict = "annotate_defs_dict",
+    _annotate_jvm_flags = "annotate_jvm_flags",
+)
+
+load(
     "//defs/toolchain:deps.bzl",
     "maven",
 )
 
 
 INJECTED_MICRONAUT_DEPS = [
-    "//defs/toolchain/java/plugins:micronaut",
+    "@gust//defs/toolchain/java/plugins:micronaut",
     maven("com.google.guava:guava"),
     maven("com.google.template:soy"),
+    maven("com.google.code.findbugs:jsr305"),
     maven("io.micronaut:micronaut-aop"),
     maven("io.micronaut:micronaut-core"),
     maven("io.micronaut:micronaut-http"),
@@ -49,6 +56,7 @@ INJECTED_MICRONAUT_DEPS = [
 
 INJECTED_MICRONAUT_RUNTIME_DEPS = [
     "@gust//java:entrypoint",
+    maven("org.slf4j:slf4j-jdk14"),
     maven("io.micronaut:micronaut-runtime"),
 ]
 
@@ -200,6 +208,7 @@ def _micronaut_application(name,
                            main_class = None,
                            config = str(Label("@gust//java/gust:application.yml")),
                            template_loader = str(Label("@gust//java/gust/backend:TemplateProvider")),
+                           logging_config = str(Label("@gust//java/gust:logback.xml")),
                            srcs = [],
                            controllers = [],
                            deps = None,
@@ -207,9 +216,13 @@ def _micronaut_application(name,
                            data = [],
                            resources = [],
                            runtime_deps = [],
+                           jvm_flags = [],
+                           defs = {},
                            **kwargs):
 
     """ Wraps a regular JDK application with injected Micronaut dependencies and plugins. """
+
+    computed_jvm_flags = _annotate_jvm_flags([i for i in jvm_flags], defs)
 
     if len(srcs) > 0:
         computed_deps = _dedupe_deps(deps + INJECTED_MICRONAUT_DEPS + controllers + template_loader)
@@ -228,8 +241,9 @@ def _micronaut_application(name,
         )) for p in proto_deps] + controllers + extra_runtime_deps),
         data = data,
         resources = resources,
-        classpath_resources = [config],
+        classpath_resources = [config, logging_config],
         main_class = main_class or "gust.backend.Application",
+        jvm_flags = computed_jvm_flags,
         **kwargs
     )
 

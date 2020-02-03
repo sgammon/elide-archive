@@ -11,12 +11,13 @@ import jsinterop.annotations.JsType;
 @JsType
 public class Core {
   /**
-   * Retrieve the application version setting, which is applied via the JVM system property
-   * <pre>`APP_VERSION</pre>.
+   * Retrieve the application version setting, which is applied via the JVM system property <pre>gust.version</pre>.
+   * This value also shows up in frontend libraries as <pre>gust.version</pre>. The default value for this property, if
+   * left unspecified by the runtime, is `alpha`.
    *
    * @return Version assigned for the currently-running application.
    **/
-  public static String getVersion() {
-    return System.getProperty("APP_VERSION", "alpha-1b0");
+  public static String getGustVersion() {
+    return System.getProperty("GUST_VERSION", "alpha");
   }
 }

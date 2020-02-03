@@ -29,6 +29,7 @@ cross_lib(
     name = "DomOperation",
     srcs = ["DomOperation.java"],
     elemental = ["dom"],
+    deps = ["//java/gust:Core"],
 )
 
 js_test(
@@ -36,7 +37,7 @@ js_test(
     srcs = ["dom_test.js"],
     deps = [
         ":DomOperation-j2cl",
-        "//java/gust:Core-j2cl",
+        "//java/gust:core",
         closure("dom"),
         closure("dom", "TagName"),
     ],

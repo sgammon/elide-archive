@@ -53,28 +53,28 @@
     "@bazel/buildifier-win32_x64" "0.29.0"
 
 "@bazel/hide-bazel-files@latest":
-  version "1.2.1"
-  resolved "https://registry.yarnpkg.com/@bazel/hide-bazel-files/-/hide-bazel-files-1.2.1.tgz#4d43f9791d9290c29137153fe853d5cadb308b66"
-  integrity sha512-4oRMB/+yPVxOYX4EVL0ezinbgWaFVWOFajpAkoNlPD3n2hHcOqUXbyB9SojJMuG6f/Ic468XOWhD/gnyr9XkcA==
+  version "1.2.4"
+  resolved "https://registry.yarnpkg.com/@bazel/hide-bazel-files/-/hide-bazel-files-1.2.4.tgz#fe00f2bbceb8e1a17bedde7616bef4810849c7f5"
+  integrity sha512-KZX4MkJOMtZT1DwFmjCWJNCUKcwbYBrv3Q++peoWkzJPcHGbt5nLFjt8Gzagi2GY7GRqp8WAut0E+eOGdhvkEg==
 
 "@bazel/ibazel@latest":
   version "0.11.1"
   resolved "https://registry.yarnpkg.com/@bazel/ibazel/-/ibazel-0.11.1.tgz#c07ceaded388f1e39d6aa732953e0dd04f3dbdf0"
   integrity sha512-qAdEquFAudYyN+CYfLzvuRWNubdsh6C8+o5CiViUEfchq1HQM5Rs8xAOE3fzGsTZ1EUsvgca/PY0kn0VIxckBA==
 
-"@bazel/jasmine@latest":
-  version "1.2.1"
-  resolved "https://registry.yarnpkg.com/@bazel/jasmine/-/jasmine-1.2.1.tgz#1da301b68f74387fbf92f568018d74d6a6df12a5"
-  integrity sha512-5XFOwbzHeRJWLRgxmUDUYtoR9ro88hsRRMbR5+QyHUpEDz9JepJPf0YEtztqCMgWhdC+CxWb83KURHsunD/79w==
+"@bazel/jasmine@^1.2.4":
+  version "1.2.4"
+  resolved "https://registry.yarnpkg.com/@bazel/jasmine/-/jasmine-1.2.4.tgz#ab065a7651f33e4580029f510f17e279069ac14c"
+  integrity sha512-dcW/9xP+QVkdCbYF4RI4oeDtXwuIl+8lYS63Mk/HIfpMVCskSXFsa/HxHv3h6I5ZJyLJmof3grKqvHmm5eHtXw==
   dependencies:
     jasmine "~3.4.0"
     jasmine-core "~3.4.0"
     v8-coverage "1.0.9"
 
-"@bazel/karma@latest":
-  version "1.2.1"
-  resolved "https://registry.yarnpkg.com/@bazel/karma/-/karma-1.2.1.tgz#e8327ed5810023cfab5adf436fe401b2ad1b8d0b"
-  integrity sha512-2PRvX0u3T+rZMYZmwyeNdSq1b6QAfNgbqzJZvm1brGRs1q1BgZLRhUjy7DD0+6+3HKrXuQVqa7JZVi8N2Ks5ew==
+"@bazel/karma@^1.2.4":
+  version "1.2.4"
+  resolved "https://registry.yarnpkg.com/@bazel/karma/-/karma-1.2.4.tgz#f53b1d5079299b5adc6a5096d8d3ddc2b7810d7d"
+  integrity sha512-D3moHSUQKzQB/z360z605g2ySzywHtR/K1SpzNSwUygj2Mfth1sPlBQPi7/GLKPhp8mQ7ueN75E9O+5HgQGd1A==
   dependencies:
     tmp "0.1.0"
 
@@ -86,15 +86,15 @@
     buffer-from "^1.0.0"
     source-map "^0.6.0"
 
-"@bazel/terser@latest":
-  version "1.2.1"
-  resolved "https://registry.yarnpkg.com/@bazel/terser/-/terser-1.2.1.tgz#3f1e6a259c5a8005c6a7c10b1ae9b7e98a4d1171"
-  integrity sha512-k7ZWatfXO1bu6D1f9JN1cpXpWpBOHaUlG9s0hRpUqIdwM+JO4bUyiZEFvyX6oKgtZQjAhdKQjA/3NlF/1+voKw==
+"@bazel/terser@^1.2.4":
+  version "1.2.4"
+  resolved "https://registry.yarnpkg.com/@bazel/terser/-/terser-1.2.4.tgz#cf035e5da76bf4ce0895a4cbdabe096bf19c28ad"
+  integrity sha512-ksCs1IuQavga13pq6OrGMozn/youzc45G6rpr/B8hpOiexJQxUXkNWr4JdjHd4bqL9DWSkCVqiTHKTqR/029KQ==
 
-"@bazel/typescript@latest":
-  version "1.2.1"
-  resolved "https://registry.yarnpkg.com/@bazel/typescript/-/typescript-1.2.1.tgz#a83ecebe48f32c2443879a85f0766dab386ff9d3"
-  integrity sha512-RKgOWos1Ya7XoSUZOV/A8+LS4ZmCvIXv363w4xNdObKjwKFqSdOfsS+uYaVr8g5e0T24jl52QnbdS7i0eUJBqA==
+"@bazel/typescript@^1.2.4":
+  version "1.2.4"
+  resolved "https://registry.yarnpkg.com/@bazel/typescript/-/typescript-1.2.4.tgz#ce8043a2c0d52431c944dbac0e15a31c0c09abed"
+  integrity sha512-2KEwVhnN0gIvbUD1Av/OFFWEcyygXGiv/4Cjj4mUY/HzArT2RLt8QmB1Fc5SpiLn6I/jZSCW1J9WB2LZ8/j+YQ==
   dependencies:
     protobufjs "6.8.8"
     semver "5.6.0"
@@ -176,10 +176,10 @@
   resolved "https://registry.yarnpkg.com/@types/node/-/node-10.17.14.tgz#b6c60ebf2fb5e4229fdd751ff9ddfae0f5f31541"
   integrity sha512-G0UmX5uKEmW+ZAhmZ6PLTQ5eu/VPaT+d/tdLd5IFsKRPcbe6lPxocBtcYBFSaLaCW8O60AX90e91Nsp8lVHCNw==
 
-"@types/node@^13.5.0":
-  version "13.5.2"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-13.5.2.tgz#3de53b55fd39efc428a901a0f6db31f761cfa131"
-  integrity sha512-Fr6a47c84PRLfd7M7u3/hEknyUdQrrBA6VoPmkze0tcflhU5UnpWEX2kn12ktA/lb+MNHSqFlSiPHIHsaErTPA==
+"@types/node@^13.7.0":
+  version "13.7.0"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-13.7.0.tgz#b417deda18cf8400f278733499ad5547ed1abec4"
+  integrity sha512-GnZbirvmqZUzMgkFn70c74OQpTTUcCzlhQliTzYjQMqg+hVKcDnxdL19Ne3UdYzdMA/+W3eb646FWn/ZaT1NfQ==
 
 "@types/q@^1.5.1":
   version "1.5.2"

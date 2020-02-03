@@ -29,7 +29,6 @@ js_module(
     ],
 )
 
-
 js_app(
     name = "example",
     entry_points = ["main"],

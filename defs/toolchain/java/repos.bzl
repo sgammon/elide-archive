@@ -16,11 +16,12 @@ load(
 
 
 ASM_VERSION = "7.0"
-SLF4J_VERSION = "1.7.25"
+SLF4J_VERSION = "1.7.26"
 ANNOTATIONS_VERSION = "1.3.2"
 
 SOY_VERSION = "2019-10-08"
 GUAVA_VERSION = "25.1-jre"
+FINDBUGS_VERSION = "3.0.2"
 
 MICRONAUT_VERSION = "1.3.0.RC1"
 MICRONAUT_TEST_VERSION = "1.1.2"
@@ -35,12 +36,13 @@ REPOSITORIES = [
 
 BUILD_ARTIFACTS = [
     "org.ow2.asm:asm:%s" % ASM_VERSION,
-    "org.slf4j:slf4j-jdk14:%s" % SLF4J_VERSION,
+    "org.slf4j:slf4j-api:%s" % SLF4J_VERSION,
     "javax.annotation:javax.annotation-api:%s" % ANNOTATIONS_VERSION,
 ]
 
 MICRONAUT_BUILD_ARTIFACTS = [
     "com.google.guava:guava:%s" % GUAVA_VERSION,
+    "com.google.code.findbugs:jsr305:%s" % FINDBUGS_VERSION,
     "io.micronaut:micronaut-aop:%s" % MICRONAUT_VERSION,
     "io.micronaut:micronaut-core:%s" % MICRONAUT_VERSION,
     "io.micronaut:micronaut-http:%s" % MICRONAUT_VERSION,
@@ -64,6 +66,7 @@ MICRONAUT_BUILD_ARTIFACTS = [
 
 RUNTIME_ARTIFACTS = [
     # No base runtime artifacts yet.
+    "org.slf4j:slf4j-jdk14:%s" % SLF4J_VERSION,
 ]
 
 MICRONAUT_RUNTIME_ARTIFACTS = [
@@ -94,7 +97,7 @@ def _gust_java_deps(micronaut = True):
     maven_install(
         artifacts = artifacts,
         repositories = REPOSITORIES,
-        maven_install_json = "@//:maven_install.json",
+        maven_install_json = "@gust//:maven_install.json",
         generate_compat_repositories = True,
     )
 

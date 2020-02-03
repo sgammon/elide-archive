@@ -14,10 +14,10 @@ DEBUG = True
 ## Set to `True` to enable in-page dev tools and UI, regardless of DEBUG mode.
 DEV = True
 
-## Application version tag.
+## Framework version tag.
 ## ------------------------------------
 ## Displayed in certain areas of the app, mostly when `DEV` is active.
-VERSION = "alpha-1b0"
+VERSION = "1.0.0-alpha1"
 
 ## `Renaming` mode.
 ## ------------------------------------

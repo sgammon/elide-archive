@@ -26,12 +26,19 @@ micronaut_library(
     deps = ["//java/gust:Core"],
 )
 
+micronaut_library(
+    name = "VersionController",
+    srcs = ["VersionController.kt"],
+    deps = ["//java/gust:Core"],
+)
+
 micronaut_application(
     name = "BasicTestApplication",
     main_class = "gust.backend.Application",
-    runtime_deps = [
+    controllers = [
         ":BasicJavaController",
         ":BasicKotlinController",
+        ":VersionController",
     ],
 )
 
@@ -51,6 +58,7 @@ micronaut_test(
     deps = [
         ":BasicJavaController",
         ":BasicKotlinController",
+        ":VersionController",
     ],
 )
 
@@ -62,5 +70,6 @@ micronaut_test(
     deps = [
         ":BasicJavaController",
         ":BasicKotlinController",
+        ":VersionController",
     ],
 )

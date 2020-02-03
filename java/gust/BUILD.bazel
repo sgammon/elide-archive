@@ -8,6 +8,16 @@ load(
 )
 
 load(
+    "@com_google_j2cl//build_defs:rules.bzl",
+    "j2cl_library",
+)
+
+load(
+    "//defs/toolchain:frontend.bzl",
+    "js_module",
+)
+
+load(
     "@rules_java//java:defs.bzl",
     "java_library",
 )
@@ -15,6 +25,7 @@ load(
 
 exports_files([
     "application.yml",
+    "logback.xml",
 ])
 
 java_library(
@@ -22,10 +33,28 @@ java_library(
     srcs = ["package-info.java"],
 )
 
+js_module(
+    name = "CoreModule",
+    srcs = ["module.js"],
+)
+
 cross_lib(
     name = "Core",
-    srcs = ["Core.java"],
+    srcs = [
+        "Core.java",
+    ],
     jdeps = [
         ":package-info",
     ],
+    jsdeps = [
+        ":CoreModule",
+    ]
+)
+
+js_module(
+    name = "core",
+    exports = [
+        ":Core-j2cl",
+        ":CoreModule",
+    ]
 )
