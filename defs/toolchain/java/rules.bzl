@@ -56,6 +56,7 @@ INJECTED_MICRONAUT_DEPS = [
 
 INJECTED_MICRONAUT_RUNTIME_DEPS = [
     "@gust//java:entrypoint",
+    maven("org.slf4j:slf4j-jdk14"),
     maven("io.micronaut:micronaut-runtime"),
 ]
 
@@ -207,7 +208,7 @@ def _micronaut_application(name,
                            main_class = None,
                            config = str(Label("@gust//java/gust:application.yml")),
                            template_loader = str(Label("@gust//java/gust/backend:TemplateProvider")),
-                           logging_config = str(Label("@gust//java/gust:log4j2.xml")),
+                           logging_config = str(Label("@gust//java/gust:logback.xml")),
                            srcs = [],
                            controllers = [],
                            deps = None,

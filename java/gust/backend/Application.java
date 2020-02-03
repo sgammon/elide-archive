@@ -20,7 +20,7 @@ public class Application {
   private static final String defaultConfig = "/gust" + rootConfig;
 
   /** Root logging configuration for a Micronaut app. */
-  private static final String loggingConfig = "/log4j2.xml";
+  private static final String loggingConfig = "/logback.xml";
 
   /** Default configuration provided by Gust. */
   private static final String defaultLoggingConfig = "/gust" + loggingConfig;
@@ -64,7 +64,6 @@ public class Application {
       loadConfig("app", rootConfig, defaultConfig);
       loadConfig("logging", loggingConfig, defaultLoggingConfig);
       Micronaut.run(Application.class);
-      System.out.println("Started Micronaut application on port 8080...");
     } catch (Throwable ex) {
       System.err.println("Uncaught exception: " + ex.getMessage());
       ex.printStackTrace(System.err);
