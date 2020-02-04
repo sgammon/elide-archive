@@ -23,7 +23,7 @@ SOY_VERSION = "2019-10-08"
 GUAVA_VERSION = "25.1-jre"
 FINDBUGS_VERSION = "3.0.2"
 
-MICRONAUT_VERSION = "1.3.0.RC1"
+MICRONAUT_VERSION = "1.3.0"
 MICRONAUT_TEST_VERSION = "1.1.2"
 MICRONAUT_REDIS_VERSION = "1.2.0"
 
@@ -32,6 +32,7 @@ REPOSITORIES = [
     "https://jcenter.bintray.com/",
     "https://maven.google.com",
     "https://repo1.maven.org/maven2",
+    "https://dl.bintray.com/micronaut/core-releases-local",
 ]
 
 BUILD_ARTIFACTS = [
