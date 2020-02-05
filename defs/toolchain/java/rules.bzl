@@ -269,7 +269,7 @@ def _micronaut_application(name,
         _container_push(
             name = "%s-image-push" % name,
             image = ":%s-image" % name,
-#            tag = tag or "{BUILD_SCM_VERSION}",
+            tag = tag or "{BUILD_SCM_VERSION}",
             format = image_format,
             repository = repository,
             registry = registry,
