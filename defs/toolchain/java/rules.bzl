@@ -24,6 +24,16 @@ load(
 )
 
 load(
+    "@io_bazel_rules_docker//java:image.bzl",
+    _java_image = "java_image",
+)
+
+load(
+    "@io_bazel_rules_docker//container:push.bzl",
+    _container_push = "container_push",
+)
+
+load(
     "//defs/toolchain:deps.bzl",
     "maven",
 )
@@ -209,8 +219,12 @@ def _micronaut_application(name,
                            config = str(Label("@gust//java/gust:application.yml")),
                            template_loader = str(Label("@gust//java/gust/backend:TemplateProvider")),
                            logging_config = str(Label("@gust//java/gust:logback.xml")),
+                           repository = None,
+                           registry = "us.gcr.io",
+                           image_format = "OCI",
                            srcs = [],
                            controllers = [],
+                           tag = None,
                            deps = None,
                            proto_deps = [],
                            data = [],
@@ -225,12 +239,41 @@ def _micronaut_application(name,
     computed_jvm_flags = _annotate_jvm_flags([i for i in jvm_flags], defs)
 
     if len(srcs) > 0:
-        computed_deps = _dedupe_deps(deps + INJECTED_MICRONAUT_DEPS + controllers + template_loader)
+        computed_image_deps = _dedupe_deps((deps or []) + controllers)
+        computed_image_layers = _dedupe_deps((deps or []) + INJECTED_MICRONAUT_DEPS + INJECTED_MICRONAUT_RUNTIME_DEPS)
+        computed_deps = _dedupe_deps((deps or []) + INJECTED_MICRONAUT_DEPS + controllers + template_loader)
         extra_runtime_deps = [template_loader]
     else:
+        computed_image_deps = []
+        computed_image_layers = []
         computed_deps = None
         extra_runtime_deps = (
             _dedupe_deps((deps or []) + INJECTED_MICRONAUT_DEPS + controllers + [template_loader]))
+
+    _java_image(
+        name = "%s-image" % name,
+        srcs = srcs,
+        main_class = main_class,
+        deps = computed_image_deps,
+        runtime_deps = _dedupe_deps(runtime_deps + [("%s-%s" % (
+          p, JAVAPROTO_POSTFIX_
+        )) for p in proto_deps]),
+        jvm_flags = computed_jvm_flags,
+        layers = computed_image_layers,
+        resources = [
+            config,
+            logging_config,
+        ],
+    )
+    if repository != None:
+        _container_push(
+            name = "%s-image-push" % name,
+            image = ":%s-image" % name,
+#            tag = tag or "{BUILD_SCM_VERSION}",
+            format = image_format,
+            repository = repository,
+            registry = registry,
+        )
 
     _jdk_binary(
         name = name,
@@ -243,7 +286,7 @@ def _micronaut_application(name,
         resources = resources,
         classpath_resources = [config, logging_config],
         main_class = main_class or "gust.backend.Application",
-        javacopts = computed_jvm_flags,
+        jvm_flags = computed_jvm_flags,
         **kwargs
     )
 

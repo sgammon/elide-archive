@@ -23,7 +23,7 @@ BUILD_ARGS ?=
 
 BAZELISK ?= $(shell which bazelisk)
 BAZELISK_ARGS ?=
-BASE_ARGS ?= --google_default_credentials=true
+BASE_ARGS ?= --google_default_credentials=true --define project=$(PROJECT)
 
 
 # Flag: `COVERAGE`
