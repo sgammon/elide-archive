@@ -83,7 +83,7 @@ def _browser_test_java(name,
     """ Run a full-stack test using `WebDriver`, and a Java test spec.
         Uses the default set of browsers if unspecified (Chromium and Gecko). """
 
-    computed_jvm_flags = _annotate_jvm_flags([i for i in jvm_flags])
+    computed_jvm_flags = _annotate_jvm_flags(jvm_flags)
 
     _java_library(
         name = "%s-java" % name,
@@ -112,7 +112,7 @@ def _jdk_test(name,
 
     """ Wrap a regular Java test so it can support Kotlin. """
 
-    computed_jvm_flags = _annotate_jvm_flags([i for i in jvm_flags])
+    computed_jvm_flags = _annotate_jvm_flags(jvm_flags)
 
     if srcs[0].endswith(".kt"):
         # process as kotlin
@@ -124,6 +124,7 @@ def _jdk_test(name,
             deps = dedupe_deps_(deps),
             runtime_deps = dedupe_deps_(runtime_deps),
             jvm_flags = computed_jvm_flags,
+            testonly = True,
             **kwargs
         )
 
@@ -136,6 +137,7 @@ def _jdk_test(name,
             deps = dedupe_deps_(deps),
             runtime_deps = dedupe_deps_(runtime_deps),
             jvm_flags = computed_jvm_flags,
+            testonly = True,
             **kwargs
         )
 
@@ -149,6 +151,7 @@ def _micronaut_test(name,
                     browsers = None,
                     local = True,
                     resources = [],
+                    jvm_flags = [],
                     config = str(Label("@gust//java/gust:application.yml")),
                     template_loader = str(Label("@gust//java/gust/backend:TemplateProvider")),
                     **kwargs):
@@ -157,33 +160,21 @@ def _micronaut_test(name,
         but with injected Micronaut dependencies and plugins. """
 
     if not browser:
-        if srcs[0].endswith(".kt"):
-            _kt_jvm_test(
-                name = name,
-                srcs = srcs,
-                test_class = test_class,
-                deps = dedupe_deps_((deps or DEFAULT_TEST_DEPS) + [template_loader]
-                       + INJECTED_TEST_DEPS + INJECTED_MICRONAUT_TEST_DEPS + INJECTED_KOTLIN_TEST_DEPS),
-               runtime_deps = dedupe_deps_(
-                    INJECTED_TEST_DEPS + INJECTED_MICRONAUT_RUNTIME_DEPS + runtime_deps + [template_loader]),
-                resources = resources,
-                **kwargs
-            )
-        else:
-            ensure_types_(srcs, ".java")
-            _jdk_test(
-                name = name,
-                srcs = srcs,
-                test_class = test_class,
-                deps = dedupe_deps_((deps or DEFAULT_TEST_DEPS) + [template_loader]
-                    + INJECTED_MICRONAUT_DEPS + INJECTED_MICRONAUT_TEST_DEPS),
-                runtime_deps = dedupe_deps_(
-                    INJECTED_TEST_DEPS + INJECTED_MICRONAUT_RUNTIME_DEPS + runtime_deps + [template_loader]),
-                resources = resources,
-                classpath_resources = [config],
-                **kwargs
-            )
+        _jdk_test(
+            name = name,
+            srcs = srcs,
+            test_class = test_class,
+            deps = dedupe_deps_((deps or DEFAULT_TEST_DEPS) + [template_loader]
+                + INJECTED_MICRONAUT_DEPS + INJECTED_MICRONAUT_TEST_DEPS),
+            runtime_deps = dedupe_deps_(
+                INJECTED_TEST_DEPS + INJECTED_MICRONAUT_RUNTIME_DEPS + runtime_deps + [template_loader]),
+            resources = resources,
+            classpath_resources = [config],
+            jvm_flags = jvm_flags,
+            **kwargs
+        )
     else:
+        computed_jvm_flags = _annotate_jvm_flags(jvm_flags)
         if srcs[0].endswith(".kt"):
             ensure_types_(srcs, ".kt")
             _kotlin_web_test_suite(
@@ -197,6 +188,8 @@ def _micronaut_test(name,
                 runtime_deps = dedupe_deps_(
                     INJECTED_TEST_DEPS + INJECTED_MICRONAUT_RUNTIME_DEPS + runtime_deps + [template_loader]),
                 resources = resources,
+                jvm_flags = computed_jvm_flags,
+                testonly = True,
                 **kwargs
             )
         else:
@@ -213,6 +206,8 @@ def _micronaut_test(name,
                     INJECTED_TEST_DEPS + INJECTED_MICRONAUT_RUNTIME_DEPS + runtime_deps + [template_loader]),
                 resources = resources,
                 classpath_resources = [config],
+                jvm_flags = computed_jvm_flags,
+                testonly = True,
                 **kwargs
             )
 

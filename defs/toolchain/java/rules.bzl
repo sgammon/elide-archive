@@ -243,7 +243,7 @@ def _micronaut_application(name,
         resources = resources,
         classpath_resources = [config, logging_config],
         main_class = main_class or "gust.backend.Application",
-        jvm_flags = computed_jvm_flags,
+        javacopts = computed_jvm_flags,
         **kwargs
     )
 

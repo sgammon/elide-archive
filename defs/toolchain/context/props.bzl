@@ -44,9 +44,9 @@ def _annotate_defs_dict(props, override = {}, system = True):
     config = dict()
     config.update(props)
     config.update(**{
-        "GUST_DEV": _GUST_DEV,
-        "GUST_DEBUG": _GUST_DEBUG,
-        "GUST_VERSION": _GUST_VERSION,
+        "gust.dev": _GUST_DEV,
+        "gust.debug": _GUST_DEBUG,
+        "gust.version": _GUST_VERSION,
     })
     config.update(**override)
     if system: config.update(**BASE_SYSTEM_PROPS)
@@ -74,6 +74,8 @@ def _annotate_defs_flags(props, override = {}):
                 flags.append("--define=%s" % key)
             else:
                 flags.append("--define=%s=%s" % (key, str(value).lower()))
+        elif type(value) == "string":
+            flags.append("--define=%s=\"%s\"" % (key, value))
         else:
             flags.append("--define=%s=%s" % (key, value))
     return _dedupe(BASE_CLOSURE_FLAGS + flags)
@@ -88,7 +90,7 @@ def _annotate_jvm_flags(flags, defs = {}, override = {}):
     overlay_defs = _annotate_defs_dict(defs, override)
     for define in overlay_defs.keys():
         val = overlay_defs[define]
-        if type(val) == bool:
+        if type(val) == "bool":
             computed_jvm_flags.append("-D%s=%s" % (define, (val and "true") or "false"))
         else:
             computed_jvm_flags.append("-D%s=%s" % (define, val))
