@@ -1,19 +1,19 @@
-name: CI
+name: Samples
 
 on:
   push: {}
+  #push:
+  #  branches: ["master"]
 
 env:
   BAZELISK_VERSION: v1.2.1
 
 jobs:
   build:
-    name: "Build & Test (Bazel ${{ matrix.bazel }} on ${{ matrix.os[0] }})"
+    name: "Sample Images"
 
     strategy:
       matrix:
-        #os: [["Ubuntu", "ubuntu-latest", "linux-amd64"], ["macOS Catalina", "macos-latest", "darwin-amd64"]]
-        #bazel: ["2.0.0", "1.0.0"]
         os: [["Ubuntu", "ubuntu-latest", "linux-amd64"]]
         bazel: ["2.0.0"]
 
@@ -45,8 +45,22 @@ jobs:
         run: |
           echo "$SERVICE_KEY" > service-key.json
           export
-          make build BAZELISK="${GITHUB_WORKSPACE}/bin/bazelisk" CI=yes CACHE=yes
           make test BAZELISK="${GITHUB_WORKSPACE}/bin/bazelisk" CI=yes CACHE=yes
         env:
           SERVICE_KEY: ${{ secrets.GOOGLE_CREDENTIALS }}
           GOOGLE_APPLICATION_CREDENTIALS: service-key.json
+
+      - name: Bake Images
+        run: |
+          make samples BAZELISK="${GITHUB_WORKSPACE}/bin/bazelisk" CI=yes CACHE=yes
+        env:
+          SERVICE_KEY: ${{ secrets.GOOGLE_CREDENTIALS }}
+          GOOGLE_APPLICATION_CREDENTIALS: service-key.json
+
+  docs:
+    name: "Documentation"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Sources
+        uses: actions/checkout@v1
