@@ -14,6 +14,11 @@ load(
     "maven",
 )
 
+load(
+    "//defs:config.bzl",
+    "GRAALVM_VERSION",
+)
+
 
 ASM_VERSION = "7.0"
 SLF4J_VERSION = "1.7.26"
@@ -22,6 +27,8 @@ ANNOTATIONS_VERSION = "1.3.2"
 SOY_VERSION = "2019-10-08"
 GUAVA_VERSION = "25.1-jre"
 FINDBUGS_VERSION = "3.0.2"
+
+SVM_VERSION = "19.2.1"
 
 MICRONAUT_VERSION = "1.3.0"
 MICRONAUT_TEST_VERSION = "1.1.2"

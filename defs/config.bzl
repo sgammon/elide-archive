@@ -82,7 +82,7 @@ GRAALVM_VERSION = "19.3.1"
 ## GraalVM JDK version.
 ## ------------------------------------
 ## Specifies the version of the underlying VM JDK.
-GRAALVM_JDK_VERSION = "8"
+GRAALVM_JDK_VERSION = "11"
 
 ## Java version.
 ## ------------------------------------

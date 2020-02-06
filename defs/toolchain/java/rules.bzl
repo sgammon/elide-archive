@@ -12,6 +12,22 @@ load(
 )
 
 load(
+    "@io_bazel_rules_docker//java:image.bzl",
+    _java_image = "java_image",
+)
+
+load(
+    "@io_bazel_rules_docker//container:push.bzl",
+    _container_push = "container_push",
+)
+
+load(
+    "@rules_graal//graal:graal.bzl",
+    _graal_binary = "graal_binary",
+)
+
+
+load(
     "//defs/toolchain:schema.bzl",
     "JAVAPROTO_POSTFIX_",
     "CLOSUREPROTO_POSTFIX_",
@@ -21,16 +37,6 @@ load(
     "//defs/toolchain/context:props.bzl",
     _annotate_defs_dict = "annotate_defs_dict",
     _annotate_jvm_flags = "annotate_jvm_flags",
-)
-
-load(
-    "@io_bazel_rules_docker//java:image.bzl",
-    _java_image = "java_image",
-)
-
-load(
-    "@io_bazel_rules_docker//container:push.bzl",
-    _container_push = "container_push",
 )
 
 load(
@@ -56,11 +62,6 @@ INJECTED_MICRONAUT_DEPS = [
     maven("io.micronaut:micronaut-graal"),
     maven("io.micronaut:micronaut-views"),
     maven("io.micronaut:micronaut-router"),
-    maven("io.micronaut:micronaut-session"),
-    maven("io.micronaut:micronaut-tracing"),
-    maven("io.micronaut:micronaut-security"),
-    maven("io.micronaut:micronaut-multitenancy"),
-    maven("io.micronaut.configuration:micronaut-redis-lettuce"),
 ]
 
 INJECTED_MICRONAUT_RUNTIME_DEPS = [
@@ -265,6 +266,25 @@ def _micronaut_application(name,
             logging_config,
         ],
     )
+
+    _java_library(
+        name = "%s-lib" % name,
+        srcs = app_srcs,
+        deps = _dedupe_deps(computed_deps + [
+            maven("io.micronaut:micronaut-runtime"),
+        ]),
+        runtime_deps = _dedupe_deps(runtime_deps + [("%s-%s" % (
+          p, JAVAPROTO_POSTFIX_
+        )) for p in proto_deps] + INJECTED_MICRONAUT_RUNTIME_DEPS),
+    )
+
+    _graal_binary(
+        name = "%s-native" % name,
+        deps = ["%s-lib" % name],
+        main_class = main_class,
+        c_compiler_path = "/usr/bin/clang",
+    )
+
     if repository != None:
         _container_push(
             name = "%s-image-push" % name,
@@ -278,7 +298,7 @@ def _micronaut_application(name,
     _jdk_binary(
         name = name,
         srcs = app_srcs,
-        deps = computed_deps,
+        deps = _dedupe_deps(computed_deps + [maven("io.micronaut:micronaut-runtime")]),
         runtime_deps = _dedupe_deps(runtime_deps + INJECTED_MICRONAUT_RUNTIME_DEPS + [("%s-%s" % (
           p, JAVAPROTO_POSTFIX_
         )) for p in proto_deps] + controllers + extra_runtime_deps),
