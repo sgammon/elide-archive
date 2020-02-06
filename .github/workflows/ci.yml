@@ -12,14 +12,23 @@ jobs:
 
     strategy:
       matrix:
-        os: [["Ubuntu", "ubuntu-latest", "linux-amd64"]]
+        os: [["Ubuntu", "ubuntu-latest", "linux-amd64", "linux-x86_64"]]
         bazel: ["2.0.0"]
+        gcloud: ["279.0.0"]
 
     runs-on: ${{ matrix.os[1] }}
 
     steps:
       - name: Checkout Sources
         uses: actions/checkout@v1
+
+      - name: Install GCP SDK
+        run: |
+          curl -LO "https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-${{ matrix.gcloud }}-${{ matrix.os[3] }}.tar.gz"
+          mv google-cloud-sdk-${{ matrix.gcloud }}-${{ matrix.os[3] }}.tar.gz google-cloud-sdk.tar.gz
+          tar -xf google-cloud-sdk.tar.gz
+          echo "$SERVICE_KEY" > service-key.json
+          ./google-cloud-sdk/bin/gcloud auth configure-docker
 
       - name: Install Bazelisk (Bazel v${{ matrix.bazel }})
         run: |

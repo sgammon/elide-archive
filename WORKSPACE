@@ -178,7 +178,7 @@ container_pull(
 
 container_pull(
     name = "native_base",
-    registry = "index.docker.io",
+    registry = "mirror.gcr.io",
     repository = "frolvlad/alpine-glibc",
     digest = "sha256:3431d923a672833b72ef5b92ad00113cd963940f4ebb58f3aa7eddcfaf5310aa",
 )
