@@ -34,6 +34,13 @@ jobs:
         run: |
           echo "${{ matrix.bazel }}" > .bazelversion
 
+      - name: Prepare Cache
+        id: cache-ci
+        uses: actions/cache@v1
+        with:
+          path: "/home/runner/.cache/bazel-disk-cache"
+          key: bazel-{{ matrix.bazel }}
+
       - name: Build & Test
         run: |
           echo "$SERVICE_KEY" > service-key.json
