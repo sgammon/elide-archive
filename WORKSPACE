@@ -178,7 +178,7 @@ container_pull(
 
 container_pull(
     name = "native_base",
-    registry = "index.docker.io",
-    repository = "frolvlad/alpine-glibc",
-    digest = "sha256:3431d923a672833b72ef5b92ad00113cd963940f4ebb58f3aa7eddcfaf5310aa",
+    registry = "us.gcr.io",
+    repository = "bloom-sandbox/base/alpine",
+    digest = "sha256:decbf1b8ba41c556941f2fbd82811822f7b9622cbd3a17d5d4041cb5438bae2d",
 )
