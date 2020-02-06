@@ -14,8 +14,9 @@ jobs:
 
     strategy:
       matrix:
-        os: [["Ubuntu", "ubuntu-latest", "linux-amd64"]]
+        os: [["Ubuntu", "ubuntu-latest", "linux-amd64", "linux-x86_64"]]
         bazel: ["2.0.0"]
+        gcloud: ["279.0.0"]
 
     runs-on: ${{ matrix.os[1] }}
 
@@ -28,11 +29,12 @@ jobs:
           curl -LO "https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-${{ matrix.gcloud }}-${{ matrix.os[3] }}.tar.gz"
           mv google-cloud-sdk-${{ matrix.gcloud }}-${{ matrix.os[3] }}.tar.gz google-cloud-sdk.tar.gz
           tar -xf google-cloud-sdk.tar.gz
-          echo "$SERVICE_KEY" > ./service-key.json
-          ./google-cloud-sdk/bin/gcloud auth configure-docker
+          echo "$SERVICE_KEY" > "${GITHUB_WORKSPACE}/service-key.json"
           ./google-cloud-sdk/bin/gcloud auth activate-service-account --key-file=`pwd`/service-key.json
+          ./google-cloud-sdk/bin/gcloud auth configure-docker
         env:
           SERVICE_KEY: ${{ secrets.GOOGLE_CREDENTIALS }}
+          GOOGLE_APPLICATION_CREDENTIALS: ${GITHUB_WORKSPACE}/service-key.json
 
       - name: Install Bazelisk
         run: |
@@ -54,4 +56,7 @@ jobs:
 
       - name: Bake Images
         run: |
+          export PATH="$PATH:${GITHUB_WORKSPACE}/google-cloud-sdk/bin"
           make samples BAZELISK="${GITHUB_WORKSPACE}/bin/bazelisk" CI=yes CACHE=yes
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${GITHUB_WORKSPACE}/service-key.json
