@@ -34,7 +34,9 @@ micronaut_library(
 
 micronaut_application(
     name = "BasicTestApplication",
-    main_class = "gust.backend.Application",
+    native = True,
+    repository = "$(project)/gust/tests/basic/jvm",
+    native_repository = "$(project)/gust/tests/basic/native",
     controllers = [
         ":BasicJavaController",
         ":BasicKotlinController",

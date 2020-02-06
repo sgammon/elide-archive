@@ -1,5 +1,10 @@
 
 load(
+    "@bazel_tools//tools/build_defs/pkg:pkg.bzl",
+    "pkg_tar",
+)
+
+load(
     "@rules_java//java:defs.bzl",
     _java_binary = "java_binary",
     _java_library = "java_library",
@@ -10,6 +15,27 @@ load(
     _kt_jvm_binary = "kt_jvm_binary",
     _kt_jvm_library = "kt_jvm_library",
 )
+
+load(
+    "@io_bazel_rules_docker//java:image.bzl",
+    _java_image = "java_image",
+)
+
+load(
+    "@io_bazel_rules_docker//container:image.bzl",
+    _container_image = "container_image",
+)
+
+load(
+    "@io_bazel_rules_docker//container:push.bzl",
+    _container_push = "container_push",
+)
+
+load(
+    "@rules_graal//graal:graal.bzl",
+    _graal_binary = "graal_binary",
+)
+
 
 load(
     "//defs/toolchain:schema.bzl",
@@ -37,7 +63,6 @@ INJECTED_MICRONAUT_DEPS = [
     maven("io.micronaut:micronaut-aop"),
     maven("io.micronaut:micronaut-core"),
     maven("io.micronaut:micronaut-http"),
-    maven("io.micronaut:micronaut-runtime"),
     maven("io.micronaut:micronaut-http-client"),
     maven("io.micronaut:micronaut-inject"),
     maven("io.micronaut:micronaut-inject-java"),
@@ -47,15 +72,9 @@ INJECTED_MICRONAUT_DEPS = [
     maven("io.micronaut:micronaut-graal"),
     maven("io.micronaut:micronaut-views"),
     maven("io.micronaut:micronaut-router"),
-    maven("io.micronaut:micronaut-session"),
-    maven("io.micronaut:micronaut-tracing"),
-    maven("io.micronaut:micronaut-security"),
-    maven("io.micronaut:micronaut-multitenancy"),
-    maven("io.micronaut.configuration:micronaut-redis-lettuce"),
 ]
 
 INJECTED_MICRONAUT_RUNTIME_DEPS = [
-    "@gust//java:entrypoint",
     maven("org.slf4j:slf4j-jdk14"),
     maven("io.micronaut:micronaut-runtime"),
 ]
@@ -205,12 +224,21 @@ def _micronaut_controller(name,
 
 
 def _micronaut_application(name,
-                           main_class = None,
+                           native = False,
+                           main_class = "gust.backend.Application",
                            config = str(Label("@gust//java/gust:application.yml")),
                            template_loader = str(Label("@gust//java/gust/backend:TemplateProvider")),
                            logging_config = str(Label("@gust//java/gust:logback.xml")),
+                           main = str(Label("@gust//java/gust/backend:Application.java")),
+                           base = str(Label("@gust//java/gust/backend:base")),
+                           native_base = str(Label("@gust//java/gust/backend:native")),
+                           repository = None,
+                           native_repository = None,
+                           registry = "us.gcr.io",
+                           image_format = "OCI",
                            srcs = [],
                            controllers = [],
+                           tag = None,
                            deps = None,
                            proto_deps = [],
                            data = [],
@@ -224,18 +252,94 @@ def _micronaut_application(name,
 
     computed_jvm_flags = _annotate_jvm_flags([i for i in jvm_flags], defs)
 
-    if len(srcs) > 0:
-        computed_deps = _dedupe_deps(deps + INJECTED_MICRONAUT_DEPS + controllers + template_loader)
-        extra_runtime_deps = [template_loader]
-    else:
-        computed_deps = None
-        extra_runtime_deps = (
-            _dedupe_deps((deps or []) + INJECTED_MICRONAUT_DEPS + controllers + [template_loader]))
+    app_srcs = srcs + [main]
+    computed_image_deps = _dedupe_deps((deps or []) + INJECTED_MICRONAUT_DEPS)
+    computed_image_layers = _dedupe_deps((
+        INJECTED_MICRONAUT_RUNTIME_DEPS + [template_loader] + controllers))
+    computed_deps = _dedupe_deps((deps or []) + INJECTED_MICRONAUT_DEPS + controllers)
+    extra_runtime_deps = [template_loader]
+
+    _java_image(
+        name = "%s-image" % name,
+        srcs = app_srcs,
+        main_class = main_class,
+        deps = computed_image_deps,
+        runtime_deps = _dedupe_deps(runtime_deps + [("%s-%s" % (
+          p, JAVAPROTO_POSTFIX_
+        )) for p in proto_deps] + INJECTED_MICRONAUT_RUNTIME_DEPS),
+        jvm_flags = computed_jvm_flags,
+        base = base,
+        layers = computed_image_layers,
+        classpath_resources = [
+            config,
+            logging_config,
+        ],
+    )
+
+    _java_library(
+        name = "%s-lib" % name,
+        srcs = app_srcs,
+        deps = _dedupe_deps(computed_deps + [
+            maven("io.micronaut:micronaut-runtime"),
+        ]),
+        runtime_deps = _dedupe_deps(runtime_deps + [("%s-%s" % (
+          p, JAVAPROTO_POSTFIX_
+        )) for p in proto_deps] + INJECTED_MICRONAUT_RUNTIME_DEPS),
+        resources = [
+            config,
+            logging_config,
+        ],
+        resource_strip_prefix = "java/gust/",
+    )
+
+    if native:
+        _graal_binary(
+            name = "%s-native" % name,
+            deps = ["%s-lib" % name],
+            main_class = main_class,
+            c_compiler_path = "/usr/bin/clang",
+            extra_args = [
+                "-H:IncludeResources=application.yml|logback.xml",
+            ],
+        )
+
+        pkg_tar(
+            name = "%s-native-pkg" % name,
+            extension = "tar",
+            srcs = ["%s-native-bin" % name],
+        )
+
+        _container_image(
+            name = "%s-native-image" % name,
+            base = native_base,
+            files = ["%s-native-bin" % name],
+            cmd = "./%s-native-bin" % name,
+        )
+
+        if native_repository != None:
+            _container_push(
+                name = "%s-native-image-push" % name,
+                image = ":%s-native-image" % name,
+                tag = tag or "{BUILD_SCM_VERSION}",
+                format = image_format,
+                repository = native_repository,
+                registry = registry,
+            )
+
+    if repository != None:
+        _container_push(
+            name = "%s-image-push" % name,
+            image = ":%s-image" % name,
+            tag = tag or "{BUILD_SCM_VERSION}",
+            format = image_format,
+            repository = repository,
+            registry = registry,
+        )
 
     _jdk_binary(
         name = name,
-        srcs = srcs,
-        deps = computed_deps,
+        srcs = app_srcs,
+        deps = _dedupe_deps(computed_deps + [maven("io.micronaut:micronaut-runtime")]),
         runtime_deps = _dedupe_deps(runtime_deps + INJECTED_MICRONAUT_RUNTIME_DEPS + [("%s-%s" % (
           p, JAVAPROTO_POSTFIX_
         )) for p in proto_deps] + controllers + extra_runtime_deps),

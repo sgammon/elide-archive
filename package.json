@@ -2,12 +2,18 @@
   "name": "@elide/gust",
   "version": "1.0.0-alpha1",
   "description": "The Little Framework that Could",
-  "repository": "https://github.com/sgammon/gust",
+  "repository": {
+    "type": "git",
+    "url": "ssh://git@github.com/sgammon/gust.git"
+  },
   "author": "Sam Gammon <sam@momentum.io>",
   "license": "MIT",
   "scripts": {
     "build": "bazel build --config=dev //js/... //java/... //proto/... //style/...",
     "test": "bazel test --config=dev //javatests/..."
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/"
   },
   "devDependencies": {
     "@bazel/bazel": "latest",
@@ -38,7 +44,7 @@
     "svgo": "^1.3.2",
     "terser": "4.6.3",
     "tsickle": "0.38.0",
-    "typescript": "3.7.2"
+    "typescript": "3.7.5"
   },
   "dependencies": {},
   "bazelWorkspaces": {

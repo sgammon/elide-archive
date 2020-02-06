@@ -27,6 +27,7 @@ java_library(
         maven("io.micronaut:micronaut-inject"),
         maven("io.micronaut:micronaut-inject-java"),
         maven("io.micronaut:micronaut-validation"),
+        maven("io.micronaut:micronaut-graal"),
     ]
 )
 

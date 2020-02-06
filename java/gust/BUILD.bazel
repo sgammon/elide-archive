@@ -42,6 +42,7 @@ cross_lib(
     name = "Core",
     srcs = [
         "Core.java",
+        "Core.native.js",
     ],
     jdeps = [
         ":package-info",

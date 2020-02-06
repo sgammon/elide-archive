@@ -23,7 +23,7 @@ BUILD_ARGS ?=
 
 BAZELISK ?= $(shell which bazelisk)
 BAZELISK_ARGS ?=
-BASE_ARGS ?= --google_default_credentials=true
+BASE_ARGS ?= --google_default_credentials=true --define project=$(PROJECT)
 
 
 # Flag: `COVERAGE`
@@ -80,6 +80,11 @@ r run:  ## Run the specified target.
 c clean:  ## Clean ephemeral targets.
 	$(BAZELISK) $(BAZELISK_ARGS) clean
 
+samples:  ## Build and push sample app images.
+	$(BAZELISK) $(BAZELISK_ARGS) run $(TAG) $(BASE_ARGS) $(BUILD_ARGS) //javatests/server:BasicTestApplication-image-push
+	$(BAZELISK) $(BAZELISK_ARGS) run $(TAG) $(BASE_ARGS) $(BUILD_ARGS) //javatests/server:BasicTestApplication-native-image-push
+	$(BAZELISK) $(BAZELISK_ARGS) run $(TAG) $(BASE_ARGS) $(BUILD_ARGS) //javatests/ssr:SSRTestApplication-image-push
+
 distclean:  ## Clean targets, caches and dependencies.
 	$(BAZELISK) $(BAZELISK_ARGS) clean --expunge_async
 
@@ -105,5 +110,5 @@ update-deps:  ## Re-seal and update all dependencies.
 	@echo "Re-pinning Maven dependencies..."
 	$(BAZELISK) $(BAZELISK_ARGS) run @unpinned_maven//:pin
 
-.PHONY: build test help
+.PHONY: build test help samples
 

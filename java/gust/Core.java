@@ -18,6 +18,6 @@ public class Core {
    * @return Version assigned for the currently-running application.
    **/
   public static String getGustVersion() {
-    return System.getProperty("GUST_VERSION", "alpha");
+    return System.getProperty("gust.version", "alpha");
   }
 }

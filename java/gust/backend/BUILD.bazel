@@ -19,6 +19,16 @@ load(
 )
 
 
+alias(
+    name = "base",
+    actual = "@java_base//image",
+)
+
+alias(
+    name = "native",
+    actual = "@native_base//image",
+)
+
 template_library(
     name = "page",
     srcs = ["page.soy"],

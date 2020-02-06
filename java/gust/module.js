@@ -1,5 +1,5 @@
 
-goog.module('gust');
+goog.provide('gust');
 
 
 /**
@@ -9,7 +9,7 @@ goog.module('gust');
  * @public
  * @define {!boolean} gust.dev
  */
-const dev = goog.define('GUST_DEV', false);
+gust.dev = goog.define('gust.dev', false);
 
 
 /**
@@ -19,7 +19,7 @@ const dev = goog.define('GUST_DEV', false);
  * @public
  * @define {!boolean} gust.debug
  */
-const debug = goog.define('GUST_DEBUG', false);
+gust.debug = goog.define('gust.debug', false);
 
 
 /**
@@ -29,7 +29,7 @@ const debug = goog.define('GUST_DEBUG', false);
  * @public
  * @define {!string} gust.version
  */
-const version = goog.define('GUST_VERSION', 'alpha');
+gust.version = goog.define('gust.version', 'alpha');
 
 
 /**
@@ -38,9 +38,9 @@ const version = goog.define('GUST_VERSION', 'alpha');
  * @public
  * @return {!boolean}
  */
-function isDev() {
-  return dev;
-}
+gust.isDev = function() {
+  return gust.dev;
+};
 
 
 /**
@@ -49,9 +49,9 @@ function isDev() {
  * @public
  * @return {boolean}
  */
-function isDebug() {
-  return debug;
-}
+gust.isDebug = function() {
+  return gust.debug;
+};
 
 
 /**
@@ -60,16 +60,6 @@ function isDebug() {
  * @public
  * @return {string}
  */
-function frameworkVersion() {
-  return version;
-}
-
-
-exports = {
-  dev: dev,
-  debug: debug,
-  version: version,
-  isDev: isDev,
-  isDebug: isDebug,
-  frameworkVersion: frameworkVersion
+gust.frameworkVersion = function() {
+  return gust.version;
 };
