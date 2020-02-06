@@ -241,7 +241,7 @@ def _micronaut_application(name,
     app_srcs = srcs + [main]
     computed_image_deps = _dedupe_deps((deps or []) + INJECTED_MICRONAUT_DEPS)
     computed_image_layers = _dedupe_deps((
-        deps or []) + INJECTED_MICRONAUT_RUNTIME_DEPS + [template_loader] + controllers)
+        INJECTED_MICRONAUT_RUNTIME_DEPS + [template_loader] + controllers))
     computed_deps = _dedupe_deps((deps or []) + INJECTED_MICRONAUT_DEPS + controllers)
     extra_runtime_deps = [template_loader]
 

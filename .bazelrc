@@ -10,7 +10,7 @@ build --symlink_prefix=dist/
 build --nolegacy_external_runfiles
 build --disk_cache=~/.cache/bazel-disk-cache
 build --incompatible_strict_action_env
-build --javacopt="-source 8 -target 8 -encoding UTF-8"
+build --javacopt="-encoding UTF-8"
 build --strict_java_deps=strict
 build --use_ijars
 build --interface_shared_objects
