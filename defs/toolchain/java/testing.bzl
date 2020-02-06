@@ -61,6 +61,7 @@ INJECTED_KOTLIN_TEST_DEPS = [
 ]
 
 INJECTED_MICRONAUT_TEST_DEPS = [
+    maven("io.micronaut:micronaut-runtime"),
     maven("io.micronaut:micronaut-http"),
     maven("io.micronaut:micronaut-http-client"),
     maven("io.micronaut.test:micronaut-test-core"),
