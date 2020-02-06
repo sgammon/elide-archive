@@ -23,6 +23,17 @@ jobs:
       - name: Checkout Sources
         uses: actions/checkout@v1
 
+      - name: Install GCP SDK
+        run: |
+          curl -LO "https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-${{ matrix.gcloud }}-${{ matrix.os[3] }}.tar.gz"
+          mv google-cloud-sdk-${{ matrix.gcloud }}-${{ matrix.os[3] }}.tar.gz google-cloud-sdk.tar.gz
+          tar -xf google-cloud-sdk.tar.gz
+          echo "$SERVICE_KEY" > ./service-key.json
+          ./google-cloud-sdk/bin/gcloud auth configure-docker
+          ./google-cloud-sdk/bin/gcloud auth activate-service-account --key-file=`pwd`/service-key.json
+        env:
+          SERVICE_KEY: ${{ secrets.GOOGLE_CREDENTIALS }}
+
       - name: Install Bazelisk
         run: |
           curl -LO "https://github.com/bazelbuild/bazelisk/releases/download/${BAZELISK_VERSION}/bazelisk-${{ matrix.os[2] }}"
@@ -40,17 +51,6 @@ jobs:
         with:
           path: "/home/runner/.cache/bazel-disk-cache"
           key: bazel-{{ matrix.bazel }}-{{ matrix.os[1] }}-v1
-
-      - name: Install GCP SDK
-        run: |
-          curl -LO "https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-${{ matrix.gcloud }}-${{ matrix.os[3] }}.tar.gz"
-          mv google-cloud-sdk-${{ matrix.gcloud }}-${{ matrix.os[3] }}.tar.gz google-cloud-sdk.tar.gz
-          tar -xf google-cloud-sdk.tar.gz
-          echo "$SERVICE_KEY" > ./service-key.json
-          ./google-cloud-sdk/bin/gcloud auth configure-docker
-          ./google-cloud-sdk/bin/gcloud auth activate-service-account --key-file=`pwd`/service-key.json
-        env:
-          SERVICE_KEY: ${{ secrets.GOOGLE_CREDENTIALS }}
 
       - name: Bake Images
         run: |

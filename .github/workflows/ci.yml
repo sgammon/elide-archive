@@ -27,12 +27,11 @@ jobs:
           curl -LO "https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-${{ matrix.gcloud }}-${{ matrix.os[3] }}.tar.gz"
           mv google-cloud-sdk-${{ matrix.gcloud }}-${{ matrix.os[3] }}.tar.gz google-cloud-sdk.tar.gz
           tar -xf google-cloud-sdk.tar.gz
-          echo "$SERVICE_KEY" > service-key.json
+          echo "$SERVICE_KEY" > ./service-key.json
           ./google-cloud-sdk/bin/gcloud auth configure-docker
-          ./google-cloud-sdk/bin/gcloud auth activate-service-account --key-file=/home/runner/service-key.json
+          ./google-cloud-sdk/bin/gcloud auth activate-service-account --key-file=`pwd`/service-key.json
         env:
           SERVICE_KEY: ${{ secrets.GOOGLE_CREDENTIALS }}
-          GOOGLE_APPLICATION_CREDENTIALS: /home/runner/service-key.json
 
       - name: Install Bazelisk (Bazel v${{ matrix.bazel }})
         run: |
