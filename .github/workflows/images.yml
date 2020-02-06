@@ -24,29 +24,6 @@ jobs:
       - name: Checkout Sources
         uses: actions/checkout@v1
 
-      - name: Install GCP SDK
-        run: |
-          curl -LO "https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-${{ matrix.gcloud }}-${{ matrix.os[3] }}.tar.gz"
-          mv google-cloud-sdk-${{ matrix.gcloud }}-${{ matrix.os[3] }}.tar.gz google-cloud-sdk.tar.gz
-          tar -xf google-cloud-sdk.tar.gz
-          echo "$SERVICE_KEY" > "${GITHUB_WORKSPACE}/service-key.json"
-          ./google-cloud-sdk/bin/gcloud auth activate-service-account --key-file=`pwd`/service-key.json
-          ./google-cloud-sdk/bin/gcloud auth configure-docker
-        env:
-          SERVICE_KEY: ${{ secrets.GOOGLE_CREDENTIALS }}
-          GOOGLE_APPLICATION_CREDENTIALS: service-key.json
-
-      - name: Install Bazelisk
-        run: |
-          curl -LO "https://github.com/bazelbuild/bazelisk/releases/download/${BAZELISK_VERSION}/bazelisk-${{ matrix.os[2] }}"
-          mkdir -p "${GITHUB_WORKSPACE}/bin/"
-          mv bazelisk-${{ matrix.os[2] }} "${GITHUB_WORKSPACE}/bin/bazelisk"
-          chmod +x "${GITHUB_WORKSPACE}/bin/bazelisk"
-
-      - name: Select Bazel v${{ matrix.bazel }}
-        run: |
-          echo "${{ matrix.bazel }}" > .bazelversion
-
       - name: Prepare Cache
         id: cache-ci
         uses: actions/cache@v1
@@ -56,7 +33,19 @@ jobs:
 
       - name: Bake Images
         run: |
+          curl -LO "https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-${{ matrix.gcloud }}-${{ matrix.os[3] }}.tar.gz"
+          mv google-cloud-sdk-${{ matrix.gcloud }}-${{ matrix.os[3] }}.tar.gz google-cloud-sdk.tar.gz
+          tar -xf google-cloud-sdk.tar.gz
+          echo "$SERVICE_KEY" > "${GITHUB_WORKSPACE}/service-key.json"
+          ./google-cloud-sdk/bin/gcloud auth activate-service-account --key-file=`pwd`/service-key.json
+          ./google-cloud-sdk/bin/gcloud auth configure-docker
+          curl -LO "https://github.com/bazelbuild/bazelisk/releases/download/${BAZELISK_VERSION}/bazelisk-${{ matrix.os[2] }}"
+          mkdir -p "${GITHUB_WORKSPACE}/bin/"
+          mv bazelisk-${{ matrix.os[2] }} "${GITHUB_WORKSPACE}/bin/bazelisk"
+          chmod +x "${GITHUB_WORKSPACE}/bin/bazelisk"
+          echo "${{ matrix.bazel }}" > .bazelversion
           export PATH="$PATH:${GITHUB_WORKSPACE}/google-cloud-sdk/bin"
           make samples BAZELISK="${GITHUB_WORKSPACE}/bin/bazelisk" CI=yes CACHE=yes
         env:
+          SERVICE_KEY: ${{ secrets.GOOGLE_CREDENTIALS }}
           GOOGLE_APPLICATION_CREDENTIALS: service-key.json
