@@ -300,6 +300,7 @@ def _micronaut_application(name,
             c_compiler_path = "/usr/bin/clang",
             extra_args = [
                 "-H:IncludeResources=application.yml|logback.xml",
+                "--initialize-at-build-time=com.google.template.soy.jbcsrc.api.RenderResult$Type",
             ],
         )
 

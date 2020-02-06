@@ -7,6 +7,7 @@ CI ?= no
 CACHE ?= yes
 REMOTE ?= no
 VERBOSE ?= no
+QUIET ?= no
 STRICT ?= no
 COVERAGE ?= no
 PROJECT ?= bloom-sandbox
@@ -68,35 +69,41 @@ ifeq ($(VERBOSE),yes)
 BASE_ARGS += -s
 endif
 
+# Flag: `QUIET`
+ifeq ($(VERBOSE),yes)
+_RULE = @
+endif
+
 
 all: devtools build test
 
 b build:  ## Build all framework targets.
-	$(BAZELISK) $(BAZELISK_ARGS) build $(TAG) $(BASE_ARGS) $(BUILD_ARGS) $(TARGETS)
+	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) build $(TAG) $(BASE_ARGS) $(BUILD_ARGS) $(TARGETS)
 
 r run:  ## Run the specified target.
-	$(BAZELISK) $(BAZELISK_ARGS) run $(TAG) $(BASE_ARGS) $(BUILD_ARGS) $(APP)
+	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) run $(TAG) $(BASE_ARGS) $(BUILD_ARGS) $(APP)
 
 c clean:  ## Clean ephemeral targets.
-	$(BAZELISK) $(BAZELISK_ARGS) clean
+	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) clean
 
 samples:  ## Build and push sample app images.
-	$(BAZELISK) $(BAZELISK_ARGS) run $(TAG) $(BASE_ARGS) $(BUILD_ARGS) //javatests/server:BasicTestApplication-image-push
-	$(BAZELISK) $(BAZELISK_ARGS) run $(TAG) $(BASE_ARGS) $(BUILD_ARGS) //javatests/server:BasicTestApplication-native-image-push
-	$(BAZELISK) $(BAZELISK_ARGS) run $(TAG) $(BASE_ARGS) $(BUILD_ARGS) //javatests/ssr:SSRTestApplication-image-push
+	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) run $(TAG) $(BASE_ARGS) $(BUILD_ARGS) //javatests/server:BasicTestApplication-image-push
+	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) run $(TAG) $(BASE_ARGS) $(BUILD_ARGS) //javatests/server:BasicTestApplication-native-image-push
+	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) run $(TAG) $(BASE_ARGS) $(BUILD_ARGS) //javatests/ssr:SSRTestApplication-image-push
+	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) run $(TAG) $(BASE_ARGS) $(BUILD_ARGS) //javatests/ssr:SSRTestApplication-native-image-push
 
 distclean:  ## Clean targets, caches and dependencies.
-	$(BAZELISK) $(BAZELISK_ARGS) clean --expunge_async
+	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) clean --expunge_async
 
 forceclean: distclean  ## Clean everything, and sanitize the codebase (DANGEROUS).
 	git reset --hard && git clean -xdf
 
 test:  ## Run all framework testsuites.
-	$(BAZELISK) $(BAZELISK_ARGS) $(TEST_COMMAND) $(TAG) $(BASE_ARGS) $(TEST_ARGS) $(TESTS)
+	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) $(TEST_COMMAND) $(TAG) $(BASE_ARGS) $(TEST_ARGS) $(TESTS)
 
 docs:  ## Build documentation for the framework.
 	@echo "Building GUST docs..."
-	$(BAZELISK) $(BAZELISK_ARGS) build $(TAG) $(BASE_ARGS) //:docs
+	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) build $(TAG) $(BASE_ARGS) //:docs
 
 help:  ## Show this help text.
 	$(info GUST Framework Tools:)
@@ -104,11 +111,10 @@ help:  ## Show this help text.
 
 devtools:  ## Install local development dependencies.
 	@echo "Installing devtools..."
-	@git submodule update --init --recursive
+	$(_RULE)git submodule update --init --recursive
 
 update-deps:  ## Re-seal and update all dependencies.
 	@echo "Re-pinning Maven dependencies..."
 	$(BAZELISK) $(BAZELISK_ARGS) run @unpinned_maven//:pin
 
 .PHONY: build test help samples
-
