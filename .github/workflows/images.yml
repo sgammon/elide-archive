@@ -41,11 +41,16 @@ jobs:
           path: "/home/runner/.cache/bazel-disk-cache"
           key: bazel-{{ matrix.bazel }}-{{ matrix.os[1] }}-v1
 
+      - name: Setup Auth
+        uses: actions-hub/gcloud@master
+        with:
+          args: auth configure-docker
+        env:
+          PROJECT_ID: ${{ secrets.PROJECT_ID }}
+          APPLICATION_CREDENTIALS: ${{ secrets.SERVICE_KEY_BASE64 }}
+
       - name: Bake Images
         run: |
           echo "$SERVICE_KEY" > service-key.json
           export
           make samples BAZELISK="${GITHUB_WORKSPACE}/bin/bazelisk" CI=yes CACHE=yes
-        env:
-          SERVICE_KEY: ${{ secrets.GOOGLE_CREDENTIALS }}
-          GOOGLE_APPLICATION_CREDENTIALS: service-key.json
