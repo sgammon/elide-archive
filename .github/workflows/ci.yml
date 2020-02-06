@@ -21,7 +21,7 @@ jobs:
       - name: Checkout Sources
         uses: actions/checkout@v1
 
-      - name: Install Bazelisk (Bazel v${{ matrix.label }})
+      - name: Install Bazelisk (Bazel v${{ matrix.bazel }})
         run: |
           curl -LO "https://github.com/bazelbuild/bazelisk/releases/download/${BAZELISK_VERSION}/bazelisk-${{ matrix.os[2] }}"
           mkdir -p "${GITHUB_WORKSPACE}/bin/"
