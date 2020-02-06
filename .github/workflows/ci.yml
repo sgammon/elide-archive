@@ -32,7 +32,7 @@ jobs:
           ./google-cloud-sdk/bin/gcloud auth configure-docker
         env:
           SERVICE_KEY: ${{ secrets.GOOGLE_CREDENTIALS }}
-          GOOGLE_APPLICATION_CREDENTIALS: ${GITHUB_WORKSPACE}/service-key.json
+          GOOGLE_APPLICATION_CREDENTIALS: service-key.json
 
       - name: Install Bazelisk (Bazel v${{ matrix.bazel }})
         run: |
@@ -56,7 +56,7 @@ jobs:
           make test BAZELISK="${GITHUB_WORKSPACE}/bin/bazelisk" CI=yes CACHE=yes
         env:
           SERVICE_KEY: ${{ secrets.GOOGLE_CREDENTIALS }}
-          GOOGLE_APPLICATION_CREDENTIALS: ${GITHUB_WORKSPACE}/service-key.json
+          GOOGLE_APPLICATION_CREDENTIALS: service-key.json
 
   docs:
     name: "Documentation"
