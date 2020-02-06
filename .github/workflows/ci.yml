@@ -29,6 +29,10 @@ jobs:
           tar -xf google-cloud-sdk.tar.gz
           echo "$SERVICE_KEY" > service-key.json
           ./google-cloud-sdk/bin/gcloud auth configure-docker
+          ./google-cloud-sdk/bin/gcloud auth activate-service-account --key-file=/home/runner/service-key.json
+        env:
+          SERVICE_KEY: ${{ secrets.GOOGLE_CREDENTIALS }}
+          GOOGLE_APPLICATION_CREDENTIALS: /home/runner/service-key.json
 
       - name: Install Bazelisk (Bazel v${{ matrix.bazel }})
         run: |
@@ -47,13 +51,12 @@ jobs:
 
       - name: Build & Test
         run: |
-          echo "$SERVICE_KEY" > service-key.json
-          export
+          export PATH="$PATH:/home/runner/google-cloud-sdk/bin"
           make build BAZELISK="${GITHUB_WORKSPACE}/bin/bazelisk" CI=yes CACHE=yes
           make test BAZELISK="${GITHUB_WORKSPACE}/bin/bazelisk" CI=yes CACHE=yes
         env:
           SERVICE_KEY: ${{ secrets.GOOGLE_CREDENTIALS }}
-          GOOGLE_APPLICATION_CREDENTIALS: service-key.json
+          GOOGLE_APPLICATION_CREDENTIALS: /home/runner/service-key.json
 
   docs:
     name: "Documentation"
