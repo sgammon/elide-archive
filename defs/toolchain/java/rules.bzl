@@ -224,6 +224,7 @@ def _micronaut_controller(name,
 
 
 def _micronaut_application(name,
+                           native = False,
                            main_class = "gust.backend.Application",
                            config = str(Label("@gust//java/gust:application.yml")),
                            template_loader = str(Label("@gust//java/gust/backend:TemplateProvider")),
@@ -291,28 +292,39 @@ def _micronaut_application(name,
         resource_strip_prefix = "java/gust/",
     )
 
-    _graal_binary(
-        name = "%s-native" % name,
-        deps = ["%s-lib" % name],
-        main_class = main_class,
-        c_compiler_path = "/usr/bin/clang",
-        extra_args = [
-            "-H:IncludeResources=application.yml|logback.xml",
-        ],
-    )
+    if native:
+        _graal_binary(
+            name = "%s-native" % name,
+            deps = ["%s-lib" % name],
+            main_class = main_class,
+            c_compiler_path = "/usr/bin/clang",
+            extra_args = [
+                "-H:IncludeResources=application.yml|logback.xml",
+            ],
+        )
 
-    pkg_tar(
-        name = "%s-native-pkg" % name,
-        extension = "tar",
-        srcs = ["%s-native-bin" % name],
-    )
+        pkg_tar(
+            name = "%s-native-pkg" % name,
+            extension = "tar",
+            srcs = ["%s-native-bin" % name],
+        )
 
-    _container_image(
-        name = "%s-native-image" % name,
-        base = native_base,
-        files = ["%s-native-bin" % name],
-        cmd = "./%s-native-bin" % name,
-    )
+        _container_image(
+            name = "%s-native-image" % name,
+            base = native_base,
+            files = ["%s-native-bin" % name],
+            cmd = "./%s-native-bin" % name,
+        )
+
+        if native_repository != None:
+            _container_push(
+                name = "%s-native-image-push" % name,
+                image = ":%s-native-image" % name,
+                tag = tag or "{BUILD_SCM_VERSION}",
+                format = image_format,
+                repository = native_repository,
+                registry = registry,
+            )
 
     if repository != None:
         _container_push(
@@ -321,16 +333,6 @@ def _micronaut_application(name,
             tag = tag or "{BUILD_SCM_VERSION}",
             format = image_format,
             repository = repository,
-            registry = registry,
-        )
-
-    if native_repository != None:
-        _container_push(
-            name = "%s-native-image-push" % name,
-            image = ":%s-native-image" % name,
-            tag = tag or "{BUILD_SCM_VERSION}",
-            format = image_format,
-            repository = native_repository,
             registry = registry,
         )
 
