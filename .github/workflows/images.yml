@@ -39,28 +39,13 @@ jobs:
         uses: actions/cache@v1
         with:
           path: "/home/runner/.cache/bazel-disk-cache"
-          key: bazel-{{ matrix.bazel }}
-
-      - name: Build & Test
-        run: |
-          echo "$SERVICE_KEY" > service-key.json
-          export
-          make test BAZELISK="${GITHUB_WORKSPACE}/bin/bazelisk" CI=yes CACHE=yes
-        env:
-          SERVICE_KEY: ${{ secrets.GOOGLE_CREDENTIALS }}
-          GOOGLE_APPLICATION_CREDENTIALS: service-key.json
+          key: bazel-{{ matrix.bazel }}-{{ matrix.os[1] }}-v1
 
       - name: Bake Images
         run: |
+          echo "$SERVICE_KEY" > service-key.json
+          export
           make samples BAZELISK="${GITHUB_WORKSPACE}/bin/bazelisk" CI=yes CACHE=yes
         env:
           SERVICE_KEY: ${{ secrets.GOOGLE_CREDENTIALS }}
           GOOGLE_APPLICATION_CREDENTIALS: service-key.json
-
-  docs:
-    name: "Documentation"
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout Sources
-        uses: actions/checkout@v1

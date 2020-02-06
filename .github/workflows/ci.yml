@@ -12,8 +12,6 @@ jobs:
 
     strategy:
       matrix:
-        #os: [["Ubuntu", "ubuntu-latest", "linux-amd64"], ["macOS Catalina", "macos-latest", "darwin-amd64"]]
-        #bazel: ["2.0.0", "1.0.0"]
         os: [["Ubuntu", "ubuntu-latest", "linux-amd64"]]
         bazel: ["2.0.0"]
 
@@ -23,15 +21,12 @@ jobs:
       - name: Checkout Sources
         uses: actions/checkout@v1
 
-      - name: Install Bazelisk
+      - name: Install Bazelisk (Bazel v${{ matrix.label }})
         run: |
           curl -LO "https://github.com/bazelbuild/bazelisk/releases/download/${BAZELISK_VERSION}/bazelisk-${{ matrix.os[2] }}"
           mkdir -p "${GITHUB_WORKSPACE}/bin/"
           mv bazelisk-${{ matrix.os[2] }} "${GITHUB_WORKSPACE}/bin/bazelisk"
           chmod +x "${GITHUB_WORKSPACE}/bin/bazelisk"
-
-      - name: Select Bazel v${{ matrix.bazel }}
-        run: |
           echo "${{ matrix.bazel }}" > .bazelversion
 
       - name: Prepare Cache
@@ -39,7 +34,7 @@ jobs:
         uses: actions/cache@v1
         with:
           path: "/home/runner/.cache/bazel-disk-cache"
-          key: bazel-{{ matrix.bazel }}
+          key: bazel-{{ matrix.bazel }}-{{ matrix.os[1] }}-v1
 
       - name: Build & Test
         run: |
@@ -50,3 +45,11 @@ jobs:
         env:
           SERVICE_KEY: ${{ secrets.GOOGLE_CREDENTIALS }}
           GOOGLE_APPLICATION_CREDENTIALS: service-key.json
+
+  docs:
+    name: "Documentation"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Sources
+        uses: actions/checkout@v1
