@@ -175,3 +175,10 @@ container_pull(
     repository = "distroless/java",
     digest = "sha256:0ce06c40e99e0dce26bdbcec30afe7a890a57bbd250777bd31ff2d1b798c7809",
 )
+
+container_pull(
+    name = "native_base",
+    registry = "index.docker.io",
+    repository = "frolvlad/alpine-glibc",
+    digest = "sha256:3431d923a672833b72ef5b92ad00113cd963940f4ebb58f3aa7eddcfaf5310aa",
+)

@@ -1,5 +1,10 @@
 
 load(
+    "@bazel_tools//tools/build_defs/pkg:pkg.bzl",
+    "pkg_tar",
+)
+
+load(
     "@rules_java//java:defs.bzl",
     _java_binary = "java_binary",
     _java_library = "java_library",
@@ -14,6 +19,11 @@ load(
 load(
     "@io_bazel_rules_docker//java:image.bzl",
     _java_image = "java_image",
+)
+
+load(
+    "@io_bazel_rules_docker//container:image.bzl",
+    _container_image = "container_image",
 )
 
 load(
@@ -220,7 +230,9 @@ def _micronaut_application(name,
                            logging_config = str(Label("@gust//java/gust:logback.xml")),
                            main = str(Label("@gust//java/gust/backend:Application.java")),
                            base = str(Label("@gust//java/gust/backend:base")),
+                           native_base = str(Label("@gust//java/gust/backend:native")),
                            repository = None,
+                           native_repository = None,
                            registry = "us.gcr.io",
                            image_format = "OCI",
                            srcs = [],
@@ -257,10 +269,6 @@ def _micronaut_application(name,
         jvm_flags = computed_jvm_flags,
         base = base,
         layers = computed_image_layers,
-        resources = [
-            config,
-            logging_config,
-        ],
         classpath_resources = [
             config,
             logging_config,
@@ -276,6 +284,11 @@ def _micronaut_application(name,
         runtime_deps = _dedupe_deps(runtime_deps + [("%s-%s" % (
           p, JAVAPROTO_POSTFIX_
         )) for p in proto_deps] + INJECTED_MICRONAUT_RUNTIME_DEPS),
+        resources = [
+            config,
+            logging_config,
+        ],
+        resource_strip_prefix = "java/gust/",
     )
 
     _graal_binary(
@@ -283,6 +296,22 @@ def _micronaut_application(name,
         deps = ["%s-lib" % name],
         main_class = main_class,
         c_compiler_path = "/usr/bin/clang",
+        extra_args = [
+            "-H:IncludeResources=application.yml|logback.xml",
+        ],
+    )
+
+    pkg_tar(
+        name = "%s-native-pkg" % name,
+        extension = "tar",
+        srcs = ["%s-native-bin" % name],
+    )
+
+    _container_image(
+        name = "%s-native-image" % name,
+        base = native_base,
+        files = ["%s-native-bin" % name],
+        cmd = "./%s-native-bin" % name,
     )
 
     if repository != None:
@@ -292,6 +321,16 @@ def _micronaut_application(name,
             tag = tag or "{BUILD_SCM_VERSION}",
             format = image_format,
             repository = repository,
+            registry = registry,
+        )
+
+    if native_repository != None:
+        _container_push(
+            name = "%s-native-image-push" % name,
+            image = ":%s-native-image" % name,
+            tag = tag or "{BUILD_SCM_VERSION}",
+            format = image_format,
+            repository = native_repository,
             registry = registry,
         )
 
