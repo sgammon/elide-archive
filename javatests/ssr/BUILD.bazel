@@ -51,6 +51,7 @@ micronaut_controller(
 micronaut_application(
     name = "SSRTestApplication",
     controllers = [":SSRKotlinController"],
+    repository = "$(project)/gust/tests/ssr",
 )
 
 micronaut_test(

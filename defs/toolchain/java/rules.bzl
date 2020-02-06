@@ -47,7 +47,6 @@ INJECTED_MICRONAUT_DEPS = [
     maven("io.micronaut:micronaut-aop"),
     maven("io.micronaut:micronaut-core"),
     maven("io.micronaut:micronaut-http"),
-    maven("io.micronaut:micronaut-runtime"),
     maven("io.micronaut:micronaut-http-client"),
     maven("io.micronaut:micronaut-inject"),
     maven("io.micronaut:micronaut-inject-java"),
@@ -65,7 +64,6 @@ INJECTED_MICRONAUT_DEPS = [
 ]
 
 INJECTED_MICRONAUT_RUNTIME_DEPS = [
-    "@gust//java:entrypoint",
     maven("org.slf4j:slf4j-jdk14"),
     maven("io.micronaut:micronaut-runtime"),
 ]
@@ -215,10 +213,12 @@ def _micronaut_controller(name,
 
 
 def _micronaut_application(name,
-                           main_class = None,
+                           main_class = "gust.backend.Application",
                            config = str(Label("@gust//java/gust:application.yml")),
                            template_loader = str(Label("@gust//java/gust/backend:TemplateProvider")),
                            logging_config = str(Label("@gust//java/gust:logback.xml")),
+                           main = str(Label("@gust//java/gust/backend:Application.java")),
+                           base = str(Label("@gust//java/gust/backend:base")),
                            repository = None,
                            registry = "us.gcr.io",
                            image_format = "OCI",
@@ -238,29 +238,29 @@ def _micronaut_application(name,
 
     computed_jvm_flags = _annotate_jvm_flags([i for i in jvm_flags], defs)
 
-    if len(srcs) > 0:
-        computed_image_deps = _dedupe_deps((deps or []) + controllers)
-        computed_image_layers = _dedupe_deps((deps or []) + INJECTED_MICRONAUT_DEPS + INJECTED_MICRONAUT_RUNTIME_DEPS)
-        computed_deps = _dedupe_deps((deps or []) + INJECTED_MICRONAUT_DEPS + controllers + template_loader)
-        extra_runtime_deps = [template_loader]
-    else:
-        computed_image_deps = []
-        computed_image_layers = []
-        computed_deps = None
-        extra_runtime_deps = (
-            _dedupe_deps((deps or []) + INJECTED_MICRONAUT_DEPS + controllers + [template_loader]))
+    app_srcs = srcs + [main]
+    computed_image_deps = _dedupe_deps((deps or []) + INJECTED_MICRONAUT_DEPS)
+    computed_image_layers = _dedupe_deps((
+        deps or []) + INJECTED_MICRONAUT_RUNTIME_DEPS + [template_loader] + controllers)
+    computed_deps = _dedupe_deps((deps or []) + INJECTED_MICRONAUT_DEPS + controllers)
+    extra_runtime_deps = [template_loader]
 
     _java_image(
         name = "%s-image" % name,
-        srcs = srcs,
+        srcs = app_srcs,
         main_class = main_class,
         deps = computed_image_deps,
         runtime_deps = _dedupe_deps(runtime_deps + [("%s-%s" % (
           p, JAVAPROTO_POSTFIX_
-        )) for p in proto_deps]),
+        )) for p in proto_deps] + INJECTED_MICRONAUT_RUNTIME_DEPS),
         jvm_flags = computed_jvm_flags,
+        base = base,
         layers = computed_image_layers,
         resources = [
+            config,
+            logging_config,
+        ],
+        classpath_resources = [
             config,
             logging_config,
         ],
@@ -277,7 +277,7 @@ def _micronaut_application(name,
 
     _jdk_binary(
         name = name,
-        srcs = srcs,
+        srcs = app_srcs,
         deps = computed_deps,
         runtime_deps = _dedupe_deps(runtime_deps + INJECTED_MICRONAUT_RUNTIME_DEPS + [("%s-%s" % (
           p, JAVAPROTO_POSTFIX_

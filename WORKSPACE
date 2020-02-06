@@ -91,7 +91,6 @@ browser_repositories(chromium=CHROMIUM, firefox=FIREFOX, sauce=SAUCE)
 
 ## Docker
 load("@io_bazel_rules_docker//repositories:repositories.bzl", container_repositories = "repositories")
-load("@io_bazel_rules_docker//container:container.bzl", "container_pull")
 load("@io_bazel_rules_docker//java:image.bzl", _java_image_repos = "repositories")
 load("@io_bazel_rules_docker//go:image.bzl", _go_image_repos = "repositories")
 load("@io_bazel_rules_docker//python:image.bzl", _py_image_repos = "repositories")
@@ -166,3 +165,13 @@ pip_import(
 
 load("//defs/toolchain/python:repos.bzl", "gust_python_repositories")
 gust_python_repositories()
+
+## Java Containers
+load("@io_bazel_rules_docker//container:container.bzl", "container_pull")
+
+container_pull(
+    name = "java_base",
+    registry = "gcr.io",
+    repository = "distroless/java",
+    digest = "sha256:0ce06c40e99e0dce26bdbcec30afe7a890a57bbd250777bd31ff2d1b798c7809",
+)
