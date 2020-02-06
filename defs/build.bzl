@@ -126,8 +126,8 @@ DEPS = {
     "com_google_j2cl": {
         "type": "github",
         "repo": "sgammon/j2cl",
-        "target": "75643f82d45499aba7d48c7e091f335ff5811813",
-        "seal": "f0d2e18882f38e25252b5e52a128d0443f326ea00e697bf7648056917be0a0a5",
+        "target": "3e3092f86b0cc0958a2dbc2c8098484acc1ddff0",
+        "seal": "807d0c61bf966d70dbcfdf89f7fffd001ef9b66c472ef2b6e51031f70cc9c1c9",
         "local": "/workspace/GUST/vendor/bazel/j2cl"},
 
     # Google: Elemental2
