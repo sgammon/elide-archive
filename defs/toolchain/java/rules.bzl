@@ -286,7 +286,7 @@ def _micronaut_application(name,
         ]),
         runtime_deps = _dedupe_deps(runtime_deps + [("%s-%s" % (
           p, JAVAPROTO_POSTFIX_
-        )) for p in proto_deps] + INJECTED_MICRONAUT_RUNTIME_DEPS),
+        )) for p in proto_deps] + INJECTED_MICRONAUT_RUNTIME_DEPS + extra_runtime_deps),
         resources = [
             config,
             logging_config,
