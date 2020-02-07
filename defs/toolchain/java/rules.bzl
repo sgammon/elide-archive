@@ -300,9 +300,16 @@ def _micronaut_application(name,
             main_class = main_class,
             c_compiler_path = "/usr/bin/clang",
             extra_args = [
+                # Extra native-image flags
                 "-H:IncludeResources=application.yml|logback.xml",
+
+                # General build flags
+                "--static",
+                "--no-fallback",
+
+                # Build-time init
                 "--initialize-at-build-time=com.google.template.soy.jbcsrc.api.RenderResult$Type",
-            ],
+            ] + computed_jvm_flags,
         )
 
         pkg_tar(
