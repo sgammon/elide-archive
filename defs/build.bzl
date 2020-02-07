@@ -75,9 +75,9 @@ DEPS = {
     "rules_graal": {
         "type": "github",
         "repo": "sgammon/rules_graal",
-        "target": "3e3a1f89f51bb3b30313228b3a457dca184800bf",
+        "target": "bee4d04a57982b48c240fd2fd7b593253146de4b",
         "local": "/workspace/GUST/vendor/bazel/rules_graal",
-        "seal": "59a36d4f2566e10f981e01a067efea45c9cdac01e07c84c7ffdc74ac2ecbcd38"},
+        "seal": "cf6390d96d515d5a96dd8bbc8bbd6bf7010fe43c316250c31f42accd2dd6bfe0"},
 
     # Rules: Kotlin
     "io_bazel_rules_kotlin": {
