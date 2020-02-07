@@ -14,16 +14,16 @@ import jsinterop.annotations.JsType;
 @SuppressWarnings("WeakerAccess")
 public class Core {
   /** Version of the framework. Injected at build time. */
-  private static final String frameworkVersion = System.getProperty("gust.version", "alpha");
+  static final String frameworkVersion = System.getProperty("gust.version", "alpha");
 
   /** Holds the current runtime engine. */
-  private static final String currentEngine = System.getProperty("gust.engine", "unknown");
+  static final String currentEngine = System.getProperty("gust.engine", "unknown");
 
   /** Holds the current `debug` flag status. */
-  private static final Boolean debugMode = Boolean.parseBoolean(System.getProperty("gust.debug", "false"));
+  static final Boolean debugMode = Boolean.parseBoolean(System.getProperty("gust.debug", "false"));
 
   /** Holds the current `dev` flag status. */
-  private static final Boolean devMode = Boolean.parseBoolean(System.getProperty("gust.dev", "false"));
+  static final Boolean devMode = Boolean.parseBoolean(System.getProperty("gust.dev", "false"));
 
   /**
    * Retrieve the application version setting, which is applied via the JVM system property <pre>gust.version</pre>.
