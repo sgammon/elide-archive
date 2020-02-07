@@ -269,7 +269,6 @@ def _micronaut_application(name,
           p, JAVAPROTO_POSTFIX_
         )) for p in proto_deps] + INJECTED_MICRONAUT_RUNTIME_DEPS),
         jvm_flags = computed_jvm_flags + ["-Dgust.engine=jvm"],
-        args = computed_jvm_flags + ["-Dgust.engine=jvm"],
         base = base,
         layers = computed_image_layers,
         classpath_resources = [
@@ -302,6 +301,7 @@ def _micronaut_application(name,
             c_compiler_path = "/usr/bin/clang",
             extra_args = [
                 # Extra native-image flags
+                "-H:+ParseRuntimeOptions",
                 "-H:IncludeResources=application.yml|logback.xml",
 
                 # General build flags
@@ -325,8 +325,9 @@ def _micronaut_application(name,
             files = ["%s-native-bin" % name],
             workdir = "/app",
             cmd = None,
-            entrypoint = "/app/entrypoint",
-            args = computed_jvm_flags + ["-Dgust.engine=native"],
+            entrypoint = [
+                "/app/entrypoint",
+            ] + computed_jvm_flags + ["-Dgust.engine=native"],
             symlinks = {
                 "/app/entrypoint": "/app/%s-native-bin" % name
             },
