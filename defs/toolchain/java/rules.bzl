@@ -268,7 +268,7 @@ def _micronaut_application(name,
         runtime_deps = _dedupe_deps(runtime_deps + [("%s-%s" % (
           p, JAVAPROTO_POSTFIX_
         )) for p in proto_deps] + INJECTED_MICRONAUT_RUNTIME_DEPS),
-        jvm_flags = computed_jvm_flags,
+        jvm_flags = computed_jvm_flags + ["-Dgust.engine=jvm"],
         base = base,
         layers = computed_image_layers,
         classpath_resources = [
@@ -308,7 +308,7 @@ def _micronaut_application(name,
 
                 # Build-time init
                 "--initialize-at-build-time=com.google.template.soy.jbcsrc.api.RenderResult$Type",
-            ] + computed_jvm_flags,
+            ] + computed_jvm_flags + ["-Dgust.engine=native"],
         )
 
         pkg_tar(

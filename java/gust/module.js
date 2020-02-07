@@ -13,6 +13,16 @@ gust.dev = goog.define('gust.dev', false);
 
 
 /**
+ * Defines the current execution engine. This is always `browser` when running in a Closure-based context. On the
+ * backend, this value changes via `Core`.
+ *
+ * @public
+ * @type {!string}
+ */
+gust.engine = goog.define('gust.engine', 'browser');
+
+
+/**
  * Defines whether we are operating in `debug` mode, which forces the build not to include certain optimizations,
  * including property and style renaming.
  *
