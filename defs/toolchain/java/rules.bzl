@@ -233,6 +233,7 @@ def _micronaut_application(name,
                            main = str(Label("@gust//java/gust/backend:Application.java")),
                            base = str(Label("@gust//java/gust/backend:base")),
                            native_base = str(Label("@gust//java/gust/backend:native")),
+                           native_templates = [],
                            repository = None,
                            native_repository = None,
                            registry = "us.gcr.io",
@@ -270,10 +271,6 @@ def _micronaut_application(name,
         )) for p in proto_deps] + INJECTED_MICRONAUT_RUNTIME_DEPS),
         jvm_flags = computed_jvm_flags + ["-Dgust.engine=jvm"],
         base = base,
-        env = {
-            "PORT": "8080",
-            "ENGINE": "jvm",
-        },
         layers = computed_image_layers,
         classpath_resources = [
             config,
@@ -289,7 +286,11 @@ def _micronaut_application(name,
         ]),
         runtime_deps = _dedupe_deps(runtime_deps + [("%s-%s" % (
           p, JAVAPROTO_POSTFIX_
-        )) for p in proto_deps] + INJECTED_MICRONAUT_RUNTIME_DEPS + extra_runtime_deps),
+        )) for p in proto_deps] + INJECTED_MICRONAUT_RUNTIME_DEPS + extra_runtime_deps + [
+          ("%s-java" % t) for t in native_templates
+        ] + [
+          ("%s-java_jcompiled" % t) for t in native_templates
+        ]),
         resources = [
             config,
             logging_config,
