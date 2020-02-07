@@ -270,6 +270,10 @@ def _micronaut_application(name,
         )) for p in proto_deps] + INJECTED_MICRONAUT_RUNTIME_DEPS),
         jvm_flags = computed_jvm_flags + ["-Dgust.engine=jvm"],
         base = base,
+        env = {
+            "PORT": "8080",
+            "ENGINE": "jvm",
+        },
         layers = computed_image_layers,
         classpath_resources = [
             config,
@@ -325,6 +329,10 @@ def _micronaut_application(name,
             files = ["%s-native-bin" % name],
             workdir = "/app",
             cmd = None,
+            env = {
+                "PORT": "8080",
+                "ENGINE": "native",
+            },
             entrypoint = [
                 "/app/entrypoint",
             ] + computed_jvm_flags + ["-Dgust.engine=native"],
