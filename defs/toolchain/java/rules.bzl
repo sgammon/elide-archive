@@ -304,7 +304,6 @@ def _micronaut_application(name,
                 "-H:IncludeResources=application.yml|logback.xml",
 
                 # General build flags
-                "--static",
                 "--no-fallback",
 
                 # Build-time init

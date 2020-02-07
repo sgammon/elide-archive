@@ -66,7 +66,7 @@ endif
 
 # Flag: `VERBOSE`
 ifeq ($(VERBOSE),yes)
-BASE_ARGS += -s
+BASE_ARGS += -s --verbose_failures
 endif
 
 # Flag: `QUIET`
