@@ -17,7 +17,7 @@ gust.dev = goog.define('gust.dev', false);
  * backend, this value changes via `Core`.
  *
  * @public
- * @type {!string}
+ * @define {!string} gust.engine
  */
 gust.engine = goog.define('gust.engine', 'browser');
 

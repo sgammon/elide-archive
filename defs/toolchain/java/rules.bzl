@@ -320,8 +320,14 @@ def _micronaut_application(name,
         _container_image(
             name = "%s-native-image" % name,
             base = native_base,
+            directory = "/app",
             files = ["%s-native-bin" % name],
-            cmd = "./%s-native-bin" % name,
+            workdir = "/app",
+            cmd = None,
+            entrypoint = "/app/entrypoint",
+            symlinks = {
+                "/app/entrypoint": "/app/%s-native-bin" % name
+            },
         )
 
         if native_repository != None:
