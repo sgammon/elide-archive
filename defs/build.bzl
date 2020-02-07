@@ -54,8 +54,8 @@ DEPS = {
     "rules_proto": {
         "type": "github",
         "repo": "bazelbuild/rules_proto",
-        "target": "f6b8d89b90a7956f6782a4a3609b2f0eee3ce965",
-        "seal": "4d421d51f9ecfe9bf96ab23b55c6f2b809cbaf0eea24952683e397decfbd0dd0"},
+        "target": "673e59d983eeef2e2ae0cfbb98ea87aad9de1795",
+        "seal": "e2a3d5da2a8e316b5c3623e7d7047cdd942f2d0eb43f8c84ca0470f5413f128d"},
 
     # Rules: Python
     "rules_python": {

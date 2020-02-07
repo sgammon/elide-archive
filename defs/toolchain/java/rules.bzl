@@ -59,6 +59,7 @@ INJECTED_MICRONAUT_DEPS = [
     "@gust//defs/toolchain/java/plugins:micronaut",
     maven("com.google.guava:guava"),
     maven("com.google.template:soy"),
+    maven("com.google.protobuf:protobuf-java"),
     maven("com.google.code.findbugs:jsr305"),
     maven("io.micronaut:micronaut-aop"),
     maven("io.micronaut:micronaut-core"),
