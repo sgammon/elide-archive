@@ -301,7 +301,11 @@ def _micronaut_application(name,
     if native:
         _graal_binary(
             name = "%s-native" % name,
-            deps = ["%s-lib" % name],
+            deps = (["%s-lib" % name] + [
+              ("%s-java" % t) for t in native_templates
+            ] + [
+              ("%s-java_jcompiled" % t) for t in native_templates
+            ]),
             main_class = main_class,
             c_compiler_path = "/usr/bin/clang",
             extra_args = [
