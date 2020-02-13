@@ -224,6 +224,23 @@ def _micronaut_controller(name,
     )
 
 
+def _micronaut_native_configset(name, srcs, **kwargs):
+
+    """ Generate a configuration file set which governs reflection or JNI access
+        in a native image. """
+
+    native.filegroup(
+        name = "%s-files" % name,
+        srcs = srcs,
+    )
+
+    _java_library(
+        name = "%s-lib" % name,
+        resources = srcs,
+        **kwargs
+    )
+
+
 def _micronaut_application(name,
                            native = False,
                            main_class = "gust.backend.Application",
@@ -236,6 +253,7 @@ def _micronaut_application(name,
                            native_templates = [],
                            repository = None,
                            native_repository = None,
+                           native_configsets = [],
                            registry = "us.gcr.io",
                            image_format = "OCI",
                            srcs = [],
@@ -283,6 +301,12 @@ def _micronaut_application(name,
         srcs = app_srcs,
         deps = _dedupe_deps(computed_deps + [
             maven("io.micronaut:micronaut-runtime"),
+        ] + [template_loader] + [("%s-%s" % (
+           p, JAVAPROTO_POSTFIX_
+        )) for p in proto_deps] + INJECTED_MICRONAUT_RUNTIME_DEPS + extra_runtime_deps + [
+           ("%s-java" % t) for t in native_templates
+        ] + [
+           ("%s-java_jcompiled" % t) for t in native_templates
         ]),
         runtime_deps = _dedupe_deps(runtime_deps + [("%s-%s" % (
           p, JAVAPROTO_POSTFIX_
@@ -294,6 +318,9 @@ def _micronaut_application(name,
         resources = [
             config,
             logging_config,
+        ],
+        resource_jars = [
+            ("%s-lib" % r) for r in native_configsets
         ],
         resource_strip_prefix = "java/gust/",
     )
@@ -308,6 +335,9 @@ def _micronaut_application(name,
             ]),
             main_class = main_class,
             c_compiler_path = "/usr/bin/clang",
+            configsets = [
+                ("%s-files" % c) for c in native_configsets
+            ],
             extra_args = [
                 # Extra native-image flags
                 "-H:+ParseRuntimeOptions",
@@ -391,3 +421,4 @@ jdk_library = _jdk_library
 micronaut_library = _micronaut_library
 micronaut_controller = _micronaut_controller
 micronaut_application = _micronaut_application
+micronaut_native_configset = _micronaut_native_configset

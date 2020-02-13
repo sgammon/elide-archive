@@ -21,6 +21,7 @@ load(
     "micronaut_library",
     "micronaut_controller",
     "micronaut_application",
+    "micronaut_native_configset",
 )
 
 
@@ -41,6 +42,12 @@ template_library(
     proto_deps = [":context"],
 )
 
+micronaut_library(
+    name = "SSRTemplateLoader",
+    srcs = ["SSRTemplateLoader.kt"],
+    templates = [":ssr"],
+)
+
 micronaut_controller(
     name = "SSRKotlinController",
     srcs = ["SSRKotlinController.kt"],
@@ -48,13 +55,19 @@ micronaut_controller(
     templates = [":ssr"],
 )
 
+micronaut_native_configset(
+    name = "ssr-native-config",
+    srcs = glob(["META-INF/native-image/*.json"]),
+    resource_strip_prefix = "javatests/ssr/",
+)
+
 micronaut_application(
     name = "SSRTestApplication",
     native = True,
     controllers = [":SSRKotlinController"],
     repository = "$(project)/gust/tests/ssr/jvm",
+    template_loader = ":SSRTemplateLoader",
     native_repository = "$(project)/gust/tests/ssr/native",
-    native_templates = [":ssr"],
 )
 
 micronaut_test(

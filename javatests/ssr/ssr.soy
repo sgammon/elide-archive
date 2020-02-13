@@ -2,25 +2,25 @@
 {namespace javatests.ssr}
 
 
-{template .basic}
-    <b>Hello from static Soy!</b>
+{template .salutation visibility="private"}
+  {@param name: string}
+
+  <b>Hello {$name}!</b>
 {/template}
 
 
-{template .salutation}
-    {@param name: string}
-
-    <b>Hello {$name}!</b>
+{template .basic}
+  <b>Hello from static Soy!</b>
 {/template}
 
 
 {template .complex}
-    {@param context: javatests.ssr.Context}
+  {@param context: javatests.ssr.Context}
 
-    {call .salutation}
-        {param name: $context.salutation.name /}
-    {/call}
-    {call .salutation}
-        {param name: $context.salutation.name /}
-    {/call}
+  {call .salutation}
+    {param name: $context.salutation.name /}
+  {/call}
+  {call .salutation}
+    {param name: $context.salutation.name /}
+  {/call}
 {/template}
