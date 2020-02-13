@@ -31,9 +31,10 @@ PROTOBUF_VERSION = "3.11.3"
 
 SVM_VERSION = "19.2.1"
 
-MICRONAUT_VERSION = "1.3.0"
+MICRONAUT_VERSION = "1.3.1"
 MICRONAUT_TEST_VERSION = "1.1.2"
 MICRONAUT_REDIS_VERSION = "1.2.0"
+MICRONAUT_SECURITY_VERSION = "1.3.0"
 
 
 REPOSITORIES = [
@@ -68,7 +69,7 @@ MICRONAUT_BUILD_ARTIFACTS = [
     "io.micronaut:micronaut-router:%s" % MICRONAUT_VERSION,
     "io.micronaut:micronaut-session:%s" % MICRONAUT_VERSION,
     "io.micronaut:micronaut-tracing:%s" % MICRONAUT_VERSION,
-    "io.micronaut:micronaut-security:%s" % MICRONAUT_VERSION,
+    "io.micronaut:micronaut-security:%s" % MICRONAUT_SECURITY_VERSION,
     "io.micronaut:micronaut-multitenancy:%s" % MICRONAUT_VERSION,
     "io.micronaut.configuration:micronaut-redis-lettuce:%s" % MICRONAUT_REDIS_VERSION,
     maven.artifact("com.google.template", "soy", SOY_VERSION, neverlink = True),
