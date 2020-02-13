@@ -6,6 +6,7 @@ load(
     _micronaut_library = "micronaut_library",
     _micronaut_controller = "micronaut_controller",
     _micronaut_application = "micronaut_application",
+    _micronaut_native_configset = "micronaut_native_configset",
 )
 
 load(
@@ -36,6 +37,7 @@ micronaut_test = _micronaut_test
 micronaut_library = _micronaut_library
 micronaut_controller = _micronaut_controller
 micronaut_application = _micronaut_application
+micronaut_native_configset = _micronaut_native_configset
 py_test = _py_test
 py_binary = _py_binary
 py_library = _py_library

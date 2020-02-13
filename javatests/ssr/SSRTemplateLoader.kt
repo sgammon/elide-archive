@@ -1,6 +1,7 @@
-package gust.backend
+package javatests.ssr
 
 import com.google.template.soy.SoyFileSet
+import com.google.template.soy.data.SoyValueConverter
 import com.google.template.soy.jbcsrc.api.SoySauce
 import com.google.template.soy.jbcsrc.api.SoySauceBuilder
 import io.micronaut.views.soy.SoyFileSetProvider
@@ -8,14 +9,26 @@ import io.micronaut.views.soy.SoyNamingMapProvider
 import javax.inject.Singleton
 
 
-/** Default Soy template provider. */
+/**
+ * Force-load compiled templates during static init.
+ */
 @Singleton
-open class TemplateProvider: SoyFileSetProvider, SoyNamingMapProvider {
+class SSRTemplateLoader: SoyFileSetProvider, SoyNamingMapProvider {
   /** Initialized compiled template set. */
   companion object {
     @JvmStatic
     private val compiledTemplates: SoySauce = SoySauceBuilder()
       .build()
+
+    init {
+      val empty = SoyValueConverter.EMPTY_DICT
+      try {
+        com.google.template.soy.jbcsrc.gen.javatests.ssr.basic(empty, empty)
+        com.google.template.soy.jbcsrc.gen.javatests.ssr.complex(empty, empty)
+      } catch (rxe: RuntimeException) {
+        print("WARNING: Failed to load compiled templates.")
+      }
+    }
   }
 
   /**
@@ -26,9 +39,9 @@ open class TemplateProvider: SoyFileSetProvider, SoyNamingMapProvider {
   override fun provideSoyFileSet(): SoyFileSet? = null
 
   /**
-   * Provide the compiled Soy file set for embedded templates.
+   * Load SSR templates by name.
    *
-   * @return Pre-compiled Soy templates.
+   * @return Regular template manager instance.
    */
   override fun provideCompiledTemplates(): SoySauce = compiledTemplates
 }

@@ -27,6 +27,7 @@ ANNOTATIONS_VERSION = "1.3.2"
 SOY_VERSION = "2019-10-08"
 GUAVA_VERSION = "25.1-jre"
 FINDBUGS_VERSION = "3.0.2"
+PROTOBUF_VERSION = "3.11.3"
 
 SVM_VERSION = "19.2.1"
 
@@ -51,6 +52,7 @@ BUILD_ARTIFACTS = [
 MICRONAUT_BUILD_ARTIFACTS = [
     "com.google.guava:guava:%s" % GUAVA_VERSION,
     "com.google.code.findbugs:jsr305:%s" % FINDBUGS_VERSION,
+    "com.google.protobuf:protobuf-java:%s" % PROTOBUF_VERSION,
     "io.micronaut:micronaut-aop:%s" % MICRONAUT_VERSION,
     "io.micronaut:micronaut-core:%s" % MICRONAUT_VERSION,
     "io.micronaut:micronaut-http:%s" % MICRONAUT_VERSION,

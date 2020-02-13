@@ -59,6 +59,7 @@ INJECTED_MICRONAUT_DEPS = [
     "@gust//defs/toolchain/java/plugins:micronaut",
     maven("com.google.guava:guava"),
     maven("com.google.template:soy"),
+    maven("com.google.protobuf:protobuf-java"),
     maven("com.google.code.findbugs:jsr305"),
     maven("io.micronaut:micronaut-aop"),
     maven("io.micronaut:micronaut-core"),
@@ -179,9 +180,13 @@ def _micronaut_library(name,
     _jdk_library(
         name = name,
         srcs = srcs,
-        deps = _dedupe_deps(deps + INJECTED_MICRONAUT_DEPS) + [("%s-%s" % (
+        deps = _dedupe_deps(deps + INJECTED_MICRONAUT_DEPS + [("%s-%s" % (
            p, JAVAPROTO_POSTFIX_
-        )) for p in proto_deps],
+        )) for p in proto_deps] + [
+           ("%s-java" % t) for t in templates
+        ] + [
+           ("%s-java_jcompiled" % t) for t in templates
+        ]),
         runtime_deps = _dedupe_deps(runtime_deps + INJECTED_MICRONAUT_RUNTIME_DEPS + [
           ("%s-java" % t) for t in templates
         ] + [
@@ -223,6 +228,23 @@ def _micronaut_controller(name,
     )
 
 
+def _micronaut_native_configset(name, srcs, **kwargs):
+
+    """ Generate a configuration file set which governs reflection or JNI access
+        in a native image. """
+
+    native.filegroup(
+        name = "%s-files" % name,
+        srcs = srcs,
+    )
+
+    _java_library(
+        name = "%s-lib" % name,
+        resources = srcs,
+        **kwargs
+    )
+
+
 def _micronaut_application(name,
                            native = False,
                            main_class = "gust.backend.Application",
@@ -232,8 +254,10 @@ def _micronaut_application(name,
                            main = str(Label("@gust//java/gust/backend:Application.java")),
                            base = str(Label("@gust//java/gust/backend:base")),
                            native_base = str(Label("@gust//java/gust/backend:native")),
+                           native_templates = [],
                            repository = None,
                            native_repository = None,
+                           native_configsets = [],
                            registry = "us.gcr.io",
                            image_format = "OCI",
                            srcs = [],
@@ -246,6 +270,7 @@ def _micronaut_application(name,
                            runtime_deps = [],
                            jvm_flags = [],
                            defs = {},
+                           reflection_configuration = None,
                            **kwargs):
 
     """ Wraps a regular JDK application with injected Micronaut dependencies and plugins. """
@@ -267,7 +292,7 @@ def _micronaut_application(name,
         runtime_deps = _dedupe_deps(runtime_deps + [("%s-%s" % (
           p, JAVAPROTO_POSTFIX_
         )) for p in proto_deps] + INJECTED_MICRONAUT_RUNTIME_DEPS),
-        jvm_flags = computed_jvm_flags,
+        jvm_flags = computed_jvm_flags + ["-Dgust.engine=jvm"],
         base = base,
         layers = computed_image_layers,
         classpath_resources = [
@@ -281,13 +306,26 @@ def _micronaut_application(name,
         srcs = app_srcs,
         deps = _dedupe_deps(computed_deps + [
             maven("io.micronaut:micronaut-runtime"),
+        ] + [template_loader] + [("%s-%s" % (
+           p, JAVAPROTO_POSTFIX_
+        )) for p in proto_deps] + INJECTED_MICRONAUT_RUNTIME_DEPS + extra_runtime_deps + [
+           ("%s-java" % t) for t in native_templates
+        ] + [
+           ("%s-java_jcompiled" % t) for t in native_templates
         ]),
         runtime_deps = _dedupe_deps(runtime_deps + [("%s-%s" % (
           p, JAVAPROTO_POSTFIX_
-        )) for p in proto_deps] + INJECTED_MICRONAUT_RUNTIME_DEPS),
+        )) for p in proto_deps] + INJECTED_MICRONAUT_RUNTIME_DEPS + extra_runtime_deps + [
+          ("%s-java" % t) for t in native_templates
+        ] + [
+          ("%s-java_jcompiled" % t) for t in native_templates
+        ]),
         resources = [
             config,
             logging_config,
+        ],
+        resource_jars = [
+            ("%s-lib" % r) for r in native_configsets
         ],
         resource_strip_prefix = "java/gust/",
     )
@@ -295,12 +333,28 @@ def _micronaut_application(name,
     if native:
         _graal_binary(
             name = "%s-native" % name,
-            deps = ["%s-lib" % name],
+            deps = (["%s-lib" % name] + [
+              ("%s-java" % t) for t in native_templates
+            ] + [
+              ("%s-java_jcompiled" % t) for t in native_templates
+            ]),
             main_class = main_class,
             c_compiler_path = "/usr/bin/clang",
-            extra_args = [
-                "-H:IncludeResources=application.yml|logback.xml",
+            configsets = [
+                ("%s-files" % c) for c in native_configsets
             ],
+            extra_args = [
+                # Extra native-image flags
+                "-H:+ParseRuntimeOptions",
+                "-H:IncludeResources=application.yml|logback.xml",
+
+                # General build flags
+                "--no-fallback",
+
+                # Build-time init
+                "--initialize-at-build-time=com.google.template.soy.jbcsrc.api.RenderResult$Type",
+            ] + computed_jvm_flags + ["-Dgust.engine=native"],
+            reflection_configuration = reflection_configuration,
         )
 
         pkg_tar(
@@ -312,8 +366,20 @@ def _micronaut_application(name,
         _container_image(
             name = "%s-native-image" % name,
             base = native_base,
+            directory = "/app",
             files = ["%s-native-bin" % name],
-            cmd = "./%s-native-bin" % name,
+            workdir = "/app",
+            cmd = None,
+            env = {
+                "PORT": "8080",
+                "ENGINE": "native",
+            },
+            entrypoint = [
+                "/app/entrypoint",
+            ] + computed_jvm_flags + ["-Dgust.engine=native"],
+            symlinks = {
+                "/app/entrypoint": "/app/%s-native-bin" % name
+            },
         )
 
         if native_repository != None:
@@ -361,3 +427,4 @@ jdk_library = _jdk_library
 micronaut_library = _micronaut_library
 micronaut_controller = _micronaut_controller
 micronaut_application = _micronaut_application
+micronaut_native_configset = _micronaut_native_configset

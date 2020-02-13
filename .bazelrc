@@ -18,6 +18,7 @@ build --java_toolchain=@bazel_tools//tools/jdk:toolchain_java11
 build --host_java_toolchain=@bazel_tools//tools/jdk:toolchain_java11
 build --workspace_status_command=./tools/bazel_stamp_vars.sh
 build --embed_label=alpha
+build --define project=bloom-sandbox
 
 run --incompatible_strict_action_env
 run --workspace_status_command=./tools/bazel_stamp_vars.sh
@@ -36,8 +37,6 @@ build:dev --experimental_persistent_javac
 build:dev --define=jdk=zulu
 build:dev --define=ZULUBASE=/Library/Java/JavaVirtualMachines/zulu-12.jdk/Contents/Home
 build:dev --javabase=//defs/toolchain/java:java_runtime
-
-#run:dev --define=VERBOSE_LOGS=1 -- --node_options=--inspect-brk
 
 query --output=label_kind
 
