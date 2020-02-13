@@ -36,6 +36,11 @@ model(
     deps = [":salutation"],
 )
 
+filegroup(
+    name = "reflection-config",
+    srcs = ["reflection.json"],
+)
+
 template_library(
     name = "ssr",
     srcs = ["ssr.soy"],
@@ -68,6 +73,7 @@ micronaut_application(
     repository = "$(project)/gust/tests/ssr/jvm",
     template_loader = ":SSRTemplateLoader",
     native_repository = "$(project)/gust/tests/ssr/native",
+    reflection_configuration = ":reflection-config",
 )
 
 micronaut_test(

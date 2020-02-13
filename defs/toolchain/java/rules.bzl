@@ -270,6 +270,7 @@ def _micronaut_application(name,
                            runtime_deps = [],
                            jvm_flags = [],
                            defs = {},
+                           reflection_configuration = None,
                            **kwargs):
 
     """ Wraps a regular JDK application with injected Micronaut dependencies and plugins. """
@@ -353,6 +354,7 @@ def _micronaut_application(name,
                 # Build-time init
                 "--initialize-at-build-time=com.google.template.soy.jbcsrc.api.RenderResult$Type",
             ] + computed_jvm_flags + ["-Dgust.engine=native"],
+            reflection_configuration = reflection_configuration,
         )
 
         pkg_tar(
