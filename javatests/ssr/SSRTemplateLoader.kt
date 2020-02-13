@@ -22,8 +22,12 @@ class SSRTemplateLoader: SoyFileSetProvider, SoyNamingMapProvider {
 
     init {
       val empty = SoyValueConverter.EMPTY_DICT
-      val basicFactory = com.google.template.soy.jbcsrc.gen.javatests.ssr.basic(empty, empty).Factory()
-      val complexFactory = com.google.template.soy.jbcsrc.gen.javatests.ssr.complex(empty, empty).Factory()
+      try {
+        com.google.template.soy.jbcsrc.gen.javatests.ssr.basic(empty, empty)
+        com.google.template.soy.jbcsrc.gen.javatests.ssr.complex(empty, empty)
+      } catch (rxe: RuntimeException) {
+        print("WARNING: Failed to load compiled templates.")
+      }
     }
   }
 
