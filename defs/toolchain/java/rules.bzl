@@ -180,9 +180,13 @@ def _micronaut_library(name,
     _jdk_library(
         name = name,
         srcs = srcs,
-        deps = _dedupe_deps(deps + INJECTED_MICRONAUT_DEPS) + [("%s-%s" % (
+        deps = _dedupe_deps(deps + INJECTED_MICRONAUT_DEPS + [("%s-%s" % (
            p, JAVAPROTO_POSTFIX_
-        )) for p in proto_deps],
+        )) for p in proto_deps] + [
+           ("%s-java" % t) for t in templates
+        ] + [
+           ("%s-java_jcompiled" % t) for t in templates
+        ]),
         runtime_deps = _dedupe_deps(runtime_deps + INJECTED_MICRONAUT_RUNTIME_DEPS + [
           ("%s-java" % t) for t in templates
         ] + [
