@@ -30,6 +30,7 @@ BASE_ARGS ?= --google_default_credentials=true --define project=$(PROJECT)
 # Flag: `COVERAGE`
 ifeq ($(COVERAGE),yes)
 TEST_COMMAND ?= coverage
+TEST_ARGS += --combined_report=lcov
 else
 TEST_COMMAND ?= test
 endif
