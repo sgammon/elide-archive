@@ -22,7 +22,6 @@ TAG ?=
 TEST_ARGS ?= --test_output=errors
 BUILD_ARGS ?=
 
-BAZELISK ?= $(shell which bazelisk)
 BAZELISK_ARGS ?=
 BASE_ARGS ?= --google_default_credentials=true --define project=$(PROJECT)
 
@@ -61,8 +60,10 @@ ifeq ($(CI),yes)
 TAG += --config=ci
 _DEFAULT_JAVA_HOME = $(shell echo $$JAVA_HOME_12_X64)
 BASE_ARGS += --define=ZULUBASE=$(_DEFAULT_JAVA_HOME) --define=jdk=zulu
+BAZELISK ?= /bin/bazelisk
 else
 TAG += --config=dev
+BAZELISK ?= $(shell which bazelisk)
 endif
 
 # Flag: `VERBOSE`
@@ -79,10 +80,10 @@ endif
 all: devtools build test
 
 b build:  ## Build all framework targets.
-	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) build $(TAG) $(BASE_ARGS) $(BUILD_ARGS) $(TARGETS)
+	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) build $(TAG) $(BASE_ARGS) $(BUILD_ARGS) -- $(TARGETS)
 
 r run:  ## Run the specified target.
-	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) run $(TAG) $(BASE_ARGS) $(BUILD_ARGS) $(APP)
+	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) run $(TAG) $(BASE_ARGS) $(BUILD_ARGS) -- $(APP)
 
 c clean:  ## Clean ephemeral targets.
 	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) clean
@@ -100,7 +101,7 @@ forceclean: distclean  ## Clean everything, and sanitize the codebase (DANGEROUS
 	git reset --hard && git clean -xdf
 
 test:  ## Run all framework testsuites.
-	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) $(TEST_COMMAND) $(TAG) $(BASE_ARGS) $(TEST_ARGS) $(TESTS)
+	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) $(TEST_COMMAND) $(TAG) $(BASE_ARGS) $(TEST_ARGS) -- $(TESTS)
 
 docs:  ## Build documentation for the framework.
 	@echo "Building GUST docs..."

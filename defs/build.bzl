@@ -32,8 +32,8 @@ DEPS = {
     "bazel_toolchains": {
         "type": "github",
         "repo": "bazelbuild/bazel-toolchains",
-        "target": "b7588fafd8d940b97e805153916c677e02a44716",
-        "seal": "9831da5f71e95589dce35390b673aaf5cc7dd2800fa9b0b6ae4d2546a7e256ad"},
+        "target": "2cd73fd57fc4b8e90e6f47e7254496279c747862",
+        "seal": "7fb8cfb86fffed4574b255ffe3c188403b505f5e502367fc90b6290257ca9d17"},
 
     # Rules: Closure
     "io_bazel_rules_closure": {

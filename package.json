@@ -16,9 +16,9 @@
     "registry": "https://npm.pkg.github.com/"
   },
   "devDependencies": {
-    "@bazel/bazel": "latest",
+    "@bazel/bazel": "2.1.0",
     "@bazel/buildifier": "latest",
-    "@bazel/ibazel": "latest",
+    "@bazel/ibazel": "^0.11.2",
     "@bazel/jasmine": "^1.2.4",
     "@bazel/karma": "^1.2.4",
     "@bazel/source-map-support": "latest",
