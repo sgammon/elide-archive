@@ -1,5 +1,5 @@
 steps:
-  - command: "make build CI=yes CACHE=yes"
+  - command: "gcloud auth configure-docker && make build CI=yes CACHE=yes"
     label: ":package: Build"
 
   - wait
