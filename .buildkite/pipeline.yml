@@ -2,20 +2,20 @@ steps:
   - command: "make build CI=yes BAZELISK=/sdk/bazel/bin/bazelisk"
     label: ":bazel: Build: Framework"
 
+  - command: "make build test CI=yes TARGETS='//javatests/... -javatests/server:BasicTestApplication-native -javatests/ssr:SSRTestApplication-native-bin' TESTS='//javatests/... -javatests/server:BrowserBasicServerTest_chromium-local -javatests/server:BrowserBasicServerTest_firefox-local' BAZELISK=/sdk/bazel/bin/bazelisk"
+    label: ":coverage: Testsuite"
+
+  - wait
+
   - command: "make build CI=yes BAZELISK=/sdk/bazel/bin/bazelisk TARGETS='//javatests/ssr:SSRTestApplication-native-bin && make build CI=yes BAZELISK=/sdk/bazel/bin/bazelisk TARGETS='//javatests/server:BasicTestApplication-native-bin"
     label: ":java: Build: Native Images"
 
   - wait
 
-  - command: "make build test CI=yes TARGETS='//javatests/...' TESTS='//javatests/... -javatests/server:BrowserBasicServerTest_chromium-local -javatests/server:BrowserBasicServerTest_firefox-local' BAZELISK=/sdk/bazel/bin/bazelisk"
-    label: ":coverage: Testsuite"
-
-  - wait
-
   - command: "docker pull us.gcr.io/bloom-sandbox/base/alpine"
     label: ":docker: Pull Bases"
-    #branches: "master"
+    branches: "master"
 
   - command: "make build samples CI=yes BAZELISK=/sdk/bazel/bin/bazelisk"
     label: ":gcloud: Release: Images"
-    #branches: "master"
+    branches: "master"
