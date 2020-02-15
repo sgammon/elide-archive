@@ -1,17 +1,21 @@
 steps:
   - command: "make build CI=yes BAZELISK=/sdk/bazel/bin/bazelisk"
-    label: ":package: Build: Framework"
+    label: ":bazel: Build: Framework"
 
   - command: "make build CI=yes BAZELISK=/sdk/bazel/bin/bazelisk TARGETS='//javatests/ssr:SSRTestApplication-native-bin && make build CI=yes BAZELISK=/sdk/bazel/bin/bazelisk TARGETS='//javatests/basic:BasicTestApplication-native-bin"
-    label: ":clamp: Build: Native Images"
+    label: ":java: Build: Native Images"
 
   - wait
 
   - command: "make build test CI=yes TARGETS='//javatests/...' BAZELISK=/sdk/bazel/bin/bazelisk"
-    label: ":hammer: Testsuite"
+    label: ":coverage: Testsuite"
 
   - wait
 
+  - command: "docker pull us.gcr.io/bloom-sandbox/base/alpine"
+    label: ":docker: Pull Bases"
+    #branches: "master"
+
   - command: "make build samples CI=yes BAZELISK=/sdk/bazel/bin/bazelisk"
-    label: ":whale: Release: Images"
+    label: ":gcloud: Release: Images"
     #branches: "master"
