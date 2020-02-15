@@ -1,13 +1,13 @@
 steps:
-  - command: "make build CI=yes BAZELISK=/sdk/bazel/bin/bazelisk"
+  - command: "make build CI=yes"
     label: ":bazel: Build: Framework"
 
-  - command: "make build CI=yes && make test CI=yes TESTS='//javatests/... -javatests/server:BrowserBasicServerTest_chromium-local -javatests/server:BrowserBasicServerTest_firefox-local -javatests/server:BasicTestApplication-native -javatests/ssr:SSRTestApplication-native-bin' BAZELISK=/sdk/bazel/bin/bazelisk"
+  - command: "make build CI=yes && make test CI=yes TESTS='//javatests/... -javatests/server:BrowserBasicServerTest_chromium-local -javatests/server:BrowserBasicServerTest_firefox-local -javatests/server:BasicTestApplication-native -javatests/ssr:SSRTestApplication-native-bin'"
     label: ":coverage: Testsuite"
 
   - wait
 
-  - command: "make build CI=yes BAZELISK=/sdk/bazel/bin/bazelisk TARGETS='//javatests/ssr:SSRTestApplication-native-bin && make build CI=yes BAZELISK=/sdk/bazel/bin/bazelisk TARGETS='//javatests/server:BasicTestApplication-native-bin"
+  - command: "make build CI=yes TARGETS='//javatests/ssr:SSRTestApplication-native-bin && make build CI=yes TARGETS='//javatests/server:BasicTestApplication-native-bin"
     label: ":java: Build: Native Images"
 
   - wait
@@ -16,6 +16,6 @@ steps:
     label: ":docker: Pull Bases"
     branches: "master"
 
-  - command: "make build samples CI=yes BAZELISK=/sdk/bazel/bin/bazelisk"
+  - command: "make build samples CI=yes"
     label: ":gcloud: Release: Images"
     branches: "master"

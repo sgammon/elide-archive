@@ -22,7 +22,6 @@ TAG ?=
 TEST_ARGS ?= --test_output=errors
 BUILD_ARGS ?=
 
-BAZELISK ?= $(shell which bazelisk)
 BAZELISK_ARGS ?=
 BASE_ARGS ?= --google_default_credentials=true --define project=$(PROJECT)
 
@@ -61,8 +60,10 @@ ifeq ($(CI),yes)
 TAG += --config=ci
 _DEFAULT_JAVA_HOME = $(shell echo $$JAVA_HOME_12_X64)
 BASE_ARGS += --define=ZULUBASE=$(_DEFAULT_JAVA_HOME) --define=jdk=zulu
+BAZELISK ?= /bin/bazelisk
 else
 TAG += --config=dev
+BAZELISK ?= $(shell which bazelisk)
 endif
 
 # Flag: `VERBOSE`
