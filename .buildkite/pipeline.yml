@@ -1,5 +1,5 @@
 steps:
-  - command: "make build test CI=yes BAZELISK=/sdk/bazel/bin/bazelisk"
+  - command: "make build CI=yes BAZELISK=/sdk/bazel/bin/bazelisk"
     label: ":package: Build: Framework"
 
   - command: "make test CI=yes BAZELISK=/sdk/bazel/bin/bazelisk"
