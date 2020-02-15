@@ -1,12 +1,12 @@
 steps:
-  - command: "make build CI=yes CACHE=yes"
+  - command: "make build CI=yes CACHE=yes BAZELISK=/bin/bazelisk"
     label: ":package: Build"
 
   - wait
 
-  - command: "make test CI=yes CACHE=yes"
+  - command: "make test CI=yes CACHE=yes BAZELISK=/bin/bazelisk"
     label: ":hammer: Testsuite"
 
-  - command: "make samples CI=yes CACHE=yes"
+  - command: "make samples CI=yes CACHE=yes BAZELISK=/bin/bazelisk"
     label: ":whale: Bake Images"
     branches: "master"
