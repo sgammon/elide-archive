@@ -2,6 +2,8 @@ steps:
   - command: "make build CI=yes BAZELISK=/sdk/bazel/bin/bazelisk"
     label: ":package: Build: Framework"
 
+  - wait
+
   - command: "make test CI=yes BAZELISK=/sdk/bazel/bin/bazelisk"
     label: ":hammer: Testsuite"
 
