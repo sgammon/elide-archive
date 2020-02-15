@@ -2,7 +2,7 @@ steps:
   - command: "make build CI=yes BAZELISK=/sdk/bazel/bin/bazelisk"
     label: ":bazel: Build: Framework"
 
-  - command: "make build CI=yes BAZELISK=/sdk/bazel/bin/bazelisk TARGETS='//javatests/ssr:SSRTestApplication-native-bin && make build CI=yes BAZELISK=/sdk/bazel/bin/bazelisk TARGETS='//javatests/basic:BasicTestApplication-native-bin"
+  - command: "make build CI=yes BAZELISK=/sdk/bazel/bin/bazelisk TARGETS='//javatests/ssr:SSRTestApplication-native-bin && make build CI=yes BAZELISK=/sdk/bazel/bin/bazelisk TARGETS='//javatests/server:BasicTestApplication-native-bin"
     label: ":java: Build: Native Images"
 
   - wait
