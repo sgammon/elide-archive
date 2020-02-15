@@ -3,6 +3,7 @@
 	url = git@github.com:protocolbuffers/protobuf.git
 	shallow = true
 	ignore = dirty
+	tag = v3.11.3
 [submodule "J2CL"]
 	path = vendor/bazel/j2cl
 	url = git@github.com:sgammon/j2cl.git
