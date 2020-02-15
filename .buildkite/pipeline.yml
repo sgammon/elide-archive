@@ -1,12 +1,12 @@
 steps:
-  - command: "make build CI=yes CACHE=no BAZELISK=/sdk/bazel/bin/bazelisk"
-    label: ":package: Build"
+  - command: "make build test CI=yes BAZELISK=/sdk/bazel/bin/bazelisk"
+    label: ":package: Build: Framework"
+
+  - command: "make test CI=yes BAZELISK=/sdk/bazel/bin/bazelisk"
+    label: ":hammer: Testsuite"
 
   - wait
 
-  - command: "make build test CI=yes CACHE=no BAZELISK=/sdk/bazel/bin/bazelisk"
-    label: ":hammer: Testsuite"
-
-  - command: "make build samples CI=yes CACHE=no BAZELISK=/sdk/bazel/bin/bazelisk"
-    label: ":whale: Bake Images"
-    branches: "master"
+  - command: "make build samples CI=yes BAZELISK=/sdk/bazel/bin/bazelisk"
+    label: ":whale: Release: Images"
+    #branches: "master"

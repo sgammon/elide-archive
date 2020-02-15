@@ -251,7 +251,6 @@ def _micronaut_application(name,
                            config = str(Label("@gust//java/gust:application.yml")),
                            template_loader = str(Label("@gust//java/gust/backend:TemplateProvider")),
                            logging_config = str(Label("@gust//java/gust:logback.xml")),
-                           main = str(Label("@gust//java/gust/backend:Application.java")),
                            base = str(Label("@gust//java/gust/backend:base")),
                            native_base = str(Label("@gust//java/gust/backend:native")),
                            native_templates = [],
@@ -270,6 +269,7 @@ def _micronaut_application(name,
                            runtime_deps = [],
                            jvm_flags = [],
                            defs = {},
+                           inject_main = True,
                            reflection_configuration = None,
                            **kwargs):
 
@@ -277,21 +277,41 @@ def _micronaut_application(name,
 
     computed_jvm_flags = _annotate_jvm_flags([i for i in jvm_flags], defs)
 
-    app_srcs = srcs + [main]
-    computed_image_deps = _dedupe_deps((deps or []) + INJECTED_MICRONAUT_DEPS)
-    computed_image_layers = _dedupe_deps((
-        INJECTED_MICRONAUT_RUNTIME_DEPS + [template_loader] + controllers))
-    computed_deps = _dedupe_deps((deps or []) + INJECTED_MICRONAUT_DEPS + controllers)
-    extra_runtime_deps = [template_loader]
+    if len(srcs) > 0:
+        computed_deps = _dedupe_deps((deps or []) + INJECTED_MICRONAUT_DEPS + controllers)
+        computed_image_deps = _dedupe_deps((deps or []) + INJECTED_MICRONAUT_DEPS)
+        computed_image_layers = _dedupe_deps((
+            INJECTED_MICRONAUT_RUNTIME_DEPS + [template_loader] + controllers))
+        computed_runtime_deps = [template_loader]
+
+        if inject_main:
+            computed_deps.append("//java/gust/backend:backend")
+    else:
+        computed_deps = None
+        computed_image_deps = []
+        computed_image_layers = []
+        computed_runtime_deps = _dedupe_deps(
+            (deps or []) +
+            INJECTED_MICRONAUT_DEPS +
+            controllers + [
+                maven("io.micronaut:micronaut-runtime"),
+            ] + [template_loader] + [("%s-%s" % (
+               p, JAVAPROTO_POSTFIX_
+            )) for p in proto_deps] + INJECTED_MICRONAUT_RUNTIME_DEPS + [
+               ("%s-java" % t) for t in native_templates
+            ] + [
+               ("%s-java_jcompiled" % t) for t in native_templates
+            ])
+
+        if inject_main:
+            computed_runtime_deps.append("//java/gust/backend:backend")
 
     _java_image(
         name = "%s-image" % name,
-        srcs = app_srcs,
+        srcs = srcs,
         main_class = main_class,
         deps = computed_image_deps,
-        runtime_deps = _dedupe_deps(runtime_deps + [("%s-%s" % (
-          p, JAVAPROTO_POSTFIX_
-        )) for p in proto_deps] + INJECTED_MICRONAUT_RUNTIME_DEPS),
+        runtime_deps = computed_runtime_deps,
         jvm_flags = computed_jvm_flags + ["-Dgust.engine=jvm"],
         base = base,
         layers = computed_image_layers,
@@ -303,23 +323,9 @@ def _micronaut_application(name,
 
     _java_library(
         name = "%s-lib" % name,
-        srcs = app_srcs,
-        deps = _dedupe_deps(computed_deps + [
-            maven("io.micronaut:micronaut-runtime"),
-        ] + [template_loader] + [("%s-%s" % (
-           p, JAVAPROTO_POSTFIX_
-        )) for p in proto_deps] + INJECTED_MICRONAUT_RUNTIME_DEPS + extra_runtime_deps + [
-           ("%s-java" % t) for t in native_templates
-        ] + [
-           ("%s-java_jcompiled" % t) for t in native_templates
-        ]),
-        runtime_deps = _dedupe_deps(runtime_deps + [("%s-%s" % (
-          p, JAVAPROTO_POSTFIX_
-        )) for p in proto_deps] + INJECTED_MICRONAUT_RUNTIME_DEPS + extra_runtime_deps + [
-          ("%s-java" % t) for t in native_templates
-        ] + [
-          ("%s-java_jcompiled" % t) for t in native_templates
-        ]),
+        srcs = srcs,
+        deps = computed_deps,
+        runtime_deps = computed_runtime_deps,
         resources = [
             config,
             logging_config,
@@ -333,11 +339,7 @@ def _micronaut_application(name,
     if native:
         _graal_binary(
             name = "%s-native" % name,
-            deps = (["%s-lib" % name] + [
-              ("%s-java" % t) for t in native_templates
-            ] + [
-              ("%s-java_jcompiled" % t) for t in native_templates
-            ]),
+            deps = _dedupe_deps(["%s-lib" % name] + computed_runtime_deps),
             main_class = main_class,
             c_compiler_path = "/usr/bin/clang",
             configsets = [
@@ -404,11 +406,9 @@ def _micronaut_application(name,
 
     _jdk_binary(
         name = name,
-        srcs = app_srcs,
-        deps = _dedupe_deps(computed_deps + [maven("io.micronaut:micronaut-runtime")]),
-        runtime_deps = _dedupe_deps(runtime_deps + INJECTED_MICRONAUT_RUNTIME_DEPS + [("%s-%s" % (
-          p, JAVAPROTO_POSTFIX_
-        )) for p in proto_deps] + controllers + extra_runtime_deps),
+        srcs = srcs,
+        deps = computed_deps,
+        runtime_deps = computed_runtime_deps,
         data = data,
         resources = resources,
         classpath_resources = [config, logging_config],
