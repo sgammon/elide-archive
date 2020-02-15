@@ -346,12 +346,17 @@ def _micronaut_application(name,
                 ("%s-files" % c) for c in native_configsets
             ],
             extra_args = [
+                # General build flags
+                "--no-fallback",
+
+                # Memory usage/runtime flags
+                "--no-server",
+                "-J-Xms1g",
+                "-J-Xmx12g",
+
                 # Extra native-image flags
                 "-H:+ParseRuntimeOptions",
                 "-H:IncludeResources=application.yml|logback.xml",
-
-                # General build flags
-                "--no-fallback",
 
                 # Build-time init
                 "--initialize-at-build-time=com.google.template.soy.jbcsrc.api.RenderResult$Type",
