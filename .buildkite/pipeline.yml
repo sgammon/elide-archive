@@ -4,7 +4,7 @@ steps:
 
   - wait
 
-  - command: "make test CI=yes BAZELISK=/sdk/bazel/bin/bazelisk"
+  - command: "make build test CI=yes TARGETS='//javatests/...' BAZELISK=/sdk/bazel/bin/bazelisk"
     label: ":hammer: Testsuite"
 
   - wait
