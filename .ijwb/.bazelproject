@@ -16,6 +16,7 @@ directories:
   samples
   .github
   .develop
+  .buildkite
   -node_modules
 
 targets:

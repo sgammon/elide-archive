@@ -1,4 +1,12 @@
 steps:
-  - command: "make build CI=yes"
-    label: "Build"
+  - command: "make build CI=yes CACHE=yes"
+    label: ":package: Build"
 
+  - wait
+
+  - command: "make test CI=yes CACHE=yes"
+    label: ":hammer: Testsuite"
+
+  - command: "make samples CI=yes CACHE=yes"
+    label: ":whale: Bake Images"
+    branches: "master"
