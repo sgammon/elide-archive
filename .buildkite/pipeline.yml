@@ -2,7 +2,7 @@ steps:
   - command: "make build CI=yes BAZELISK=/sdk/bazel/bin/bazelisk"
     label: ":bazel: Build: Framework"
 
-  - command: "make build test CI=yes TARGETS='//javatests/... -javatests/server:BasicTestApplication-native -javatests/ssr:SSRTestApplication-native-bin' TESTS='//javatests/... -javatests/server:BrowserBasicServerTest_chromium-local -javatests/server:BrowserBasicServerTest_firefox-local' BAZELISK=/sdk/bazel/bin/bazelisk"
+  - command: "make test CI=yes TESTS='//javatests/... -javatests/server:BrowserBasicServerTest_chromium-local -javatests/server:BrowserBasicServerTest_firefox-local -javatests/server:BasicTestApplication-native -javatests/ssr:SSRTestApplication-native-bin' BAZELISK=/sdk/bazel/bin/bazelisk"
     label: ":coverage: Testsuite"
 
   - wait
