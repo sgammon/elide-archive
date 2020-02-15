@@ -7,7 +7,7 @@ steps:
 
   - wait
 
-  - command: "make build test CI=yes TARGETS='//javatests/...' BAZELISK=/sdk/bazel/bin/bazelisk"
+  - command: "make build test CI=yes TARGETS='//javatests/...' TESTS='//javatests/... -javatests/server:BrowserBasicServerTest_chromium-local -javatests/server:BrowserBasicServerTest_firefox-local' BAZELISK=/sdk/bazel/bin/bazelisk"
     label: ":coverage: Testsuite"
 
   - wait

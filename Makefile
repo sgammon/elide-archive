@@ -100,7 +100,7 @@ forceclean: distclean  ## Clean everything, and sanitize the codebase (DANGEROUS
 	git reset --hard && git clean -xdf
 
 test:  ## Run all framework testsuites.
-	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) $(TEST_COMMAND) $(TAG) $(BASE_ARGS) $(TEST_ARGS) $(TESTS)
+	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) $(TEST_COMMAND) $(TAG) $(BASE_ARGS) $(TEST_ARGS) -- $(TESTS)
 
 docs:  ## Build documentation for the framework.
 	@echo "Building GUST docs..."
