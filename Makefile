@@ -15,7 +15,7 @@ IMAGE_PROJECT ?= elide-tools
 RBE_INSTANCE ?= default_instance
 CACHE_KEY ?= GustBuild
 REVISION ?= $(shell git describe --abbrev=7 --always --tags HEAD)
-VERSION ?= $(shell cat package.json | grep version | head -1 | awk -F: '{ print $2 }' | sed 's/[",]//g' | tr -d '[[:space:]]')
+VERSION ?= $(shell (cat package.json | grep version | head -1 | awk -F: '{ print $2 }' | sed 's/[",]//g' | tr -d '[[:space:]]' | sed 's/version\://g'))
 REGISTRY ?= bloomworks
 
 APP ?=
