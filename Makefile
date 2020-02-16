@@ -11,8 +11,12 @@ QUIET ?= no
 STRICT ?= no
 COVERAGE ?= no
 PROJECT ?= bloom-sandbox
+IMAGE_PROJECT ?= elide-tools
 RBE_INSTANCE ?= default_instance
 CACHE_KEY ?= GustBuild
+REVISION ?= $(shell git describe --abbrev=7 --always --tags HEAD)
+VERSION ?= $(shell cat package.json | grep version | head -1 | awk -F: '{ print $2 }' | sed 's/[",]//g' | tr -d '[[:space:]]')
+REPOSITORY ?=
 
 APP ?=
 TARGETS ?= //java/... //proto/... //js/... //style/...
@@ -98,7 +102,7 @@ distclean:  ## Clean targets, caches and dependencies.
 	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) clean --expunge_async
 
 forceclean: distclean  ## Clean everything, and sanitize the codebase (DANGEROUS).
-	git reset --hard && git clean -xdf
+	$(_RULE)git reset --hard && git clean -xdf
 
 test:  ## Run all framework testsuites.
 	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) $(TEST_COMMAND) $(TAG) $(BASE_ARGS) $(TEST_ARGS) -- $(TESTS)
@@ -117,6 +121,31 @@ devtools:  ## Install local development dependencies.
 
 update-deps:  ## Re-seal and update all dependencies.
 	@echo "Re-pinning Maven dependencies..."
-	$(BAZELISK) $(BAZELISK_ARGS) run @unpinned_maven//:pin
+	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) run @unpinned_maven//:pin
 
-.PHONY: build test help samples
+release-images:  ## Pull, tag, and release Docker images.
+	@echo "Pulling images for revision $(REVISION)..."
+	$(_RULE)docker pull us.gcr.io/$(IMAGE_PROJECT)/sample/basic/jvm:$(REVISION)
+	$(_RULE)docker pull us.gcr.io/$(IMAGE_PROJECT)/sample/basic/native:$(REVISION)
+	$(_RULE)docker pull us.gcr.io/$(IMAGE_PROJECT)/sample/ssr/jvm:$(REVISION)
+	$(_RULE)docker pull us.gcr.io/$(IMAGE_PROJECT)/sample/ssr/native:$(REVISION)
+
+	@echo "Tagging images for release ($(VERSION))..."
+	$(_RULE)docker tag us.gcr.io/$(IMAGE_PROJECT)/sample/basic/native:$(REVISION) \
+                       $(REPOSITORY)/sample-basic:$(VERSION);
+	$(_RULE)docker tag us.gcr.io/$(IMAGE_PROJECT)/sample/basic/jvm:$(REVISION) \
+                       $(REPOSITORY)/sample-basic-jvm:$(VERSION);
+	$(_RULE)docker tag us.gcr.io/$(IMAGE_PROJECT)/sample/ssr/native:$(REVISION) \
+                       $(REPOSITORY)/sample-ssr:$(VERSION);
+	$(_RULE)docker tag us.gcr.io/$(IMAGE_PROJECT)/sample/ssr/jvm:$(REVISION) \
+                       $(REPOSITORY)/sample-ssr-jvm:$(VERSION);
+
+	@echo "Pushing images to repository ($(VERSION))..."
+	$(_RULE)docker push $(REPOSITORY)/sample-basic:$(VERSION);
+	$(_RULE)docker push $(REPOSITORY)/sample-basic-jvm:$(VERSION);
+	$(_RULE)docker push $(REPOSITORY)/sample-ssr:$(VERSION);
+	$(_RULE)docker push $(REPOSITORY)/sample-ssr-jvm:$(VERSION);
+
+
+.PHONY: build test help samples release-images update-deps devtools
+

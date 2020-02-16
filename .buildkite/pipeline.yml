@@ -22,15 +22,15 @@ steps:
 
   - wait
 
-  - command: "echo 'registry=https://npm.pkg.github.com/sgammon' > .npmrc && npm publish"
-    label: ":octocat: + :npm: Staging: NPM"
+  - command: "./gradlew build publish -Pgithub=true -Psigning.gnupg.keyName=1E58CCB7"
+    label: ":octocat: + :mvn: Staging: Maven"
     branches:
       - "master"
       - "release/*"
       - "feature/packaging"
 
-  - command: "./gradlew build publish -Pgithub=true"
-    label: ":octocat: + :mvn: Staging: Maven"
+  - command: "echo 'registry=https://npm.pkg.github.com/sgammon' > .npmrc && npm publish"
+    label: ":octocat: + :npm: Staging: NPM"
     branches:
       - "master"
       - "release/*"
@@ -49,7 +49,7 @@ steps:
     label: ":npm: Release: NPM"
     branches: "master"
 
-  - command: "./gradlew build publish"
+  - command: "./gradlew build publish -Psigning.gnupg.keyName=1E58CCB7"
     label: ":mvn: Release: Maven"
     branches: "master"
 

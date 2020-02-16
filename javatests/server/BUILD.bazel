@@ -35,8 +35,8 @@ micronaut_library(
 micronaut_application(
     name = "BasicTestApplication",
     native = True,
-    repository = "$(project)/gust/tests/basic/jvm",
-    native_repository = "$(project)/gust/tests/basic/native",
+    repository = "$(project)/sample/basic/jvm",
+    native_repository = "elide-tools/sample/basic/native",
     controllers = [
         ":BasicJavaController",
         ":BasicKotlinController",

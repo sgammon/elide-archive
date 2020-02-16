@@ -72,7 +72,7 @@ micronaut_application(
     controllers = [":SSRKotlinController"],
     repository = "$(project)/gust/tests/ssr/jvm",
     template_loader = ":SSRTemplateLoader",
-    native_repository = "$(project)/gust/tests/ssr/native",
+    native_repository = "elide-tools/sample/ssr/native",
     reflection_configuration = ":reflection-config",
 )
 
