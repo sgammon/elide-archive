@@ -16,7 +16,7 @@ RBE_INSTANCE ?= default_instance
 CACHE_KEY ?= GustBuild
 REVISION ?= $(shell git describe --abbrev=7 --always --tags HEAD)
 VERSION ?= $(shell cat package.json | grep version | head -1 | awk -F: '{ print $2 }' | sed 's/[",]//g' | tr -d '[[:space:]]')
-REPOSITORY ?=
+REGISTRY ?= bloomworks
 
 APP ?=
 TARGETS ?= //java/... //proto/... //js/... //style/...
@@ -132,19 +132,19 @@ release-images:  ## Pull, tag, and release Docker images.
 
 	@echo "Tagging images for release ($(VERSION))..."
 	$(_RULE)docker tag us.gcr.io/$(IMAGE_PROJECT)/sample/basic/native:$(REVISION) \
-                       $(REPOSITORY)/sample-basic:$(VERSION);
+                       $(REGISTRY)/sample-basic:$(VERSION);
 	$(_RULE)docker tag us.gcr.io/$(IMAGE_PROJECT)/sample/basic/jvm:$(REVISION) \
-                       $(REPOSITORY)/sample-basic-jvm:$(VERSION);
+                       $(REGISTRY)/sample-basic-jvm:$(VERSION);
 	$(_RULE)docker tag us.gcr.io/$(IMAGE_PROJECT)/sample/ssr/native:$(REVISION) \
-                       $(REPOSITORY)/sample-ssr:$(VERSION);
+                       $(REGISTRY)/sample-ssr:$(VERSION);
 	$(_RULE)docker tag us.gcr.io/$(IMAGE_PROJECT)/sample/ssr/jvm:$(REVISION) \
-                       $(REPOSITORY)/sample-ssr-jvm:$(VERSION);
+                       $(REGISTRY)/sample-ssr-jvm:$(VERSION);
 
 	@echo "Pushing images to repository ($(VERSION))..."
-	$(_RULE)docker push $(REPOSITORY)/sample-basic:$(VERSION);
-	$(_RULE)docker push $(REPOSITORY)/sample-basic-jvm:$(VERSION);
-	$(_RULE)docker push $(REPOSITORY)/sample-ssr:$(VERSION);
-	$(_RULE)docker push $(REPOSITORY)/sample-ssr-jvm:$(VERSION);
+	$(_RULE)docker push $(REGISTRY)/sample-basic:$(VERSION);
+	$(_RULE)docker push $(REGISTRY)/sample-basic-jvm:$(VERSION);
+	$(_RULE)docker push $(REGISTRY)/sample-ssr:$(VERSION);
+	$(_RULE)docker push $(REGISTRY)/sample-ssr-jvm:$(VERSION);
 
 
 .PHONY: build test help samples release-images update-deps devtools

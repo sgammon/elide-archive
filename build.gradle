@@ -63,7 +63,7 @@ sourceSets {
 }
 
 signing {
-    if (signing == "true") {
+    if ("$signing" == "true") {
         if (gpg2 == "true") {
             useGpgCmd()
         }
@@ -124,7 +124,7 @@ publishing {
                 }
             }
 
-            if (signing == "true") {
+            if ("$signing" == "true") {
                 project.tasks.signArchives.signatureFiles.each {
                     artifact(it) {
                         def matcher = it.file =~ /-(sources|javadoc)\.jar\.asc$/
