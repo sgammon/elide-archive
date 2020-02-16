@@ -54,6 +54,7 @@ steps:
   - wait
 
   - input: "Request Release"
+    if: build.tag != null
     fields:
       - select: "Stream"
         key: "release-stream"
