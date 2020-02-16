@@ -63,10 +63,12 @@ sourceSets {
 }
 
 signing {
-    if (gpg2) {
-        useGpgCmd()
+    if (signing == "true") {
+        if (gpg2 == "true") {
+            useGpgCmd()
+        }
+        sign configurations.archives
     }
-    sign configurations.archives
 }
 
 task sourceJar(type: Jar) {

@@ -20,7 +20,7 @@ steps:
       - "feature/packaging"
 
   - command: "make build samples CI=yes"
-    label: ":gcloud: Release: Images"
+    label: ":gcloud: Publish: Images"
     branches:
       - "master"
       - "release/*"
@@ -28,7 +28,7 @@ steps:
 
   - wait
 
-  - command: "./gradlew build publish -Pgithub=true -Psigning.gnupg.keyName=1E58CCB7"
+  - command: "./gradlew build publish -Pgithub=true -Psigning=false"
     label: ":octocat: + :mvn: Staging: Maven"
     branches:
       - "master"
@@ -57,7 +57,7 @@ steps:
     label: ":npm: Release: NPM"
     branches: "master"
 
-  - command: "./gradlew build publish -Psigning.gnupg.keyName=1E58CCB7"
+  - command: "./gradlew build publish -Psigning=true -Psigning.gnupg.keyName=E5D4CAD76D96F4AB2C879C96EF742ACE1E58CCB7"
     label: ":mvn: Release: Maven"
     branches: "master"
 
