@@ -63,7 +63,9 @@ sourceSets {
 }
 
 signing {
-    useGpgCmd()
+    if (gpg2) {
+        useGpgCmd()
+    }
     sign configurations.archives
 }
 

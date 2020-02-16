@@ -14,11 +14,17 @@ steps:
 
   - command: "docker pull us.gcr.io/bloom-sandbox/base/alpine"
     label: ":docker: Pull Bases"
-    branches: "master"
+    branches:
+      - "master"
+      - "release/*"
+      - "feature/packaging"
 
   - command: "make build samples CI=yes"
     label: ":gcloud: Release: Images"
-    branches: "master"
+    branches:
+      - "master"
+      - "release/*"
+      - "feature/packaging"
 
   - wait
 
@@ -29,12 +35,14 @@ steps:
       - "release/*"
       - "feature/packaging"
 
+
   - command: "echo 'registry=https://npm.pkg.github.com/sgammon' > .npmrc && npm publish"
     label: ":octocat: + :npm: Staging: NPM"
     branches:
       - "master"
       - "release/*"
       - "feature/packaging"
+
 
   - command: "make release-images CI=yes REGISTRY=docker.pkg.github.com/sgammon"
     label: ":octocat: + :whale: Staging: Docker"
