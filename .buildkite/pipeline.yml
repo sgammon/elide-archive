@@ -53,14 +53,27 @@ steps:
 
   - wait
 
+  - input: "Request Release"
+    fields:
+      - select: "Stream"
+        key: "release-stream"
+        hint: "Which release stream does this belong in? :fork:"
+        options:
+          - label: "Beta"
+            value: "beta"
+          - label: "Stable"
+            value: "stable"
+
+  - wait
+
   - command: "rm -f .npmrc && npm publish"
     label: ":npm: Release: NPM"
-    branches: "master"
+    if: build.tag != null
 
   #- command: "./gradlew build publish -Psigning=true -Psigning.gnupg.keyName=E5D4CAD76D96F4AB2C879C96EF742ACE1E58CCB7"
   #  label: ":mvn: Release: Maven"
-  #  branches: "master"
+  #  if: build.tag != null
 
   - command: "make release-images CI=yes"
     label: ":docker: Release: Docker"
-    branches: "master"
+    if: build.tag != null
