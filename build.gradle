@@ -206,7 +206,10 @@ model {
         destination = file("$buildDir/generated-pom.xml")
     }
 
-    if ("$signing" == "true") {
+}
+
+if ("$signing" == "true") {
+    model {
         tasks.publishMavenJavaPublicationToMavenLocal {
             dependsOn project.tasks.signArchives
         }
@@ -216,4 +219,3 @@ model {
         }
     }
 }
-
