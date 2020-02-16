@@ -28,28 +28,17 @@ steps:
 
   - wait
 
-  - command: "./gradlew build publish -Pgithub=true -Psigning=false"
-    label: ":octocat: + :mvn: Staging: Maven"
-    branches:
-      - "master"
-      - "release/*"
-      - "feature/packaging"
-
-
   - command: "echo 'registry=https://npm.pkg.github.com/sgammon' > .npmrc && npm publish"
     label: ":octocat: + :npm: Staging: NPM"
-    branches:
-      - "master"
-      - "release/*"
-      - "feature/packaging"
+    if: build.tag != null
 
+  - command: "./gradlew build publish -Pgithub=true -Psigning=false"
+    label: ":octocat: + :mvn: Staging: Maven"
+    if: build.tag != null
 
   - command: "make release-images CI=yes REGISTRY=docker.pkg.github.com/sgammon/gust"
     label: ":octocat: + :whale: Staging: Docker"
-    branches:
-      - "master"
-      - "release/*"
-      - "feature/packaging"
+    if: build.tag != null
 
   - wait
 
