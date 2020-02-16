@@ -8,7 +8,7 @@ steps:
   - wait
 
   - command: "make build CI=yes TARGETS='//javatests/ssr:SSRTestApplication-native-bin && make build CI=yes TARGETS='//javatests/server:BasicTestApplication-native-bin"
-    label: ":java: Build: Native Images"
+    label: ":java: Build: Native Binaries"
 
   - wait
 
@@ -18,4 +18,41 @@ steps:
 
   - command: "make build samples CI=yes"
     label: ":gcloud: Release: Images"
+    branches: "master"
+
+  - wait
+
+  - command: "echo 'registry=https://npm.pkg.github.com/sgammon' > .npmrc && npm publish"
+    label: ":octocat: + :npm: Staging: NPM"
+    branches:
+      - "master"
+      - "release/*"
+      - "feature/packaging"
+
+  - command: "./gradlew build publish -Pgithub=true"
+    label: ":octocat: + :mvn: Staging: Maven"
+    branches:
+      - "master"
+      - "release/*"
+      - "feature/packaging"
+
+  - command: "make release-images CI=yes REGISTRY=docker.pkg.github.com/sgammon"
+    label: ":octocat: + :whale: Staging: Docker"
+    branches:
+      - "master"
+      - "release/*"
+      - "feature/packaging"
+
+  - wait
+
+  - command: "rm -f .npmrc && npm publish"
+    label: ":npm: Release: NPM"
+    branches: "master"
+
+  - command: "./gradlew build publish"
+    label: ":mvn: Release: Maven"
+    branches: "master"
+
+  - command: "make release-images CI=yes"
+    label: ":docker: Release: Docker"
     branches: "master"

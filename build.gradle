@@ -136,9 +136,7 @@ publishing {
 
     repositories {
         maven {
-            def github = true
-
-            if (github) {
+            if (github == "true") {
                 url = "https://maven.pkg.github.com/sgammon/gust"
                 credentials {
                     username "$githubUsername"
