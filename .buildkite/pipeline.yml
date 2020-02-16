@@ -12,7 +12,7 @@ steps:
 
   - wait
 
-  - command: "docker pull us.gcr.io/bloom-sandbox/base/alpine"
+  - command: "docker pull us.gcr.io/elide-tools/base/alpine"
     label: ":docker: Pull Bases"
     branches:
       - "master"
