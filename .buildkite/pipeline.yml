@@ -57,9 +57,9 @@ steps:
     label: ":npm: Release: NPM"
     branches: "master"
 
-  - command: "./gradlew build publish -Psigning=true -Psigning.gnupg.keyName=E5D4CAD76D96F4AB2C879C96EF742ACE1E58CCB7"
-    label: ":mvn: Release: Maven"
-    branches: "master"
+  #- command: "./gradlew build publish -Psigning=true -Psigning.gnupg.keyName=E5D4CAD76D96F4AB2C879C96EF742ACE1E58CCB7"
+  #  label: ":mvn: Release: Maven"
+  #  branches: "master"
 
   - command: "make release-images CI=yes"
     label: ":docker: Release: Docker"
