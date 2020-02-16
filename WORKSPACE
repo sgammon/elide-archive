@@ -179,6 +179,6 @@ container_pull(
 container_pull(
     name = "native_base",
     registry = "us.gcr.io",
-    repository = "bloom-sandbox/base/alpine",
+    repository = "elide-tools/base/alpine",
     digest = "sha256:decbf1b8ba41c556941f2fbd82811822f7b9622cbd3a17d5d4041cb5438bae2d",
 )
