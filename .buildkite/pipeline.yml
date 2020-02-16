@@ -44,7 +44,7 @@ steps:
       - "feature/packaging"
 
 
-  - command: "make release-images CI=yes REGISTRY=docker.pkg.github.com/sgammon"
+  - command: "make release-images CI=yes REGISTRY=docker.pkg.github.com/sgammon/gust"
     label: ":octocat: + :whale: Staging: Docker"
     branches:
       - "master"
