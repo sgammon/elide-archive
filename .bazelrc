@@ -3,6 +3,7 @@
 # Base Settings
 ##
 
+common --instrument_test_targets
 common --experimental_allow_incremental_repository_updates
 
 build --watchfs

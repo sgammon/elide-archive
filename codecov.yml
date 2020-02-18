@@ -1,0 +1,25 @@
+
+codecov:
+  max_report_age: off
+  require_ci_to_pass: yes
+  strict_yaml_branch: master
+
+coverage:
+  precision: 2
+  round: down
+  range: "60...90"
+
+parsers:
+  pass
+
+comment:
+  layout: "reach,diff,flags,tree"
+  behavior: default
+  require_changes: no
+
+ignore:
+  - "tests/"
+  - "javatests/"
+  - "vendor/"
+  - "node_modules/"
+

@@ -7,7 +7,7 @@ CI ?= no
 CACHE ?= yes
 REMOTE ?= no
 VERBOSE ?= no
-QUIET ?= no
+QUIET ?= yes
 STRICT ?= no
 COVERAGE ?= yes
 FORCE_COVERAGE ?= no
@@ -20,9 +20,10 @@ PROJECT_NAME ?= GUST
 
 SAMPLES ?= //samples/rest_mvc/java:MicronautMVCSample //samples/soy_ssr/java:MicronautSSRSample
 
+OUTPATH ?= dist/out
 REVISION ?= $(shell git describe --abbrev=7 --always --tags HEAD)
 VERSION ?= $(shell (cat package.json | grep version | head -1 | awk -F: '{ print $2 }' | sed 's/[",]//g' | tr -d '[[:space:]]' | sed 's/version\://g'))
-COVERAGE_DATA ?= bazel-out/_coverage/_coverage_report.dat
+COVERAGE_DATA ?= $(OUTPATH)/_coverage/_coverage_report.dat
 COVERAGE_REPORT ?= reports/coverage
 COVERAGE_ARGS ?= --function-coverage \
                  --branch-coverage \
@@ -45,6 +46,7 @@ TEST_ARGS ?= --test_output=errors
 TEST_ARGS_WITH_COVERAGE ?= --combined_report=lcov --nocache_test_results
 BUILD_ARGS ?=
 
+POSIX_FLAGS ?=
 BAZELISK_ARGS ?=
 BASE_ARGS ?= --google_default_credentials=true --define project=$(PROJECT)
 
@@ -94,10 +96,13 @@ endif
 # Flag: `VERBOSE`
 ifeq ($(VERBOSE),yes)
 BASE_ARGS += -s --verbose_failures
+POSIX_FLAGS += v
+else
+_RULE = @
 endif
 
 # Flag: `QUIET`
-ifeq ($(VERBOSE),yes)
+ifeq ($(QUIET),yes)
 _RULE = @
 endif
 
@@ -131,6 +136,7 @@ ifeq ($(COVERAGE),yes)
 	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) coverage $(TAG) $(BASE_ARGS) $(TEST_ARGS) $(TEST_ARGS_WITH_COVERAGE) -- $(COVERABLE)
 	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) $(TEST_COMMAND) $(TAG) $(BASE_ARGS) $(TEST_ARGS) -- $(TESTS)
 	$(_RULE)$(GENHTML) $(COVERAGE_DATA) --output-directory $(COVERAGE_REPORT) $(COVERAGE_ARGS)
+	$(_RULE)cp -f$(POSIX_FLAGS) $(COVERAGE_DATA) $(COVERAGE_REPORT)/lcov.dat
 else
 	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) $(TEST_COMMAND) $(TAG) $(BASE_ARGS) $(TEST_ARGS) -- $(TESTS) $(COVERABLE)
 endif
@@ -153,7 +159,11 @@ update-deps:  ## Re-seal and update all dependencies.
 
 serve-coverage:  ## Serve the current coverage report (must generate first).
 	@echo "Serving coverage report..."
-	@cd reports/coverage && python -m SimpleHTTPServer
+	$(_RULE)cd $(COVERAGE_REPORT) && python -m SimpleHTTPServer
+
+report-coverage:  ## Report coverage results to Codecov.
+	@echo "Reporting Java coverage to Codecov..."
+	$(_RULE)tools/report_java_coverage.sh $(COVERAGE_REPORT) backend,jvm javatests;
 
 release-images:  ## Pull, tag, and release Docker images.
 	@echo "Pulling images for revision $(REVISION)..."

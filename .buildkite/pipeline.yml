@@ -1,14 +1,15 @@
 steps:
   - command: "make build CI=yes"
     label: ":bazel: Build: Framework"
+    key: framework-build
 
-  - command: "make build test CI=yes"
+  - command: "make build test report-coverage CI=yes"
     label: ":coverage: Testsuite"
-
-  - wait
+    depends_on: framework-build
 
   - command: "make build CI=yes TARGETS='//samples/rest_mvc/java:MicronautMVCSample-native-bin' && make build CI=yes TARGETS='//samples/soy_ssr/src:MicronautSSRSample-native-bin'"
     label: ":java: Build: Native Binaries"
+    depends_on: framework-build
 
   - wait
 
@@ -17,14 +18,12 @@ steps:
     branches:
       - "master"
       - "release/*"
-      - "feature/packaging"
 
   - command: "make build samples CI=yes"
     label: ":gcloud: Publish: Images"
     branches:
       - "master"
       - "release/*"
-      - "feature/packaging"
 
   - wait
 
