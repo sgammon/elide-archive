@@ -1,0 +1,12 @@
+
+syntax = "proto3";
+package tests.soy;
+
+import "tests/soy/salutation.proto";
+
+
+// Example template context via proto.
+message Context {
+  // Salutation details.
+  Salutation salutation = 1;
+}

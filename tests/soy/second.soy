@@ -1,0 +1,14 @@
+
+{namespace tests.soy.second}
+
+
+{template .helloTwice}
+    {@param context: tests.soy.TemplateContext}
+
+    {call tests.soy.simple.hello}
+        {param name: $context.salutation.name /}
+    {/call}
+    {call tests.soy.simple.hello}
+        {param name: $context.salutation.name /}
+    {/call}
+{/template}

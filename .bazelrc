@@ -81,5 +81,7 @@ build:remote --remote_timeout=3600
 # account credential instead.
 build:remote --google_default_credentials=true
 
+test --instrumentation_filter=//...
+
 try-import %workspace%/.bazelrc.user
 

@@ -1,0 +1,58 @@
+package(
+    default_visibility = ["//visibility:public"],
+)
+
+load(
+    "@gust//defs/toolchain:schema.bzl",
+    "model",
+)
+
+load(
+    "@gust//defs/toolchain:templates.bzl",
+    "template_library",
+)
+
+load(
+    "@gust//defs/toolchain:backend.bzl",
+    "micronaut_controller",
+    "micronaut_application",
+)
+
+
+model(
+    name = "salutation",
+    srcs = ["salutation.proto"],
+)
+
+model(
+    name = "context",
+    srcs = ["context.proto"],
+    deps = [":salutation"],
+)
+
+filegroup(
+    name = "reflection-config",
+    srcs = ["reflection.json"],
+)
+
+template_library(
+    name = "ssr",
+    srcs = ["ssr.soy"],
+    proto_deps = [":context"],
+)
+
+micronaut_controller(
+    name = "SSRKotlinController",
+    srcs = ["SSRKotlinController.kt"],
+    protos = [":context"],
+    templates = [":ssr"],
+)
+
+micronaut_application(
+    name = "MicronautSSRSample",
+    native = True,
+    controllers = [":SSRKotlinController"],
+    repository = "elide-tools/sample/ssr/jvm",
+    native_repository = "elide-tools/sample/ssr/native",
+    reflection_configuration = ":reflection-config",
+)

@@ -2,8 +2,12 @@
 load(
     "//defs/toolchain/js:rules.bzl",
     _js_app = "js_app",
-    _js_test = "js_test",
     _js_module = "js_module",
+)
+
+load(
+    "//defs/toolchain/js:testing.bzl",
+    _js_test = "js_test",
 )
 
 load(

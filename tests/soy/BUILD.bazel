@@ -1,0 +1,78 @@
+
+load(
+    "//defs/toolchain:schema.bzl",
+    "model",
+)
+
+load(
+    "//defs/toolchain:templates.bzl",
+    "template_library",
+)
+
+load(
+    "@io_bazel_rules_sass//:defs.bzl",
+    "sass_binary",
+)
+
+load(
+    "//defs/toolchain/style:rules.bzl",
+    "style_binary",
+    "style_library",
+)
+
+load(
+    "//defs/toolchain/testing:file_test.bzl",
+    "file_test",
+)
+
+
+model(
+    name = "salutation",
+    srcs = ["salutation.proto"],
+)
+
+model(
+    name = "context",
+    srcs = ["context.proto"],
+    deps = [":salutation"],
+)
+
+model(
+    name = "person_name",
+    srcs = ["person_name.proto"],
+)
+
+model(
+    name = "template_context",
+    srcs = ["template_context.proto"],
+    deps = [":person_name"],
+)
+
+template_library(
+    name = "simple",
+    srcs = ["simple.soy"],
+)
+
+template_library(
+    name = "second",
+    srcs = ["second.soy"],
+    soy_deps = [
+        ":simple",
+    ],
+    proto_deps = [
+        ":template_context",
+    ]
+)
+
+template_library(
+    name = "styled",
+    srcs = ["styled.soy"],
+    python = False,
+    style_deps = [
+        "//tests/style:mod2",
+    ],
+    proto_deps = [
+        ":context",
+        ":salutation",
+    ],
+)

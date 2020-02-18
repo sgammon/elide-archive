@@ -21,7 +21,6 @@ ts_config_rules:
 
 test_sources:
   - */tests/*
-  - */test/*
   - */javatests/*
 
 additional_languages:

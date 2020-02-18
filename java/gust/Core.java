@@ -13,6 +13,8 @@ import jsinterop.annotations.JsType;
 @JsType
 @SuppressWarnings("WeakerAccess")
 public class Core {
+  private Core() { /* Disallow instantiation. */ }
+
   /** Version of the framework. Injected at build time. */
   static final String frameworkVersion = System.getProperty("gust.version", "alpha");
 
@@ -54,7 +56,7 @@ public class Core {
    *
    * @return Whether we are running in debug mode, or production mode (in which case this is `false`).
    */
-  public static boolean isDebugMode() {
+  public static Boolean isDebugMode() {
     return debugMode;
   }
 
@@ -66,7 +68,7 @@ public class Core {
    *
    * @return Whether we are running in dev mode, or production mode (in which case this is `false`).
    */
-  public static boolean isDevMode() {
+  public static Boolean isDevMode() {
     return devMode;
   }
 
@@ -77,7 +79,7 @@ public class Core {
    *
    * @return Whether we are running in production mode or not (`true` when `dev` and `debug` are both `false`).
    */
-  public static boolean isProductionMode() {
+  public static Boolean isProductionMode() {
     return !debugMode && !devMode;
   }
 }

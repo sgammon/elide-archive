@@ -7,11 +7,22 @@ load(
 
 
 micronaut_controller(
-    name = "SampleController",
-    srcs = ["SampleController.kt"],
+    name = "SampleJavaController",
+    srcs = ["SampleJavaController.java"],
+)
+
+micronaut_controller(
+    name = "SampleKotlinController",
+    srcs = ["SampleKotlinController.kt"],
 )
 
 micronaut_application(
     name = "MicronautMVCSample",
-    controllers = [":SampleController"],
+    native = True,
+    repository = "elide-tools/sample/basic/jvm",
+    native_repository = "elide-tools/sample/basic/native",
+    controllers = [
+        ":SampleJavaController",
+        ":SampleKotlinController",
+    ],
 )

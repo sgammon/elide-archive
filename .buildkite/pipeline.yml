@@ -2,12 +2,12 @@ steps:
   - command: "make build CI=yes"
     label: ":bazel: Build: Framework"
 
-  - command: "make build CI=yes && make test CI=yes TESTS='//javatests/... -javatests/server:BrowserBasicServerTest_chromium-local -javatests/server:BrowserBasicServerTest_firefox-local -javatests/server:BasicTestApplication-native -javatests/ssr:SSRTestApplication-native-bin'"
+  - command: "make build test CI=yes"
     label: ":coverage: Testsuite"
 
   - wait
 
-  - command: "make build CI=yes TARGETS='//javatests/ssr:SSRTestApplication-native-bin && make build CI=yes TARGETS='//javatests/server:BasicTestApplication-native-bin"
+  - command: "make build CI=yes TARGETS='//samples/rest_mvc/java:MicronautMVCSample-native-bin' && make build CI=yes TARGETS='//samples/soy_ssr/src:MicronautSSRSample-native-bin'"
     label: ":java: Build: Native Binaries"
 
   - wait

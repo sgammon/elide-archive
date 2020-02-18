@@ -9,31 +9,50 @@ REMOTE ?= no
 VERBOSE ?= no
 QUIET ?= no
 STRICT ?= no
-COVERAGE ?= no
+COVERAGE ?= yes
+FORCE_COVERAGE ?= no
 PROJECT ?= bloom-sandbox
 IMAGE_PROJECT ?= elide-tools
 RBE_INSTANCE ?= default_instance
 CACHE_KEY ?= GustBuild
+REGISTRY ?= bloomworks
+PROJECT_NAME ?= GUST
+
+SAMPLES ?= //samples/rest_mvc/java:MicronautMVCSample //samples/soy_ssr/java:MicronautSSRSample
+
 REVISION ?= $(shell git describe --abbrev=7 --always --tags HEAD)
 VERSION ?= $(shell (cat package.json | grep version | head -1 | awk -F: '{ print $2 }' | sed 's/[",]//g' | tr -d '[[:space:]]' | sed 's/version\://g'))
-REGISTRY ?= bloomworks
+COVERAGE_DATA ?= bazel-out/_coverage/_coverage_report.dat
+COVERAGE_REPORT ?= reports/coverage
+COVERAGE_ARGS ?= --function-coverage \
+                 --branch-coverage \
+                 --highlight \
+                 --demangle-cpp \
+                 --show-details \
+                 --title "$(PROJECT_NAME)" \
+                 --precision 2 \
+                 --legend \
+                 --rc genhtml_med_limit=60 \
+                 --rc genhtml_hi_limit=90
 
 APP ?=
 TARGETS ?= //java/... //proto/... //js/... //style/...
-TESTS ?= //javatests/...
+TESTS ?= //tests/...
+COVERABLE ?= //javatests/...
 
 TAG ?=
 TEST_ARGS ?= --test_output=errors
+TEST_ARGS_WITH_COVERAGE ?= --combined_report=lcov --nocache_test_results
 BUILD_ARGS ?=
 
 BAZELISK_ARGS ?=
 BASE_ARGS ?= --google_default_credentials=true --define project=$(PROJECT)
 
 
-# Flag: `COVERAGE`
-ifeq ($(COVERAGE),yes)
+# Flag: `FORCE_COVERAGE`
+ifeq ($(FORCE_COVERAGE),yes)
 TEST_COMMAND ?= coverage
-TEST_ARGS += --combined_report=lcov
+TEST_ARGS += $(TEST_ARGS_WITH_COVERAGE)
 else
 TEST_COMMAND ?= test
 endif
@@ -65,9 +84,11 @@ TAG += --config=ci
 _DEFAULT_JAVA_HOME = $(shell echo $$JAVA_HOME_12_X64)
 BASE_ARGS += --define=ZULUBASE=$(_DEFAULT_JAVA_HOME) --define=jdk=zulu
 BAZELISK ?= /bin/bazelisk
+GENHTML ?= /bin/genhtml
 else
 TAG += --config=dev
 BAZELISK ?= $(shell which bazelisk)
+GENHTML ?= $(shell which genhtml)
 endif
 
 # Flag: `VERBOSE`
@@ -84,6 +105,7 @@ endif
 all: devtools build test
 
 b build:  ## Build all framework targets.
+	$(info Building $(PROJECT_NAME)...)
 	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) build $(TAG) $(BASE_ARGS) $(BUILD_ARGS) -- $(TARGETS)
 
 r run:  ## Run the specified target.
@@ -93,10 +115,10 @@ c clean:  ## Clean ephemeral targets.
 	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) clean
 
 samples:  ## Build and push sample app images.
-	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) run $(TAG) $(BASE_ARGS) $(BUILD_ARGS) //javatests/server:BasicTestApplication-image-push
-	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) run $(TAG) $(BASE_ARGS) $(BUILD_ARGS) //javatests/server:BasicTestApplication-native-image-push
-	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) run $(TAG) $(BASE_ARGS) $(BUILD_ARGS) //javatests/ssr:SSRTestApplication-image-push
-	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) run $(TAG) $(BASE_ARGS) $(BUILD_ARGS) //javatests/ssr:SSRTestApplication-native-image-push
+	$(_RULE)for target in $(SAMPLES) ; do \
+        $(BAZELISK) $(BAZELISK_ARGS) run $(TAG) $(BASE_ARGS) $(BUILD_ARGS) $$(echo "$$target")-image-push && \
+        $(BAZELISK) $(BAZELISK_ARGS) run $(TAG) $(BASE_ARGS) $(BUILD_ARGS) $$(echo "$$target")-native-image-push; \
+        done
 
 distclean:  ## Clean targets, caches and dependencies.
 	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) clean --expunge_async
@@ -105,7 +127,13 @@ forceclean: distclean  ## Clean everything, and sanitize the codebase (DANGEROUS
 	$(_RULE)git reset --hard && git clean -xdf
 
 test:  ## Run all framework testsuites.
+ifeq ($(COVERAGE),yes)
+	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) coverage $(TAG) $(BASE_ARGS) $(TEST_ARGS) $(TEST_ARGS_WITH_COVERAGE) -- $(COVERABLE)
 	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) $(TEST_COMMAND) $(TAG) $(BASE_ARGS) $(TEST_ARGS) -- $(TESTS)
+	$(_RULE)$(GENHTML) $(COVERAGE_DATA) --output-directory $(COVERAGE_REPORT) $(COVERAGE_ARGS)
+else
+	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) $(TEST_COMMAND) $(TAG) $(BASE_ARGS) $(TEST_ARGS) -- $(TESTS) $(COVERABLE)
+endif
 
 docs:  ## Build documentation for the framework.
 	@echo "Building GUST docs..."
@@ -122,6 +150,10 @@ devtools:  ## Install local development dependencies.
 update-deps:  ## Re-seal and update all dependencies.
 	@echo "Re-pinning Maven dependencies..."
 	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) run @unpinned_maven//:pin
+
+serve-coverage:  ## Serve the current coverage report (must generate first).
+	@echo "Serving coverage report..."
+	@cd reports/coverage && python -m SimpleHTTPServer
 
 release-images:  ## Pull, tag, and release Docker images.
 	@echo "Pulling images for revision $(REVISION)..."

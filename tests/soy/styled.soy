@@ -1,0 +1,46 @@
+
+{namespace tests.soy.styled requirecss="style.sample.mod2"}
+
+
+{template .salutation visibility="private"}
+    {@param name: string}
+
+    <b class="{css('test')}">Hello, {$name}!</b>
+{/template}
+
+
+{template .wrapper}
+    {@param name: string}
+
+    <div class="{css('goodbye')}">
+        {call .salutation}
+            {param name: $name /}
+        {/call}
+    </div>
+{/template}
+
+
+{element .thing}
+    {@state context: tests.soy.Context = tests.soy.Context(salutation: tests.soy.Salutation(name: 'World'))}
+
+    <div class="hello-thingy {css('hello')}">
+        {call .wrapper}
+            {param name: $context.salutation.name /}
+        {/call}
+    </div>
+{/element}
+
+
+{template .page}
+    {@param context: tests.soy.Context}
+
+    <html>
+        <body>
+            <div class="hello-thingy {css('hello')}">
+                {call .wrapper}
+                    {param name: $context.salutation.name /}
+                {/call}
+            </div>
+        </body>
+    </html>
+{/template}

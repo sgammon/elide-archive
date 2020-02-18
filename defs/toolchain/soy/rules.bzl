@@ -32,6 +32,7 @@ def _template_library(name,
                       py_deps = [],
                       java_deps = [],
                       proto_deps = [],
+                      style_deps = [],
                       js = _JS_TEMPLATES,
                       java = _JAVA_TEMPLATES,
                       python = _PYTHON_TEMPLATES,
@@ -51,14 +52,14 @@ def _template_library(name,
         _closure_js_template_library(
             name = "%s-js" % name,
             srcs = srcs,
-            deps = js_deps + [("%s-%s" % (dep, CLOSUREPROTO_POSTFIX_)) for dep in proto_deps],
+            deps = js_deps + [("%s-%s" % (dep, CLOSUREPROTO_POSTFIX_)) for dep in proto_deps] + style_deps,
         )
 
     if python:
         _closure_py_template_library(
             name = "%s-py" % name,
             srcs = srcs,
-            deps = soy_deps,
+            deps = soy_deps + style_deps,
             proto_deps = [("%s-%s" % (p, CLOSUREPROTO_POSTFIX_)) for p in proto_deps],
         )
 
@@ -71,6 +72,7 @@ def _template_library(name,
               [("%s-%s" % (p, JAVAPROTO_POSTFIX_)) for p in proto_deps] +
               [("%s-java_jcompiled" % p) for p in soy_deps]),
             proto_deps = [("%s-%s" % (p, CLOSUREPROTO_POSTFIX_)) for p in proto_deps],
+            style_deps = style_deps,
             precompile = precompile,
         )
 

@@ -1,0 +1,12 @@
+
+syntax = "proto3";
+package tests.soy;
+
+import "tests/soy/person_name.proto";
+
+
+// Mock template context object.
+message TemplateContext {
+  // Holds a person's name.
+  PersonName salutation = 1;
+}

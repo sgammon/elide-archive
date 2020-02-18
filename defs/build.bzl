@@ -39,9 +39,9 @@ DEPS = {
     "io_bazel_rules_closure": {
         "type": "github",
         "repo": "sgammon/rules_closure",
-        "target": "4dc8434e964fa69d9c16d0936a706614c430ee1d",
+        "target": "571e37db18cc2e559999049b7bc7c9112c8b195d",
         "local": "/workspace/GUST/vendor/bazel/rules_closure",
-        "seal": "90fa364333565bd6ad26dd48a58285c54967f8e335471a388a2e046bfaec390d"},
+        "seal": "94c7f97d7200650583a444dc6fe0cb650b2856bd1d098ae7587b6bafa6400bc2"},
 
     # Rules: SASS
     "io_bazel_rules_sass": {
@@ -134,8 +134,8 @@ DEPS = {
     "com_google_elemental2": {
         "type": "github",
         "repo": "google/elemental2",
-        "target": "6567f2ad00379f34f4a1e080faf90fc284615354",
-        "seal": "94a978b5b4ced58b0ce95bfa6d3e08a3c55af4c89e49449aa6b61c2f34b931ab"},
+        "target": "d328c1e688cc5e7e9eaec5c5d264423878827925",
+        "seal": None},
 
     # Google: JS Interop (Generator)
     "com_google_jsinterop_generator": {

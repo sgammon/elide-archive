@@ -7,8 +7,19 @@ load(
     "java_library",
 )
 
+java_library(
+    name = "gustlib",
+    exports = [
+        "//java/gust:Core",
+    ],
+)
 
 alias(
     name = "entrypoint",
     actual = "//java/gust/backend:backend",
+)
+
+alias(
+    name = "framework",
+    actual = ":gustlib",
 )

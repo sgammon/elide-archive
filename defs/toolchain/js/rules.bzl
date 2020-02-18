@@ -6,7 +6,6 @@ load(
 
 load(
     "@io_bazel_rules_closure//closure:defs.bzl",
-    _closure_js_test = "closure_js_test",
     _closure_js_library = "closure_js_library",
     _closure_js_binary = "closure_js_binary",
     _closure_js_template_library = "closure_js_template_library",
@@ -18,20 +17,6 @@ load(
     _annotate_defs_dict = "annotate_defs_dict",
     _annotate_defs_flags = "annotate_defs_flags",
 )
-
-
-def _js_test(name, srcs = None, deps = None, defs = {}, **kwargs):
-
-    """ Build a closure JS test. """
-
-    overlay_defs = _annotate_defs_flags(defs)
-    _closure_js_test(
-        name = name,
-        srcs = srcs or [],
-        deps = (deps or []) + ["@io_bazel_rules_closure//closure/library:testing"],
-        defs = overlay_defs,
-        **kwargs
-    )
 
 
 def _js_module(name, srcs = None, deps = None, **kwargs):
@@ -71,5 +56,4 @@ def _js_app(name,
 
 
 js_app = _js_app
-js_test = _js_test
 js_module = _js_module
