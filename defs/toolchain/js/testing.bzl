@@ -62,7 +62,7 @@ def _js_bin_test(name,
                  lenient = False,
                  suppress = None,
                  visibility = None,
-                 karma_config = str(Label("@gust//javatests:karma_config.js")),
+                 karma_config = str(Label("@gust//tests:karma_config.js")),
                  tags = [],
                  extra_compiler_flags = TEST_COMPILER_FLAGS,
                  **kwargs):
