@@ -72,7 +72,6 @@ def _template_library(name,
               [("%s-%s" % (p, JAVAPROTO_POSTFIX_)) for p in proto_deps] +
               [("%s-java_jcompiled" % p) for p in soy_deps]),
             proto_deps = [("%s-%s" % (p, CLOSUREPROTO_POSTFIX_)) for p in proto_deps],
-            style_deps = style_deps,
             precompile = precompile,
         )
 

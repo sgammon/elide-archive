@@ -1,6 +1,6 @@
 
 load(
-    "@io_bazel_rules_sass//:defs.bzl",
+    "@rules_sass//:defs.bzl",
     _sass_binary = "sass_binary",
     _sass_library = "sass_library",
 )
