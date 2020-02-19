@@ -3,7 +3,7 @@ goog.module('tests.dom.dom_test');
 goog.setTestOnly();
 
 const Core = goog.require('gust.Core');
-const DomOperation = goog.require('javatests.dom.DomOperation');
+const DomOperation = goog.require('tests.dom.DomOperation');
 const TagName = goog.require('goog.dom.TagName');
 const dom = goog.require('goog.dom');
 const gust = goog.require('gust');
