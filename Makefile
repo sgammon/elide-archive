@@ -18,7 +18,7 @@ CACHE_KEY ?= GustBuild
 REGISTRY ?= bloomworks
 PROJECT_NAME ?= GUST
 
-SAMPLES ?= //samples/rest_mvc/java:MicronautMVCSample //samples/soy_ssr/java:MicronautSSRSample
+SAMPLES ?= //samples/rest_mvc/java:MicronautMVCSample //samples/soy_ssr/src:MicronautSSRSample
 
 OUTPATH ?= dist/out
 REVISION ?= $(shell git describe --abbrev=7 --always --tags HEAD)
@@ -190,4 +190,3 @@ release-images:  ## Pull, tag, and release Docker images.
 
 
 .PHONY: build test help samples release-images update-deps devtools
-

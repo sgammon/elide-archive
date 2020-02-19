@@ -47,15 +47,9 @@ steps:
           - label: "Stable"
             value: "stable"
 
-  - wait
-
   - command: "rm -f .npmrc && rm -f package.json && cp -fv package-global.json package.json && npm publish"
     label: ":npm: Release: NPM"
     if: build.tag != null
-
-  #- command: "./gradlew build publish -Psigning=true -Psigning.gnupg.keyName=E5D4CAD76D96F4AB2C879C96EF742ACE1E58CCB7"
-  #  label: ":mvn: Release: Maven"
-  #  if: build.tag != null
 
   - command: "make release-images CI=yes"
     label: ":docker: Release: Docker"
