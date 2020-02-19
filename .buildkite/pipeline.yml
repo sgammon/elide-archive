@@ -19,8 +19,6 @@ steps:
   - command: "make build samples CI=yes"
     label: ":gcloud: Publish: Images"
 
-  - wait
-
   - command: "echo 'registry=https://npm.pkg.github.com/sgammon' > .npmrc && npm publish"
     label: ":octocat: + :npm: Staging: NPM"
     if: build.tag != null
@@ -32,8 +30,6 @@ steps:
   - command: "make release-images CI=yes REGISTRY=docker.pkg.github.com/sgammon/gust"
     label: ":octocat: + :whale: Staging: Docker"
     if: build.tag != null
-
-  - wait
 
   - input: "Request Release"
     if: build.tag != null
