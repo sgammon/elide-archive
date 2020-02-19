@@ -1,5 +1,5 @@
 
-goog.module('javatests.dom.dom_test');
+goog.module('tests.dom.dom_test');
 goog.setTestOnly();
 
 const Core = goog.require('gust.Core');
