@@ -172,14 +172,6 @@ DEPS = {
         "target": "734b8d41d39a903c70132828616f26cb2c7f908c",
         "seal": "c89348b73f4bc59c0add4074cc0c620a5a2a08338eb4ef207d57eaa8453b82e8"},
 
-    # HTML5 Boilerplate
-    "org_html5_boilerplate": {
-        "type": "github",
-        "repo": "h5bp/html5-boilerplate",
-        "target": "36c8988392777cd3c2c6718bfa1114c79b344601",
-        "overlay": "h5bp.bzl",
-        "seal": None},
-
     # Normalize CSS
     "org_normalize_css": {
         "type": "github",
