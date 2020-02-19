@@ -10,7 +10,7 @@ load(
 )
 
 load(
-    "@io_bazel_rules_sass//:defs.bzl",
+    "@rules_sass//:defs.bzl",
     "sass_binary",
 )
 
