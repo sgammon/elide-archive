@@ -4,7 +4,7 @@ package(
 )
 
 load(
-    "@rules_sass//:defs.bzl",
+    "@io_bazel_rules_sass//:defs.bzl",
     "sass_binary",
 )
 

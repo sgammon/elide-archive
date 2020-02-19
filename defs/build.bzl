@@ -102,7 +102,7 @@ DEPS = {
         "seal": "887ebbdc0815c7e61376d8b74f03a5692dcbe857bc61b8b4bb4d94322b276d4e"},
 
     # Rules: SCSS/SASS
-    "rules_sass": {
+    "io_bazel_rules_sass": {
         "type": "github",
         "repo": "bazelbuild/rules_sass",
         "target": "7e798ffb0f4a6147b766ee2a62d7f18b8155452e",

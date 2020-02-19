@@ -45,10 +45,10 @@ load("@npm_bazel_typescript//:index.bzl", "ts_setup_workspace")
 ts_setup_workspace()
 
 ## SASS
-load("@rules_sass//:package.bzl", "rules_sass_dependencies")
+load("@io_bazel_rules_sass//:package.bzl", "rules_sass_dependencies")
 rules_sass_dependencies()
 
-load("@rules_sass//:defs.bzl", "sass_repositories")
+load("@io_bazel_rules_sass//:defs.bzl", "sass_repositories")
 sass_repositories()
 
 ## Kotlin
