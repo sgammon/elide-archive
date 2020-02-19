@@ -1,0 +1,8 @@
+{
+  "name": "@elide/sample-node-mvc",
+  "version": "1.0.0",
+  "devDependencies": {
+    "@bazel/bazel": "latest",
+    "@bazel/typescript": "latest"
+  }
+}

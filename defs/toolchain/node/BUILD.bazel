@@ -9,7 +9,7 @@ load(
 
 
 bzl_library(
-    name = "js-toolchain",
+    name = "node-toolchain",
     srcs = [
         "rules.bzl",
         "testing.bzl",

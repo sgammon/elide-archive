@@ -1,0 +1,54 @@
+
+package(
+    default_visibility = ["//visibility:public"],
+)
+
+load(
+    "//defs/toolchain:frontend.bzl",
+    "js_module",
+    "ts_module",
+)
+
+
+ts_module(
+    name = "init",
+    srcs = ["init.ts"],
+    runtime = "node",
+    deps = [
+        ":logging",
+        "@npm//@feathersjs/express",
+        "@npm//@feathersjs/feathers",
+        "@npm//@types/express",
+    ]
+)
+
+ts_module(
+    name = "logging",
+    srcs = ["logging.ts"],
+    runtime = "node",
+    deps = [
+        "@npm//winston",
+        "@npm//@types/winston",
+    ]
+)
+
+ts_module(
+    name = "app",
+    srcs = ["app.ts"],
+    runtime = "node",
+    deps = [
+        ":logging",
+        ":init",
+        "@npm//@types/node",
+        "@npm//@feathersjs/feathers",
+    ],
+)
+
+ts_module(
+    name = "main",
+    srcs = ["main.ts"],
+    runtime = "node",
+    deps = [
+        ":app",
+    ],
+)

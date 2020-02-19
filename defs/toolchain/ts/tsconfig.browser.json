@@ -1,10 +1,6 @@
 {
+  "extends": "tsconfig.common.json",
   "compilerOptions": {
-    "baseUrl": ".",
-    "esModuleInterop": true,
-    "jsx": "react",
-    "strict": true,
-    "skipLibCheck": true,
     "lib": [
       "es5",
       "es6",
@@ -16,26 +12,17 @@
     ],
     "target": "es5",
     "module": "ES2015",
-    "experimentalDecorators": true,
-    "moduleResolution": "node",
-    "types": [],
     "paths": {
       "closure:*": ["./node_modules/closure-library.d.ts/index.d.ts"]
     }
   },
   "include": [
-    "js/**/*.ts"
-  ],
-  "exclude": [
-      "bazel-*",
-      "dist"
+    "js/frontend/**/*.ts"
   ],
   "bazelOptions": {
-      "workspaceName": "gust",
       "tsickle": true,
       "tsickleGenerateExterns": true,
       "tsickleExternsPath": "externs.js",
       "googmodule": true
   }
 }
-

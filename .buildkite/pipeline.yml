@@ -15,15 +15,9 @@ steps:
 
   - command: "docker pull us.gcr.io/elide-tools/base/alpine"
     label: ":docker: Pull Bases"
-    branches:
-      - "master"
-      - "release/*"
 
   - command: "make build samples CI=yes"
     label: ":gcloud: Publish: Images"
-    branches:
-      - "master"
-      - "release/*"
 
   - wait
 

@@ -1,0 +1,24 @@
+
+load(
+    "@gust//defs/toolchain:backend.bzl",
+    "feathers_app",
+    "feathers_controller",
+)
+
+
+feathers_controller(
+    name = "JavaScriptController",
+    srcs = ["JavaScriptController.js"],
+)
+
+feathers_controller(
+    name = "TypeScriptController",
+    srcs = ["TypeScriptController.ts"],
+)
+
+feathers_app(
+    name = "FeatherMVCApp",
+    controllers = [
+        ":JavaScriptController"
+    ]
+)

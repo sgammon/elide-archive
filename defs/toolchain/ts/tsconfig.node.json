@@ -1,0 +1,18 @@
+{
+  "extends": "./tsconfig.common.json",
+  "compilerOptions": {
+    "paths": {
+      "gust:*": [
+        "./js/gust"
+      ]
+    },
+    "lib": [
+      "ES2015",
+      "ES5",
+      "ES6"
+    ]
+  },
+  "include": [
+    "js/backend/**/*.ts"
+  ]
+}

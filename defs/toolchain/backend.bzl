@@ -29,6 +29,12 @@ load(
     _werkzeug_test = "werkzeug_test",
 )
 
+load(
+    "//defs/toolchain/node:rules.bzl",
+    _feathers_app = "feathers_app",
+    _feathers_library = "feathers_library",
+)
+
 
 jdk_test = _jdk_test
 jdk_binary = _jdk_binary
@@ -38,9 +44,14 @@ micronaut_library = _micronaut_library
 micronaut_controller = _micronaut_controller
 micronaut_application = _micronaut_application
 micronaut_native_configset = _micronaut_native_configset
+
 py_test = _py_test
 py_binary = _py_binary
 py_library = _py_library
 werkzeug_test = _werkzeug_test
 werkzeug_library = _werkzeug_library
 werkzeug_application = _werkzeug_application
+
+feathers_app = _feathers_app
+feathers_library = _feathers_library
+feathers_controller = _feathers_library

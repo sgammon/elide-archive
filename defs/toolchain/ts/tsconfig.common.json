@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "jsx": "react",
+    "strict": true,
+    "sourceMap": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "moduleResolution": "node",
+    "types": []
+  },
+  "exclude": [
+    "bazel-*",
+    "dist"
+  ],
+  "bazelOptions": {
+    "workspaceName": "gust"
+  }
+}

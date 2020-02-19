@@ -9,7 +9,7 @@ exports_files([
 
 alias(
     name = "tsconfig.json",
-    actual = "//defs/toolchain/js:tsconfig.json",
+    actual = "//defs/toolchain/ts:tsconfig.node.json",
 )
 
 alias(
@@ -21,4 +21,3 @@ alias(
     name = "docs",
     actual = "//defs:gust-docs",
 )
-

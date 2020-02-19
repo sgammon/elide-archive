@@ -7,9 +7,33 @@ load(
     "bzl_library",
 )
 
+load(
+    "@npm_bazel_typescript//:index.bzl",
+    "ts_config",
+)
+
+
+ts_config(
+    name = "tsconfig-node",
+    src = "tsconfig.node.json",
+    deps = ["tsconfig.common.json"],
+)
+
+ts_config(
+    name = "tsconfig-browser",
+    src = "tsconfig.browser.json",
+    deps = ["tsconfig.common.json"],
+)
+
 bzl_library(
     name = "ts-toolchain",
     srcs = [
         "tsc.bzl",
     ],
 )
+
+exports_files([
+    "tsconfig.common.json",
+    "tsconfig.node.json",
+    "tsconfig.browser.json",
+])
