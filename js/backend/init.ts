@@ -126,7 +126,7 @@ export function prepare(config: AppInitCallback) {
  * @return {!Express} Express-wrapped application.
  * @throws {AppInitError} If a deferred app init function fails or otherwise errors.
  */
-export async function boot() {
+export async function boot(): Promise<Express> {
     if (_queue.length < 1)
         throw new AppInitError("No tasks for bootstrap.");
 

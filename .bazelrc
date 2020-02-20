@@ -3,7 +3,6 @@
 # Base Settings
 ##
 
-#common --instrument_test_targets
 common --experimental_allow_incremental_repository_updates
 
 build --watchfs
@@ -83,6 +82,8 @@ build:remote --remote_timeout=3600
 build:remote --google_default_credentials=true
 
 test --instrumentation_filter=//...
+test --instrument_test_targets
+coverage --instrument_test_targets
 
 try-import %workspace%/.bazelrc.user
 

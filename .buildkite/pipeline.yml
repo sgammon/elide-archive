@@ -3,7 +3,7 @@ steps:
     label: ":bazel: Build: Framework"
     key: framework-build
 
-  - command: "make build test report-coverage CI=yes"
+  - command: "make build test report-coverage report-tests CI=yes"
     label: ":coverage: Testsuite"
     depends_on: framework-build
 

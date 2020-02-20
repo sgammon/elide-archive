@@ -18,8 +18,7 @@ CACHE_KEY ?= GustBuild
 REGISTRY ?= bloomworks
 PROJECT_NAME ?= GUST
 
-SAMPLES ?= //samples/rest_mvc/java:MicronautMVCSample //samples/soy_ssr/src:MicronautSSRSample //samples/node_mvc/src:FeatherMVCApp
-NATIVE_SAMPLES ?= //samples/rest_mvc/java:MicronautMVCSample //samples/soy_ssr/src:MicronautSSRSample
+SAMPLES ?= //samples/rest_mvc/java:MicronautMVCSample //samples/soy_ssr/src:MicronautSSRSample
 
 OUTPATH ?= dist/out
 REVISION ?= $(shell git describe --abbrev=7 --always --tags HEAD)
@@ -41,7 +40,7 @@ COVERAGE_ARGS ?= --function-coverage \
 APP ?=
 TARGETS ?= //java/... //proto/... //js/... //style/...
 TESTS ?= //tests/...
-COVERABLE ?= //javatests/...
+COVERABLE ?= //javatests/... //jstests/...
 
 TAG ?=
 TEST_ARGS ?= --test_output=errors
@@ -98,7 +97,7 @@ endif
 # Flag: `VERBOSE`
 ifeq ($(VERBOSE),yes)
 BASE_ARGS += -s --verbose_failures
-POSIX_FLAGS += v
+POSIX_FLAGS += -v
 else
 _RULE = @
 endif
@@ -132,9 +131,9 @@ bases:  ## Build base images and push them.
 
 samples:  ## Build and push sample app images.
 	$(_RULE)for target in $(SAMPLES) ; do \
-            $(BAZELISK) $(BAZELISK_ARGS) run $(TAG) $(BASE_ARGS) $(BUILD_ARGS) $$(echo "$$target")-image-push; done
-	$(_RULE)for target in $(NATIVE_SAMPLES); do \
-            $(BAZELISK) $(BAZELISK_ARGS) run $(TAG) $(BASE_ARGS) $(BUILD_ARGS) $$(echo "$$target")-native-image-push; done
+        $(BAZELISK) $(BAZELISK_ARGS) run $(TAG) $(BASE_ARGS) $(BUILD_ARGS) $$(echo "$$target")-image-push && \
+        $(BAZELISK) $(BAZELISK_ARGS) run $(TAG) $(BASE_ARGS) $(BUILD_ARGS) $$(echo "$$target")-native-image-push; \
+        done
 
 distclean:  ## Clean targets, caches and dependencies.
 	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) clean --expunge_async
@@ -144,10 +143,10 @@ forceclean: distclean  ## Clean everything, and sanitize the codebase (DANGEROUS
 
 test:  ## Run all framework testsuites.
 ifeq ($(COVERAGE),yes)
-	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) coverage $(TAG) $(BASE_ARGS) $(TEST_ARGS) $(TEST_ARGS_WITH_COVERAGE) -- $(COVERABLE)
 	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) $(TEST_COMMAND) $(TAG) $(BASE_ARGS) $(TEST_ARGS) -- $(TESTS)
+	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) coverage $(TAG) $(BASE_ARGS) $(TEST_ARGS) $(TEST_ARGS_WITH_COVERAGE) -- $(COVERABLE)
 	$(_RULE)$(GENHTML) $(COVERAGE_DATA) --output-directory $(COVERAGE_REPORT) $(COVERAGE_ARGS)
-	$(_RULE)cp -f$(POSIX_FLAGS) $(COVERAGE_DATA) $(COVERAGE_REPORT)/lcov.dat
+	$(_RULE)cp -f $(POSIX_FLAGS) $(COVERAGE_DATA) $(COVERAGE_REPORT)/lcov.dat
 else
 	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) $(TEST_COMMAND) $(TAG) $(BASE_ARGS) $(TEST_ARGS) -- $(TESTS) $(COVERABLE)
 endif
@@ -171,6 +170,10 @@ update-deps:  ## Re-seal and update all dependencies.
 serve-coverage:  ## Serve the current coverage report (must generate first).
 	@echo "Serving coverage report..."
 	$(_RULE)cd $(COVERAGE_REPORT) && python -m SimpleHTTPServer
+
+report-tests: ## Report test results to Report.CI.
+	@echo "Reporting testsuite results..."
+	$(_RULE)curl https://report.ci/upload.py > report-ci.py && python report-ci.py && rm -f report-ci.py
 
 report-coverage:  ## Report coverage results to Codecov.
 	@echo "Reporting Java coverage to Codecov..."

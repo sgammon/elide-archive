@@ -11,3 +11,4 @@ bazel-out
 *.swp
 .bazelrc.user
 reports
+report-ci.py

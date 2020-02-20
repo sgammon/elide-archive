@@ -1,0 +1,15 @@
+package(
+    default_visibility = ["//visibility:public"],
+)
+
+load(
+    "//defs/toolchain/node:testing.bzl",
+    "node_ts_test",
+)
+
+
+node_ts_test(
+    name = "app",
+    srcs = ["app_test.spec.ts"],
+    deps = ["//js/backend:app"],
+)
