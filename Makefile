@@ -21,11 +21,18 @@ ENABLE_REPORTCI ?= yes
 
 SAMPLES ?= //samples/rest_mvc/java:MicronautMVCSample //samples/soy_ssr/src:MicronautSSRSample
 
+
+ifneq (,$(findstring Darwin,$(shell uname -a)))
+OUTPUT_BASE ?= darwin-dbg
+else
+OUTPUT_BASE ?= k8-fastbuild
+endif
+
 OUTPATH ?= dist/out
 REVISION ?= $(shell git describe --abbrev=7 --always --tags HEAD)
 BASE_VERSION ?= v1a
 VERSION ?= $(shell (cat package.json | grep version | head -1 | awk -F: '{ print $2 }' | sed 's/[",]//g' | tr -d '[[:space:]]' | sed 's/version\://g'))
-CHROME_COVERAGE ?= $(shell find dist/out/$(OUTPATH)/bin -name "coverage*.dat" | grep chrome | xargs)
+CHROME_COVERAGE ?= $(shell find dist/out/$(OUTPUT_BASE)/bin -name "coverage*.dat" | grep chrome | xargs)
 COVERAGE_DATA ?= $(OUTPATH)/_coverage/_coverage_report.dat
 COVERAGE_REPORT ?= reports/coverage
 COVERAGE_ARGS ?= --function-coverage \
@@ -52,12 +59,6 @@ BUILD_ARGS ?=
 POSIX_FLAGS ?=
 BAZELISK_ARGS ?=
 BASE_ARGS ?= --google_default_credentials=true --define project=$(PROJECT)
-
-ifneq (,$(findstring Darwin,$(shell uname -a)))
-OUTPUT_BASE ?= darwin-dbg
-else
-OUTPUT_BASE ?= k8-fastbuild
-endif
 
 
 # Flag: `FORCE_COVERAGE`
