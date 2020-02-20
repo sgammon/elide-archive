@@ -10,7 +10,7 @@ import {prepare} from "gust/js/backend/init";
  * TypeScript FeathersJS controller, built/assembled/packaged by Gust.
  */
 prepare((app: feathers.Application, express: Express) => {
-    express.get('/ts', (request, response) => {
+    express.get('/', (request, response) => {
         response.send('Hello from TypeScript!');
     });
 });
