@@ -18,7 +18,8 @@ CACHE_KEY ?= GustBuild
 REGISTRY ?= bloomworks
 PROJECT_NAME ?= GUST
 
-SAMPLES ?= //samples/rest_mvc/java:MicronautMVCSample //samples/soy_ssr/src:MicronautSSRSample
+SAMPLES ?= //samples/rest_mvc/java:MicronautMVCSample //samples/soy_ssr/src:MicronautSSRSample //samples/node_mvc/src:FeatherMVCApp
+NATIVE_SAMPLES ?= //samples/rest_mvc/java:MicronautMVCSample //samples/soy_ssr/src:MicronautSSRSample
 
 OUTPATH ?= dist/out
 REVISION ?= $(shell git describe --abbrev=7 --always --tags HEAD)
@@ -131,9 +132,9 @@ bases:  ## Build base images and push them.
 
 samples:  ## Build and push sample app images.
 	$(_RULE)for target in $(SAMPLES) ; do \
-        $(BAZELISK) $(BAZELISK_ARGS) run $(TAG) $(BASE_ARGS) $(BUILD_ARGS) $$(echo "$$target")-image-push && \
-        $(BAZELISK) $(BAZELISK_ARGS) run $(TAG) $(BASE_ARGS) $(BUILD_ARGS) $$(echo "$$target")-native-image-push; \
-        done
+            $(BAZELISK) $(BAZELISK_ARGS) run $(TAG) $(BASE_ARGS) $(BUILD_ARGS) $$(echo "$$target")-image-push; done
+	$(_RULE)for target in $(NATIVE_SAMPLES); do \
+            $(BAZELISK) $(BAZELISK_ARGS) run $(TAG) $(BASE_ARGS) $(BUILD_ARGS) $$(echo "$$target")-native-image-push; done
 
 distclean:  ## Clean targets, caches and dependencies.
 	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) clean --expunge_async

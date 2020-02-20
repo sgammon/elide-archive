@@ -11,6 +11,10 @@ steps:
     label: ":java: Build: Native Binaries"
     depends_on: framework-build
 
+  - command: "make build samples CI=yes"
+    label: ":rocket: Build: Sample Apps"
+    depends_on: framework-build
+
   - wait
 
   - command: "docker pull us.gcr.io/elide-tools/base/alpine"
