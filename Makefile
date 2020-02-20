@@ -195,7 +195,7 @@ endif
 report-coverage:  ## Report coverage results to Codecov.
 	@echo "Reporting Java coverage to Codecov..."
 	$(_RULE)tools/report_java_coverage.sh $(COVERAGE_REPORT) backend,jvm javatests;
-ifeq($(JS_COVERAGE_REPORT),yes)
+ifeq ($(JS_COVERAGE_REPORT),yes)
 	@echo "Reporting JS (frontend) coverage to Codecov..."
 	$(_RULE)tools/report_js_coverage.sh frontend,js tests "$(addprefix -f ,$(CHROME_COVERAGE))";
 endif
