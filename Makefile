@@ -186,7 +186,7 @@ report-tests: ## Report test results to Report.CI.
 	$(_RULE)cd reports && python -m junit2htmlreport tests.xml
 ifeq ($(ENABLE_REPORTCI),yes)
 	@echo "Reporting test results..."
-	$(_RULE)-curl -s https://report.ci/upload.py | python - --include='reports/tests.xml' --framework=junit
+	$(_RULE)-curl -s https://raw.githubusercontent.com/report-ci/scripts/master/upload.py | python - --include='reports/tests.xml' --framework=junit
 endif
 
 report-coverage:  ## Report coverage results to Codecov.
