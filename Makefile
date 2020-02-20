@@ -17,6 +17,7 @@ RBE_INSTANCE ?= default_instance
 CACHE_KEY ?= GustBuild
 REGISTRY ?= bloomworks
 PROJECT_NAME ?= GUST
+ENABLE_REPORTCI ?= no
 
 SAMPLES ?= //samples/rest_mvc/java:MicronautMVCSample //samples/soy_ssr/src:MicronautSSRSample
 
@@ -172,8 +173,13 @@ serve-coverage:  ## Serve the current coverage report (must generate first).
 	$(_RULE)cd $(COVERAGE_REPORT) && python -m SimpleHTTPServer
 
 report-tests: ## Report test results to Report.CI.
-	@echo "Reporting testsuite results..."
-	$(_RULE)curl https://report.ci/upload.py > report-ci.py && python report-ci.py && rm -f report-ci.py
+	@echo "Scanning for test results..."
+	$(_RULE)pip install -r tools/requirements.txt
+	$(_RULE)find dist/out/darwin-dbg -name test.xml | xargs python tools/merge_test_results.py reports/tests.xml
+ifeq ($(ENABLE_REPORTCI),yes)
+	@echo "Reporting test results..."
+	$(_RULE)-curl -s https://report.ci/upload.py | python - --include='reports/tests.xml' --framework=junit
+endif
 
 report-coverage:  ## Report coverage results to Codecov.
 	@echo "Reporting Java coverage to Codecov..."
