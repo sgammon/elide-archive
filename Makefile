@@ -25,7 +25,7 @@ OUTPATH ?= dist/out
 REVISION ?= $(shell git describe --abbrev=7 --always --tags HEAD)
 BASE_VERSION ?= v1a
 VERSION ?= $(shell (cat package.json | grep version | head -1 | awk -F: '{ print $2 }' | sed 's/[",]//g' | tr -d '[[:space:]]' | sed 's/version\://g'))
-CHROME_COVERAGE ?= $(shell find dist/out/darwin-dbg/bin -name "coverage*.dat" | grep chrome | xargs)
+CHROME_COVERAGE ?= $(shell find dist/out/$(OUTPATH)/bin -name "coverage*.dat" | grep chrome | xargs)
 COVERAGE_DATA ?= $(OUTPATH)/_coverage/_coverage_report.dat
 COVERAGE_REPORT ?= reports/coverage
 COVERAGE_ARGS ?= --function-coverage \
