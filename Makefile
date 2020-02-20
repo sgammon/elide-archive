@@ -52,6 +52,12 @@ POSIX_FLAGS ?=
 BAZELISK_ARGS ?=
 BASE_ARGS ?= --google_default_credentials=true --define project=$(PROJECT)
 
+ifneq (,$(findstring Darwin,$(shell uname -a)))
+OUTPUT_BASE ?= darwin-dbg
+else
+OUTPUT_BASE ?= k8-fastbuild
+endif
+
 
 # Flag: `FORCE_COVERAGE`
 ifeq ($(FORCE_COVERAGE),yes)
@@ -175,7 +181,7 @@ serve-coverage:  ## Serve the current coverage report (must generate first).
 report-tests: ## Report test results to Report.CI.
 	@echo "Scanning for test results..."
 	$(_RULE)pip install -r tools/requirements.txt
-	$(_RULE)find dist/out/darwin-dbg -name test.xml | xargs python tools/merge_test_results.py reports/tests.xml
+	$(_RULE)find dist/out/$(OUTPUT_BASE) -name test.xml | xargs python tools/merge_test_results.py reports/tests.xml
 	@echo "Generating HTML test report..."
 	$(_RULE)cd reports && python -m junit2htmlreport tests.xml
 ifeq ($(ENABLE_REPORTCI),yes)
