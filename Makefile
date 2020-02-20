@@ -18,6 +18,7 @@ CACHE_KEY ?= GustBuild
 REGISTRY ?= bloomworks
 PROJECT_NAME ?= GUST
 ENABLE_REPORTCI ?= yes
+JS_COVERAGE_REPORT ?= no
 
 SAMPLES ?= //samples/rest_mvc/java:MicronautMVCSample //samples/soy_ssr/src:MicronautSSRSample
 
@@ -193,8 +194,11 @@ endif
 
 report-coverage:  ## Report coverage results to Codecov.
 	@echo "Reporting Java coverage to Codecov..."
-	#$(_RULE)tools/report_java_coverage.sh $(COVERAGE_REPORT) backend,jvm javatests;
-	tools/report_js_coverage.sh frontend,js tests "$(addprefix -f ,$(CHROME_COVERAGE))";
+	$(_RULE)tools/report_java_coverage.sh $(COVERAGE_REPORT) backend,jvm javatests;
+ifeq($(JS_COVERAGE_REPORT),yes)
+	@echo "Reporting JS (frontend) coverage to Codecov..."
+	$(_RULE)tools/report_js_coverage.sh frontend,js tests "$(addprefix -f ,$(CHROME_COVERAGE))";
+endif
 
 release-images:  ## Pull, tag, and release Docker images.
 	@echo "Pulling images for revision $(REVISION)..."
