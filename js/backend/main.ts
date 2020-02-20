@@ -1,4 +1,3 @@
 
-import {main} from './app';
-
+import {main} from 'gust/js/backend/app';
 main();

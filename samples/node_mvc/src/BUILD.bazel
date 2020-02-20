@@ -6,19 +6,8 @@ load(
 )
 
 
-feathers_controller(
-    name = "JavaScriptController",
-    srcs = ["JavaScriptController.js"],
-)
-
-feathers_controller(
-    name = "TypeScriptController",
-    srcs = ["TypeScriptController.ts"],
-)
-
 feathers_app(
     name = "FeatherMVCApp",
-    controllers = [
-        ":JavaScriptController"
-    ]
+    entry_point = ":app.ts",
+    repository = "elide-tools/sample/node-mvc/runtime",
 )

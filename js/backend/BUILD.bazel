@@ -10,6 +10,11 @@ load(
 )
 
 
+alias(
+    name = "base",
+    actual = "@node_base//image",
+)
+
 ts_module(
     name = "init",
     srcs = ["init.ts"],

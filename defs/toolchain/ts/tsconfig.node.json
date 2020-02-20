@@ -13,6 +13,7 @@
     ]
   },
   "include": [
-    "js/backend/**/*.ts"
+    "js/backend/**/*.ts",
+    "js/backend/**/*.js"
   ]
 }

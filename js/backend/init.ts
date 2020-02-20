@@ -29,7 +29,7 @@ enum CommandType {
  * Describes the signature expected for an application init callback, which accepts the FeathersJS application being
  * initialized, and is not expected to return anything.
  */
-type AppInitCallback = (app: feathers.Application, express: Express) => Promise<any> | undefined;
+type AppInitCallback = (app: feathers.Application, express: Express) => Promise<any> | undefined | void;
 
 /**
  * Holds properties and a callback method that, together, specify a step that must be taken to initialize a backend app
@@ -123,7 +123,7 @@ export function prepare(config: AppInitCallback) {
  * Boot the application, by executing any queued installation closures which mount stuff to `app`. Once these closures
  * are executed, the app can "boot," and it is returned to the calling function so it has a chance to do so.
  *
- * @return {!feathers.Application} FeathersJS application, after all prep functions have finished.
+ * @return {!Express} Express-wrapped application.
  * @throws {AppInitError} If a deferred app init function fails or otherwise errors.
  */
 export async function boot() {
@@ -138,5 +138,5 @@ export async function boot() {
         else
             break;
     }
-    return app;
+    return expressApp;
 }

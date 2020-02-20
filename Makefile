@@ -22,6 +22,7 @@ SAMPLES ?= //samples/rest_mvc/java:MicronautMVCSample //samples/soy_ssr/src:Micr
 
 OUTPATH ?= dist/out
 REVISION ?= $(shell git describe --abbrev=7 --always --tags HEAD)
+BASE_VERSION ?= v1a
 VERSION ?= $(shell (cat package.json | grep version | head -1 | awk -F: '{ print $2 }' | sed 's/[",]//g' | tr -d '[[:space:]]' | sed 's/version\://g'))
 COVERAGE_DATA ?= $(OUTPATH)/_coverage/_coverage_report.dat
 COVERAGE_REPORT ?= reports/coverage
@@ -118,6 +119,15 @@ r run:  ## Run the specified target.
 
 c clean:  ## Clean ephemeral targets.
 	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) clean
+
+bases:  ## Build base images and push them.
+	@echo "Building Alpine base ('$(BASE_VERSION)')..."
+	$(_RULE)docker build -t us.gcr.io/$(IMAGE_PROJECT)/base/alpine:$(BASE_VERSION) ./base/alpine
+	@echo "Building Node base ('$(BASE_VERSION)')..."
+	$(_RULE)docker build -t us.gcr.io/$(IMAGE_PROJECT)/base/node:$(BASE_VERSION) ./base/node
+	@echo "Pushing bases..."
+	$(_RULE)docker push us.gcr.io/$(IMAGE_PROJECT)/base/alpine:$(BASE_VERSION)
+	$(_RULE)docker push us.gcr.io/$(IMAGE_PROJECT)/base/node:$(BASE_VERSION)
 
 samples:  ## Build and push sample app images.
 	$(_RULE)for target in $(SAMPLES) ; do \

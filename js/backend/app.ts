@@ -19,7 +19,8 @@ export const main = async (port?: number) => {
   Logging.log('Loading FeathersJS application...');
 
   try {
-    const app: feathers.Application = await boot();
+    const app = await boot();
+    const hostname = app.get('host') || 'localhost';
 
     // load or select port
     const listenPort = port || (process.env.PORT ? parseInt(process.env.PORT) : 8080);
@@ -36,10 +37,10 @@ export const main = async (port?: number) => {
         console.error('Unhandled Rejection at: Promise ', p, reason));
 
     server.on('listening', () =>
-        Logging.info(
+        console.info(
             'Feathers application started on http://%s:%d',
-            app.get('host'),
-            port));
+            hostname,
+            listenPort));
 
   } catch (err) {
     if (err instanceof AppInitError) {

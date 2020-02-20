@@ -93,6 +93,7 @@ browser_repositories(chromium=CHROMIUM, firefox=FIREFOX, sauce=SAUCE)
 load("@io_bazel_rules_docker//repositories:repositories.bzl", container_repositories = "repositories")
 load("@io_bazel_rules_docker//java:image.bzl", _java_image_repos = "repositories")
 load("@io_bazel_rules_docker//go:image.bzl", _go_image_repos = "repositories")
+load("@io_bazel_rules_docker//nodejs:image.bzl", _nodejs_image_repos = "repositories")
 load("@io_bazel_rules_docker//python:image.bzl", _py_image_repos = "repositories")
 
 load("@io_bazel_rules_docker//repositories:deps.bzl",
@@ -103,6 +104,7 @@ container_deps()
 _go_image_repos()
 _py_image_repos()
 _java_image_repos()
+_nodejs_image_repos()
 
 ## JS Interop
 load("@com_google_jsinterop_generator//build_defs:rules.bzl", "setup_jsinterop_generator_workspace")
@@ -181,4 +183,11 @@ container_pull(
     registry = "us.gcr.io",
     repository = "elide-tools/base/alpine",
     digest = "sha256:decbf1b8ba41c556941f2fbd82811822f7b9622cbd3a17d5d4041cb5438bae2d",
+)
+
+container_pull(
+    name = "node_base",
+    registry = "us.gcr.io",
+    repository = "elide-tools/base/node",
+    digest = "sha256:76b64868e73d27361e294fd346b72aa6c50ad4e669bd9c2684fbdda7e839ea39",
 )
