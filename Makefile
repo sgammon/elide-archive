@@ -17,7 +17,7 @@ RBE_INSTANCE ?= default_instance
 CACHE_KEY ?= GustBuild
 REGISTRY ?= bloomworks
 PROJECT_NAME ?= GUST
-ENABLE_REPORTCI ?= no
+ENABLE_REPORTCI ?= yes
 
 SAMPLES ?= //samples/rest_mvc/java:MicronautMVCSample //samples/soy_ssr/src:MicronautSSRSample
 
