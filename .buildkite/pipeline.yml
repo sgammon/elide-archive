@@ -8,6 +8,7 @@ steps:
     depends_on: framework-build
     artifact_paths:
       - "reports/coverage/index.html"
+      - "reports/coverage.tar.gz"
       - "reports/tests.xml.html"
 
   - command: "make build CI=yes TARGETS='//samples/rest_mvc/java:MicronautMVCSample-native-bin' && make build CI=yes TARGETS='//samples/soy_ssr/src:MicronautSSRSample-native-bin'"

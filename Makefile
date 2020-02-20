@@ -193,6 +193,8 @@ ifeq ($(ENABLE_REPORTCI),yes)
 endif
 
 report-coverage:  ## Report coverage results to Codecov.
+	@echo "Building coverage tarball..."
+	@cd reports/coverage && tar -czvf ../coverage.tar.gz ./*
 	@echo "Reporting Java coverage to Codecov..."
 	$(_RULE)tools/report_java_coverage.sh $(COVERAGE_REPORT) backend,jvm javatests;
 ifeq ($(JS_COVERAGE_REPORT),yes)
