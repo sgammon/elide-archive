@@ -188,6 +188,13 @@ DEPS = {
         "overlay": "mdl.bzl",
         "seal": "f65b744aa0865bce2f9727b1b116fadf10639b63f4b511165a2ab65afa6d1046"},
 
+    "proto_common": {
+        "type": "github",
+        "repo": "googleapis/api-common-protos",
+        "target": "a1049653796e24778de3073bd04760588494aecd",
+        "overlay": "proto_common.bzl",
+        "seal": "280bdadd0cc490ac601ba577694e290b2aa3bc5636dcb9f0d9eca27dc0f5791d"},
+
     # Google: Closure Stylesheets
     "com_google_closure_stylesheets": {
         "type": "java",

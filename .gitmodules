@@ -20,3 +20,6 @@
 [submodule "bazel-ij"]
 	path = vendor/bazel/intellij
 	url = git@github.com:bazelbuild/intellij.git
+[submodule "api_common"]
+	path = vendor/google/api-common
+	url = git@github.com:googleapis/api-common-protos.git
