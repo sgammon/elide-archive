@@ -79,7 +79,7 @@ enum DatapointType {
   NO_TYPE = 0;
 
   // The datamodel represents an object record.
-  RECORD = 1;
+  OBJECT = 1;
 
   // The datamodel represents an event type.
   EVENT = 2;
@@ -112,11 +112,6 @@ message DatapointOptions {
   // Indicate to the data storage engine that a given field is ephemeral, and should not be stored, but rather held with
   // a calculated value for use in systems upstream from the data storage layer.
   bool ephemeral = 4;
-
-  // Specifies the type of datapoint represented by a given message entity. This can be `RECORD` (generally used for
-  // arbitrary datamodel objects), `EVENT` (specialized telemetry event records), `TABLE` (tabular data, generally used
-  // for analytics events / BigQuery).
-  DatapointType type = 5;
 }
 
 
@@ -133,6 +128,7 @@ message PersistenceOptions {
   string parent = 3;
 }
 
+
 // Options specific to model integration with table-style engines, where there can be a table name and/or description
 // that should be mapped to a particular message structure.
 message TableOptions {
@@ -142,6 +138,7 @@ message TableOptions {
   // Description for the table bound to this model.
   string description = 2;
 }
+
 
 // Specifies options related to storing a sub-message.
 message SubmessageOptions {
@@ -158,6 +155,7 @@ message SubmessageOptions {
   // some circumstances where sub-listed data is for indexing, and fetching it repeatedly would be inefficient.
   bool embed = 4;
 }
+
 
 // Describes the visibility options for a given field.
 enum FieldVisibility {
@@ -176,6 +174,7 @@ enum FieldVisibility {
   // Denotes data that should only be exposed internally.
   INTERNAL = 4;
 }
+
 
 // Persistence/data engine options specific to an individual message field.
 message FieldPersistenceOptions {
@@ -215,6 +214,7 @@ message FieldPersistenceOptions {
   FieldVisibility visibility = 10;
 }
 
+
 // Specifies options specific to storing this field in a tabular-style data engine.
 message TableFieldOptions {
   // Marks this field as `REQUIRED` in tabular schemas.
@@ -227,6 +227,7 @@ message TableFieldOptions {
   string bqtype = 3;
 }
 
+
 // Specifies mappings for an arbitrary protobuf message object.
 message ObjectMapping {
   // Maps an enumeration instance to this object. Enumeration membership is contextual.
@@ -235,21 +236,25 @@ message ObjectMapping {
 
 
 extend google.protobuf.MessageOptions {
-  // Settings specific to how a particular message entity is stored in the underlying persistence engine. For Bloombox,
-  // this generally means Cloud Firestore.
-  PersistenceOptions db = 6000;
+  // Specifies the type of datapoint represented by a given message entity. This can be `RECORD` (generally used for
+  // arbitrary datamodel objects), `EVENT` (specialized telemetry event records), `TABLE` (tabular data, generally used
+  // for analytics events / BigQuery).
+  DatapointType role = 6000;
+
+  // Settings specific to how a particular message entity is stored in the underlying persistence engine.
+  PersistenceOptions db = 6001;
 
   // Table-specific configuration for this message. Kicks in when engines are in play that observe or couch data in a
   // table/row-style pattern. Usually used for integration with BigQuery.
-  TableOptions table = 6001;
+  TableOptions table = 6002;
 
   // Settings that determine meta-mappings between this message object and enumerated states, declared in a foreign
   // structure. Foreign structure mappings are contextually defined by the invoking application.
-  ObjectMapping map = 6002;
+  ObjectMapping map = 6003;
 
   // Settings that specify state for this message, which may include settings related to visibility or handling, and
   // validation of this object in various circumstances.
-  DatapointOptions msg = 6003;
+  DatapointOptions msg = 6004;
 }
 
 
