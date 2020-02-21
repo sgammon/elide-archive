@@ -13,10 +13,12 @@ model(
     name = "Datamodel",
     srcs = ["Datamodel.proto"],
     deps = ["@com_google_protobuf//:descriptor_proto"],
+    _internal = True,
 )
 
 
 model_package(
     name = "core",
     deps = [":Datamodel"],
+    _internal = True,
 )

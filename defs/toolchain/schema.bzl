@@ -19,7 +19,12 @@ _native_cc_proto = native.cc_proto_library
 _native_java_proto = native.java_proto_library
 
 
-def __declare_lang_protos(name, kwargs):
+INJECTED_PROTO_DEPS = [
+    "//proto/core:Datamodel",
+]
+
+
+def __declare_lang_protos(name, internal, kwargs):
 
     """ Declare Java and CC proto libraries. """
 
@@ -31,16 +36,18 @@ def __declare_lang_protos(name, kwargs):
     )
 
 
-def __declare_native(name, kwargs):
+def __declare_native(name, internal, kwargs):
 
     """ Declare a target as a native proto library. """
 
     kwargs["name"] = name
+    if not internal:
+        kwargs["deps"] = kwargs.get("deps", []) + INJECTED_PROTO_DEPS
     _native_proto(
         **kwargs
     )
 
-def __declare_closure_proto(name, kwargs):
+def __declare_closure_proto(name, internal, kwargs):
 
     """ Declare a target as a Closure proto library. """
 
@@ -51,23 +58,29 @@ def __declare_closure_proto(name, kwargs):
         **ckwargs
     )
 
-def _proto(name, **kwargs):
+def _proto(name,
+           _internal = False,
+           **kwargs):
 
     """
     Proxy individual proto declarations to relevant native and extension rules, which need to know about each individual
     proto. "Proto modules" are exported using the `_module` function in the same way. Keyword arguments are proxied in
     full, with selected entries being removed where needed. Positional arguments are not supported.
 
+    :param name: Name of the proto target.
+    :param _internal: Indicates that this is a built-in proto, and should not be injected with dependencies.
     :param kwargs: Keyword arguments to pass along.
     :returns: Nothing - defines rules instead.
     """
 
-    __declare_native(name, kwargs)
-    __declare_closure_proto(name, kwargs)
-    __declare_lang_protos(name, kwargs)
+    __declare_native(name, _internal, kwargs)
+    __declare_closure_proto(name, _internal, kwargs)
+    __declare_lang_protos(name, _internal, kwargs)
 
 
-def _module(name, **kwargs):
+def _module(name,
+            _internal = False,
+            **kwargs):
 
     """
     Proxy module proto declarations to relevant native and extension rules, which need to know about each grouping of
@@ -78,9 +91,9 @@ def _module(name, **kwargs):
     :returns: Nothing - defines rules instead.
     """
 
-    __declare_native(name, kwargs)
-    __declare_closure_proto(name, kwargs)
-    __declare_lang_protos(name, kwargs)
+    __declare_native(name, _internal, kwargs)
+    __declare_closure_proto(name, _internal, kwargs)
+    __declare_lang_protos(name, _internal, kwargs)
 
 
 model = _proto
