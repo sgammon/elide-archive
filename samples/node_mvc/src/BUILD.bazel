@@ -1,3 +1,6 @@
+package(
+    default_visibility = ["//visibility:public"],
+)
 
 load(
     "@gust//defs/toolchain:backend.bzl",
