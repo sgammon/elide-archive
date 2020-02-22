@@ -1,0 +1,130 @@
+
+micronaut:
+  application:
+    name: Todolist
+
+  server:
+    maxRequestSize: 10MB
+    host: 0.0.0.0
+    port: 8080
+    cors:
+      enabled: false
+    netty:
+      maxHeaderSize: 500KB
+      chunked-supported: true
+      use-native-transport: true
+      compression-level: 2
+      compression-threshold: 2048
+      parent:
+        threads: 4
+      worker:
+        threads: 4
+      epoll:
+        options:
+          tcpFastopen: 128
+          tcpQuickack: true
+      childOptions:
+        soKeepalive: true
+
+  session:
+    enabled: true
+    http:
+      cookie: true
+      header: false
+      redis:
+        enabled: true
+        cookie: true
+        header: true
+        namespace: 'todolist:sessions'
+        write-mode: BACKGROUND
+        enable-keyspace-events: true
+        valueSerializer: io.micronaut.jackson.serialize.JacksonObjectSerializer
+
+  security:
+    enabled: true
+    session:
+      enabled: true
+      login-success-target-url: /app
+      login-failure-target-url: /login
+      unauthorized-target-url: /login
+      logout-target-url: /logout
+      legacy-rejection-handler: false
+    endpoints:
+      login:
+        enabled: true
+        path: /login/go
+      logout:
+        enabled: true
+        get-allowed: true
+        path: /logout
+
+  views:
+    soy:
+      enabled: true
+      engine: sauce
+      renaming: false
+
+    csp:
+      enabled: true
+      generateNonce: true
+      reportOnly: true
+      policyDirectives: "default-src 'https: 'self' data: 'nonce-{#nonceValue}';"
+
+  executors:
+    io:
+      type: fixed
+      nThreads: 12
+
+  config-client:
+    enabled: true
+
+grpc:
+  server:
+    port: 8443
+    keep-alive-time: 1h
+
+  client:
+    plaintext: true
+    max-retry-attempts: 10
+
+graphql:
+  enabled: true
+  path: /v1/graph
+  graphiql:
+    enabled: false
+    version: 0.13.2
+    path: /_/graphiql
+    page-title: "Dashboard - GraphiQL"
+
+kubernetes:
+  client:
+    discovery:
+      enabled: true
+    config-maps:
+      enabled: true
+    secrets:
+      enabled: true
+
+redis:
+  uri: redis://fcache
+  caches:
+    todolist:
+      expire-after-access: 4h
+
+endpoints:
+  beans:
+    enabled: true
+    sensitive: false
+  info:
+    enabled: true
+    sensitive: false
+
+tracing:
+  zipkin:
+    enabled: true
+    sampler: probability=1.0
+
+gcp:
+  project-id: elide-tools
+  tracing:
+    enabled: true

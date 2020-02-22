@@ -1,0 +1,38 @@
+
+{namespace gust.base}
+
+
+/**
+ * Render a standard language specification into a text designation that includes both the language and the dialect. In
+ * many cases, the dialect is simply a country code. For example, a language specification with the main language set to
+ * `ENGLISH`, and a dialect of `US`, should produce `en-US`.
+ */
+{template .languageSpec kind="text"}
+  {@param spec: base.LanguageSpec}  /** Specifies information about the language to render into string form. */
+
+  {let $resolvedLanguage kind="text"}
+    {switch $spec.language}
+      {case 0}en
+      {case 1}fr
+      {case 2}sp
+      {case 3}cn
+      {case 4}cn
+      {case 5}cn
+      {default}en
+    {/switch}
+  {/let}
+  {let $resolvedDialect kind="text"}
+    {if isNonnull($spec.dialect)}
+      {$spec.dialect}
+    {else}
+      US
+    {/if}
+  {/let}
+  {if isNonnull($resolvedLanguage)}
+    {if isNonnull($resolvedDialect)}
+      {$resolvedLanguage}-{$resolvedDialect}
+    {else}
+      {$resolvedLanguage}
+    {/if}
+  {/if}
+{/template}

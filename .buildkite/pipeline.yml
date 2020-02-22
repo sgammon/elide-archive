@@ -14,6 +14,9 @@ steps:
   - command: "make build CI=yes TARGETS='//samples/rest_mvc/java:MicronautMVCSample-native-bin' && make build CI=yes TARGETS='//samples/soy_ssr/src:MicronautSSRSample-native-bin'"
     label: ":java: Build: Native Binaries"
     depends_on: framework-build
+    key: native-build
+    soft_fail:
+      - exit_status: 2
 
   - wait
 
@@ -22,6 +25,9 @@ steps:
 
   - command: "make build samples CI=yes"
     label: ":gcloud: Publish: Images"
+    depends_on: native-build
+    soft_fail:
+      - exit_status: 2
 
   - command: "echo 'registry=https://npm.pkg.github.com/sgammon' > .npmrc && npm publish"
     label: ":octocat: + :npm: Staging: NPM"
@@ -53,4 +59,5 @@ steps:
 
   - command: "make release-images CI=yes"
     label: ":docker: Release: Docker"
+    depends_on: native-build
     if: build.tag != null

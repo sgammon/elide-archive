@@ -1,4 +1,3 @@
-
 load(
     "@io_bazel_rules_closure//closure/private/rules:soy_library.bzl",
     _soy_library = "soy_library",
@@ -24,6 +23,14 @@ load(
     _PYTHON_TEMPLATES = "PYTHON_TEMPLATES",
 )
 
+INJECTED_SSR_SOY_DEPS = [
+    "//gust/page:page_soy",
+]
+
+INJECTED_SSR_PROTO_DEPS = [
+    "//gust/page:page_proto",
+]
+
 
 def _template_library(name,
                       srcs,
@@ -36,6 +43,7 @@ def _template_library(name,
                       js = _JS_TEMPLATES,
                       java = _JAVA_TEMPLATES,
                       python = _PYTHON_TEMPLATES,
+                      java_package = None,
                       precompile = True):
 
     """ Declare a universal, cross-platform template library, making use of the built-in
@@ -73,7 +81,36 @@ def _template_library(name,
               [("%s-java_jcompiled" % p) for p in soy_deps]),
             proto_deps = [("%s-%s" % (p, CLOSUREPROTO_POSTFIX_)) for p in proto_deps],
             precompile = precompile,
+            java_package = java_package,
         )
 
 
+def _ssr_library(name,
+                 srcs,
+                 soy_deps = [],
+                 js_deps = [],
+                 py_deps = [],
+                 java_deps = [],
+                 proto_deps = [],
+                 style_deps = [],
+                 java = _JAVA_TEMPLATES,
+                 python = _PYTHON_TEMPLATES,
+                 java_package = None,
+                 precompile = True,
+                 **kwargs):
+
+    """ Declare a template for use exclusively during SSR (Server-Side Rendering). This
+        also injects additional SSR-related dependencies automatically. """
+
+    _template_library(
+        name = name,
+        srcs = srcs,
+        soy_deps = (soy_deps or []) + INJECTED_SSR_SOY_DEPS,
+        proto_deps = (proto_deps or []) + INJECTED_SSR_PROTO_DEPS,
+        java_package = None,
+        js = False,
+    )
+
+
+ssr_library = _ssr_library
 template_library = _template_library

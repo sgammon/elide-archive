@@ -1,0 +1,38 @@
+package(
+    default_visibility = ["//visibility:public"],
+)
+
+load(
+    "//defs/toolchain:schema.bzl",
+    "model",
+    "model_package",
+)
+
+load(
+    "//defs/toolchain:templates.bzl",
+    "template_library",
+)
+
+## Base Models
+model(
+    name = "language_proto",
+    srcs = ["language.proto"],
+)
+
+
+model_package(
+    name = "base",
+    deps = [
+        ":language_proto",
+    ],
+    _internal = True,
+)
+
+
+## Base Templates
+template_library(
+    name = "language_soy",
+    srcs = ["language.soy"],
+    proto_deps = [":language_proto"],
+    java_package = "gust.core.language",
+)

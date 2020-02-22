@@ -1,0 +1,324 @@
+type: google.api.Service
+config_version: 3
+
+name: todolist.elide.tools
+title: Todolist API
+
+apis:
+  - name: todolist.Tasks
+
+authentication:
+  providers:
+    - id: firebase
+      jwks_uri: https://www.googleapis.com/service_accounts/v1/metadata/x509/securetoken@system.gserviceaccount.com
+      issuer: https://securetoken.google.com/elide-tools
+
+  rules:
+    - selector: todolist.Tasks.*
+      requirements:
+        - provider_id: firebase
+
+endpoints:
+  - name: todolist.elide.tools
+    target: todolist.elide.tools
+    allow_cors: false
+
+system_parameters:
+  rules:
+    - selector: "*"
+      parameters:
+        - name: api_key
+          url_query_parameter: key
+        - name: api_key
+          http_header: X-API-Key
+        - name: trace
+          http_header: X-API-Trace-ID
+
+project_properties:
+  properties:
+    - name: ENABLE_ATTACHMENTS
+      type: BOOL
+      description: Allows file attachments on Todolist tasks.
+    - name: MAX_ATTACHMENT_SIZE
+      type: INT64
+      description: Maximum size of TodoTask file attachments.
+
+context:
+  rules:
+    - selector: "*"
+      requested:
+        - google.rpc.context.ProjectContext
+        - google.rpc.context.OriginContext
+
+enums:
+  - todolist.TodolistError
+
+metrics:
+  - name: "class-a-ops"
+    display_name: "Todolist Operations: Class A"
+    description: "Generic read-only operations executed against the Todolist API."
+    value_type: INT64
+    metric_kind: DELTA
+
+  - name: "class-b-ops"
+    display_name: "Todolist Operations: Class B"
+    description: "Generic write or query operations executed against the Todolist API."
+    value_type: INT64
+    metric_kind: DELTA
+
+  - name: "class-c-ops"
+    display_name: "Todolist Operations: Class C"
+    description: "Heavy write, file, or delete operations executed against the Todolist API."
+    value_type: INT64
+    metric_kind: DELTA
+
+  - name: "tasks-created"
+    display_name: "Todolist Tasks: Created"
+    description: "Measures the rate at which new Todolist tasks are created."
+    value_type: INT64
+    metric_kind: DELTA
+
+  - name: "tasks-created"
+    display_name: "Todolist Tasks: Completed"
+    description: "Measures the rate at which Todolist tasks are completed."
+    value_type: INT64
+    metric_kind: DELTA
+
+  - name: "files-uploaded"
+    display_name: "Todolist Files: Uploads"
+    description: "Counts the number of files uploaded within a given timeperiod."
+    value_type: INT64
+    metric_kind: DELTA
+
+quota:
+  limits:
+    ## Project-level Quotas
+    - name: "project-class-a-ops"
+      metric: "class-a-ops"
+      unit: "1/min/{project}"
+      display_name: "Project Quota: Todolist Class A Ops"
+      description: "Project-based quota for Class A (Read-Only) operations."
+      values:
+        STANDARD: 240
+    - name: "project-class-b-ops"
+      metric: "class-b-ops"
+      unit: "1/min/{project}"
+      display_name: "Project Quota: Todolist Class B Ops"
+      description: "Project-based quota for Class B (Write/Query) operations."
+      values:
+        STANDARD: 120
+    - name: "project-class-c-ops"
+      metric: "class-c-ops"
+      unit: "1/min/{project}"
+      display_name: "Project Quota: Todolist Class C Ops"
+      description: "Project-based quota for Class C (Heavy) operations."
+      values:
+        STANDARD: 60
+    - name: "project-tasks-created"
+      metric: "tasks-created"
+      unit: "1/min/{project}"
+      display_name: "Project Quota: Tasks Created/Minute"
+      description: "Project-based quota for tasks-created-per-minute."
+      values:
+        STANDARD: 60
+    - name: "project-tasks-completed"
+      metric: "tasks-completed"
+      unit: "1/min/{project}"
+      display_name: "Project Quota: Tasks Completed/Minute"
+      description: "Project-based quota for tasks-completed-per-minute."
+      values:
+        STANDARD: 60
+    - name: "project-files-uploaded"
+      metric: "files-uploaded"
+      unit: "1/min/{project}"
+      display_name: "Project Quota: Files Uploaded/Minute"
+      description: "Project-based quota for files-uploaded-per-minute."
+      values:
+        STANDARD: 30
+
+    ## User-level Quotas
+    - name: "user-tasks-created"
+      metric: "tasks-created"
+      unit: "1/sec/{user}"
+      display_name: "User Quota: Tasks Created/Minute"
+      description: "User-based quota for tasks-created-per-second."
+      values:
+        STANDARD: 5
+    - name: "user-tasks-completed"
+      metric: "tasks-completed"
+      unit: "1/sec/{user}"
+      display_name: "User Quota: Tasks Completed/Minute"
+      description: "User-based quota for tasks-completed-per-second."
+      values:
+        HIGH: 5
+        STANDARD: 3
+        LOW: 1
+    - name: "user-files-uploaded"
+      metric: "files-uploaded"
+      unit: "1/sec/{user}"
+      display_name: "User Quota: Files Uploaded/Minute"
+      description: "User-based quota for files-uploaded-per-second."
+      values:
+        HIGH: 3
+        STANDARD: 1
+
+  metric_rules:
+    - selector: todolist.Tasks.Health
+      metric_costs:
+        class-a-ops: 1
+    - selector: todolist.Tasks.CreateTask
+      metric_costs:
+        class-b-ops: 1
+        tasks-created: 1
+    - selector: todolist.Tasks.UpdateTask
+      metric_costs:
+        class-b-ops: 1
+    - selector: todolist.Tasks.FetchTask
+      metric_costs:
+        class-a-ops: 1
+    - selector: todolist.Tasks.CheckOffTask
+      metric_costs:
+        class-b-ops: 1
+        tasks-completed: 1
+    - selector: todolist.Tasks.DeleteTask
+      metric_costs:
+        class-b-ops: 1
+    - selector: todolist.Tasks.AttachFile
+      metric_costs:
+        class-b-ops: 1
+        class-c-ops: 1
+        files-uploaded: 1
+    - selector: todolist.Tasks.DeleteFile
+      metric_costs:
+        class-b-ops: 1
+        class-c-ops: 1
+    - selector: todolist.Tasks.ListTasks
+      metric_costs:
+        class-a-ops: 1
+        class-b-ops: 1
+    - selector: todolist.Tasks.ClearCompleted
+      metric_costs:
+        class-a-ops: 1
+        class-b-ops: 1
+
+usage:
+  rules:
+    - selector: "todolist.Tasks.*"
+      allow_unregistered_calls: false
+
+documentation:
+  summary: >
+    Provides an API for interfacing with the Todolist application on behalf of a registered user. Allows management of a
+    user's Todolist, execution of the task lifecycle, and management of attached files.
+
+  pages:
+    - name: Overview
+      content: >
+        # Cloud API
+
+        ## Overview
+        Coming soon.
+
+      subpages:
+        - name: Getting Started
+          content: >
+            ## Cloud API: Getting Started
+            Coming soon.
+
+  rules:
+    - selector: todolist.Tasks.Health
+      description: >
+        Check the health of the Tasks API. If systems are running smoothly, an empty successful response will be
+        returned. If not, the request will fail with some enumerated error case describing why the system isn't ready.
+
+    - selector: todolist.Tasks.CreateTask
+      description: >
+        Create a new task for the currently-logged-in user, on their Todolist. If the client frontend nominates a unique
+        ID for the task, the system guarantees idempotency, and the frontend may retry with the same token if transient
+        errors are encountered which prevent the write operation from succeeding.
+
+        Once the write operation completes, a reference is provided in response which describes:
+        - *Key*: Provisioned key for the task record, which may differ from the nominated ID in some cases.
+        - *Version*: Revision timestamp, describing the written version of this record.
+
+    - selector: todolist.Tasks.UpdateTask
+      description: >
+        Updates an existing task in the currently-logged-in user's Todolist. If the specified task cannot be found or is
+        already archived, the request is rejected with a `CONFLICT`-style error. Alternatively, if the task is found and
+        eligible for a write, but is already more up-to-date than the write offered (via a client-nominated `version`),
+        the write is rejected for a `FAILED_PRECONDITION`-style error.
+
+        During client-driven submission of a task update, the record `version` should match the base version of the task
+        being mutated. If this base `version` does not match, the write will be rejected, and the client is urged to re-
+        fetch the record and try again.
+
+        Certain fields on tasks are not accessible for write via this method. Namely, this would include attached files,
+        the current `status` of the task, and task timestamps. Task status may be updated with `CheckOffTask`, and files
+        may be attached via `AttachFile`.
+
+    - selector: todolist.Tasks.FetchTask
+      description: >
+        Retrieves payload data for an individual Todolist task, referenced by the task's unique key. If the task cannot
+        be found or has been tombstoned for deletion, this method will fail with `HTTP 404`/`NOT_FOUND`. Tasks not owned
+        by the current user are not visible during the transaction, so, fetching a task not owned by the currently-
+        logged-in user will also yield an `HTTP 404`/`NOT_FOUND`.
+
+    - selector: todolist.Tasks.CheckOffTask
+      description: >
+        Update an existing task into the `COMPLETED` state. This transitions the task to the completed tasks list in the
+        UI, and removes any notifications regarding the due-date/deadline for the task. This transition must be
+        performed in this method, rather than `UpdateTask`.
+
+    - selector: todolist.Tasks.DeleteTask
+      description: >
+        Permanently delete a task entirely from a user's task list. This removes the task from disk, including any
+        associated content, index entries, or attached files in storage. Obviously, invoke this method with caution.
+
+    - selector: todolist.Tasks.AttachFile
+      description: >
+        Attach an uploaded file to an existing Todolist task. The file must exist in GCS, having already been uploaded
+        by the frontend. Once this method completes, a record will have been created attached to the subject task, which
+        points to the file previously uploaded.
+
+    - selector: todolist.Tasks.FetchFile
+      description: >
+        Retrieve an existing file attachment listed under a specified Todolist task, both of which owned by the
+        currently-logged-in user. If the subject task, or the file attachment, cannot be found, a `HTTP 404`/`NOT_FOUND`
+        error is returned.
+
+        This method simply returns metadata about the file in question. That metadata may include a signed serving URL,
+        which enables the client with an endpoint to download the file securely, if needed/desired.
+
+    - selector: todolist.Tasks.DeleteFile
+      description: >
+        Un-attach and delete an uploaded file, which is currently attached to an existing Todolist task. After this
+        method completes, the file is permanently gone, including the record which pointed to it. Obviously, invoke this
+        method with caution, only after confirming the user's intent.
+
+    - selector: todolist.Tasks.ListTasks
+      description: >
+        List tasks on a the currently-logged-in user's Todolist, optionally applying query parameters to filter, sort,
+        or otherwise adjust the tasks returned. If a *query limit* is left unspecified, it defaults to `50`, limiting
+        the number of records returned. If more records match the query than the returned amount, in *any* case, the
+        system will indicate as such using the metadata fields for the list response.
+
+        For instance, if the user has a total of `75` tasks, and a query is submitted with `limit=50` or no limit
+        specified at all, the server will:
+        - Return the first `50` results, as the "first page," so-to-speak
+        - Indicate that there are a total of `2` pages (de-facto limiting the total results to `100`)
+        - Indicate that there are a total of `75` tasks
+
+        Since the client is on page 1 when it submits this query, it knows that there remain `1` pages, containing `25`
+        tasks. These metrics and calculated values can thusly be used in the UI to indicate the range of records on the
+        user's Todolist.
+
+    - selector: todolist.Tasks.ClearCompleted
+      description: >
+        Query the currently-logged-in user's Todolist for any completed tasks, and move any tasks we find into the final
+        `ARCHIVED` state. This should also adjust the UI to remove completed tasks from the active view, and hide them
+        behind a *Completed Tasks* listing.
+
+        After tasks are completed and cleared, they subsequently cease to show up in any regular listings of a user's
+        Todolist, unless the invoking code specifically asks to include archived tasks. Some period after being
+        completed (*7 days* at the time of this writing), `ARCHIVED` tasks are deleted, along with any associated
+        content or attached files.

@@ -1,0 +1,106 @@
+package(
+    default_visibility = ["//visibility:public"],
+)
+
+load(
+    "@gust//defs/toolchain:schema.bzl",
+    "service",
+)
+
+load(
+    "@gust//defs/toolchain:templates.bzl",
+    "ssr_library",
+)
+
+load(
+    "@gust//defs/toolchain:backend.bzl",
+    "micronaut_library",
+    "micronaut_service",
+    "micronaut_controller",
+    "micronaut_application",
+)
+
+
+exports_files([
+    "api.yml",
+    "application.yml",
+    "logback.xml",
+    "reflection.json",
+])
+
+service(
+    name = "todolist_proto",
+    srcs = ["todolist.proto"],
+    deps = [
+        "//gust/page:media_proto",
+        "@proto_common//:type_month",
+        "@proto_common//:type_latlng",
+        "@proto_common//:type_timeofday",
+        "@proto_common//:rpc_status",
+        "@proto_common//:rpc_error_details",
+        "@proto_common//google/api:annotations_proto",
+        "@proto_common//google/api:client_proto",
+        "@proto_common//google/api:field_behavior",
+        "@com_google_protobuf//:any_proto",
+        "@com_google_protobuf//:empty_proto",
+        "@com_google_protobuf//:timestamp_proto",
+        "@com_google_protobuf//:field_mask_proto",
+    ]
+)
+
+ssr_library(
+    name = "home_soy",
+    srcs = ["home.soy"],
+    proto_deps = [":todolist_proto"],
+)
+
+micronaut_library(
+    name = "TodolistInterceptor",
+    srcs = ["server/TodolistInterceptor.kt"],
+)
+
+micronaut_library(
+    name = "TodolistLogic",
+    srcs = ["server/TodolistLogic.kt"],
+    proto_deps = [":todolist_proto"],
+)
+
+micronaut_service(
+    name = "TasksService",
+    srcs = ["server/TasksService.kt"],
+    services = [":todolist_proto"],
+    deps = [
+        ":TodolistLogic",
+        ":TodolistInterceptor",
+    ],
+)
+
+micronaut_controller(
+    name = "HomeController",
+    srcs = ["server/HomeController.kt"],
+    templates = [":home_soy"],
+    proto_deps = [":todolist_proto"],
+    deps = [":TodolistLogic"],
+)
+
+micronaut_application(
+    # -- App Info -- #
+    name = "TodolistServer",
+    config = ":application.yml",
+    logging_config = ":logback.xml",
+
+    # -- Controllers -- #
+    controllers = [
+        ":HomeController",
+    ],
+
+    services = [
+        ":TasksService",
+    ],
+
+    # -- Publishing / Images -- #
+    native = False,
+    repository = "elide-tools/sample/todolist/jvm",
+    native_repository = "elide-tools/sample/todolist/native",
+    reflection_configuration = ":reflection.json",
+)

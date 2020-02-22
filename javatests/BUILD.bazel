@@ -1,3 +1,14 @@
 package(
     default_visibility = ["//visibility:public"],
 )
+
+
+test_suite(
+    name = "suite",
+    testonly = True,
+    tests = [
+        "//javatests/gust:DualStackTest",
+        "//javatests/gust/backend:ApplicationTest",
+        "//javatests/gust/backend:TemplateProviderTest",
+    ],
+)

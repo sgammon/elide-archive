@@ -12,18 +12,21 @@ import java.io.InputStream;
  * Main application class, which bootstraps a backend Gust app via Micronaut, including any configured controllers,
  * services, or assets. This is where execution starts when running on a JVM.
  */
-public class Application {
+@SuppressWarnings("WeakerAccess")
+public final class Application {
+  private Application() { /* Disallow instantiation. */ }
+
   /** Root configuration for a Micronaut app. */
-  private static final String rootConfig = "/application.yml";
+  public static final String rootConfig = "/application.yml";
 
   /** Default configuration provided by Gust. */
-  private static final String defaultConfig = "/gust" + rootConfig;
+  public static final String defaultConfig = "/gust" + rootConfig;
 
   /** Root logging configuration for a Micronaut app. */
-  private static final String loggingConfig = "/logback.xml";
+  public static final String loggingConfig = "/logback.xml";
 
   /** Default configuration provided by Gust. */
-  private static final String defaultLoggingConfig = "/gust" + loggingConfig;
+  public static final String defaultLoggingConfig = "/gust" + loggingConfig;
 
   /**
    * Attempt to load a given global config file, failing if we can't find it in the expected spot, or the backup spot,
@@ -34,7 +37,7 @@ public class Application {
    * @param alt Alternate configuration file name.
    * @throws RuntimeException Wrapping an {@link IOException}, If the configuration can't be loaded.
    */
-  private static void loadConfig(@Nonnull String role, @Nonnull String name, @Nullable String alt) {
+  public static void loadConfig(@Nonnull String role, @Nonnull String name, @Nullable String alt) {
     try (final InputStream configStream = Application.class.getResourceAsStream(name)) {
       if (configStream == null) {
         if (alt != null) {

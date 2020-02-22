@@ -8,7 +8,6 @@ common --experimental_allow_incremental_repository_updates
 build --watchfs
 build --symlink_prefix=dist/
 build --nolegacy_external_runfiles
-build --disk_cache=~/.cache/bazel-disk-cache
 build --incompatible_strict_action_env
 build --javacopt="-encoding UTF-8"
 build --strict_java_deps=strict
@@ -36,6 +35,7 @@ build:dev --experimental_persistent_javac
 build:dev --define=jdk=zulu
 build:dev --define=ZULUBASE=/Library/Java/JavaVirtualMachines/zulu-12.jdk/Contents/Home
 build:dev --javabase=//defs/toolchain/java:java_runtime
+build:dev --disk_cache=~/.cache/bazel-disk-cache
 
 query --output=label_kind
 
@@ -83,6 +83,7 @@ build:remote --google_default_credentials=true
 
 test --instrumentation_filter=//...
 test --instrument_test_targets
+coverage --instrumentation_filter=//...
 coverage --instrument_test_targets
 
 try-import %workspace%/.bazelrc.user

@@ -1,0 +1,18 @@
+
+steps:
+- name: 'l.gcr.io/google/bazel'
+  args:
+  - --bazelrc=.bazelrc
+  - test
+  - --config=remote
+  - --remote_instance_name=projects/bloom-sandbox/instances/default_instance
+  - --
+  - //gust/...
+  - //js/...
+  - //java/...
+  - //style/...
+
+timeout: 30m
+options:
+  machineType: "N1_HIGHCPU_32"
+

@@ -1,0 +1,45 @@
+
+{namespace gust.dom.assets}
+
+
+/**
+ * Render a script asset link from a given `JavaScript` proto type. These style references are always made via URIs
+ * listed in HTML <script> tags.
+ */
+{template .script}
+  {@param script: trusted_resource_uri}  /** JavaScript asset that we wish to create a link for. */
+  {@param? id: string}  /** Optional ID at which to attach the script in the DOM. */
+  {@param? module: bool}  /** Whether this should be a module or not. */
+  {@param? nomodule: bool}  /** whether this should be a `nomodule`-flagged script or not. */
+  {@param? async: bool}  /** Whether we should add the async flag. */
+  {@param? defer: bool}  /** Whether we should add the defer flag. */
+  {@param? integrity: string}  /** Integrity fingerprint to apply. */
+  {@param? crossorigin: string} /** Cross-origin value to use. */
+
+  <script type="text/javascript"
+          src="{$script}"
+          {if isNonnull($id)}{sp}id="{$id}" {/if}
+          {if isNonnull($module) and $module}
+              {sp}module
+          {else}
+              {if isNonnull($nomodule) and $nomodule}{sp}nomodule{/if}
+          {/if}
+          {if isNonnull($async) and $async}{sp}async{/if}
+          {if isNonnull($defer) and $defer}{sp}defer{/if}
+          {if isNonnull($integrity)}{sp}integrity="{$integrity}"{/if}
+          {if isNonnull($crossorigin)}crossorigin="{$crossorigin}"{/if}></script>
+{/template}
+
+
+/**
+ * Render a stylesheet asset link from a given `Stylesheet` proto type. These style references are always made via URIs
+ * listed in HTML links.
+ */
+{template .stylesheet}
+  {@param sheet: trusted_resource_uri}  /** URI at which to include the stylesheet. */
+  {@param? media: string}  /** Media attribute to specify for the stylesheet. */
+
+  {if isNonnull($sheet)}
+    <link rel="stylesheet" href="{$sheet}" {if isNonnull($media)}{sp}media="{$media}"{/if} />
+  {/if}
+{/template}

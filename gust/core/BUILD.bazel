@@ -10,8 +10,8 @@ load(
 
 ## Core
 model(
-    name = "Datamodel",
-    srcs = ["Datamodel.proto"],
+    name = "datamodel",
+    srcs = ["datamodel.proto"],
     deps = ["@com_google_protobuf//:descriptor_proto"],
     _internal = True,
 )
@@ -19,6 +19,6 @@ model(
 
 model_package(
     name = "core",
-    deps = [":Datamodel"],
+    deps = [":datamodel"],
     _internal = True,
 )

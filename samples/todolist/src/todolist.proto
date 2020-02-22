@@ -1,0 +1,659 @@
+/**
+ * Defines the Todolist app from front to back, including the data objects supported by the application, API, field, and
+ * object documentation, and the surface of the API which supports the frontend. These objects are code-generated into
+ * whatever language needed to facilitate frontend or backend logic, data storage, events/analytics, and so on.
+ *
+ * Behavior of the framework's data engine can be controlled via the `core/Datamodel` import, which enables annotations
+ * on the Protobuf message objects. This allows us to designate certain objects for storage or API use, or certain
+ * fields as hidden/internal, and so on. From start to finish, if there is an app-related data model of some kind that
+ * is made use of in this little sample, it's in this file.
+ */
+syntax = "proto3";
+
+package todolist;
+
+option optimize_for = SPEED;
+option cc_enable_arenas = true;
+option java_multiple_files = true;
+option java_string_check_utf8 = true;
+option java_outer_classname = "TodolistApp";
+option php_namespace = "ElideSamples";
+option php_class_prefix = "TDL";
+option swift_prefix = "Todolist";
+option objc_class_prefix = "TDL";
+option ruby_package = "Elide::Samples::Todolist::Schema";
+option java_package = "tools.elide.samples.todolist.schema";
+option csharp_namespace = "Elide.Samples.Todolist.Schema";
+option go_package = "github.com/elide-tools/elide/samples/todolist/schema;todolist";
+
+import "google/type/month.proto";
+import "google/type/latlng.proto";
+import "google/type/timeofday.proto";
+
+import "google/api/client.proto";
+import "google/api/annotations.proto";
+import "google/api/field_behavior.proto";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/field_mask.proto";
+
+import "webutil/html/types/html.proto";
+
+import "gust/page/media.proto";
+import "gust/api/services.proto";
+import "gust/core/datamodel.proto";
+
+
+// Defines the priority levels that a task in the task-list can take on. These are essentially arbitrary, and it is
+// entirely up to the user which is selected for each task. Each level is described via docs for its own enumerated
+// priority tier.
+enum TaskPriority {
+  // Normal task priority. Shows the task's priority in blue, or with only one exclamation point (in icon-based UIs).
+  NORMAL = 0;
+
+  // Elevated, or higher-than-normal task priority. Shows the task's priority in yellow, or with two exclamation points.
+  ELEVATED = 1;
+
+  // Critical, or highest task priority. Shows the task's priority in red, or with three exclamation points.
+  CRITICAL = 2;
+}
+
+
+// Defines the available statuses for a given Todolist task. Newly-created tasks start in the `ELIGIBLE` status, and
+// stay there until the task is completed. At that time, the task is switched to `COMPLETED`, but it still remains
+// visible in the user's task list until they fully clear it by "clearing completed," which marks it as `ARCHIVED`.
+enum TaskStatus {
+  // The task is eligible for completion, or for regular display in Todolist.
+  ELIGIBLE = 0;
+
+  // The task has been completed, but should still show for regular display.
+  COMPLETED = 1;
+
+  // The task has been archived, meaning it was completed and cleared.
+  ARCHIVED = 2;
+}
+
+
+// Describes a file attached to this task. These attached files are stored in Google Cloud Storage, and identified
+// uniquely by their public object URL. The mime type is used for icons/light-box type sniffing (i.e. for images).
+message TaskAttachment {
+  option (core.role) = OBJECT;
+
+  // Unique ID provisioned to identify this specific file, globally.
+  string id = 1 [
+    (core.field).type = ID,
+    (core.field).summary = "Globally-unique file ID.",
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.field_behavior) = IMMUTABLE
+  ];
+
+  // Private URL to the attachment file, stored on GCS.
+  string url = 2 [
+    (core.field).summary = "Private URL for the attachment file.",
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.field_behavior) = IMMUTABLE
+  ];
+
+  // Original filename for the attached file asset.
+  string file_name = 3 [
+    (core.field).summary = "Original uploaded name of the attached file.",
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.field_behavior) = IMMUTABLE
+  ];
+
+  // Specifies the kind of media constituted by this file attachment.
+  page.MediaType kind = 4 [
+    (core.field).summary = "Specifies, in broad terms, the type of media constituted by this attachment.",
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.field_behavior) = IMMUTABLE
+  ];
+
+  // Specifies metadata about the media constituted by this file attachment, in each case specific to the kind of media
+  // attached (represented in `kind`). Major types of structured media are `IMAGE`, `VIDEO`, `AUDIO`, and `DOCUMENT`.
+  oneof media {
+    // Specifies structured information specifically related to an image attached to a Todolist task.
+    page.MediaAsset.Image image = 30 [
+      (core.field).summary = "Specifies info related to image media, if applicable.",
+      (google.api.field_behavior) = OPTIONAL,
+      (google.api.field_behavior) = IMMUTABLE
+    ];
+
+    // Specifies structured information specifically related to a video attached to a Todolist task.
+    page.MediaAsset.Video video = 40 [
+      (core.field).summary = "Specifies info related to video media, if applicable.",
+      (google.api.field_behavior) = OPTIONAL,
+      (google.api.field_behavior) = IMMUTABLE
+    ];
+
+    // Specifies structured information specifically related to some digital document attached to a Todolist task.
+    page.MediaAsset.Document document = 50 [
+      (core.field).summary = "Specifies info related to an attached document, if applicable.",
+      (google.api.field_behavior) = OPTIONAL,
+      (google.api.field_behavior) = IMMUTABLE
+    ];
+  }
+
+  // Specifies the meta-generation for a given object. This is used by GCS to track file metadata changes.
+  uint32 metageneration = 6 [
+    (core.field).summary = "Metadata version for the attached file.",
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.field_behavior) = IMMUTABLE
+  ];
+
+  // Specifies the proper generation for a given object. This is used by GCS to track file version changes.
+  uint64 generation = 7 [
+    (core.field).summary = "Data version for the attached file.",
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.field_behavior) = IMMUTABLE
+  ];
+
+  // Private URL to the attachment file, stored on GCS.
+  webutil.html.types.TrustedResourceUrlProto serving_url = 8 [
+    (core.field).summary = "Private URL for the attachment file.",
+    (google.api.field_behavior) = OUTPUT_ONLY
+  ];
+
+  // MIME type of the file stored as this task attachment.
+  string mime = 9 [
+    (core.field).summary = "MIME type of the attachment file.",
+    (google.api.field_behavior) = OUTPUT_ONLY
+  ];
+
+  // Byte-size of the file, as reported by GCS.
+  uint32 size = 10 [
+    (core.field).summary = "Size of the file, in bytes, as reported by GCS.",
+    (google.api.field_behavior) = OUTPUT_ONLY
+  ];
+
+  // MD5 hash of the file's contents, as reported by GCS after upload.
+  string md5 = 11 [
+    (core.field).summary = "MD5 fingerprint of the file's data.",
+    (google.api.field_behavior) = OUTPUT_ONLY
+  ];
+}
+
+
+// Defines the structure of a task, which can exist on a user's task list in Todolist. This structure is used to store
+// the object in underlying data stores, to render a depiction of the object on the server, to emit the object over a
+// service in either binary or JSON, and/or to render or understand the object on the frontend. That is to say, anytime
+// a to-do task a referenced, it effectively derives from this central definition.
+message TodoTask {
+  option (core.role) = OBJECT;
+
+  // Content type of the embedded description content in the task. If `MARKDOWN` is selected, the rendering agent
+  // (either on the frontend or backend) should render the content into HTML, otherwise, it's fine to use plain text.
+  enum ContentType {
+    // Regular, plain text content.
+    PLAINTEXT = 0;
+
+    // Markdown-based content.
+    MARKDOWN = 1;
+  }
+
+  // Describes description content associated with a Todolist task. This description content can be in any format
+  // specifies in `ContentType`, but must be encoded in Base64 before storing in `payload`.
+  message TaskContent {
+    // Type of content assigned to this content block.
+    ContentType type = 1 [
+      (core.field).summary = "Type of content assigned to this block.",
+      (google.api.field_behavior) = REQUIRED
+    ];
+
+    // Base64-encoded payload of content.
+    bytes payload = 2 [
+      (core.field).summary = "Base64-encoded content value.",
+      (google.api.field_behavior) = REQUIRED
+    ];
+  }
+
+  // Describes, if applicable, the deadline associated with a given Todolist task. Deadlines are always optional, and
+  // can be specified as a day (with a day-level boundary), or as a specific time on a specified day.
+  message TaskDeadline {
+    // Full four-digit Gregorian Calendar year in which the task is due.
+    uint32 year = 1 [
+      (core.field).summary = "Four-digit year in which the task is due.",
+      (google.api.field_behavior) = REQUIRED
+    ];
+
+    // Calendar month in which the task is due.
+    google.type.Month month = 2 [
+      (core.field).summary = "Calendar month in which the task is due.",
+      (google.api.field_behavior) = REQUIRED
+    ];
+
+    // Day of the month in which the task is due.
+    uint32 day = 3 [
+      (core.field).summary = "Day of the month on which the task is due.",
+      (google.api.field_behavior) = REQUIRED
+    ];
+
+    // Describes the specificity of the task deadline.
+    oneof specificity {
+      // The task is due at the specified day's boundary.
+      bool day_boundary = 4 [
+        (core.field).summary = "Flag indicating a day-boundary. If no `time` is provided, this is set to `true`.",
+        (google.api.field_behavior) = OUTPUT_ONLY
+      ];
+
+      // The task is due at a specific time on the specified day.
+      google.type.TimeOfDay time = 5 [
+        (core.field).summary = "Time-of-day at which this task is due.",
+        (google.api.field_behavior) = OPTIONAL
+      ];
+    }
+  }
+
+  // ID assigned to the task, by the storage engine, when it is first written. Generally, the client is able to nominate
+  // a value to be used as the ID when creating a task, but does not have final authority about the ID used for the
+  // record. In other cases, the server or storage engine generates the key ID when the record is first written.
+  TaskKey task_key = 1 [
+    (core.field).type = KEY,
+    (core.field).summary = "Key defining the identity of this individual Todolist task."
+  ];
+
+  // Display title for the task.
+  string title = 2 [
+    (core.field).summary = "Display title for the task.",
+    (google.api.field_behavior) = REQUIRED
+  ];
+
+  // Priority level selected for this task.
+  TaskPriority priority = 3 [
+    (core.field).summary = "Priority level for the task.",
+    (google.api.field_behavior) = OPTIONAL
+  ];
+
+  // Current status of this individual task.
+  TaskStatus status = 4 [
+    (core.field).summary = "Current status of the task.",
+    (google.api.field_behavior) = OUTPUT_ONLY
+  ];
+
+  // Describes any deadline associated with this task.
+  TaskDeadline deadline = 5 [
+    (core.field).summary = "Deadline associated with the task.",
+    (google.api.field_behavior) = OPTIONAL
+  ];
+
+  // Content attached to this task.
+  TaskContent content = 6 [
+    (core.field).summary = "Task content body.",
+    (google.api.field_behavior) = OPTIONAL
+  ];
+
+  // Location associated with this task, if any.
+  google.type.LatLng location = 7 [
+    (core.field).summary = "Associated task location, if any.",
+    (google.api.field_behavior) = OPTIONAL
+  ];
+
+  // File attachments linked to this task.
+  repeated TaskAttachment attachment = 8 [
+    (core.collection).mode = COLLECTION,
+    (core.collection).path = "attachments",
+    (core.field).summary = "Task file attachments, if any.",
+    (google.api.field_behavior) = OUTPUT_ONLY
+  ];
+
+  // Timestamp indicating when this record was last modified. Because of the flag set on this field, the framework will
+  // automatically update this value each time the record is saved.
+  google.protobuf.Timestamp modified = 98 [
+    (core.field).stamp_update = true,
+    (core.field).summary = "Timestamp indicating when this task was last modified.",
+    (google.api.field_behavior) = OUTPUT_ONLY
+  ];
+
+  // Timestamp indicating when this record was originally created. Because of the flag set on this field, the framework
+  // will automatically set this value when the record is first created.
+  google.protobuf.Timestamp created = 99 [
+    (core.field).stamp_create = true,
+    (core.field).summary = "Timestamp indicating when this task was originally created.",
+    (google.api.field_behavior) = OUTPUT_ONLY
+  ];
+}
+
+
+// References an individual task owned by the current user, by its key/id. This message is re-usable over the API, in
+// particular when fetching or otherwise referencing existing tasks. The `id` for a given task is generally assigned by
+// the server when the record is created. Task `version` values change with each update, and are usually set to a
+// monotonically increasing value, such as a timestamp.
+message TaskKey {
+  // ID of the task being referenced. This ID is generated by the underlying data engine when the task record is first
+  // created, or by the server via some custom algorithm.
+  string id = 1 [
+    (core.field).type = ID,
+    (core.field).summary = "Unique ID generated for a given individual Todolist task.",
+    (google.api.field_behavior) = IMMUTABLE
+  ];
+
+  // Specific version of the task being referenced, as applicable. Each time a task is edited, a new "revision" is
+  // created, addressed by the timestamp at which it was written. The timestamp (`version`/`revision`) should be treated
+  // as an opaque, monotonically-increasing value meant for comparison purposes only.
+  uint32 version = 2 [(core.field).summary = "Version number for a given Todolist task payload."];
+
+  // Specifies an optional parent task which owns this task. If specified, the task is a sub-task living under the
+  // referenced parent.
+  TaskKey parent = 3 [
+    (core.field).type = PARENT,
+    (core.field).summary = "Specifies the key of the parent for this task, if any.",
+    (google.api.field_behavior) = IMMUTABLE
+  ];
+}
+
+
+// Specifies a generic container which holds a list of individual tasks owned by the current user, optionally with some
+// metadata describing tasks that weren't listed (i.e. in the case of paging-enabled queries where there are remaining
+// records not included in this response). When operating in keys-only mode, each `TodoTask` item is referenced only by
+// its ID, rather than with a full payload of data. In this operating mode, invoking code must fetch the payload data
+// for the task if it does not already have it on-hand.
+message TaskList {
+  option (core.role) = WIRE;
+
+  // Specifies a set of `TodoTask` payloads that matched the provided query. The structure of this payload is defined by
+  // its single repeated property, `task` (see below).
+  message TaskPayloads {
+    // Specifies the set of task payloads constituent to this `TaskList`. Each task should be enclosed with its key,
+    // since there is no method that produces a task list pre-write. Each task payload is specified with every field
+    // available, unless invoking code provided a mask of fields to return.
+    repeated TodoTask task = 1;
+  }
+
+  // Specifies a set of keys, each of which matched the provided query, and each of which reference an existing
+  // `TodoTask` record, for which a payload may be fetched at the frontend's discretion.
+  message TaskReferences {
+    // Specifies a set of keys, constituent to this `TaskList`, each of which reference an existing `TodoTask`, that
+    // collectively constitute a response to some query for a list of tasks. Each key present matched the query, and can
+    // further be fetched for payload data via the `FetchTask` method, if needed.
+    repeated TaskKey task_key = 1;
+  }
+
+  // Defines metadata regarding a given list of TodoTask records or keys. The properties enclosed in this record supply
+  // ancillary metadata which may be useful for UI purposes or follow-up query calculations.
+  message ListMetadata {
+    // Number of pages which exist, at the provided page limit. This counts the full number of pages, regardless of
+    // which page the user/frontend is currently on.
+    uint32 pages = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+    // Total count of all records that match the provided query. This accounts for uneven result counts vs. page limits
+    // and is usable as a "n of Y" value.
+    uint32 total = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+    // Opaque cursor value to resume this query, if supported by the underlying engine. Supplying this value during
+    // follow-up query submission allows the engine to continue seeking where it left off.
+    string cursor = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+  }
+
+  // Ancillary metadata describing various values (like the total count of records), attached to the `TaskList` payload
+  // specified. Applies to both keys-only and payload queries.
+  ListMetadata meta = 1;
+
+  // Specifies the list of tasks, either as a list of full payloads (via `TaskPayloads`), or a list of keys, each of
+  // which reference an existing and matching `TodoTask` record.
+  oneof tasklist {
+    // When *not* operating in `keys_only` mode, this property holds a list of matching `TaskPayloads` records, for the
+    // query provided by invoking code. Each task should carry with it a valid and unique `TaskKey`.
+    TaskPayloads tasks = 10;
+
+    // When `keys_only` mode is *active*, this property holds a list of matching `TaskReference` records, each of which
+    // match the query provided by invoking code. Each task key is known to exist at this stage, but fetching payload
+    // data for it is up to the client/frontend.
+    TaskReferences keys = 11;
+  }
+}
+
+
+// Specifies properties or modifiers related to an operation to list tasks for the currently-logged-in user. Query
+// options include the standard offset/limit/cursor properties, and also a mode called `keys_only`, wherein any matching
+// records are returned as keys instead of full payloads. Alternatively, the user may specify `projection` as a field
+// mask of payload values to fetch and return. In this mode, values are fetched directly from indexes, rather than
+// reading the payload from disk.
+message TaskListQuery {
+  option (core.role) = WIRE;
+
+  // Applies a limit to the number of records returned by a given `TaskList` query. If a limit is applied, and the count
+  // of matching records exceeds the limit, the system will begin to page results (i.e. it will affix properties that
+  // indicate the total number of pages, etc). The maximum (and default) limit is `100`.
+  uint32 limit = 1 [(google.api.field_behavior) = OPTIONAL];
+
+  // Applies an offset to the beginning of any resulting records returned by a given `TaskList` query. If an offset is
+  // applied, a corresponding amount of records are skipped before composing and returning the result set to invoking
+  // code. The maximum offset is `1000`.
+  uint32 offset = 2 [(google.api.field_behavior) = OPTIONAL];
+
+  // Informs the `TaskList` logic that we are resuming a query submitted previously. If supported by the engine, the
+  // system may continue to seek on that existing result-set.
+  string cursor = 3 [(google.api.field_behavior) = OPTIONAL];
+
+  // Requests that only a specified set of fields be returned in matching `TodoTask` payloads. Fields not mentioned in
+  // this structure, if present, are elided before returning the payload to the frontend. Has no effect when operating
+  // in `keys_only` mode. With a payload projection, values are fetched directly from indexes, alleviating the need to
+  // read data from disk. Making use of this technique may accelerate non-keys-only queries by a significant margin.
+  google.protobuf.FieldMask projection = 4 [(google.api.field_behavior) = OPTIONAL];
+}
+
+
+// Specifies an RPC/API request to attach an uploaded file to an existing `TodoTask` record. The client frontend is
+// expected to complete the upload to GCS, then dispatch the method constituted by this request structure, to complete
+// the file attachment process.
+message AttachFileRequest {
+  option (core.role) = WIRE;
+
+  // Specifies the TodoTask which owns the referenced `TaskAttachment`.
+  TaskKey task_key = 1 [(google.api.field_behavior) = REQUIRED];
+
+  // Specifies the ID of the file attachment being referenced, under `task_key`.
+  string file_id = 2 [(google.api.field_behavior) = REQUIRED];
+
+  // Specifies the meta-generation for a given object. This is used by GCS to track file metadata changes.
+  uint32 metageneration = 7 [(google.api.field_behavior) = REQUIRED];
+
+  // Specifies the proper generation for a given object. This is used by GCS to track file version changes.
+  uint64 generation = 8 [(google.api.field_behavior) = REQUIRED];
+}
+
+
+// References a file attachment under a specific TodoTask, owned by the currently-logged-in user. Includes a specific
+// reference t
+message AttachedFileReference {
+  option (core.role) = WIRE;
+
+  // Specifies the TodoTask which owns the referenced `TaskAttachment`.
+  TaskKey task_key = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.field_behavior) = IMMUTABLE
+  ];
+
+  // Specifies the ID of the file attachment being referenced, under `task_key`.
+  string file_id = 2 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.field_behavior) = IMMUTABLE
+  ];
+
+  // Specifies the meta-generation for a given object. This is used by GCS to track file metadata changes.
+  uint32 metageneration = 7 [(google.api.field_behavior) = IMMUTABLE];
+
+  // Specifies the proper generation for a given object. This is used by GCS to track file version changes.
+  uint64 generation = 8 [(google.api.field_behavior) = IMMUTABLE];
+}
+
+
+// Describes known error states, that may occur when interacting with the Tasks API. These errors are specific to the
+// nature of the logic at hand and semantically extend the meaning of whatever RPC status is given to a response.
+enum TodolistError {
+  option (core.enum_role) = ERRORS;
+
+  // The error state was not specified, or could not be recognized.
+  UNSPECIFIED_ERROR = 0;
+
+  // The submitted `TodoTask` record was found to be invalid for some reason. Details are specified in the additional
+  // error metadata and error message.
+  TASK_INVALID = 1;
+
+  // The submitted `TodoTask` record could not be completed, or could not be updated, either because the task or version
+  // specified already exists, or because a competing/more up-to-date change already occurred.
+  TASK_CONFLICT = 2;
+
+  // The system could not locate a `TodoTask` record matching the provided `TodoKey`.
+  TASK_NOT_FOUND = 3;
+
+  // The provided `TodoKey` was found to be invalid, either because it had a missing or malformed ID, or because the
+  // system expected a version to be specified and none was provided.
+  TASK_KEY_INVALID = 4;
+}
+
+
+// Describes the main `Tasks` service, which is responsible for enabling a user with the ability to manage their tasks
+// in the Todolist frontend application. The service allows creation of new tasks, editing of existing tasks, checking-
+// off of tasks as they are completed, and clearing completed tasks.
+//
+// ### API Invocation
+// Two styles of API are provided as part of this service:
+// - **REST/RPC**: You can dispatch the API with REST-ful JSON or gRPC. In this dispatch style, all operations are unary
+//   and function with strong consistency (as long as the underlying data store makes such guarantees for transactions).
+// - **Streaming**: Where supported, the client may also use the long-form streaming method, which has the advantage of
+//   supporting server-generated task/task-list change events. In this mode, each front-end "session" subscribes to the
+//   proper spot in Firestore server-side, and exchanges both updates and changes as needed on a duplex basis until the
+//   session closes.
+//
+// ### Authentication
+// Firstly, the frontend client must obtain and affix a valid and un-expired/un-revoked API key, duly authorized to use
+// the API being exposed. Secondly, the client must obtain a user authorization token, via the normal Firebase means.
+// These values must be attached to each unary API request, or the beginning of a streaming session, as described below:
+//
+// #### Affixing the API key
+// The API key identifies the application which is originating API traffic. It is generally restricted by referrer (when
+// used in a web context), or IP address (for servers), or by Android/iOS bundle ID. You can learn more about how Google
+// works with API keys [here](https://cloud.google.com/docs/authentication/api-keys).
+//
+// How you affix the API key depends on your invocation style:
+// - **REST/RPC**: You may use one or both of the following options:
+//    - **`X-API-Key` Header**: Specify the key, verbatim, in the header `X-API-Key`.
+//    - **`key` Parameter**: Specify the key, verbatim, in the query parameter `key`.
+// - **gRPC**: Affix the API key as a string metadata entry, at the name `x-api-key`.
+//
+// #### Affixing the auth token
+// The *authorization token* identifies the end-user who is using the Todolist application to the API, and contains a
+// cryptographic payload which enables access to their data, on their behalf. It is a JWT but must be treated as an
+// opaque value, and can be obtained via normal means using [Firebase Auth](https://firebase.google.com/docs/auth).
+//
+// After obtaining a token, or checking that one on-hand is not expired, it is affixed depending on your desired API
+// invocation style:
+// - **REST/RPC**: Attach the token in the `Authorization` header, prefixed with the type token `Bearer`, and separated
+//   by a single space.
+// - **gRPC**: Attach the token in a string metadata entry called `authorization`, prefixed with the type token `Bearer`
+//   and separated by a single space.
+//
+// #### Token expiration & renewal
+// By default, authorization tokens expire in a maximum of *1 (one) wall-clock hour*, so, it is imperative in the front-
+// end client that the expiration be checked before use, or that code is written to react to *403 Forbidden* responses
+// as a result of expired authorization tokens. API keys do not expire.
+//
+// To renew a token, use the methods defined in Firebase Auth for the platform you're on. All platforms allow some form
+// of token refresh/renewal.
+//
+// ### Streaming vs. Polling
+// To accomplish the real-time nature of the Todolist app, this API supports a streaming interface (described above).
+// When using the streaming interface, changes occur and propagate essentially in realtime. When and where the streaming
+// interface is not supported or desired, the end-user can opt for polling. In this case, it is recommended to check for
+// new tasks or task changes every *5 seconds*, using the `Changelog` method.
+service Tasks {
+  option (google.api.default_host) = "todolist.elide.tools";
+
+  // Execute a simple health check against the `Tasks` service. Perform any local logic needed to ensure the service is
+  // up and ready to receive traffic. If the service is not ready, a regular protocol error will be returned - if it is,
+  // the result is an empty successful response.
+  rpc Health(google.protobuf.Empty) returns (google.protobuf.Empty) {
+    option (google.api.http).get = "/v1/health";
+  }
+
+  // Create a new task on the currently-logged-in user's task list. This method operates in an idempotent manner if (and
+  // only if) the client nominates an ID to use for the task object. Otherwise, there is no way for the backend to
+  // distinguish one generic task list entry from another.
+  rpc CreateTask(TodoTask) returns (TaskKey) {
+    option (google.api.http) = {
+      post: "/v1/tasks"
+      body: "*"
+    };
+  }
+
+  // Update an existing task, referenced by its globally-unique ID. This method is always idempotent, based on the value
+  // of the `modified` timestamp (therefore, this value must change every time the record is modified, otherwise, the
+  // backend may identify it as a different record version).
+  rpc UpdateTask(TodoTask) returns (TaskKey) {
+    option (google.api.http) = {
+      put: "/v1/tasks/{task_key.id}"
+      body: "*"
+    };
+  }
+
+  // Retrieve an existing task, known to exist, by its globally-unique ID. This method returns the payload data for the
+  // referenced task if it can be found, or `404` if it cannot be found.
+  rpc FetchTask(TaskKey) returns (TodoTask) {
+    option (google.api.http) = {
+      get: "/v1/tasks/{id}"
+    };
+  }
+
+  // "Check off" an existing task owned by the currently-logged-in user, and referenced by its globally-unique ID. This
+  // performs a regular update to check the task off, and then responds to the frontend so it may account for any UI
+  // changes that must subsequently occur.
+  rpc CheckOffTask(TaskKey) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      put: "/v1/tasks/{id}/complete"
+      body: "*"
+    };
+  }
+
+  // Permanently delete a single task from a user's task list. As opposed to "completing" them, this method entirely
+  // removes the task from the user's list, and deletes the underlying data from disk. As such, the data lost in this
+  // operation is un-recoverable, and so executing this method should be done with care.
+  rpc DeleteTask(TaskKey) returns (google.protobuf.Empty) {
+    option (google.api.http).get = "/v1/tasks/{id}";
+  }
+
+  // After a file has been uploaded by the user, from the frontend, it may be attached to a specific Todolist task via
+  // this method. Files may only be attached to a maximum of one (1) task, and their lifecycle follows that task. For
+  // instance, fully deleting a task will also fully delete any files attached to it.
+  rpc AttachFile(AttachFileRequest) returns (AttachedFileReference) {
+    option (google.api.http) = {
+      post: "/v1/tasks/{task_key.id}/files"
+      body: "*"
+    };
+  }
+
+  // Fetch an individual file attachment, which exists on a Todolist task owned by the currently-logged-in user. If the
+  // specified file attachment cannot be found, an `HTTP 404`/`NOT_FOUND` is returned. Likewise, if the attachment is
+  // linked to a task not owned by the current user, an `HTTP 404`/`NOT_FOUND` is returned.
+  //
+  // This method only returns metadata for the requested file: to acquire the actual file data, the client must request
+  // such data directly from GCS, via the references enclosed in the `TaskAttachment` response. Serving URLs provided by
+  // the system are generally signed so that they may only be served to authorized users.
+  rpc FetchFile(AttachedFileReference) returns (TaskAttachment) {
+    option (google.api.http).get = "/v1/tasks/{task_key.id}/files/{file_id}";
+  }
+
+  // Delete an existing attached file, on an existing Todolist task. This removes the metadata record that links the
+  // task to the file, and also permanently deletes the file on disk. As such, this method should be run with care,
+  // after confirming intent with the user in the Todolist app UI.
+  rpc DeleteFile(AttachedFileReference) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete: "/v1/tasks/{task_key.id}/files/{file_id}"
+    };
+  }
+
+  // List all tasks on the currently-logged-in user's task list. If no query details are provided, tasks are listed in
+  // the order in which they should be displayed, otherwise, tasks are listed according to the sort/ordering directives
+  // in the query, or, if none are present, the default order is by key (lexicographically). Because keys increase
+  // monotonically, this should essentially yield the same order as task-creation (ascending).
+  rpc ListTasks(TaskListQuery) returns (TaskList) {
+    option (google.api.http).get = "/v1/tasks";
+  }
+
+  // Gather any completed tasks on the current user's task list, and mark each one as archived, so that it no longer
+  // shows up in their task list by default. In an "archived" state, a task can still be visible, but only if the
+  // requested list indicates it wishes to receive archived task data.
+  rpc ClearCompleted(google.protobuf.Empty) returns (TaskList) {
+    option (google.api.http).put = "/v1/tasks/clear";
+  }
+}

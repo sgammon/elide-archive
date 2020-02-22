@@ -1,0 +1,15 @@
+package(
+    default_visibility = ["//visibility:public"],
+)
+
+load(
+    "//defs/toolchain:templates.bzl",
+    "template_library",
+)
+
+
+template_library(
+    name = "assets_soy",
+    srcs = ["assets.soy"],
+    java_package = "gust.dom",
+)

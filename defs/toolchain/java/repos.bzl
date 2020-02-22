@@ -19,17 +19,19 @@ load(
     "GRAALVM_VERSION",
 )
 
+FETCH_SOURCES = True
+STRICT_DEPENDENCIES = True
 
 ASM_VERSION = "7.0"
 SLF4J_VERSION = "1.7.26"
-ANNOTATIONS_VERSION = "1.3.2"
 
-SOY_VERSION = "2019-10-08"
-GUAVA_VERSION = "28.2-jre"
-FINDBUGS_VERSION = "3.0.2"
 PROTOBUF_VERSION = "3.11.4"
 
+GRPC_JAVA_VERSION = "1.26.0"
+OPENTRACING_VERSION = "0.2.1"
+
 MICRONAUT_VERSION = "1.3.1"
+MICRONAUT_GRPC_VERSION = "1.1.1"
 MICRONAUT_TEST_VERSION = "1.1.2"
 MICRONAUT_REDIS_VERSION = "1.2.0"
 MICRONAUT_SECURITY_VERSION = "1.3.0"
@@ -45,12 +47,15 @@ REPOSITORIES = [
 BUILD_ARTIFACTS = [
     "org.ow2.asm:asm:%s" % ASM_VERSION,
     "org.slf4j:slf4j-api:%s" % SLF4J_VERSION,
-    "javax.annotation:javax.annotation-api:%s" % ANNOTATIONS_VERSION,
 ]
 
 MICRONAUT_BUILD_ARTIFACTS = [
-    "com.google.guava:guava:%s" % GUAVA_VERSION,
-    "com.google.code.findbugs:jsr305:%s" % FINDBUGS_VERSION,
+    "io.grpc:grpc-core:%s" % GRPC_JAVA_VERSION,
+    "io.grpc:grpc-auth:%s" % GRPC_JAVA_VERSION,
+    "io.grpc:grpc-api:%s" % GRPC_JAVA_VERSION,
+    "io.grpc:grpc-stub:%s" % GRPC_JAVA_VERSION,
+    "io.grpc:grpc-context:%s" % GRPC_JAVA_VERSION,
+    "io.grpc:grpc-protobuf:%s" % GRPC_JAVA_VERSION,
     "com.google.protobuf:protobuf-java:%s" % PROTOBUF_VERSION,
     "io.micronaut:micronaut-aop:%s" % MICRONAUT_VERSION,
     "io.micronaut:micronaut-core:%s" % MICRONAUT_VERSION,
@@ -64,13 +69,27 @@ MICRONAUT_BUILD_ARTIFACTS = [
     "io.micronaut:micronaut-http-server-netty:%s" % MICRONAUT_VERSION,
     "io.micronaut:micronaut-graal:%s" % MICRONAUT_VERSION,
     "io.micronaut:micronaut-views:%s" % MICRONAUT_VERSION,
+    "io.micronaut:micronaut-views-soy:%s" % MICRONAUT_VERSION,
     "io.micronaut:micronaut-router:%s" % MICRONAUT_VERSION,
     "io.micronaut:micronaut-session:%s" % MICRONAUT_VERSION,
     "io.micronaut:micronaut-tracing:%s" % MICRONAUT_VERSION,
     "io.micronaut:micronaut-security:%s" % MICRONAUT_SECURITY_VERSION,
     "io.micronaut:micronaut-multitenancy:%s" % MICRONAUT_VERSION,
+    "io.micronaut.grpc:micronaut-grpc-runtime:%s" % MICRONAUT_GRPC_VERSION,
+    "io.micronaut.grpc:micronaut-grpc-annotation:%s" % MICRONAUT_GRPC_VERSION,
+    "io.micronaut.grpc:micronaut-protobuff-support:%s" % MICRONAUT_GRPC_VERSION,
     "io.micronaut.configuration:micronaut-redis-lettuce:%s" % MICRONAUT_REDIS_VERSION,
-    maven.artifact("com.google.template", "soy", SOY_VERSION, neverlink = True),
+
+    maven.artifact("io.micronaut", "micronaut-views", MICRONAUT_VERSION, exclusions = [
+        maven.exclusion(
+           artifact = "types",
+           group = "com.google.common.html.types",
+       ),
+       maven.exclusion(
+          artifact = "soy",
+          group = "com.google.template",
+      ),
+    ]),
 ]
 
 RUNTIME_ARTIFACTS = [
@@ -80,6 +99,7 @@ RUNTIME_ARTIFACTS = [
 
 MICRONAUT_RUNTIME_ARTIFACTS = [
     "io.micronaut:micronaut-runtime:%s" % MICRONAUT_VERSION,
+    "io.opentracing.contrib:opentracing-grpc:%s" % OPENTRACING_VERSION,
 ]
 
 TEST_ARTIFACTS = [
@@ -106,8 +126,24 @@ def _gust_java_deps(micronaut = True):
     maven_install(
         artifacts = artifacts,
         repositories = REPOSITORIES,
+        fetch_sources = FETCH_SOURCES,
         maven_install_json = "@gust//:maven_install.json",
         generate_compat_repositories = True,
+        strict_visibility = STRICT_DEPENDENCIES,
+        excluded_artifacts = [
+            "com.google.template:soy",
+            "com.google.common.html.types:types",
+        ],
+        override_targets = {
+            "com.google.guava:guava": "@com_google_guava",
+            "com.google.template:soy": "@com_google_template_soy",
+            "com.google.common.html.types:types": "@com_google_template_soy",
+            "com.google.code:gson": "@com_google_code_gson",
+            "com.google.code.findbugs:jsr305": "@com_google_code_findbugs_jsr305",
+            "com.google.closure:stylesheets": "@com_google_closure_stylesheets",
+            "javax.inject:javax.inject": "@javax_inject",
+            "javax.annotation:javax.annotation-api": "@javax_annotation_api",
+        },
     )
 
 

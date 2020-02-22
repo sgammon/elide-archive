@@ -1,0 +1,187 @@
+
+{namespace gust.page}
+
+
+/**
+ * Content root template, which wraps all major visible page content in all cases. The content root is customizable
+ * in various ways, and linked to GSS stylesheets which apply the customizations. The content root changes based on the
+ * invoking browser - mobile or desktop.
+ */
+{template .contentRoot}
+  {@param? mobile: bool}  /** Flag indicating that a mobile browser was detected. */
+  {@param? content: html}  /** HTML content to inject into the main body. */
+  {@param? pageId: string}  /** ID to apply to the whole page, optionally. */
+  {@param? pageClass: string}  /** Class name to apply to the whole page, optionally. */
+
+  {let $inner kind="html"}
+      {if isNonnull($content)}
+          {$content}
+      {else}
+        <div></div>
+      {/if}
+  {/let}
+
+  <main{if isNonnull($pageId)}{sp}id="{$pageId}"{/if}
+       class="{if $mobile}{css('agent-mobile')}{else}{css('agent-base')}{/if}
+              {if isNonnull($pageClass)}{sp}{$pageClass}{/if}">
+    {$inner}
+  </main>
+{/template}
+
+
+/**
+ * Generic wrapping template for an HTML web page. This is generally used enclosed from a page template, so that the
+ * server may have a routine to render a page in full. Page frames are never rendered on the front-end, because the DOM
+ * already exists when rendering occurs.
+ */
+{template .wrap}
+  {@inject page: page.Context}  /** Main page-level context, provided to include metadata and page assets. */
+  {@param? pageId: string}  /** CSS ID to apply to the whole page, optionally. */
+  {@param? base: trusted_resource_uri}  /** Optional page base to apply. */
+  {@param? pageClass: string}  /** Class name(s) to apply to the whole page, optionally. */
+  {@param? bodyClass: string}  /** Class name(s) to apply to the body element. */
+  {@param? mobile: bool}  /** Flag indicating that a mobile browser was detected. */
+  {@param? liftedCSS: css}  /** Lifted CSS to apply, if any. */
+  {@param? liftedJS: js}  /** Lifted JavaScrs)ipt to apply, if any. */
+  {@param? content: html}  /** Injected body content to apply. */
+  {@param? preconnect: list<[domain: uri, crossorigin: bool]>}  /** Pre-connect domains. */
+  {@param? additionalHead: html}  /** Additional HTML to apply to the head block. */
+  {@param? ogTags: html}  /** OpenGraph tags to include at the bottom of the head block. */
+  {@param? jsonLD: js}  /** JSON-LD (JSON Linked Data) description for the page, if any. */
+  {@inject? contentSecurity: [header: string, policy: string]}  /** Injected CSP to apply via meta tags. */
+
+  {let $languageSpec kind="text"}
+    {if isNonnull($page) and isNonnull($page.meta) and isNonnull($page.meta.language)}
+      {call gust.base.languageSpec}
+          {param spec: $page.meta.language /}
+      {/call}
+    {else}en-US{/if}
+  {/let}
+
+  <!doctype html>
+  <html class="no-js"{if isNonnull($languageSpec)}{sp}lang="{$languageSpec}"{/if} prefix="og: http://ogp.me/ns#">
+  <head>
+      <meta charset="utf-8">
+
+      {if isNonnull($base)}
+        <base href="{$base}">
+      {/if}
+
+      {if isNonnull($preconnect)}
+          {for $preconnectDirective in $preconnect}
+            <link href="{$preconnectDirective.domain}"
+                  rel="preconnect"
+                  {if $preconnectDirective.crossorigin}{sp}crossorigin{/if}>
+          {/for}
+      {/if}
+      {if isNonnull($contentSecurity)}
+        <meta http-equiv="{$contentSecurity.header}" content="{$contentSecurity.policy}">
+      {/if}
+      {if isNonnull($liftedCSS)}
+        <style type="text/css">{$liftedCSS}</style>
+      {/if}
+      {if isNonnull($page) and isNonnull($page.styles) and isNonnull($page.styles.linkList)}
+          {for $styleDirective in $page.styles.linkList}
+              {call gust.dom.assets.stylesheet}
+                  {param sheet: $styleDirective.uri /}
+                  {param media: $styleDirective.media /}
+              {/call}
+          {/for}
+      {/if}
+      {if isNonnull($page) and isNonnull($page.meta) and $page.meta.viewport}
+        <meta name="viewport" content="{$page.meta.viewport}">
+      {else}
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, viewport-fit=cover">
+      {/if}
+      {if isNonnull($page) and isNonnull($page.meta) and $page.meta.favicon}
+        <link rel="icon" href="{$page.meta.favicon}">
+      {/if}
+      {if isNonnull($page) and isNonnull($page.meta) and $page.meta.manifest}
+        <link rel="manifest" href="{$page.meta.manifest}">
+      {/if}
+      {if isNonnull($liftedJS)}
+        <script type="text/javascript">
+                {if isNonnull($liftedJS)}
+                    {$liftedJS}
+                {/if}
+        </script>
+      {/if}
+      {if isNonnull($page) and isNonnull($page.scripts) and $page.scripts.linkList}
+          {for $scriptDirective in $page.scripts.linkList}
+              {call gust.dom.assets.script}
+                  {param script: $scriptDirective.uri /}
+                  {param id: $scriptDirective.id /}
+                  {param defer: $scriptDirective.defer /}
+                  {param async: $scriptDirective.async /}
+                  {param module: $scriptDirective.module /}
+              {/call}
+          {/for}
+      {/if}
+      {if isNonnull($page) and isNonnull($page.meta) and $page.meta.theme}
+        <meta name="theme-color" content="{$page.meta.theme}">
+      {/if}
+      {if isNonnull($page) and isNonnull($page.meta) and $page.meta.touchIcon}
+        <link rel="apple-touch-icon" href="{$page.meta.touchIcon}">
+      {/if}
+      {if isNonnull($page) and isNonnull($page.meta) and $page.meta.startupImage}
+        <link rel="apple-touch-startup-image" href="{$page.meta.startupImage}">
+      {/if}
+      {if isNonnull($page) and isNonnull($page.meta) and $page.meta.description}
+        <meta name="description" content="{$page.meta.description}">
+      {/if}
+      {if isNonnull($page) and isNonnull($page.meta) and $page.meta.keywordList}
+          {let $metaKeywords kind="text"}
+              {for $keyword in $page.meta.keywordList}
+                  {if not isFirst($keyword)}, {/if}
+                  {$keyword}
+              {/for}
+          {/let}
+        <meta name="keywords" content="{$metaKeywords}">
+      {/if}
+      {if $additionalHead}{$additionalHead}{/if}
+      {if isNonnull($page) and isNonnull($page.meta) and isNonnull($page.meta.title)}
+        <title>{$page.meta.title}</title>
+      {/if}
+      {if isNonnull($page) and isNonnull($page.meta) and isNonnull($page.meta.openGraph)}
+        {if $page.meta.openGraph.url}
+          <meta property="og:url" content="{$page.meta.openGraph.url}">
+        {/if}
+        {if $page.meta.openGraph.title}
+          <meta property="og:title" content="{$page.meta.openGraph.title}">
+          <meta name="twitter:title" content="{$page.meta.openGraph.title}">
+        {/if}
+        {if $page.meta.openGraph.description}
+          <meta property="og:description" content="{$page.meta.openGraph.description}">
+          <meta name="twitter:description" content="{$page.meta.openGraph.description}">
+        {/if}
+        {if $page.meta.openGraph.image}
+          <meta property="og:image" content="{$page.meta.openGraph.image}">
+          <meta name="twitter:image:src" content="{$page.meta.openGraph.image}">
+        {/if}
+        {if $languageSpec}
+          <meta property="og:locale" content="{$languageSpec}">
+        {/if}
+        {if $page.meta.openGraph.type}
+          <meta property="og:type" content="{$page.meta.openGraph.type}">
+          <meta name="twitter:card" content="summary">
+        {/if}
+        <meta name="twitter:site" content="@bloomworksIO">
+        <meta name="twitter:creator" content="@beepbeepboop">
+      {/if}
+      {if isNonnull($ogTags)}
+          {$ogTags}
+      {/if}
+  </head>
+  <body{if isNonnull($bodyClass)}{sp}class="{$bodyClass}"{/if}>
+      {call .contentRoot}
+          {param pageId: $pageId /}
+          {param mobile: $mobile /}
+          {param content: $content /}
+          {param pageClass: $pageClass /}
+      {/call}
+      {if $jsonLD}
+          <script type="application/ld+json">{$jsonLD}</script>
+      {/if}
+  </body>
+  </html>
+{/template}

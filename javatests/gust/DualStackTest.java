@@ -7,12 +7,10 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 
 
-/**
- * Tests that J2CL classes can be used Java-side.
- */
-public class DualStackTest {
-  @Test
-  public void testDualStackObject() {
+/** Tests that J2CL classes can be used Java-side. */
+public final class DualStackTest {
+  /** Test that {@link Core} can be used as a dual-stack object. */
+  @Test public void testDualStackObject() {
     assertNotNull(
       "Core object should produce version",
       Core.getGustVersion());
@@ -22,6 +20,7 @@ public class DualStackTest {
       Core.getGustVersion());
   }
 
+  /** Test that {@link Core#getEngine()} responds as expected. */
   @Test
   public void testBackendExecutionEngine() {
     assertNotNull(
@@ -34,6 +33,7 @@ public class DualStackTest {
       Core.getEngine());
   }
 
+  /** Test that {@link Core#isDebugMode()} responds as expected. */
   @Test
   public void testDebugModeNonnull() {
     assertNotNull(
@@ -41,6 +41,7 @@ public class DualStackTest {
       Core.isDebugMode());
   }
 
+  /** Test that {@link Core#isDevMode()} responds as expected. */
   @Test
   public void testDevModeNonnull() {
     assertNotNull(
@@ -48,6 +49,7 @@ public class DualStackTest {
       Core.isDevMode());
   }
 
+  /** Test that {@link Core#isProductionMode()} responds as expected. */
   @Test
   public void testProdModeNonnull() {
     assertNotNull(

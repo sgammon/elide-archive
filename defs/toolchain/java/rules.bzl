@@ -39,6 +39,7 @@ load(
 
 load(
     "//defs/toolchain:schema.bzl",
+    "GRPCJAVA_POSTFIX_",
     "JAVAPROTO_POSTFIX_",
     "CLOSUREPROTO_POSTFIX_",
 )
@@ -56,12 +57,15 @@ load(
 
 
 INJECTED_MICRONAUT_DEPS = [
+    "@javax_inject",
+    "@javax_annotation_api",
     "@gust//java:framework",
     "@gust//defs/toolchain/java/plugins:micronaut",
-    maven("com.google.guava:guava"),
-    maven("com.google.template:soy"),
+    "@com_google_guava",
+    "@com_google_template_soy",
+    "@com_google_common_html_types",
+    "@com_google_code_findbugs_jsr305",
     maven("com.google.protobuf:protobuf-java"),
-    maven("com.google.code.findbugs:jsr305"),
     maven("io.micronaut:micronaut-aop"),
     maven("io.micronaut:micronaut-core"),
     maven("io.micronaut:micronaut-http"),
@@ -73,7 +77,24 @@ INJECTED_MICRONAUT_DEPS = [
     maven("io.micronaut:micronaut-http-server-netty"),
     maven("io.micronaut:micronaut-graal"),
     maven("io.micronaut:micronaut-views"),
+    maven("io.micronaut:micronaut-views-soy"),
     maven("io.micronaut:micronaut-router"),
+    maven("io.micronaut:micronaut-tracing"),
+    maven("io.micronaut:micronaut-session"),
+    maven("io.micronaut:micronaut-security"),
+    maven("io.micronaut:micronaut-multitenancy"),
+]
+
+INJECTED_MICRONAUT_GRPC_DEPS = [
+    maven("io.grpc:grpc-core"),
+    maven("io.grpc:grpc-auth"),
+    maven("io.grpc:grpc-api"),
+    maven("io.grpc:grpc-stub"),
+    maven("io.grpc:grpc-context"),
+    maven("io.grpc:grpc-protobuf"),
+    maven("io.micronaut.grpc:micronaut-grpc-runtime"),
+    maven("io.micronaut.grpc:micronaut-grpc-annotation"),
+    maven("io.micronaut.grpc:micronaut-protobuff-support"),
 ]
 
 INJECTED_MICRONAUT_RUNTIME_DEPS = [
@@ -210,7 +231,6 @@ def _micronaut_controller(name,
                           deps = [],
                           protos = [],
                           templates = [],
-                          proto_deps = [],
                           runtime_deps = [],
                           data = [],
                           **kwargs):
@@ -223,6 +243,35 @@ def _micronaut_controller(name,
         srcs = srcs,
         proto_deps = protos,
         templates = templates,
+        deps = (deps or []),
+        runtime_deps = runtime_deps,
+        data = data,
+        **kwargs
+    )
+
+
+
+def _micronaut_service(name,
+                       srcs,
+                       deps = [],
+                       protos = [],
+                       services = [],
+                       templates = [],
+                       runtime_deps = [],
+                       data = [],
+                       **kwargs):
+
+    """ Wraps a Micronaut library with dependencies for services via gRPC. """
+
+    _micronaut_library(
+        name = name,
+        srcs = srcs,
+        proto_deps = protos + services,
+        templates = templates,
+        deps = (deps or []) + [
+            ("%s-%s" % (svc, GRPCJAVA_POSTFIX_))
+            for svc in services
+        ] + INJECTED_MICRONAUT_GRPC_DEPS,
         runtime_deps = runtime_deps,
         data = data,
         **kwargs
@@ -262,6 +311,7 @@ def _micronaut_application(name,
                            image_format = "OCI",
                            srcs = [],
                            controllers = [],
+                           services = [],
                            tag = None,
                            deps = None,
                            proto_deps = [],
@@ -279,10 +329,10 @@ def _micronaut_application(name,
     computed_jvm_flags = _annotate_jvm_flags([i for i in jvm_flags], defs)
 
     if len(srcs) > 0:
-        computed_deps = _dedupe_deps((deps or []) + INJECTED_MICRONAUT_DEPS + controllers)
+        computed_deps = _dedupe_deps((deps or []) + INJECTED_MICRONAUT_DEPS + controllers + services)
         computed_image_deps = _dedupe_deps((deps or []) + INJECTED_MICRONAUT_DEPS)
         computed_image_layers = _dedupe_deps((
-            INJECTED_MICRONAUT_RUNTIME_DEPS + [template_loader] + controllers))
+            INJECTED_MICRONAUT_RUNTIME_DEPS + [template_loader] + controllers + services))
         computed_runtime_deps = [template_loader]
 
         if inject_main:
@@ -294,6 +344,7 @@ def _micronaut_application(name,
         computed_runtime_deps = _dedupe_deps(
             (deps or []) +
             INJECTED_MICRONAUT_DEPS +
+            services +
             controllers + [
                 maven("io.micronaut:micronaut-runtime"),
             ] + [template_loader] + [("%s-%s" % (
@@ -334,7 +385,7 @@ def _micronaut_application(name,
         resource_jars = [
             ("%s-lib" % r) for r in native_configsets
         ],
-        resource_strip_prefix = "java/gust/",
+        resource_strip_prefix = "java/gust" in config and "java/gust/" or None,
     )
 
     if native:
@@ -431,6 +482,7 @@ ensure_types_ = _ensure_types
 jdk_binary = _jdk_binary
 jdk_library = _jdk_library
 micronaut_library = _micronaut_library
+micronaut_service = _micronaut_service
 micronaut_controller = _micronaut_controller
 micronaut_application = _micronaut_application
 micronaut_native_configset = _micronaut_native_configset

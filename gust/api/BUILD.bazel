@@ -1,0 +1,40 @@
+package(
+    default_visibility = ["//visibility:public"],
+)
+
+load(
+    "//defs/toolchain:schema.bzl",
+    "model",
+    "model_package",
+)
+
+## API/Services
+model(
+    name = "openapiv2",
+    srcs = ["openapiv2.proto"],
+    deps = [
+        "@com_google_protobuf//:any_proto",
+        "@com_google_protobuf//:struct_proto",
+    ],
+    _internal = True,
+)
+
+model(
+    name = "services",
+    srcs = ["services.proto"],
+    deps = [
+        ":openapiv2",
+        "@com_google_protobuf//:descriptor_proto",
+    ],
+    _internal = True,
+)
+
+
+model_package(
+    name = "api",
+    deps = [
+        ":openapiv2",
+        ":services",
+    ],
+    _internal = True,
+)

@@ -1,10 +1,23 @@
-
 /**
  * Specifies structures that relate to data modeling and the structure of the data. Enumerates collection mode and field
  * type, required status, and so on. Also includes field metadata (like summaries, descriptions, and so on).
  */
 syntax = "proto3";
 package core;
+
+option optimize_for = SPEED;
+option cc_enable_arenas = true;
+option java_multiple_files = true;
+option java_string_check_utf8 = true;
+option java_outer_classname = "Datamodel";
+option php_namespace = "Elide";
+option php_class_prefix = "ELD";
+option swift_prefix = "Elide";
+option objc_class_prefix = "ELD";
+option ruby_package = "Elide::Core";
+option java_package = "tools.elide.core";
+option csharp_namespace = "Elide.Core";
+option go_package = "github.com/elide-tools/elide/core/datamodel;datamodel";
 
 import "google/protobuf/descriptor.proto";
 
@@ -75,11 +88,8 @@ enum FieldType {
 // Specifies the types an object may use when defining special objects. These types govern how an object is treated,
 // listed, and adapted throughout its lifecycle.
 enum DatapointType {
-  // The datamodel has no special type specified.
-  NO_TYPE = 0;
-
   // The datamodel represents an object record.
-  OBJECT = 1;
+  OBJECT = 0;
 
   // The datamodel represents an event type.
   EVENT = 2;
@@ -89,6 +99,17 @@ enum DatapointType {
 
   // The datamodel represents a wire object.
   WIRE = 4;
+}
+
+
+// Specifies a special role, if applicable, for a given enumerated type. Each selection governs some special behavior
+// related to defined enums with APIs, databases, and so on.
+enum EnumeratedType {
+  // Specifies a generic enumeration structure.
+  GENERIC_ENUMERATION = 0;
+
+  // Specifies a structure which enumerates error states.
+  ERRORS = 1;
 }
 
 
@@ -181,37 +202,34 @@ message FieldPersistenceOptions {
   // Field type, for special-case fields.
   FieldType type = 1;
 
-  // String description of this field included in schemas.
-  string description = 2;
-
   // Summary for this field, which provides a narrative description. It should be suitable for use in external
   // circumstances, like documentation.
-  string summary = 3;
+  string summary = 2;
 
   // This item is a timestamp, and we would like it to be automatically updated each time the model that contains it is
   // modified in underlying storage. The field should be read-only.
-  bool stamp_update = 5;
+  bool stamp_update = 3;
 
   // This item is a timestamp, and we would like it to be automatically set when the model is created. After that point,
   // we would like this field to be read-only.
-  bool stamp_create = 6;
+  bool stamp_create = 4;
 
   // This field should not allow writes, but rather produce its value dynamically. Fields marked in this manner cannot
   // be set by external code at any point in time.
-  bool read_only = 7;
+  bool read_only = 5;
 
   // This field should allow writes when the model that contains it is written, but then, henceforth, the model should
   // not allow this field to be mutated.
-  bool immutable = 8;
+  bool immutable = 6;
 
   // This field should always be explicitly listed with a value, even if it is set to the default value. This function
   // is especially useful for enums with default values, when there is a desire to have consistent indexes.
-  bool explicit = 9;
+  bool explicit = 7;
 
   // Describes the visibility level of a given field in a tree of fields. This value applies recursively under message
   // fields on which it is applied. Depending on the visibility level active when data is deserialized or serialized,
   // certain data may be withheld corresponding to the invoking user or system's access level.
-  FieldVisibility visibility = 10;
+  FieldVisibility visibility = 8;
 }
 
 
@@ -282,8 +300,10 @@ extend google.protobuf.EnumValueOptions {
   DatapointOptions value = 8007;
 }
 
-
 extend google.protobuf.EnumOptions {
+  // Specifies a special role, if applicable, for a given enumerated type.
+  EnumeratedType enum_role = 9000;
+
   // Settings that specify state for this enum value, including validation settings, as applicable.
   DatapointOptions enumeration = 9001;
 }

@@ -17,32 +17,20 @@ load(
 java_library(
     name = "micronaut-inject",
     exports = [
+        "@javax_annotation_api",
         maven("io.micronaut:micronaut-core"),
         maven("io.micronaut:micronaut-inject"),
         maven("io.micronaut:micronaut-inject-java"),
         maven("io.micronaut:micronaut-validation"),
     ],
     runtime_deps = [
+        "@javax_annotation_api",
         maven("io.micronaut:micronaut-core"),
         maven("io.micronaut:micronaut-inject"),
         maven("io.micronaut:micronaut-inject-java"),
         maven("io.micronaut:micronaut-validation"),
         maven("io.micronaut:micronaut-graal"),
     ]
-)
-
-java_library(
-    name = "dagger_compiler",
-    exports = ["//external:jar/com/google/dagger/dagger_compiler"],
-    runtime_deps = [
-        ":dagger",
-        ":dagger_producers",
-        "//third_party/java/com/google/code/findbugs:jsr305",
-        "//third_party/java/com/google/googlejavaformat:google_java_format",
-        "//third_party/java/com/google/guava",
-        "//third_party/java/com/squareup:javapoet",
-        "//third_party/java/javax/inject:javax_inject",
-    ],
 )
 
 java_plugin(

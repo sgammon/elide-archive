@@ -37,16 +37,17 @@ template_library(
 
 micronaut_library(
     name = "TemplateProvider",
-    srcs = ["TemplateProvider.kt"],
+    srcs = ["TemplateProvider.java"],
     templates = [":page"],
+    deps = [maven("io.micronaut:micronaut-views-soy")],
 )
 
 jdk_library(
     name = "Application",
     srcs = ["Application.java"],
     deps = [
+        "@com_google_code_findbugs_jsr305",
         maven("io.micronaut:micronaut-runtime"),
-        maven("com.google.code.findbugs:jsr305"),
     ],
     runtime_deps = [
         maven("io.micronaut:micronaut-runtime"),

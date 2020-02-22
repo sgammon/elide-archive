@@ -1,0 +1,31 @@
+package(
+    default_visibility = ["//visibility:public"],
+)
+
+
+load(
+    "//defs/toolchain/java:testing.bzl",
+    "jdk_test",
+)
+
+
+jdk_test(
+    name = "ApplicationTest",
+    srcs = ["ApplicationTest.java"],
+    deps = ["//java/gust/backend:Application"],
+    test_class = "javatests.gust.backend.ApplicationTest",
+    testonly = True,
+    classpath_resources = [
+        "//java/gust:logback.xml",
+        "//java/gust:application.yml",
+    ],
+)
+
+
+jdk_test(
+    name = "TemplateProviderTest",
+    srcs = ["TemplateProviderTest.java"],
+    deps = ["//java/gust/backend:TemplateProvider"],
+    test_class = "javatests.gust.backend.TemplateProviderTest",
+    testonly = True,
+)

@@ -23,3 +23,6 @@
 [submodule "api_common"]
 	path = vendor/google/api-common
 	url = git@github.com:googleapis/api-common-protos.git
+[submodule "safe_html_types"]
+	path = vendor/google/safe-html-types
+	url = git@github.com:google/safe-html-types.git

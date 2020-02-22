@@ -188,12 +188,28 @@ DEPS = {
         "overlay": "mdl.bzl",
         "seal": "f65b744aa0865bce2f9727b1b116fadf10639b63f4b511165a2ab65afa6d1046"},
 
+    # Common Protocol Buffers
     "proto_common": {
         "type": "github",
         "repo": "googleapis/api-common-protos",
-        "target": "a1049653796e24778de3073bd04760588494aecd",
+        "target": "fd62e4d97ca6829b9166ae86bc6429574ff4e5db",
         "overlay": "proto_common.bzl",
-        "seal": "280bdadd0cc490ac601ba577694e290b2aa3bc5636dcb9f0d9eca27dc0f5791d"},
+        "seal": "4a84c293b3758d2cd5b6da27ffb0166f6ce23b99f70ea14ef28cb77099744889"},
+
+    # Safe HTML Types
+    "safe_html_types": {
+        "type": "github",
+        "repo": "google/safe-html-types",
+        "target": "8507735457ea41a37dfa027fb176d49d5783c4ba",
+        "overlay": "safe_html_types.bzl",
+        "seal": "2356090e7632f49ea581bb6f8808fa038a7433d433f3e8d7045a36f81fb39d65"},
+
+    # gRPC: Java
+    "io_grpc_java": {
+        "type": "github",
+        "repo": "grpc/grpc-java",
+        "target": "a98db126e265259ea73c2156833cbf872aa86811",
+        "seal": "f83e71b2ab65c3c133d6ee6ac968efee21f5cb93a25825b50740538e50905b9b"},
 
     # Google: Closure Stylesheets
     "com_google_closure_stylesheets": {
@@ -218,6 +234,16 @@ DEPS = {
         ]),
     },
 
+    # JavaX: Annotations API
+    "javax_annotation_api": {
+        "type": "java",
+        "licenses": ["notice"],  # Apache 2.0
+        "seal": None,
+        "targets": [
+          "https://repo1.maven.org/maven2/javax/annotation/javax.annotation-api/1.3.2/javax.annotation-api-1.3.2.jar",
+        ],
+    },
+
     # Google: Soy
     "com_google_template_soy": {
         "type": "java",
@@ -233,7 +259,6 @@ DEPS = {
             "@com_google_inject_extensions_guice_assistedinject",
             "@com_google_inject_extensions_guice_multibindings",
             "@com_google_inject_guice",
-            "@com_google_protobuf//:protobuf_java",
             "@com_ibm_icu_icu4j",
             "@javax_inject",
             "@org_json",
@@ -241,6 +266,7 @@ DEPS = {
             "@org_ow2_asm_analysis",
             "@org_ow2_asm_commons",
             "@org_ow2_asm_util",
+            "@com_google_protobuf//:protobuf_java",
         ],
         "inject": "\n".join([
             ("java_binary(\n" +

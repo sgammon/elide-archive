@@ -1,0 +1,48 @@
+package(
+    default_visibility = ["//visibility:public"],
+)
+
+load(
+    "//defs/toolchain:schema.bzl",
+    "model",
+)
+
+load(
+    "//defs/toolchain:templates.bzl",
+    "template_library",
+)
+
+
+## Page Models
+model(
+    name = "media_proto",
+    srcs = ["media.proto"],
+)
+
+model(
+    name = "semantic_proto",
+    srcs = ["semantic.proto"],
+    deps = [":media_proto"],
+)
+
+model(
+    name = "page_proto",
+    srcs = ["page.proto"],
+    deps = [
+        ":semantic_proto",
+        "//gust/base:language_proto",
+        "@safe_html_types//:proto",
+    ]
+)
+
+## Page Templates
+template_library(
+    name = "page_soy",
+    srcs = ["page.soy"],
+    java_package = "gust.page",
+    proto_deps = [":page_proto"],
+    soy_deps = [
+        "//gust/base:language_soy",
+        "//gust/dom:assets_soy",
+    ]
+)

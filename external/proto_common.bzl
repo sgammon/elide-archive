@@ -1,4 +1,3 @@
-
 package(
     default_visibility = ["//visibility:public"],
 )
@@ -70,4 +69,22 @@ proto_library(
 proto_library(
     name = "type_timeofday",
     srcs = ["google/type/timeofday.proto"],
+)
+
+# RPC Types
+proto_library(
+    name = "rpc_code",
+    srcs = ["google/rpc/code.proto"],
+)
+
+proto_library(
+    name = "rpc_error_details",
+    srcs = ["google/rpc/error_details.proto"],
+    deps = ["@com_google_protobuf//:duration_proto"],
+)
+
+proto_library(
+    name = "rpc_status",
+    srcs = ["google/rpc/status.proto"],
+    deps = ["@com_google_protobuf//:any_proto"],
 )

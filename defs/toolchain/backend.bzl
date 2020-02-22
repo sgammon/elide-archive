@@ -4,6 +4,7 @@ load(
     _jdk_binary = "jdk_binary",
     _jdk_library = "jdk_library",
     _micronaut_library = "micronaut_library",
+    _micronaut_service = "micronaut_service",
     _micronaut_controller = "micronaut_controller",
     _micronaut_application = "micronaut_application",
     _micronaut_native_configset = "micronaut_native_configset",
@@ -41,6 +42,7 @@ jdk_binary = _jdk_binary
 jdk_library = _jdk_library
 micronaut_test = _micronaut_test
 micronaut_library = _micronaut_library
+micronaut_service = _micronaut_service
 micronaut_controller = _micronaut_controller
 micronaut_application = _micronaut_application
 micronaut_native_configset = _micronaut_native_configset

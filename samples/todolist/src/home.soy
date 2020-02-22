@@ -1,0 +1,20 @@
+
+{namespace todolist.home}
+
+
+/**
+ * Render the homepage for Todolist. There are a few modes to the homepage, depending on the user's authentication
+ * state. If they are logged-in when they visit the page, we render their current list of tasks - if not, we render a
+ * toy sample that is usable anonymously.
+ *
+ * The client-side app handles re-hydration and state transitions from anonymous-to-logged-in, and vice-versa. This
+ */
+{template .page}
+    {@param? name: string}  /** Name to say hello to for our simple salutation. Defaults to 'World'. */
+
+    {call gust.page.wrap}
+        {param content kind="html"}
+            <b>Hello, {$name ?: "World"}!</b>
+        {/param}
+    {/call}
+{/template}
