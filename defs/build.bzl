@@ -128,7 +128,14 @@ DEPS = {
         "type": "github",
         "repo": "google/elemental2",
         "target": "d328c1e688cc5e7e9eaec5c5d264423878827925",
-        "seal": None},
+        "seal": "ac6018af3274fd80d7d185305575474b4dfa1367e2c360e9f3c038f06affd7da"},
+
+    # Google: JS Interop (Base)
+    "com_google_jsinterop_base": {
+        "type": "github",
+        "repo": "google/jsinterop-base",
+        "target": "172a78020d428e46cc86bcaebe946589c07452ae",
+        "seal": "8edf4e4e51cff5c7346f6d43f2b822767ae16f1b65ca4d26b7040111d1f62c48"},
 
     # Google: JS Interop (Generator)
     "com_google_jsinterop_generator": {
@@ -136,6 +143,13 @@ DEPS = {
         "repo": "google/jsinterop-generator",
         "target": "4d566c621720f47d0b5adb1e03d617c1819d2e87",
         "seal": "df4aafb211742493b8bf6a0e176312d56d4a8d92aa8b50568ea2912be9bb615f"},
+
+    # Google: JS Interop (Annotations)
+    "com_google_jsinterop_annotations_head": {
+        "type": "github",
+        "repo": "google/jsinterop-annotations",
+        "target": "8b6080dd1b0b9f60f4175243ea8038bf7fb8a557",
+        "seal": "51aa1d36cbe736fc98fa53a825eff25c6e0811dc656d23979d837721f72e78cf"},
 
     # Google: API (Core)
     "com_google_api": {
@@ -157,13 +171,6 @@ DEPS = {
         "repo": "gwtproject/gwt",
         "target": "f236a6964669a70253ad16fdb9f627834997519e",
         "seal": "6256fb60b6749789a40203d32daf217638b0ae5daeca93056b9c1fb048672042"},
-
-    # Google: JS Interop
-    "com_google_jsinterop_annotations_head": {
-        "type": "github",
-        "repo": "google/jsinterop-annotations",
-        "target": "8b6080dd1b0b9f60f4175243ea8038bf7fb8a557",
-        "seal": "51aa1d36cbe736fc98fa53a825eff25c6e0811dc656d23979d837721f72e78cf"},
 
     # BuildStack: Protobuf Rules
     "build_stack_rules_proto": {
