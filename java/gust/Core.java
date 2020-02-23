@@ -12,7 +12,7 @@ import jsinterop.annotations.JsType;
  */
 @JsType
 @SuppressWarnings("WeakerAccess")
-public class Core {
+public final class Core {
   private Core() { /* Disallow instantiation. */ }
 
   /** Version of the framework. Injected at build time. */

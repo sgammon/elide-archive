@@ -28,4 +28,18 @@ public final class TemplateProviderTest {
     assertNotNull("`TemplateProvider.provideCompiledTemplates` should never return `null`",
       provider.provideCompiledTemplates());
   }
+
+  /** Ensure that, by default, {@link TemplateProvider#idRenamingMap()} is <pre>null</pre>. */
+  @Test public void soyRenamingIDDefaultNull() {
+    final TemplateProvider provider = new TemplateProvider();
+    assertNull("`TemplateProvider.idRenamingMap()` should return `null` by default",
+      provider.idRenamingMap());
+  }
+
+  /** Ensure that, by default, {@link TemplateProvider#cssRenamingMap()} is <pre>null</pre>. */
+  @Test public void soyRenamingClassDefaultNull() {
+    final TemplateProvider provider = new TemplateProvider();
+    assertNull("`TemplateProvider.cssRenamingMap()` should return `null` by default",
+      provider.cssRenamingMap());
+  }
 }
