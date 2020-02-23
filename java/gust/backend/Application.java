@@ -10,7 +10,9 @@ import java.io.InputStream;
 
 /**
  * Main application class, which bootstraps a backend Gust app via Micronaut, including any configured controllers,
- * services, or assets. This is where execution starts when running on a JVM.
+ * services, or assets. This is where execution starts when running on a JVM. Micronaut uses build-time annotation
+ * processing, and a number of other techniques, to pre-initialize and wire up the app before it ever gets to the
+ * server to be executed at runtime.
  */
 @SuppressWarnings("WeakerAccess")
 public final class Application {
@@ -44,6 +46,7 @@ public final class Application {
           try (final InputStream defaultConfigStream = Application.class.getResourceAsStream(alt)) {
             if (defaultConfigStream == null)
               throw new IOException("Loaded config was `null` (for configuration '" + role + "').");
+            return;  // we loaded it at the alternate location: good to go
           }
         }
         throw new IOException("Config stream was `null` when loaded (for configuration '" + role + "').");
@@ -56,20 +59,45 @@ public final class Application {
   }
 
   /**
+   * Load main application configs, including the `app` config (usually `application.yml`), containing configuration for
+   * Micronaut, and `logback.xml` which contains configuration for logging. If either config file cannot be loaded, then
+   * an error is thrown which prevents server startup.
+   *
+   * @param exitOnFail Whether to exit the program if a failure occurs.
+   */
+  public static void load(boolean exitOnFail) {
+    try {
+      // validate config & start the server
+      loadConfig("app", rootConfig, defaultConfig);
+      loadConfig("logging", loggingConfig, defaultLoggingConfig);
+    } catch (Throwable ex) {
+      reportStartupError(ex, exitOnFail);
+      if (!exitOnFail) throw ex;
+    }
+  }
+
+  /**
+   * Report an error that occurred during server startup, which prevented the server from starting. Errors encountered
+   * and reported in this manner are fatal.
+   *
+   * @param err Fatal error that occurred and prevented server startup.
+   * @param exitOnFail Whether to exit the program if a failure occurs.
+   */
+  public static void reportStartupError(@Nonnull Throwable err, boolean exitOnFail) {
+    System.err.println("Uncaught exception: " + err.getMessage());
+    err.printStackTrace(System.err);
+    if (exitOnFail) System.exit(1);
+    else throw new RuntimeException(err);
+  }
+
+  /**
    * Main entrypoint into a Gust backend application, powered by Micronaut. This function will pre-load any static stuff
    * that needs to be bootstrapped, and then it initializes the app via Micronaut.
    *
    * @param args Arguments passed on the command line.
    */
   public static void main(String[] args) {
-    try {
-      // validate config & start the server
-      loadConfig("app", rootConfig, defaultConfig);
-      loadConfig("logging", loggingConfig, defaultLoggingConfig);
-      Micronaut.run(Application.class);
-    } catch (Throwable ex) {
-      System.err.println("Uncaught exception: " + ex.getMessage());
-      ex.printStackTrace(System.err);
-    }
+    load(true);
+    Micronaut.run(Application.class);
   }
 }

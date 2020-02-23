@@ -15,17 +15,17 @@ import jsinterop.annotations.JsType;
 public final class Core {
   private Core() { /* Disallow instantiation. */ }
 
-  /** Version of the framework. Injected at build time. */
-  static final String frameworkVersion = System.getProperty("gust.version", "alpha");
-
   /** Holds the current runtime engine. */
   static final String currentEngine = System.getProperty("gust.engine", "unknown");
 
-  /** Holds the current `debug` flag status. */
-  static final Boolean debugMode = Boolean.parseBoolean(System.getProperty("gust.debug", "false"));
+  /** Version of the framework. Injected at build time. */
+  static final String frameworkVersion = System.getProperty("gust.version", "alpha");
 
   /** Holds the current `dev` flag status. */
   static final Boolean devMode = Boolean.parseBoolean(System.getProperty("gust.dev", "false"));
+
+  /** Holds the current `debug` flag status. */
+  static final Boolean debugMode = Boolean.parseBoolean(System.getProperty("gust.debug", "false"));
 
   /**
    * Retrieve the application version setting, which is applied via the JVM system property <pre>gust.version</pre>.

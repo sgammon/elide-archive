@@ -44,7 +44,7 @@ template_library(
 micronaut_controller(
     name = "SSRKotlinController",
     srcs = ["SSRKotlinController.kt"],
-    protos = [":context"],
+    proto_deps = [":context"],
     templates = [":ssr"],
 )
 

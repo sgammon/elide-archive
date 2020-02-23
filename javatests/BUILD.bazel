@@ -9,6 +9,7 @@ test_suite(
     tests = [
         "//javatests/gust:DualStackTest",
         "//javatests/gust/backend:ApplicationTest",
+        "//javatests/gust/backend:NoConfigTest",
         "//javatests/gust/backend:TemplateProviderTest",
     ],
 )

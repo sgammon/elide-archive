@@ -29,3 +29,11 @@ jdk_test(
     test_class = "javatests.gust.backend.TemplateProviderTest",
     testonly = True,
 )
+
+jdk_test(
+    name = "NoConfigTest",
+    srcs = ["NoConfigTest.java"],
+    deps = ["//java/gust/backend:Application"],
+    test_class = "javatests.gust.backend.NoConfigTest",
+    testonly = True,
+)

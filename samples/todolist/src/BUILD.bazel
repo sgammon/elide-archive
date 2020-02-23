@@ -18,6 +18,7 @@ load(
     "micronaut_service",
     "micronaut_controller",
     "micronaut_application",
+    "micronaut_interceptor",
 )
 
 
@@ -54,7 +55,7 @@ ssr_library(
     proto_deps = [":todolist_proto"],
 )
 
-micronaut_library(
+micronaut_interceptor(
     name = "TodolistInterceptor",
     srcs = ["server/TodolistInterceptor.kt"],
 )

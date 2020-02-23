@@ -229,7 +229,7 @@ def _micronaut_library(name,
 def _micronaut_controller(name,
                           srcs,
                           deps = [],
-                          protos = [],
+                          proto_deps = [],
                           templates = [],
                           runtime_deps = [],
                           data = [],
@@ -241,7 +241,7 @@ def _micronaut_controller(name,
     _micronaut_library(
         name = name,
         srcs = srcs,
-        proto_deps = protos,
+        proto_deps = proto_deps,
         templates = templates,
         deps = (deps or []),
         runtime_deps = runtime_deps,
@@ -254,7 +254,7 @@ def _micronaut_controller(name,
 def _micronaut_service(name,
                        srcs,
                        deps = [],
-                       protos = [],
+                       proto_deps = [],
                        services = [],
                        templates = [],
                        runtime_deps = [],
@@ -266,7 +266,7 @@ def _micronaut_service(name,
     _micronaut_library(
         name = name,
         srcs = srcs,
-        proto_deps = protos + services,
+        proto_deps = proto_deps + services,
         templates = templates,
         deps = (deps or []) + [
             ("%s-%s" % (svc, GRPCJAVA_POSTFIX_))
@@ -484,5 +484,6 @@ jdk_library = _jdk_library
 micronaut_library = _micronaut_library
 micronaut_service = _micronaut_service
 micronaut_controller = _micronaut_controller
+micronaut_interceptor = _micronaut_service
 micronaut_application = _micronaut_application
 micronaut_native_configset = _micronaut_native_configset
