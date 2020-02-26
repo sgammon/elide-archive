@@ -36,6 +36,12 @@ template_library(
 )
 
 micronaut_library(
+    name = "PageContext",
+    srcs = ["PageContext.java"],
+    proto_deps = ["//gust/page:page_proto"],
+)
+
+micronaut_library(
     name = "TemplateProvider",
     srcs = ["TemplateProvider.java"],
     templates = [":page"],

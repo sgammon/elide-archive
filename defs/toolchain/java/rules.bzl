@@ -65,6 +65,8 @@ INJECTED_MICRONAUT_DEPS = [
     "@com_google_template_soy",
     "@com_google_common_html_types",
     "@com_google_code_findbugs_jsr305",
+    "@io_micronaut_micronaut_views",
+    "@io_micronaut_micronaut_views_soy",
     maven("com.google.protobuf:protobuf-java"),
     maven("io.micronaut:micronaut-aop"),
     maven("io.micronaut:micronaut-core"),
@@ -100,6 +102,10 @@ INJECTED_MICRONAUT_GRPC_DEPS = [
 INJECTED_MICRONAUT_RUNTIME_DEPS = [
     maven("org.slf4j:slf4j-jdk14"),
     maven("io.micronaut:micronaut-runtime"),
+]
+
+INJECTED_CONTROLLER_DEPS = [
+    "//java/gust/backend:PageContext",
 ]
 
 
@@ -243,7 +249,7 @@ def _micronaut_controller(name,
         srcs = srcs,
         proto_deps = proto_deps,
         templates = templates,
-        deps = (deps or []),
+        deps = _dedupe_deps((deps or []) + INJECTED_CONTROLLER_DEPS),
         runtime_deps = runtime_deps,
         data = data,
         **kwargs

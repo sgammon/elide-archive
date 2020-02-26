@@ -68,7 +68,7 @@ micronaut:
       enabled: true
       generateNonce: true
       reportOnly: true
-      policyDirectives: "default-src 'https: 'self' data: 'nonce-{#nonceValue}';"
+      policyDirectives: "default-src 'self' data: 'nonce-{#nonceValue}';"
 
   executors:
     io:

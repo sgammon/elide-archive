@@ -1,8 +1,9 @@
 package server
 
 import com.google.common.collect.ImmutableMap
-import tools.elide.page.Context
+import gust.backend.PageContext
 import io.micronaut.http.HttpResponse
+import io.micronaut.http.MediaType
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.QueryValue
@@ -31,14 +32,9 @@ class HomeController {
    * client-side app, so we don't need to worry about it here. Similarly, if the user hits the homepage without being
    * logged in, and then logs in, that flow is also handled by the re-hydrated CSR frontend.
    */
-  @Get("/")
+  @Get("/", produces = [MediaType.TEXT_HTML])
   @View("todolist.home.page")
-  fun home(@QueryValue("name", defaultValue = "World") name: String): HttpResponse<Map<String, Any>> {
-    return HttpResponse.ok(ImmutableMap.of(
-      "name", name,
-      "context", Context.newBuilder()
-        .setStyles(Context.Styles.newBuilder())
-        .setScripts(Context.Scripts.newBuilder())
-        .build()))
+  fun home(@QueryValue("name", defaultValue = "World") name: String): HttpResponse<PageContext> {
+    return HttpResponse.ok(PageContext.fromMap(ImmutableMap.of("name", name) as Map<String, Any>))
   }
 }

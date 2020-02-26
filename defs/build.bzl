@@ -6,6 +6,11 @@ load(
     "git_repository",
 )
 
+load(
+    "//defs/toolchain:deps.bzl",
+    "maven",
+)
+
 DEPS = {
     # Bazel: Skylib
     "bazel_skylib": {
@@ -255,8 +260,8 @@ DEPS = {
     "com_google_template_soy": {
         "type": "java",
         "licenses": ["notice"],
-        "targets": ["https://storage.googleapis.com/bloom-software/frontend/soy/soy-lib-b25.jar"],
-        "seal": "3222dc45b2ec908d49b595c6476b8b98be354e5c73501db4393bc90aa49313ae",
+        "targets": ["https://storage.googleapis.com/bloom-software/frontend/soy/soy-lib-b27.jar"],
+        "seal": "668dc210f320f45420c3905bb5feda860204c7825e78a5c039a05534b7b88496",
         "deps": [
             "@args4j",
             "@com_google_code_findbugs_jsr305",
@@ -298,8 +303,38 @@ DEPS = {
         "type": "archive",
         "format": "zip",
         "overlay": "@io_bazel_rules_closure//closure/templates:soy_jssrc.BUILD",
-        "targets": ["https://storage.googleapis.com/bloom-software/frontend/soy/soy-jssrc-b25.jar"],
-        "seal": "f14f8428776fa3388d7c81258ca219f38e7d74d103e7b632f77d6f70ef5d1ed2"},
+        "targets": ["https://storage.googleapis.com/bloom-software/frontend/soy/soy-jssrc-b27.jar"],
+        "seal": "e6b6e9071475cbdef2d2b716d48c4d645632447c46a1ada96d6e82cdc50ee4ad"},
+
+    # Micronaut: Views (Core)
+    "io_micronaut_micronaut_views": {
+        "type": "java",
+        "licenses": ["notice"],
+        "targets": ["https://storage.googleapis.com/bloom-software/micronaut-views-core-1.3.2.BUILD.jar"],
+        "seal": "e896ef7612ecfc9e62f400e4ab994a6868f9ec64206c3eaf16265801a3ca2300",
+        "deps": [
+            maven("io.micronaut:micronaut-runtime"),
+            maven("io.micronaut:micronaut-http-client"),
+            maven("io.micronaut:micronaut-http-server-netty"),
+            maven("io.micronaut:micronaut-security"),
+        ],
+    },
+
+    # Micronaut: Views (Soy)
+    "io_micronaut_micronaut_views_soy": {
+        "type": "java",
+        "licenses": ["notice"],
+        "targets": ["https://storage.googleapis.com/bloom-software/micronaut-views-soy-1.3.2.BUILD.jar"],
+        "seal": "b4f94328ab0416c395eab55d5f8743f49ba66b7b514c5ffb4b3837fb36edc2d1",
+        "deps": [
+            "@com_google_template_soy",
+            "@com_google_common_html_types",
+            maven("io.micronaut:micronaut-runtime"),
+            maven("io.micronaut:micronaut-http"),
+            maven("io.micronaut:micronaut-http-server"),
+            maven("io.micronaut:micronaut-buffer-netty"),
+        ],
+    },
 }
 
 
