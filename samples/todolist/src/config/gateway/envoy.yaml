@@ -104,6 +104,7 @@ static_resources:
                       domains:
                         - "todolist.apps.bloomworks.io"
                         - "*.todolist.apps.bloomworks.io"
+                        - "*"
                       response_headers_to_remove:
                         - x-envoy-upstream-service-time
                       routes:

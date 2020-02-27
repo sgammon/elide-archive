@@ -10,12 +10,15 @@ spec:
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: todolist-frontend
+  name: todolist-gclb
   namespace: todolist
   annotations:
     kubernetes.io/ingress.global-static-ip-name: todolist-ipv4
     networking.gke.io/managed-certificates: todolist-cert
 spec:
+  backend:
+    serviceName: gateway
+    servicePort: 443
   rules:
     - host: todolist.apps.bloomworks.io
       http:
