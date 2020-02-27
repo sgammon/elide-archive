@@ -43,6 +43,7 @@ class TasksService: TasksGrpc.TasksImplBase() {
    * @param observer Observer for responses or errors which should be relayed back to the invoking client.
    */
   override fun health(request: Empty, observer: StreamObserver<Empty>) {
-    TODO("not yet implemented")
+    observer.onNext(Empty.getDefaultInstance())
+    observer.onCompleted()
   }
 }

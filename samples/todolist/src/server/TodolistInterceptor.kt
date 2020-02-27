@@ -45,6 +45,6 @@ class TodolistInterceptor: ServerInterceptor {
                                                            metadata: Metadata,
                                                            handler: ServerCallHandler<Request, Response>):
                                                                                           ServerCall.Listener<Request> {
-    TODO("not yet implemented")
+    return handler.startCall(call, metadata)
   }
 }

@@ -80,7 +80,7 @@ micronaut:
 
 grpc:
   server:
-    port: 8443
+    port: 8081
     keep-alive-time: 1h
 
   client:

@@ -13,6 +13,11 @@ load(
 )
 
 load(
+    "@gust//defs/toolchain:deps.bzl",
+    "maven",
+)
+
+load(
     "@gust//defs/toolchain:backend.bzl",
     "micronaut_library",
     "micronaut_service",
@@ -61,6 +66,15 @@ micronaut_interceptor(
 )
 
 micronaut_library(
+    name = "ReflectionService",
+    srcs = ["server/ReflectionService.kt"],
+    deps = [
+        maven("io.grpc:grpc-api"),
+        maven("io.grpc:grpc-services"),
+    ],
+)
+
+micronaut_library(
     name = "TodolistLogic",
     srcs = ["server/TodolistLogic.kt"],
     proto_deps = [":todolist_proto"],
@@ -97,6 +111,7 @@ micronaut_application(
 
     services = [
         ":TasksService",
+        ":ReflectionService",
     ],
 
     # -- Publishing / Images -- #
