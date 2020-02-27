@@ -16,12 +16,13 @@ steps:
     - --bazelrc=.bazelrc
     - run
     - --config=ci
+    - --define=todolist_release_tag=$SHORT_SHA
     - --
     - //samples/todolist/src:TodolistServer-image-push
 
 timeout: 30m
 options:
-  machineType: "N1_HIGHCPU_32"
+  machineType: "N1_HIGHCPU_8"
 
 images:
   - us.gcr.io/elide-tools/sample/todolist/jvm
