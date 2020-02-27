@@ -48,9 +48,9 @@ tarball(
 )
 
 container_image(
-    name = "envoy",
+    name = "gateway",
     base = "@envoy_base//image",
-    repository = "elide-tools/samples/todolist/envoy",
+    repository = "elide-tools/sample/todolist/gateway",
     ports = ["443", "8090", "9901"],
     tars = [
         ":tls-assets",

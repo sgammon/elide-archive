@@ -67,7 +67,7 @@ _k9(
     name = "envoy",
     template = ":50-envoy.k8s.yaml",
     images = {
-      "us.gcr.io/elide-tools/samples/todolist/envoy": "//samples/todolist/src/config:envoy",
+      "us.gcr.io/elide-tools/sample/todolist/envoy": "//samples/todolist/src/config/gateway:gateway",
     },
 )
 
@@ -75,7 +75,7 @@ _k9(
     name = "todolist",
     template = ":99-todolist.k8s.yaml",
     images = {
-      "us.gcr.io/elide-tools/samples/todolist/jvm": "//samples/todolist/src:TodolistServer-image",
+      "us.gcr.io/elide-tools/sample/todolist/jvm": "//samples/todolist/src:TodolistServer-image",
     },
 )
 

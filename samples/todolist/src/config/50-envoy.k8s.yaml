@@ -85,10 +85,14 @@ spec:
       containers:
         ## Container: Gateway Proxy (Envoy)
         - name: envoy
-          image: envoyproxy/envoy-alpine:v1.9.0
+          image: us.gcr.io/elide-tools/sample/todolist/gateway
           ports:
             - name: tls-gateway
               containerPort: 443
+            - name: http-health
+              containerPort: 8090
+            - name: http-admin
+              containerPort: 9901
           resources:
             requests:
               cpu: "0.2"
@@ -101,27 +105,24 @@ spec:
               mountPath: /etc/ssl/envoy
           readinessProbe:
             successThreshold: 1
-            periodSeconds: 5
+            periodSeconds: 10
             timeoutSeconds: 2
+            initialDelaySeconds: 5
             httpGet:
-              path: /health
+              path: /healthz
               port: 8090
-            initialDelaySeconds: 3
           livenessProbe:
             failureThreshold: 2
             periodSeconds: 5
             timeoutSeconds: 2
             httpGet:
-              path: /health
+              path: /healthz
               httpHeaders:
                 - name: x-envoy-livenessprobe
                   value: healthz
               port: 8090
             initialDelaySeconds: 10
       volumes:
-        - name: config
-          configMap:
-            name: envoy-conf
         - name: tls
           secret:
             secretName: tls

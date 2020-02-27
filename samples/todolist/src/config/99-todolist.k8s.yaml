@@ -98,7 +98,7 @@ spec:
       containers:
         ## Container: Todolist Server
         - name: todolist-server
-          image: us.gcr.io/elide-tools/samples/todolist/jvm
+          image: us.gcr.io/elide-tools/sample/todolist/jvm
           resources:
             requests:
               cpu: "0.2"
@@ -137,6 +137,6 @@ spec:
               path: /health
               port: 8081
       volumes:
-        - name: certlsts
+        - name: tls
           secret:
             secretName: tls
