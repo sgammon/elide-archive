@@ -28,6 +28,7 @@ build --define project=bloom-sandbox
 run --incompatible_strict_action_env
 run --workspace_status_command=./tools/bazel_stamp_vars.sh
 
+build:dev --define=todolist_release_tag=latest
 build:ci --spawn_strategy=local
 
 build:release --compilation_mode=opt

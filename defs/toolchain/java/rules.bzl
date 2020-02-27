@@ -67,6 +67,7 @@ INJECTED_MICRONAUT_DEPS = [
     "@com_google_code_findbugs_jsr305",
     "@io_micronaut_micronaut_views",
     "@io_micronaut_micronaut_views_soy",
+    maven("org.slf4j:slf4j-api"),
     maven("com.google.protobuf:protobuf-java"),
     maven("io.micronaut:micronaut-aop"),
     maven("io.micronaut:micronaut-core"),
@@ -85,6 +86,7 @@ INJECTED_MICRONAUT_DEPS = [
     maven("io.micronaut:micronaut-session"),
     maven("io.micronaut:micronaut-security"),
     maven("io.micronaut:micronaut-multitenancy"),
+    maven("io.micronaut:micronaut-runtime"),
 ]
 
 INJECTED_MICRONAUT_GRPC_DEPS = [
@@ -111,6 +113,9 @@ INJECTED_MICRONAUT_RUNTIME_DEPS = [
 
 INJECTED_CONTROLLER_DEPS = [
     "//java/gust/backend:PageContext",
+    "//java/gust/backend:PageContextManager",
+    "//java/gust/backend:BaseController",
+    "//java/gust/backend:AppController",
 ]
 
 

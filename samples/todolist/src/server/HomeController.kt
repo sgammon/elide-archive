@@ -1,7 +1,9 @@
 package server
 
 import com.google.common.collect.ImmutableMap
+import gust.backend.AppController
 import gust.backend.PageContext
+import gust.backend.PageContextManager
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.MediaType
 import io.micronaut.http.annotation.Controller
@@ -9,6 +11,7 @@ import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.QueryValue
 import io.micronaut.security.annotation.Secured
 import io.micronaut.views.View
+import javax.inject.Inject
 
 
 /**
@@ -18,7 +21,7 @@ import io.micronaut.views.View
  */
 @Controller
 @Secured("isAnonymous()")
-class HomeController {
+class HomeController @Inject constructor (ctx: PageContextManager): AppController(ctx) {
   /**
    * `/` (`HTTP GET`): Handler for the root homepage for Todolist - i.e. `/`. Serves the preview page if the user isn't
    * logged in, or the regular app page & container if they are.
