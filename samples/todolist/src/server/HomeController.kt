@@ -1,10 +1,8 @@
 package server
 
-import com.google.common.collect.ImmutableMap
 import gust.backend.AppController
 import gust.backend.PageContext
 import gust.backend.PageContextManager
-import io.micronaut.http.HttpResponse
 import io.micronaut.http.MediaType
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Get
@@ -37,7 +35,9 @@ class HomeController @Inject constructor (ctx: PageContextManager): AppControlle
    */
   @Get("/", produces = [MediaType.TEXT_HTML])
   @View("todolist.home.page")
-  fun home(@QueryValue("name", defaultValue = "World") name: String): HttpResponse<PageContext> {
-    return HttpResponse.ok(PageContext.fromMap(ImmutableMap.of("name", name) as Map<String, Any>))
+  fun home(@QueryValue("name", defaultValue = "World") name: String): PageContext {
+    return this.context
+      .put("name", name)
+      .render()
   }
 }

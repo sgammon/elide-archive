@@ -191,7 +191,7 @@ public final class PageContext implements SoyProtoContextMediator {
   public static @Nonnull PageContext fromProto(@Nonnull Context pageContext,
                                                @Nonnull Map<String, Object> props,
                                                @Nonnull Map<String, Object> injected,
-                                               @Nonnull SoyNamingMapProvider namingMapProvider) {
+                                               @Nullable SoyNamingMapProvider namingMapProvider) {
     return new PageContext(pageContext, props, injected, namingMapProvider);
   }
 
