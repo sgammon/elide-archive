@@ -91,6 +91,20 @@ DEPS = {
         "target": "d442b54d22ec60010053bb20c783e87558f3632e",
         "seal": "39bd9c3b485d85c37c351edc4930a458412b1178776e4c12f754dadc74a14b65"},
 
+    # Rules: Apple (iOS/macOS/tvOS)
+    "build_bazel_rules_apple": {
+        "type": "github",
+        "repo": "bazelbuild/rules_apple",
+        "target": "5b47855a8be997c1463a1c0425b9aa08f2ba826f",
+        "seal": "074ec4fee68b37a25e1935e53cf4cd2c9bfa103be39256fa7836473855615436"},
+
+    # Rules: Apple (Swift)
+    "build_bazel_rules_swift": {
+        "type": "github",
+        "repo": "bazelbuild/rules_swift",
+        "target": "ebef63d4fd639785e995b9a2b20622ece100286a",
+        "seal": "ce30e25bed943a9edae90770a5121618a7239d09f8e05bdc1aaa5643f730ad7b"},
+
     # Rules: Go
     "io_bazel_rules_go": {
         "type": "github",
@@ -119,6 +133,13 @@ DEPS = {
         "repo": "bazelbuild/rules_docker",
         "target": "e3ccf5006e17b83f2bab0f9764396dabb337172e",
         "seal": "3e9559277c0e990f9043aa7a6fb817fedf0c3fe77b582d386015bd9e4c52b506"},
+
+    # Google: Protobuf
+    "com_google_protobuf": {
+        "type": "github",
+        "repo": "google/protobuf",
+        "target": "29cd005ce1fe1a8fabf11e325cb13006a6646d59",
+        "seal": "51398b0b97b353c1c226d0ade0bae80c80380e691cba7c1a108918986784a1c7"},
 
     # Google: J2CL (Java-to-Closure)
     "com_google_j2cl": {
@@ -216,12 +237,26 @@ DEPS = {
         "overlay": "safe_html_types.bzl",
         "seal": "2356090e7632f49ea581bb6f8808fa038a7433d433f3e8d7045a36f81fb39d65"},
 
+    # gRPC: Core
+    "com_github_grpc_grpc": {
+        "type": "github",
+        "repo": "grpc/grpc",
+        "target": "be1715d82f7b32e838565631ab7ad04850bfd4ff",
+        "seal": "ba8f098924ac373c9a8f08a8179f073c4df1c45b9966ae6aaff87b53b7f0e009"},
+
     # gRPC: Java
     "io_grpc_java": {
         "type": "github",
         "repo": "grpc/grpc-java",
-        "target": "a98db126e265259ea73c2156833cbf872aa86811",
-        "seal": "f83e71b2ab65c3c133d6ee6ac968efee21f5cb93a25825b50740538e50905b9b"},
+        "target": "0b4fa21d50578d917f15dad41ca7a7ab2612356b",
+        "seal": "c47132e0dc0977a8434e3fb3b0e97b0f6269c31b3b77042a81d9e834f61cda1b"},
+
+    # Security/TLS: BoringSSL
+    "boringssl": {
+        "type": "github",
+        "repo": "google/boringssl",
+        "target": "1c2769383f027befac5b75b6cedd25daf3bf4dcf",
+        "seal": "a3d4de4f03cb321ef943678d72a045c9a19d26b23d6f4e313f97600c65201a27"},
 
     # Google: Closure Stylesheets
     "com_google_closure_stylesheets": {
@@ -260,8 +295,8 @@ DEPS = {
     "com_google_template_soy": {
         "type": "java",
         "licenses": ["notice"],
-        "targets": ["https://storage.googleapis.com/bloom-software/frontend/soy/soy-lib-b27.jar"],
-        "seal": "668dc210f320f45420c3905bb5feda860204c7825e78a5c039a05534b7b88496",
+        "targets": ["https://storage.googleapis.com/bloom-software/frontend/soy/soy-lib-b28.jar"],
+        "seal": "4c95ff7fc4947273fab84958266098bebe4d991ea7e0c289211d81603d6a4ff6",
         "deps": [
             "@args4j",
             "@com_google_code_findbugs_jsr305",
@@ -303,8 +338,8 @@ DEPS = {
         "type": "archive",
         "format": "zip",
         "overlay": "@io_bazel_rules_closure//closure/templates:soy_jssrc.BUILD",
-        "targets": ["https://storage.googleapis.com/bloom-software/frontend/soy/soy-jssrc-b27.jar"],
-        "seal": "e6b6e9071475cbdef2d2b716d48c4d645632447c46a1ada96d6e82cdc50ee4ad"},
+        "targets": ["https://storage.googleapis.com/bloom-software/frontend/soy/soy-jssrc-b28.jar"],
+        "seal": "0e0506261139b7d008cad47c721d55210785f33fbd4beedd3cb36e6752d85320"},
 
     # Micronaut: Views (Core)
     "io_micronaut_micronaut_views": {

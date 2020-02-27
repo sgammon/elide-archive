@@ -165,8 +165,23 @@ stardoc_repositories()
 #    name = "werkzeug",
 #    requirements = "//defs/toolchain/python:requirements_werkzeug.txt")
 
+#pip_import(
+#    name = "grpc_python_dependencies",
+#    requirements = "@com_github_grpc_grpc//:requirements.bazel.txt")
+
+#load("@grpc_python_dependencies//:requirements.bzl", grpc_pip_install="pip_install")
+#grpc_pip_install()
+
 #load("//defs/toolchain/python:repos.bzl", "gust_python_repositories")
 #gust_python_repositories()
+
+## gRPC Core
+load("@com_github_grpc_grpc//bazel:grpc_deps.bzl", "grpc_deps", "grpc_test_only_deps")
+grpc_deps()
+grpc_test_only_deps()
+
+load("@com_github_grpc_grpc//bazel:grpc_extra_deps.bzl", "grpc_extra_deps")
+grpc_extra_deps()
 
 ## gRPC Java
 load("@io_grpc_java//:repositories.bzl", "grpc_java_repositories")

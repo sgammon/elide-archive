@@ -99,6 +99,11 @@ INJECTED_MICRONAUT_GRPC_DEPS = [
     maven("io.micronaut.grpc:micronaut-protobuff-support"),
 ]
 
+INJECTED_GAPI_DEPS = [
+    maven("com.google.cloud:libraries-bom"),
+    maven("com.google.cloud:google-cloud-firestore"),
+]
+
 INJECTED_MICRONAUT_RUNTIME_DEPS = [
     maven("org.slf4j:slf4j-jdk14"),
     maven("io.micronaut:micronaut-runtime"),
