@@ -6,8 +6,7 @@ steps:
   args:
   - --bazelrc=.bazelrc
   - build
-  - --config=remote
-  - --remote_instance_name=projects/bloom-sandbox/instances/default_instance
+  - --config=ci
   - --
   - //gust/...
 
@@ -16,8 +15,7 @@ steps:
   args:
     - --bazelrc=.bazelrc
     - run
-    - --config=remote
-    - --remote_instance_name=projects/bloom-sandbox/instances/default_instance
+    - --config=ci
     - --
     - //samples/todolist/src:TodolistServer-image-push
 
