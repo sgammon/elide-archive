@@ -2,6 +2,7 @@ import .bazelproject
 
 build_flags:
   --config=dev
+  --define=todolist_release_tag=latest
 
 directories:
   defs
