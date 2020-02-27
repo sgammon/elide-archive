@@ -21,10 +21,21 @@ steps:
     - --
     - //samples/todolist/src:TodolistServer-image-push
 
-timeout: 10m
+# Image pull: Built App
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['pull', "us.gcr.io/elide-tools/sample/todolist/jvm:$SHORT_SHA"]
+
+# Image tag: Latest
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['tag', 'us.gcr.io/elide-tools/sample/todolist/jvm:$SHORT_SHA', 'us.gcr.io/elide-tools/sample/todolist/jvm:latest']
+
+# Image push: Latest
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['push', 'us.gcr.io/elide-tools/sample/todolist/jvm:latest']
 
 images:
   - us.gcr.io/elide-tools/sample/todolist/jvm:$SHORT_SHA
+  - us.gcr.io/elide-tools/sample/todolist/jvm:latest
 
 artifacts:
   objects:
@@ -33,6 +44,7 @@ artifacts:
 
 tags: ['framework', 'tools', 'gust']
 
+timeout: 10m
 options:
   machineType: "N1_HIGHCPU_8"
   sourceProvenanceHash: ['SHA256']
