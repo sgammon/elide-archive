@@ -6,7 +6,7 @@ micronaut:
   server:
     maxRequestSize: 10MB
     host: 0.0.0.0
-    port: 8080
+    port: 8081
     cors:
       enabled: false
     netty:
@@ -80,7 +80,7 @@ micronaut:
 
 grpc:
   server:
-    port: 8081
+    port: 8082
     keep-alive-time: 1h
 
   client:
