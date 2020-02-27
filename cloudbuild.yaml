@@ -1,7 +1,7 @@
 
 steps:
 
-# Remote build: Gust Framework
+# Build: Gust Framework
 - name: 'l.gcr.io/google/bazel'
   args:
   - --bazelrc=.bazelrc
@@ -18,11 +18,21 @@ steps:
     - --config=ci
     - --define=todolist_release_tag=$SHORT_SHA
     - --
+    - //samples/todolist/src:TodolistServer_deploy.jar
     - //samples/todolist/src:TodolistServer-image-push
 
-timeout: 30m
-options:
-  machineType: "N1_HIGHCPU_8"
+timeout: 10m
 
 images:
-  - us.gcr.io/elide-tools/sample/todolist/jvm
+  - us.gcr.io/elide-tools/sample/todolist/jvm:$SHORT_SHA
+
+artifacts:
+  objects:
+    location: 'gs://elide-artifacts/'
+    paths: ['dist/bin/samples/todolist/src/TodolistServer_deploy.jar']
+
+tags: ['framework', 'tools', 'gust']
+
+options:
+  machineType: "N1_HIGHCPU_8"
+  sourceProvenanceHash: ['SHA256']
