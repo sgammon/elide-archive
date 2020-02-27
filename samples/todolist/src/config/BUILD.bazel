@@ -66,9 +66,6 @@ _k9(
 _k9(
     name = "envoy",
     template = ":50-envoy.k8s.yaml",
-    images = {
-      "us.gcr.io/elide-tools/sample/todolist/envoy": "//samples/todolist/src/config/gateway:gateway",
-    },
 )
 
 _k9(

@@ -85,7 +85,8 @@ spec:
       containers:
         ## Container: Gateway Proxy (Envoy)
         - name: envoy
-          image: us.gcr.io/elide-tools/sample/todolist/gateway
+          image: us.gcr.io/elide-tools/sample/todolist/gateway:v2a
+          imagePullPolicy: Always
           ports:
             - name: tls-gateway
               containerPort: 443
