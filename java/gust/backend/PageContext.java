@@ -2,7 +2,6 @@ package gust.backend;
 
 import com.google.common.collect.ImmutableMap;
 import io.micronaut.views.soy.SoyContext;
-import io.micronaut.views.soy.SoyContextMediator;
 import io.micronaut.views.soy.SoyNamingMapProvider;
 import tools.elide.page.Context;
 
@@ -24,9 +23,16 @@ import java.util.Optional;
  */
 @Immutable
 @SuppressWarnings("unused")
-public final class PageContext implements SoyContextMediator {
+public final class PageContext implements SoyProtoContextMediator {
   /** Name at which proto-context is injected. */
   private static final String CONTEXT_PROPERTY_NAME = "context";
+
+  /** Shared singleton instance of an empty page context. */
+  private static final PageContext _EMPTY = new PageContext(
+    Context.getDefaultInstance(),
+    null,
+    null,
+    null);
 
   /** Raw context. */
   private final @Nonnull SoyContext rawContext;
@@ -55,6 +61,16 @@ public final class PageContext implements SoyContextMediator {
   }
 
   // -- Factories: Maps -- //
+
+  /**
+   * Factory to create an empty page context. Under the hood, this uses a static singleton representing an empty context
+   * to avoid re-creating the object repeatedly.
+   *
+   * @return Pre-fabricated empty page context.
+   */
+  public static PageContext empty() {
+    return PageContext._EMPTY;
+  }
 
   /**
    * Factory to create a page context object from a regular Java map, of string context properties to values of any
@@ -177,6 +193,19 @@ public final class PageContext implements SoyContextMediator {
                                                @Nonnull Map<String, Object> injected,
                                                @Nonnull SoyNamingMapProvider namingMapProvider) {
     return new PageContext(pageContext, props, injected, namingMapProvider);
+  }
+
+  // -- Interface: Soy Proto Context -- //
+
+  /**
+   * Retrieve serializable server-side-rendered page context, which should be assigned to the render flow bound to this
+   * context mediator.
+   *
+   * @return Server-side rendered page context.
+   */
+  @Nonnull @Override
+  public Context getPageContext() {
+    return this.protoContext;
   }
 
   // -- Interface: Soy Context Mediation -- //

@@ -36,8 +36,15 @@ template_library(
 )
 
 micronaut_library(
+    name = "SoyProtoContextMediator",
+    srcs = ["SoyProtoContextMediator.java"],
+    proto_deps = ["//gust/page:page_proto"],
+)
+
+micronaut_library(
     name = "PageContext",
     srcs = ["PageContext.java"],
+    deps = [":SoyProtoContextMediator"],
     proto_deps = ["//gust/page:page_proto"],
 )
 

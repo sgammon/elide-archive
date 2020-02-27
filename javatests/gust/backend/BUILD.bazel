@@ -34,7 +34,10 @@ jdk_test(
     srcs = ["PageContextTest.java"],
     deps = [
         "//java/gust/backend:PageContext",
-        "@com_google_guava//:com_google_guava",
+        "//java/gust/backend:SoyProtoContextMediator",
+        "@com_google_guava",
+        "@com_google_template_soy",
+        "@io_micronaut_micronaut_views_soy",
     ],
     test_class = "javatests.gust.backend.PageContextTest",
     testonly = True,
