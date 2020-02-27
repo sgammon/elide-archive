@@ -3,16 +3,17 @@ steps:
 
 # Build: Gust Framework
 - name: 'l.gcr.io/google/bazel'
+  id: build
   args:
   - --bazelrc=.bazelrc
   - build
   - --config=ci
   - --
-  - //samples/todolist/src:TodolistServer_deploy.jar
   - //gust/...
 
 # Image build: Todolist App
 - name: 'l.gcr.io/google/bazel'
+  id: todolist
   args:
     - --bazelrc=.bazelrc
     - run
@@ -23,24 +24,22 @@ steps:
 
 # Image pull: Built App
 - name: 'gcr.io/cloud-builders/docker'
+  id: pull
   args: ['pull', "us.gcr.io/elide-tools/sample/todolist/jvm:$SHORT_SHA"]
 
 # Image tag: Latest
 - name: 'gcr.io/cloud-builders/docker'
+  id: tag
   args: ['tag', 'us.gcr.io/elide-tools/sample/todolist/jvm:$SHORT_SHA', 'us.gcr.io/elide-tools/sample/todolist/jvm:latest']
 
 # Image push: Latest
 - name: 'gcr.io/cloud-builders/docker'
+  id: push
   args: ['push', 'us.gcr.io/elide-tools/sample/todolist/jvm:latest']
 
 images:
   - us.gcr.io/elide-tools/sample/todolist/jvm:$SHORT_SHA
   - us.gcr.io/elide-tools/sample/todolist/jvm:latest
-
-artifacts:
-  objects:
-    location: 'gs://elide-artifacts/'
-    paths: ['dist/bin/samples/todolist/src/TodolistServer_deploy.jar']
 
 tags: ['framework', 'tools', 'gust']
 
