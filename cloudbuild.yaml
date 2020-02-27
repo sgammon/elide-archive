@@ -8,6 +8,7 @@ steps:
   - build
   - --config=ci
   - --
+  - //samples/todolist/src:TodolistServer_deploy.jar
   - //gust/...
 
 # Image build: Todolist App
@@ -18,7 +19,6 @@ steps:
     - --config=ci
     - --define=todolist_release_tag=$SHORT_SHA
     - --
-    - //samples/todolist/src:TodolistServer_deploy.jar
     - //samples/todolist/src:TodolistServer-image-push
 
 timeout: 10m
