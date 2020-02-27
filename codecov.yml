@@ -8,6 +8,12 @@ coverage:
   precision: 2
   round: down
   range: "60...90"
+  status:
+    project:
+      default:
+        target: 80
+        threshold: 15%
+        base: auto
 
 parsers:
   pass
@@ -22,4 +28,3 @@ ignore:
   - "javatests/"
   - "vendor/"
   - "node_modules/"
-
