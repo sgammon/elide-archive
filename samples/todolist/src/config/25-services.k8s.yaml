@@ -17,6 +17,7 @@ spec:
     role: cache
     environment: production
   type: NodePort
+  publishNotReadyAddresses: yes
 ---
 apiVersion: v1
 kind: Service
@@ -42,6 +43,7 @@ spec:
     role: server
     environment: production
   type: NodePort
+  publishNotReadyAddresses: yes
 ---
 apiVersion: v1
 kind: Service
@@ -67,6 +69,7 @@ spec:
     role: gateway
     environment: production
   type: NodePort
+  publishNotReadyAddresses: yes
 ---
 apiVersion: v1
 kind: Service
@@ -88,3 +91,4 @@ spec:
     role: gateway
     environment: production
   type: LoadBalancer
+  publishNotReadyAddresses: yes

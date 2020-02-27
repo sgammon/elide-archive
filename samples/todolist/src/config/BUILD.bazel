@@ -77,7 +77,7 @@ _k9(
 )
 
 k8s_config(
-    name = "k8s",
+    name = "gke",
     deps = [
         ":namespace",
         ":networking",
@@ -87,6 +87,18 @@ k8s_config(
         ":backend",
         ":services",
         ":ingress",
+        ":redis",
+        ":todolist",
+    ]
+)
+
+k8s_config(
+    name = "k8s",
+    deps = [
+        ":namespace",
+        ":networking",
+        ":envoy",
+        ":services",
         ":redis",
         ":todolist",
     ]

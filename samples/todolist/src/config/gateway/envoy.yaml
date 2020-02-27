@@ -195,53 +195,43 @@ static_resources:
     ## Upstream: App Server
     - name: app
       connect_timeout: 0.25s
-      type: logical_dns
+      type: strict_dns
       per_connection_buffer_limit_bytes: 32768 # 32 KiB
-      http2_protocol_options:
-        initial_stream_window_size: 65536 # 64 KiB
-        initial_connection_window_size: 1048576 # 1 MiB
       lb_policy: round_robin
       dns_lookup_family: V4_ONLY
+      health_checks:
+        - timeout: 2s
+          interval: 6s
+          unhealthy_threshold: 2
+          healthy_threshold: 2
+          event_log_path: /dev/stdout
+          http_health_check:
+            path: "/health"
       load_assignment:
-        cluster_name: rpc
+        cluster_name: app
         endpoints:
           - lb_endpoints:
               - endpoint:
                   address:
                     socket_address:
-                      address: todolist.todolist.svc.local
+                      address: todolist
                       port_value: 8081
 
     ## Upstream: API Server
     - name: rpc
       connect_timeout: 0.25s
-      type: logical_dns
+      type: strict_dns
       per_connection_buffer_limit_bytes: 65536 # 64 KiB
-      http2_protocol_options:
-        initial_stream_window_size: 65536 # 64 KiB
-        initial_connection_window_size: 1048576 # 1 MiB
+      http2_protocol_options: {}
       lb_policy: round_robin
       dns_lookup_family: V4_ONLY
-      load_assignment:
-        cluster_name: dash
-        endpoints:
-          - lb_endpoints:
-              - endpoint:
-                  address:
-                    socket_address:
-                      address: todolist.todolist.svc.local
-                      port_value: 8082
-
-    ## Upstream: Endpoints Service Proxy
-    - name: esp
-      connect_timeout: 0.25s
-      type: logical_dns
-      per_connection_buffer_limit_bytes: 32768 # 32 KiB
-      http2_protocol_options:
-        initial_stream_window_size: 65536 # 64 KiB
-        initial_connection_window_size: 1048576 # 1 MiB
-      lb_policy: round_robin
-      dns_lookup_family: V4_ONLY
+      health_checks:
+        - timeout: 2s
+          interval: 6s
+          unhealthy_threshold: 2
+          healthy_threshold: 2
+          tcp_health_check: {}
+          event_log_path: /dev/stdout
       load_assignment:
         cluster_name: rpc
         endpoints:
@@ -249,5 +239,30 @@ static_resources:
               - endpoint:
                   address:
                     socket_address:
-                      address: esp.todolist.svc.local
+                      address: todolist
+                      port_value: 8082
+
+    ## Upstream: Endpoints Service Proxy
+    - name: esp
+      connect_timeout: 0.25s
+      type: strict_dns
+      per_connection_buffer_limit_bytes: 32768 # 32 KiB
+      http2_protocol_options: {}
+      lb_policy: round_robin
+      dns_lookup_family: V4_ONLY
+      health_checks:
+        - timeout: 2s
+          interval: 6s
+          unhealthy_threshold: 2
+          healthy_threshold: 2
+          tcp_health_check: {}
+          event_log_path: /dev/stdout
+      load_assignment:
+        cluster_name: esp
+        endpoints:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: esp
                       port_value: 8083

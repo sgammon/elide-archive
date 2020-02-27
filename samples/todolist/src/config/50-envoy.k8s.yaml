@@ -19,7 +19,7 @@ spec:
     name: envoy
   minReplicas: 1
   maxReplicas: 3
-  targetCPUUtilizationPercentage: 60
+  targetCPUUtilizationPercentage: 80
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -85,7 +85,7 @@ spec:
       containers:
         ## Container: Gateway Proxy (Envoy)
         - name: envoy
-          image: us.gcr.io/elide-tools/sample/todolist/gateway:v2a
+          image: us.gcr.io/elide-tools/sample/todolist/gateway:v6a
           imagePullPolicy: Always
           ports:
             - name: tls-gateway

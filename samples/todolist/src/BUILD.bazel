@@ -103,6 +103,7 @@ micronaut_application(
     name = "TodolistServer",
     config = ":application.yml",
     logging_config = ":logback.xml",
+    ports = ["8081", "8082"],
 
     # -- Controllers -- #
     controllers = [

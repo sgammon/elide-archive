@@ -37,6 +37,40 @@ steps:
   id: push
   args: ['push', 'us.gcr.io/elide-tools/sample/todolist/jvm:latest']
 
+# Credentials: K8S
+- name: 'gcr.io/cloud-builders/gcloud'
+  id: cluster
+  args: [
+    'container',
+    'clusters',
+    'get-credentials',
+    'k9-v4c',
+    '--zone',
+    'us-west2-c',
+    '--project',
+    'bloom-sandbox'
+  ]
+
+# Deploy: K8S (Envoy)
+- name: 'gcr.io/cloud-builders/bazel'
+  id: deploy-envoy
+  args:
+    - --bazelrc=.bazelrc
+    - run
+    - --config=ci
+    - --
+    - //samples/todolist/src/config:envoy.replace
+
+# Deploy: K8S (Todolist)
+- name: 'gcr.io/cloud-builders/bazel'
+  id: deploy-todolist
+  args:
+    - --bazelrc=.bazelrc
+    - run
+    - --config=ci
+    - --
+    - //samples/todolist/src/config:todolist.replace
+
 images:
   - us.gcr.io/elide-tools/sample/todolist/jvm:$SHORT_SHA
   - us.gcr.io/elide-tools/sample/todolist/jvm:latest
