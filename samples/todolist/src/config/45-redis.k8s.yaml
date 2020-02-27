@@ -1,0 +1,108 @@
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: redis-hpa
+  namespace: todolist
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: redis
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 50
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+  namespace: todolist
+  labels:
+    app: todolist
+    role: cache
+    environment: production
+spec:
+  # -- Replication ----------------------------------------------------------- #
+  replicas: 1
+  revisionHistoryLimit: 2
+  selector:
+    matchLabels:
+      app: todolist
+      role: cache
+      environment: production
+
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 3
+      maxUnavailable: "30%"
+
+  # -- Timeouts -------------------------------------------------------------- #
+  minReadySeconds: 10
+  progressDeadlineSeconds: 300
+
+  template:
+    metadata:
+      labels:
+        app: todolist
+        role: cache
+        environment: production
+    spec:
+      # -- Scheduling -------------------------------------------------------- #
+      tolerations:
+        - key: role
+          operator: Equal
+          value: app
+        - key: sandbox.gke.io/runtime
+          operator: Equal
+          value: gvisor
+
+      # -- Networking --------------------------------------------------------- #
+      dnsPolicy: ClusterFirst
+
+      # -- Placement ---------------------------------------------------------- #
+
+      affinity:
+        # Don't schedule near other fcache pods.
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: name
+                      operator: In
+                      values:
+                        - fcache
+                topologyKey: kubernetes.io/hostname
+
+      # -- Containers --------------------------------------------------------- #
+      containers:
+        # Fcache: Redis
+        - name: redis
+          image: redis:5.0.5-alpine3.10
+          ports:
+            - containerPort: 6379
+              name: tcp-fcache
+          resources:
+            requests:
+              cpu: "0.2"
+              memory: "256Mi"
+            limits:
+              cpu: "0.4"
+              memory: "1G"
+          env:
+            - name: K9_NAMESPACE
+              value: production
+          readinessProbe:
+            initialDelaySeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 2
+            tcpSocket:
+              port: 6379
+          livenessProbe:
+            initialDelaySeconds: 30
+            periodSeconds: 5
+            timeoutSeconds: 1
+            tcpSocket:
+              port: 6379

@@ -1,0 +1,26 @@
+apiVersion: networking.gke.io/v1beta1
+kind: ManagedCertificate
+metadata:
+  name: todolist-cert
+  namespace: todolist
+spec:
+  domains:
+    - todolist.apps.bloomworks.io
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: todolist-frontend
+  namespace: todolist
+  annotations:
+    kubernetes.io/ingress.global-static-ip-name: todolist-ipv4
+    networking.gke.io/managed-certificates: todolist-cert
+spec:
+  rules:
+    - host: todolist.apps.bloomworks.io
+      http:
+        paths:
+          - path: /*
+            backend:
+              serviceName: gateway
+              servicePort: 443

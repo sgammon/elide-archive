@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: haveged
+  namespace: kube-system
+  labels:
+    app: haveged
+spec:
+  selector:
+    matchLabels:
+      daemonset: haveged
+  template:
+    metadata:
+      labels:
+        daemonset: haveged
+    spec:
+      containers:
+        - name: haveged
+          image: us.gcr.io/bloom-sandbox/lowlevel/haveged:latest
+          securityContext:
+            privileged: true
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: sysctl-manager
+  namespace: kube-system
+  labels:
+    app: sysctl-manager
+spec:
+  selector:
+    matchLabels:
+      daemonset: sysctl-manager
+  template:
+    metadata:
+      labels:
+        daemonset: sysctl-manager
+    spec:
+      containers:
+        - name: sysctl-buddy
+          image: busybox:1.29
+          securityContext:
+            privileged: true
+          command:
+            - "/bin/sh"
+            - "-c"
+            - |
+              set -o errexit
+              set -o xtrace
+              while sysctl -w net.core.somaxconn=8192 vm.overcommit_memory=1 net.ipv4.tcp_fastopen=3
+              do
+                sleep 300s
+              done
+          resources:
+            requests:
+              cpu: 1m
+              memory: 5Mi

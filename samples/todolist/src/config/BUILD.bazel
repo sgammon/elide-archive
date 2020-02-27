@@ -2,8 +2,95 @@ package(
     default_visibility = ["//visibility:public"],
 )
 
+load(
+    "//defs/toolchain/k8s:rules.bzl",
+    k8s_config = "k8s_config",
+)
 
-filegroup(
-    name = "ambassador-config",
-    srcs = ["ambassador.yml"],
+load(
+    "@k9//:defaults.bzl",
+    _k9 = "k9",
+)
+
+
+exports_files(glob([
+    "*.yaml",
+    "*.json",
+]))
+
+_k9(
+    name = "namespace",
+    template = ":00-namespace.k8s.yaml",
+)
+
+_k9(
+    name = "networking",
+    template = ":05-networking.k8s.yaml",
+)
+
+_k9(
+    name = "permissions",
+    template = ":05-permissions.k8s.yaml",
+)
+
+_k9(
+    name = "googleapis",
+    template = ":10-googleapis.istio.yaml",
+)
+
+_k9(
+    name = "daemons",
+    template = ":20-daemons.k8s.yaml",
+)
+
+_k9(
+    name = "services",
+    template = ":25-services.k8s.yaml",
+)
+
+_k9(
+    name = "backend",
+    template = ":30-backend.k8s.yaml",
+)
+
+_k9(
+    name = "ingress",
+    template = ":40-ingress.k8s.yaml",
+)
+
+_k9(
+    name = "redis",
+    template = ":45-redis.k8s.yaml",
+)
+
+_k9(
+    name = "envoy",
+    template = ":50-envoy.k8s.yaml",
+    images = {
+      "us.gcr.io/elide-tools/samples/todolist/envoy": "//samples/todolist/src/config:envoy",
+    },
+)
+
+_k9(
+    name = "todolist",
+    template = ":99-todolist.k8s.yaml",
+    images = {
+      "us.gcr.io/elide-tools/samples/todolist/jvm": "//samples/todolist/src:TodolistServer-image",
+    },
+)
+
+k8s_config(
+    name = "k8s",
+    deps = [
+        ":namespace",
+        ":networking",
+        ":permissions",
+        ":daemons",
+        ":envoy",
+        ":backend",
+        ":services",
+        ":ingress",
+        ":redis",
+        ":todolist",
+    ]
 )

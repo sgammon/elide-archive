@@ -1,0 +1,127 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: tls
+  namespace: todolist
+data:
+  tls.key: LS0tLS1CRUdJTiBFQyBQQVJBTUVURVJTLS0tLS0KQmdncWhrak9QUU1CQnc9PQotLS0tLUVORCBFQyBQQVJBTUVURVJTLS0tLS0KLS0tLS1CRUdJTiBFQyBQUklWQVRFIEtFWS0tLS0tCk1IY0NBUUVFSU4wdjFudk04QUxZU3VaVlRqNDJBL1BrQlVnZm9tSTY0NzFyLy9vbHZPZThvQW9HQ0NxR1NNNDkKQXdFSG9VUURRZ0FFak5Fd0lhdEFKVlNZcTk1YUNwTmRaWVQ5NnBpSENDZXVOM2hsWTdaeHNvUXhrdXZBdmVPbgpnQlFNNTYxL0NuSmZwbmlVSnJHZ2FLNEo1YkYrc2JHSVlBPT0KLS0tLS1FTkQgRUMgUFJJVkFURSBLRVktLS0tLQo=
+  tls.crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUNXRENDQWY0Q0NRRHNzcGdzMmZoSzhEQUtCZ2dxaGtqT1BRUURBakNCc3pFTE1Ba0dBMVVFQmhNQ1ZWTXgKRXpBUkJnTlZCQWdNQ2tOaGJHbG1iM0p1YVdFeEVUQVBCZ05WQkFjTUNGZHZiMlJ6YVdSbE1STXdFUVlEVlFRSwpEQXBDYkc5dmJYZHZjbXR6TVJRd0VnWURWUVFMREF0RmJtZHBibVZsY21sdVp6RWtNQ0lHQTFVRUF3d2JkRzlrCmIyeHBjM1F1WVhCd2N5NWliRzl2YlhkdmNtdHpMbWx2TVNzd0tRWUpLb1pJaHZjTkFRa0JGaHhwYm1adksyRjEKZEdodmNtbDBlVUJpYkc5dmJYZHZjbXR6TG1sdk1CNFhEVEl3TURJeU56SXdNRGd6TWxvWERUSXhNREl5TmpJdwpNRGd6TWxvd2diTXhDekFKQmdOVkJBWVRBbFZUTVJNd0VRWURWUVFJREFwRFlXeHBabTl5Ym1saE1SRXdEd1lEClZRUUhEQWhYYjI5a2MybGtaVEVUTUJFR0ExVUVDZ3dLUW14dmIyMTNiM0pyY3pFVU1CSUdBMVVFQ3d3TFJXNW4KYVc1bFpYSnBibWN4SkRBaUJnTlZCQU1NRzNSdlpHOXNhWE4wTG1Gd2NITXVZbXh2YjIxM2IzSnJjeTVwYnpFcgpNQ2tHQ1NxR1NJYjNEUUVKQVJZY2FXNW1ieXRoZFhSb2IzSnBkSGxBWW14dmIyMTNiM0pyY3k1cGJ6QlpNQk1HCkJ5cUdTTTQ5QWdFR0NDcUdTTTQ5QXdFSEEwSUFCSXpSTUNHclFDVlVtS3ZlV2dxVFhXV0UvZXFZaHdnbnJqZDQKWldPMmNiS0VNWkxyd0wzanA0QVVET2V0ZndweVg2WjRsQ2F4b0dpdUNlV3hmckd4aUdBd0NnWUlLb1pJemowRQpBd0lEU0FBd1JRSWhBUDlYOG9vaG16endOUVQyWmwrS1phbVRIZXhwelJDZnRrMEFFcTdUWlFEeUFpQnFpS0thCkUwZFBsWDQycHh5dG9Bb1BZZ1JZb0gxdVRFNk1FVDlQQm9TTU1nPT0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=
+---
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: envoy-hpa
+  namespace: todolist
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: envoy
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 60
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: envoy
+  namespace: todolist
+  labels:
+    environment: production
+spec:
+  # -- Replication ----------------------------------------------------------- #
+  replicas: 1
+  revisionHistoryLimit: 2
+  selector:
+    matchLabels:
+      app: todolist
+      role: gateway
+      environment: production
+
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 3
+      maxUnavailable: "30%"
+
+  # -- Timeouts -------------------------------------------------------------- #
+  minReadySeconds: 10
+  progressDeadlineSeconds: 300
+
+  template:
+    metadata:
+      labels:
+        app: todolist
+        role: gateway
+        environment: production
+    spec:
+      # -- Networking --------------------------------------------------------- #
+      dnsPolicy: ClusterFirst
+
+      # -- Placement ---------------------------------------------------------- #
+      tolerations:
+        - key: role
+          operator: Equal
+          value: app
+        - key: sandbox.gke.io/runtime
+          operator: Equal
+          value: gvisor
+
+      affinity:
+        # Schedule away from other gateway pods.
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 50
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: name
+                      operator: In
+                      values:
+                        - gateway
+                topologyKey: kubernetes.io/hostname
+
+      # -- Containers --------------------------------------------------------- #
+      containers:
+        ## Container: Gateway Proxy (Envoy)
+        - name: envoy
+          image: envoyproxy/envoy-alpine:v1.9.0
+          ports:
+            - name: tls-gateway
+              containerPort: 443
+          resources:
+            requests:
+              cpu: "0.2"
+              memory: "64Mi"
+            limits:
+              cpu: "0.4"
+              memory: "256Mi"
+          volumeMounts:
+            - name: tls
+              mountPath: /etc/ssl/envoy
+          readinessProbe:
+            successThreshold: 1
+            periodSeconds: 5
+            timeoutSeconds: 2
+            httpGet:
+              path: /health
+              port: 8090
+            initialDelaySeconds: 3
+          livenessProbe:
+            failureThreshold: 2
+            periodSeconds: 5
+            timeoutSeconds: 2
+            httpGet:
+              path: /health
+              httpHeaders:
+                - name: x-envoy-livenessprobe
+                  value: healthz
+              port: 8090
+            initialDelaySeconds: 10
+      volumes:
+        - name: config
+          configMap:
+            name: envoy-conf
+        - name: tls
+          secret:
+            secretName: tls

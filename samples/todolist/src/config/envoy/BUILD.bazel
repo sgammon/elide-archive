@@ -1,0 +1,59 @@
+package(
+    default_visibility = ["//visibility:public"],
+)
+
+load(
+    "//defs/toolchain/docker:rules.bzl",
+    "container_image",
+)
+
+load(
+    "//defs/toolchain:pkg.bzl",
+    "tarball",
+)
+
+
+filegroup(
+    name = "envoy-yaml",
+    srcs = ["envoy.yaml"],
+)
+
+filegroup(
+    name = "tls-key",
+    srcs = ["tls.key"],
+)
+
+filegroup(
+    name = "tls-cert",
+    srcs = ["tls.crt"],
+)
+
+tarball(
+    name = "tls-assets",
+    srcs = [
+        ":tls-key",
+        ":tls-cert",
+    ],
+    strip_prefix = "/samples/todolist/src/config/envoy",
+    package_dir = "/etc/ssl",
+    mode = "0440",
+)
+
+tarball(
+    name = "envoy-configs",
+    srcs = [":envoy-yaml"],
+    strip_prefix = "/samples/todolist/src/config/envoy",
+    package_dir = "/etc/envoy",
+    mode = "0440",
+)
+
+container_image(
+    name = "envoy",
+    base = "@envoy_base//image",
+    repository = "elide-tools/samples/todolist/envoy",
+    ports = ["443", "8090", "9901"],
+    tars = [
+        ":tls-assets",
+        ":envoy-configs",
+    ],
+)

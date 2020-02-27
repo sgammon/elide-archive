@@ -1,0 +1,142 @@
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: todolist-hpa
+  namespace: todolist
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: todolist
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 50
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: todolist
+  namespace: todolist
+  labels:
+    app: todolist
+    environment: production
+  annotations:
+    rules-k8s.bazel.io/gust: |
+      ---
+      app: todolist
+      framework: gust
+      engine: jvm
+spec:
+  # -- Replication ----------------------------------------------------------- #
+  replicas: 1
+  revisionHistoryLimit: 2
+  selector:
+    matchLabels:
+      app: todolist
+      role: server
+      environment: production
+
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 3
+      maxUnavailable: "30%"
+
+  # -- Timeouts -------------------------------------------------------------- #
+  minReadySeconds: 10
+  progressDeadlineSeconds: 300
+
+  template:
+    metadata:
+      labels:
+        app: todolist
+        engine: jvm
+        role: server
+        environment: production
+
+    spec:
+      # -- Networking --------------------------------------------------------- #
+      dnsPolicy: ClusterFirst
+
+      # -- Placement ---------------------------------------------------------- #
+      tolerations:
+        - key: role
+          operator: Equal
+          value: app
+        - key: sandbox.gke.io/runtime
+          operator: Equal
+          value: gvisor
+
+      affinity:
+        # Schedule away from other todolist pods.
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 50
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: name
+                      operator: In
+                      values:
+                        - todolist
+                topologyKey: kubernetes.io/hostname
+
+        # Schedule close to cache pods.
+        podAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 40
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: name
+                      operator: In
+                      values:
+                        - fcache
+                topologyKey: kubernetes.io/hostname
+
+      # -- Containers --------------------------------------------------------- #
+      containers:
+        ## Container: Todolist Server
+        - name: todolist-server
+          image: us.gcr.io/elide-tools/samples/todolist/jvm
+          resources:
+            requests:
+              cpu: "0.2"
+              memory: "400Mi"
+            limits:
+              cpu: "0.6"
+              memory: "512Mi"
+          volumeMounts:
+            - name: tls
+              mountPath: /etc/ssl/todolist
+          ports:
+            - name: app
+              containerPort: 8081
+            - name: api
+              containerPort: 8082
+          env:
+            - name: GUST_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: GUST_ENVIRONMENT
+              value: production
+          readinessProbe:
+            initialDelaySeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 2
+            periodSeconds: 5
+            httpGet:
+              path: /health
+              port: 8081
+          livenessProbe:
+            initialDelaySeconds: 30
+            periodSeconds: 5
+            timeoutSeconds: 1
+            httpGet:
+              path: /health
+              port: 8081
+      volumes:
+        - name: certlsts
+          secret:
+            secretName: tls
