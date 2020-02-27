@@ -86,7 +86,6 @@ k8s_config(
         ":envoy",
         ":backend",
         ":services",
-        ":ingress",
         ":redis",
         ":todolist",
     ]
