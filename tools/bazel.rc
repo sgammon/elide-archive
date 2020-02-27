@@ -9,6 +9,10 @@
 # Base Settings
 ##
 
+build --embed_label=alpha
+build --define project=bloom-sandbox
+build --define cluster=gke_bloom-sandbox_us-west2-c_k9-v4c
+
 common --experimental_allow_incremental_repository_updates
 
 build --watchfs
@@ -22,8 +26,6 @@ build --interface_shared_objects
 build --java_toolchain=@bazel_tools//tools/jdk:toolchain_java11
 build --host_java_toolchain=@bazel_tools//tools/jdk:toolchain_java11
 build --workspace_status_command=./tools/bazel_stamp_vars.sh
-build --embed_label=alpha
-build --define project=bloom-sandbox
 
 run --incompatible_strict_action_env
 run --workspace_status_command=./tools/bazel_stamp_vars.sh

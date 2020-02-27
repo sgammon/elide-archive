@@ -78,3 +78,36 @@ pinned_maven_install()
 
 load("@gust//defs:workspace.bzl", "setup_workspace")
 setup_workspace()
+
+## K8S Setup
+load("@io_bazel_rules_k8s//k8s:k8s.bzl", "k8s_defaults")
+
+k8s_defaults(
+  name = "k9",
+  kind = "deployment",
+  cluster = "$(cluster)",
+)
+
+## Containers
+load("@io_bazel_rules_docker//container:container.bzl", "container_pull")
+
+container_pull(
+    name = "java_base",
+    registry = "gcr.io",
+    repository = "distroless/java",
+    digest = "sha256:0ce06c40e99e0dce26bdbcec30afe7a890a57bbd250777bd31ff2d1b798c7809",
+)
+
+container_pull(
+    name = "native_base",
+    registry = "us.gcr.io",
+    repository = "elide-tools/base/alpine",
+    digest = "sha256:decbf1b8ba41c556941f2fbd82811822f7b9622cbd3a17d5d4041cb5438bae2d",
+)
+
+container_pull(
+    name = "envoy_base",
+    registry = "index.docker.io",
+    repository = "envoyproxy/envoy-alpine",
+    digest = "sha256:19f3b361450e31f68b46f891b0c8726041739f44ab9b90aecbca5f426c0d2eaf",
+)
