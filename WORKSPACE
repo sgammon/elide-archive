@@ -220,3 +220,19 @@ container_pull(
     repository = "elide-tools/base/node",
     digest = "sha256:76b64868e73d27361e294fd346b72aa6c50ad4e669bd9c2684fbdda7e839ea39",
 )
+
+container_pull(
+    name = "envoy_base",
+    registry = "index.docker.io",
+    repository = "envoyproxy/envoy-alpine",
+    digest = "sha256:19f3b361450e31f68b46f891b0c8726041739f44ab9b90aecbca5f426c0d2eaf",
+)
+
+## K8S Setup
+load("@io_bazel_rules_k8s//k8s:k8s.bzl", "k8s_defaults")
+
+k8s_defaults(
+  name = "k9",
+  kind = "deployment",
+  cluster = "$(cluster)",
+)
