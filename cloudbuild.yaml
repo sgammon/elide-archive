@@ -1,5 +1,7 @@
 
 steps:
+
+# Remote build: Gust Framework
 - name: 'l.gcr.io/google/bazel'
   args:
   - --bazelrc=.bazelrc
@@ -9,7 +11,19 @@ steps:
   - --
   - //gust/...
 
+# Image build: Todolist App
+- name: 'l.gcr.io/google/bazel'
+  args:
+    - --bazelrc=.bazelrc
+    - run
+    - --config=remote
+    - --remote_instance_name=projects/bloom-sandbox/instances/default_instance
+    - --
+    - //samples/todolist/src:TodolistServer-image-push
+
 timeout: 30m
 options:
   machineType: "N1_HIGHCPU_32"
 
+images:
+  - us.gcr.io/elide-tools/sample/todolist/jvm
