@@ -209,7 +209,7 @@ static_resources:
               - endpoint:
                   address:
                     socket_address:
-                      address: todolist
+                      address: todolist.todolist.svc.local
                       port_value: 8081
 
     ## Upstream: API Server
@@ -229,7 +229,7 @@ static_resources:
               - endpoint:
                   address:
                     socket_address:
-                      address: todolist
+                      address: todolist.todolist.svc.local
                       port_value: 8082
 
     ## Upstream: Endpoints Service Proxy
@@ -249,5 +249,5 @@ static_resources:
               - endpoint:
                   address:
                     socket_address:
-                      address: esp
+                      address: esp.todolist.svc.local
                       port_value: 8083
