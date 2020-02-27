@@ -1,7 +1,7 @@
 
 load(
-    "@bazel_tools//tools/build_defs/pkg:pkg.bzl",
-    "pkg_tar",
+    "@rules_pkg//pkg:pkg.bzl",
+    _pkg_tar = "pkg_tar",
 )
 
 load(
@@ -432,7 +432,7 @@ def _micronaut_application(name,
             reflection_configuration = reflection_configuration,
         )
 
-        pkg_tar(
+        _pkg_tar(
             name = "%s-native-pkg" % name,
             extension = "tar",
             srcs = ["%s-native-bin" % name],
