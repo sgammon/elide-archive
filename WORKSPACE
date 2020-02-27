@@ -190,6 +190,13 @@ grpc_java_repositories()
 load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
 protobuf_deps()
 
+## Kubernetes/Bazel
+load("@io_bazel_rules_k8s//k8s:k8s.bzl", "k8s_repositories")
+k8s_repositories()
+
+load("@io_bazel_rules_k8s//k8s:k8s_go_deps.bzl", k8s_go_deps = "deps")
+k8s_go_deps()
+
 ## Java Containers
 load("@io_bazel_rules_docker//container:container.bzl", "container_pull")
 

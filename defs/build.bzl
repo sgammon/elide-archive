@@ -134,6 +134,13 @@ DEPS = {
         "target": "e3ccf5006e17b83f2bab0f9764396dabb337172e",
         "seal": "3e9559277c0e990f9043aa7a6fb817fedf0c3fe77b582d386015bd9e4c52b506"},
 
+    # Rules: Kubernetes
+    "io_bazel_rules_k8s": {
+        "type": "github",
+        "repo": "bazelbuild/rules_k8s",
+        "target": "0a9e6d75ca7e544a2fc3c6d770db01ba930d7f20",
+        "seal": "c114b47a1a3f07fb70b4017912bffa049c0189369410f6ce6d6f39c60c67f79b"},
+
     # Google: Protobuf
     "com_google_protobuf": {
         "type": "github",
