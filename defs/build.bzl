@@ -19,6 +19,13 @@ DEPS = {
         "target": "add8e42934d1bf63ecf27f5439574383e74ef8fc",
         "seal": "088e451fbee1fadf328d69bd243f8de5b3a44f329946edc79bff7fca9382379c"},
 
+    # Bazel: Packaging
+    "rules_pkg": {
+        "type": "github",
+        "repo": "bazelbuild/rules_pkg",
+        "target": "b1014c8e56c27cc8199eaf747e671d0c32582175",
+        "seal": "59fe36ba70c97a52745a28503d48cd15bdc9b8745945d32d2a0ca9aeef2d9342"},
+
     # Bazel: Stardoc
     "io_bazel_stardoc": {
         "type": "github",
