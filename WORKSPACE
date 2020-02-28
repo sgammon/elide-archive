@@ -3,7 +3,7 @@ workspace(
   managed_directories = {"@npm": ["node_modules"]})
 
 load("//defs:build.bzl", "install_dependencies")
-load("//defs:config.bzl", "CHROMIUM", "FIREFOX", "SAUCE", "GRAALVM_VERSION", "GRAALVM_JDK_VERSION")
+load("//defs:config.bzl", "CHROMIUM", "FIREFOX", "SAUCE", "GRAALVM_VERSION", "GRAALVM_JDK_VERSION", "K8S_VERSION")
 install_dependencies()
 
 load("//defs:workspace.bzl", "setup_workspace")
@@ -190,10 +190,6 @@ grpc_java_repositories()
 load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
 protobuf_deps()
 
-## Kubernetes/Bazel
-load("@io_bazel_rules_k8s//k8s:k8s.bzl", "k8s_repositories")
-k8s_repositories()
-
 load("@io_bazel_rules_k8s//k8s:k8s_go_deps.bzl", k8s_go_deps = "deps")
 k8s_go_deps()
 
@@ -229,8 +225,19 @@ container_pull(
 )
 
 ## K8S Setup
-load("@io_bazel_rules_k8s//k8s:k8s.bzl", "k8s_defaults")
+load("@io_bazel_rules_k8s//toolchains/kubectl:kubectl_configure.bzl", "kubectl_configure")
+kubectl_configure(
+    name="k8s_config",
+    build_srcs = True,
+    k8s_commit = "v1.13.1",
+    k8s_sha256 = "677d2a5021c3826a9122de5a9c8827fed4f28352c6abacb336a1a5a007e434b7",
+    k8s_prefix = "kubernetes-1.13.1"
+)
 
+load("@io_bazel_rules_k8s//k8s:k8s.bzl", "k8s_repositories")
+k8s_repositories()
+
+load("@io_bazel_rules_k8s//k8s:k8s.bzl", "k8s_defaults")
 k8s_defaults(
   name = "k9",
   kind = "deployment",
