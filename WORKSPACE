@@ -229,9 +229,9 @@ load("@io_bazel_rules_k8s//toolchains/kubectl:kubectl_configure.bzl", "kubectl_c
 kubectl_configure(
     name="k8s_config",
     build_srcs = True,
-    k8s_commit = "v1.13.1",
-    k8s_sha256 = "677d2a5021c3826a9122de5a9c8827fed4f28352c6abacb336a1a5a007e434b7",
-    k8s_prefix = "kubernetes-1.13.1"
+    k8s_commit = "v%s" % K8S_VERSION,
+    k8s_prefix = "kubernetes-%s" % K8S_VERSION,
+    k8s_sha256 = "bfbc45fb886c837d9dd81fea0ef7d2ea4726d821de75fd1ff121aff6bc28ace0",
 )
 
 load("@io_bazel_rules_k8s//k8s:k8s.bzl", "k8s_repositories")
