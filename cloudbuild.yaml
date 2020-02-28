@@ -12,7 +12,7 @@ steps:
   - //gust/...
 
 # Image build: Todolist App
-- name: 'l.gcr.io/google/bazel'
+- name: 'l.gcr.io/google/bazel:2.1.0'
   id: todolist
   args:
     - --bazelrc=.bazelrc
