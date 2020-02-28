@@ -2,7 +2,7 @@
 steps:
 
 # Build: Gust Framework
-- name: 'l.gcr.io/google/bazel'
+- name: 'l.gcr.io/google/bazel:2.1.0'
   id: build
   args:
   - --bazelrc=.bazelrc
@@ -52,7 +52,7 @@ steps:
   ]
 
 # Deploy: K8S (Envoy)
-- name: 'gcr.io/cloud-builders/bazel'
+- name: 'gcr.io/cloud-builders/bazel:2.1.0'
   id: deploy-envoy
   args:
     - --bazelrc=.bazelrc
@@ -62,7 +62,7 @@ steps:
     - //samples/todolist/src/config:envoy.replace
 
 # Deploy: K8S (Todolist)
-- name: 'gcr.io/cloud-builders/bazel'
+- name: 'gcr.io/cloud-builders/bazel:2.1.0'
   id: deploy-todolist
   args:
     - --bazelrc=.bazelrc
