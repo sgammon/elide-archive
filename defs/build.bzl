@@ -273,7 +273,7 @@ DEPS = {
         "seal": "a3d4de4f03cb321ef943678d72a045c9a19d26b23d6f4e313f97600c65201a27"},
 
     # Kubernetes: Build Tools
-    "io_k8s_repo_infra": {
+    "io_kubernetes_build": {
         "type": "github",
         "repo": "kubernetes/repo-infra",
         "target": "dccb5aa645ea455a1c8c4c97a2a72b640036efc9",

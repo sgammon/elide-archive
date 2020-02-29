@@ -15,6 +15,9 @@ build --define cluster=gke_bloom-sandbox_us-west2-c_k9-v4c
 
 common --experimental_allow_incremental_repository_updates
 
+run --incompatible_depset_union=false
+build --incompatible_depset_union=false
+
 build --watchfs
 build --symlink_prefix=dist/
 build --nolegacy_external_runfiles
