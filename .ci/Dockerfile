@@ -2,7 +2,7 @@
 FROM gcr.io/cloud-marketplace/google/ubuntu1804@sha256:ca6f2441610b5eca910cb7e5d8494df11e539743d57e87abfc71f85f3d634d94
 RUN apt-get update \
     && apt-get upgrade -y \
-    && apt-get install -y python3 build-essential default-jdk git \
+    && apt-get install -y python3 build-essential default-jdk git golang unzip \
     && apt-get autoremove \
     && curl -sSL https://sdk.cloud.google.com > /tmp/gcl && bash /tmp/gcl --install-dir=/gcloud --disable-prompts \
     && mkdir -p /bazelisk/bin \
