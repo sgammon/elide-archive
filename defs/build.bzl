@@ -279,6 +279,13 @@ DEPS = {
         "target": "dccb5aa645ea455a1c8c4c97a2a72b640036efc9",
         "seal": "f4a99337b43b742d35f8592055af72aeb5ea0cdfa1acadd99d9e972d9aedd2b1"},
 
+    # Kubernetes: Build Tools (x2)
+    "io_k8s_repo_infra": {
+        "type": "github",
+        "repo": "kubernetes/repo-infra",
+        "target": "dccb5aa645ea455a1c8c4c97a2a72b640036efc9",
+        "seal": "f4a99337b43b742d35f8592055af72aeb5ea0cdfa1acadd99d9e972d9aedd2b1"},
+
     # Google: Closure Stylesheets
     "com_google_closure_stylesheets": {
         "type": "java",
