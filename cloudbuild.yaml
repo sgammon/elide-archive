@@ -52,7 +52,7 @@ steps:
   ]
 
 # Deploy: K8S (Envoy)
-- name: 'l.gcr.io/google/bazel:2.1.0'
+- name: 'us.gcr.io/elide-tools/tools/gcb:v1a'
   id: deploy-envoy
   args:
     - --bazelrc=.bazelrc
