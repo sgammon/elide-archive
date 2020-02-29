@@ -232,6 +232,9 @@ kubectl_configure(
     k8s_commit = "v%s" % K8S_VERSION,
     k8s_prefix = "kubernetes-%s" % K8S_VERSION,
     k8s_sha256 = "e091944229641c5b2b2a6ac57767802548b50830cf6710bc676e851bd8233f74",
+    k8s_repo_tools_commit = "df02ded38f9506e5bbcbf21702034b4fef815f2f",
+    k8s_repo_tools_prefix = "repo-infra-df02ded38f9506e5bbcbf21702034b4fef815f2f",
+    k8s_repo_tools_sha = "4a8384320fba401cbf21fef177aa113ed8fe35952ace98e00b796cac87ae7868",
 )
 
 load("@io_bazel_rules_k8s//k8s:k8s.bzl", "k8s_repositories")
