@@ -1,38 +1,18 @@
 
-FROM docker:17.12.0-ce as static-docker-source
+FROM gcr.io/cloud-marketplace/google/ubuntu1804@sha256:ca6f2441610b5eca910cb7e5d8494df11e539743d57e87abfc71f85f3d634d94
+RUN apt-get update \
+    && apt-get upgrade -y \
+    && apt-get install -y python3 build-essential default-jdk \
+    && curl -sSL https://sdk.cloud.google.com > /tmp/gcl && bash /tmp/gcl --install-dir=/gcloud --disable-prompts \
+    && mkdir -p /bazelisk/bin \
+    && curl -sSL https://github.com/bazelbuild/bazelisk/releases/download/v1.3.0/bazelisk-linux-amd64 > /bazelisk/bin/bazelisk \
+    && chmod +x /bazelisk/bin/bazelisk \
+    && /gcloud/google-cloud-sdk/bin/gcloud components install \
+        appctl kpt kubectl bq gsutil docker-credential-gcr alpha beta \
+    && rm -rf /var/lib/apt/lists/* \
+    && echo "Installation done."
 
-FROM alpine:3.11
-ARG CLOUD_SDK_VERSION=282.0.0
-ENV CLOUD_SDK_VERSION=$CLOUD_SDK_VERSION
-ENV CLOUDSDK_PYTHON=python3
+ENV PATH $PATH:/gcloud/google-cloud-sdk/bin:/bazelisk/bin
 
-ENV PATH /google-cloud-sdk/bin:$PATH
-COPY --from=static-docker-source /usr/local/bin/docker /usr/local/bin/docker
-RUN apk --no-cache add \
-        curl \
-        python3 \
-        py3-crcmod \
-        bash \
-        libc6-compat \
-        openssh-client \
-        git \
-        gnupg \
-        alpine-sdk \
-    && curl -O https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-${CLOUD_SDK_VERSION}-linux-x86_64.tar.gz && \
-    tar xzf google-cloud-sdk-${CLOUD_SDK_VERSION}-linux-x86_64.tar.gz && \
-    rm google-cloud-sdk-${CLOUD_SDK_VERSION}-linux-x86_64.tar.gz && \
-    gcloud config set core/disable_usage_reporting true && \
-    gcloud config set component_manager/disable_update_check true && \
-    gcloud config set metrics/environment github_docker_image && \
-    mkdir -p /bazelisk/bin && \
-    curl -sSL https://github.com/bazelbuild/bazelisk/releases/download/v1.3.0/bazelisk-linux-amd64 > /bazelisk/bin/bazelisk && \
-    chmod +x /bazelisk/bin/bazelisk && \
-    /google/cloud-sdk/bin/gcloud components install \
-      appctl kpt kubectl bq gsutil docker-credential-gcr alpha beta && \
-    rm -rf /var/cache/apk/* && \
-    gcloud --version && \
-    echo "Installation done."
-
-VOLUME ["/root/.config"]
 ENTRYPOINT ["/bazelisk/bin/bazelisk"]
 
