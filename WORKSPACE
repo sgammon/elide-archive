@@ -231,7 +231,7 @@ kubectl_configure(
     build_srcs = True,
     k8s_commit = "v%s" % K8S_VERSION,
     k8s_prefix = "kubernetes-%s" % K8S_VERSION,
-    k8s_sha256 = "bfbc45fb886c837d9dd81fea0ef7d2ea4726d821de75fd1ff121aff6bc28ace0",
+    k8s_sha256 = "e091944229641c5b2b2a6ac57767802548b50830cf6710bc676e851bd8233f74",
 )
 
 load("@io_bazel_rules_k8s//k8s:k8s.bzl", "k8s_repositories")
