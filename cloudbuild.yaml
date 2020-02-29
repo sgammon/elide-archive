@@ -62,7 +62,7 @@ steps:
     - //samples/todolist/src/config:envoy.replace
 
 # Deploy: K8S (Todolist)
-- name: 'l.gcr.io/google/bazel:2.1.0'
+- name: 'us.gcr.io/elide-tools/tools/gcb:v1a'
   id: deploy-todolist
   args:
     - --bazelrc=.bazelrc
