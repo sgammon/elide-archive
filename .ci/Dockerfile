@@ -13,6 +13,10 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/* \
     && echo "Installation done."
 
+RUN mkdir -p /builder/google-cloud-sdk \
+    && ln -s /gcloud/google-cloud-sdk/bin /builder/google-cloud-sdk/bin \
+    && echo "Google Cloud SDK is ready."
+
 ENV PATH $PATH:/gcloud/google-cloud-sdk/bin:/bazelisk/bin
 
 ENTRYPOINT ["/bazelisk/bin/bazelisk"]
