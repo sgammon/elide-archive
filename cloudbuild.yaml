@@ -2,7 +2,7 @@
 steps:
 
 # Build: Gust Framework
-- name: 'us.gcr.io/elide-tools/tools/gcb:v1g'
+- name: 'us.gcr.io/elide-tools/tools/gcb:v1h'
   id: build
   args:
   - --bazelrc=.bazelrc
@@ -12,7 +12,7 @@ steps:
   - //gust/...
 
 # Image build: Todolist App
-- name: 'us.gcr.io/elide-tools/tools/gcb:v1g'
+- name: 'us.gcr.io/elide-tools/tools/gcb:v1h'
   id: todolist
   args:
     - --bazelrc=.bazelrc
@@ -52,7 +52,7 @@ steps:
   ]
 
 # Deploy: K8S (Envoy)
-- name: 'us.gcr.io/elide-tools/tools/gcb:v1g'
+- name: 'us.gcr.io/elide-tools/tools/gcb:v1h'
   id: deploy-envoy
   args:
     - --bazelrc=.bazelrc
@@ -62,7 +62,7 @@ steps:
     - //samples/todolist/src/config:envoy.replace
 
 # Deploy: K8S (Todolist)
-- name: 'us.gcr.io/elide-tools/tools/gcb:v1g'
+- name: 'us.gcr.io/elide-tools/tools/gcb:v1h'
   id: deploy-todolist
   args:
     - --bazelrc=.bazelrc

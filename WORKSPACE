@@ -149,31 +149,31 @@ load("@io_bazel_stardoc//:setup.bzl", "stardoc_repositories")
 stardoc_repositories()
 
 ## Python
-#load("@rules_python//python:repositories.bzl", "py_repositories")
-#py_repositories()
+load("@rules_python//python:repositories.bzl", "py_repositories")
+py_repositories()
 
-#load("@rules_python//python:pip.bzl", "pip_repositories")
-#pip_repositories()
+load("@rules_python//python:pip.bzl", "pip_repositories")
+pip_repositories()
 
-#load("@rules_python//python:pip.bzl", pip_import = "pip3_import")
+load("@rules_python//python:pip.bzl", pip_import = "pip3_import")
 
-#pip_import(
-#    name = "py",
-#    requirements = "//defs/toolchain/python:requirements_base.txt")
+pip_import(
+    name = "py",
+    requirements = "//defs/toolchain/python:requirements_base.txt")
 
-#pip_import(
-#    name = "werkzeug",
-#    requirements = "//defs/toolchain/python:requirements_werkzeug.txt")
+pip_import(
+    name = "werkzeug",
+    requirements = "//defs/toolchain/python:requirements_werkzeug.txt")
 
-#pip_import(
-#    name = "grpc_python_dependencies",
-#    requirements = "@com_github_grpc_grpc//:requirements.bazel.txt")
+pip_import(
+    name = "grpc_python_dependencies",
+    requirements = "@com_github_grpc_grpc//:requirements.bazel.txt")
 
-#load("@grpc_python_dependencies//:requirements.bzl", grpc_pip_install="pip_install")
-#grpc_pip_install()
+load("@grpc_python_dependencies//:requirements.bzl", grpc_pip_install="pip_install")
+grpc_pip_install()
 
-#load("//defs/toolchain/python:repos.bzl", "gust_python_repositories")
-#gust_python_repositories()
+load("//defs/toolchain/python:repos.bzl", "gust_python_repositories")
+gust_python_repositories()
 
 ## gRPC Core
 load("@com_github_grpc_grpc//bazel:grpc_deps.bzl", "grpc_deps", "grpc_test_only_deps")
