@@ -112,7 +112,7 @@ INJECTED_GAPI_DEPS = [
 ]
 
 INJECTED_MICRONAUT_RUNTIME_DEPS = [
-    maven("org.slf4j:slf4j-jdk14"),
+    maven("ch.qos.logback:logback-classic"),
     maven("io.micronaut:micronaut-runtime"),
 ]
 
