@@ -508,7 +508,6 @@ def _micronaut_application(name,
             "//defs/conditions:debug": _JVM_APP_DEBUG_FLAGS,
         }),
         tags = (tags or []) + [
-          "ibazel_notify_changes",
           "ibazel_live_reload",
         ],
         **kwargs
