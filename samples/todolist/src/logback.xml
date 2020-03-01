@@ -9,7 +9,6 @@
     <root level="info">
         <appender-ref ref="STDOUT" />
     </root>
-    <logger name="io.micronaut.runtime.Micronaut" level="INFO" />
     <logger name="gust.backend.PageContextManager" level="DEBUG" />
     <logger name="server.HomeController" level="DEBUG" />
 </configuration>

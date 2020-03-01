@@ -65,8 +65,11 @@ The richest and best example app is _Todolist_, which is designed to be an examp
 To build the framework, you'll need Bazel/Bazelisk and a standard toolchain of stuff (C/C++ compilers, Docker, JDK 11+, Git, and so on). Bazel should tell you what you need if it can't fetch it for you. Otherwise, file a bug on this repo if you have trouble building the framework itself.
 
 Most development tasks on the framework involve the `Makefile`, which offers convenient invocation of common dev tools, including Bazelisk and `ibazel`. Running `make help` shows the commands supported, and generally returns something like this:
-```
+```bash
+$ make help
+
 GUST Framework Tools:
+
 bases                          Build base images and push them.
 build                          Build all framework targets.
 builder-image                  Build a new version of the CI builder image for Gust.

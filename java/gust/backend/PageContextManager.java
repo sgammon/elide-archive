@@ -81,16 +81,17 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
       assert this.builtContext != null;
     } else {
       this.closed = true;
-      if (LOG.isDebugEnabled())
-        LOG.debug("Exporting page context...");
       this.builtContext = PageContext.fromProto(
         this.context.build(),
         this.props,
         this.injected,
         this.namingMapProvider.orElse(null));
-      if (LOG.isDebugEnabled())
-        LOG.debug(String.format("Exported page context proto: %s",
+      if (LOG.isDebugEnabled()) {
+        LOG.debug(String.format("Exported page context with: %s props, %s injecteds, and proto follows \n%s",
+          this.props.size(),
+          this.injected.size(),
           this.builtContext.getPageContext()));
+      }
     }
     return this.builtContext;
   }
