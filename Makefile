@@ -77,7 +77,7 @@ endif
 
 # Flag: `CACHE`.
 ifeq ($(CACHE),yes)
-BASE_ARGS += --remote_cache=grpcs://remotebuildexecution.googleapis.com \
+BASE_ARGS += --remote_cache=grpcs://remotebuildexecution.googleapis.com --google_default_credentials=true \
              --remote_instance_name=projects/$(PROJECT)/instances/$(RBE_INSTANCE) \
 	     --host_platform_remote_properties_override='properties:{name:"cache-silo-key" value:"$(CACHE_KEY)"}'
 endif
