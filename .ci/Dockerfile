@@ -1,7 +1,6 @@
 
 FROM gcr.io/cloud-marketplace/google/ubuntu1804@sha256:ca6f2441610b5eca910cb7e5d8494df11e539743d57e87abfc71f85f3d634d94
 RUN apt-get update \
-    && apt-get upgrade -y \
     && apt-get install --no-install-recommends -y \
         python python-pip python3 python3-pip build-essential default-jdk git golang unzip \
     && apt-get autoremove \
