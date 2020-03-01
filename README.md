@@ -33,6 +33,7 @@ The richest and best example app is *Todolist*, which is designed to be an examp
   - SSR-based page serving with [Soy](https://github.com/google/closure-templates)
   - Schema-driven [gRPC](https://grpc.io) services with [seamless Firebase auth](https://firebase.google.com/docs/auth)
   - JSON/REST and Protobuf service invocation, via [Endpoints Service Proxy (ESP)](https://github.com/cloudendpoints/esp) and [Envoy](https://www.envoyproxy.io/)
+  - Seamless [GraphQL](https://graphql.org/) support atop Protobuf/gRPC with [Rejoiner](https://github.com/google/rejoiner)
   - Automatic schema-driven object storage and querying via [Firestore](https://firebase.google.com/docs/firestore)
   - Caching support via JSR-107 (JCache) and Redis
   - Packaging via Docker with intelligent layering
