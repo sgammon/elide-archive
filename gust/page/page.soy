@@ -21,7 +21,7 @@
       {/if}
   {/let}
 
-  <main{if isNonnull($pageId)}{sp}id="{$pageId}"{/if}
+  <main{if isNonnull($pageId)} id="{$pageId}"{/if}
        class="{if $mobile}{css('agent-mobile')}{else}{css('agent-base')}{/if}
               {if isNonnull($pageClass)}{sp}{$pageClass}{/if}">
     {$inner}
@@ -59,7 +59,7 @@
   {/let}
 
   <!doctype html>
-  <html class="no-js"{if isNonnull($languageSpec)}{sp}lang="{$languageSpec}"{/if} prefix="og: http://ogp.me/ns#">
+  <html class="no-js"{if isNonnull($languageSpec)} lang="{$languageSpec}"{/if} prefix="og: http://ogp.me/ns#">
   <head>
       <meta charset="utf-8">
 
@@ -70,8 +70,7 @@
       {if isNonnull($preconnect)}
           {for $preconnectDirective in $preconnect}
             <link href="{$preconnectDirective.domain}"
-                  rel="preconnect"
-                  {if $preconnectDirective.crossorigin}{sp}crossorigin{/if}>
+                  rel="preconnect"{if $preconnectDirective.crossorigin} crossorigin{/if}>
           {/for}
       {/if}
       {if isNonnull($contentSecurity)}
@@ -172,7 +171,7 @@
           {$ogTags}
       {/if}
   </head>
-  <body{if isNonnull($bodyClass)}{sp}class="{$bodyClass}"{/if}>
+  <body{if isNonnull($bodyClass)} class="{$bodyClass}"{/if}>
       {call .contentRoot}
           {param pageId: $pageId /}
           {param mobile: $mobile /}

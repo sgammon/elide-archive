@@ -18,16 +18,12 @@
 
   <script type="text/javascript"
           src="{$script}"
-          {if isNonnull($id)}{sp}id="{$id}" {/if}
-          {if isNonnull($module) and $module}
-              {sp}module
-          {else}
-              {if isNonnull($nomodule) and $nomodule}{sp}nomodule{/if}
-          {/if}
-          {if isNonnull($async) and $async}{sp}async{/if}
-          {if isNonnull($defer) and $defer}{sp}defer{/if}
-          {if isNonnull($integrity)}{sp}integrity="{$integrity}"{/if}
-          {if isNonnull($crossorigin)}crossorigin="{$crossorigin}"{/if}></script>
+          {if isNonnull($id)} id="{$id}" {/if}
+          {if isNonnull($module) and $module} module{else}{if isNonnull($nomodule) and $nomodule}{sp} nomodule{/if}{/if}
+          {if isNonnull($async) and $async} async{/if}
+          {if isNonnull($defer) and $defer} defer{/if}
+          {if isNonnull($integrity)} integrity="{$integrity}"{/if}
+          {if isNonnull($crossorigin)} crossorigin="{$crossorigin}"{/if}></script>
 {/template}
 
 
@@ -40,6 +36,6 @@
   {@param? media: string}  /** Media attribute to specify for the stylesheet. */
 
   {if isNonnull($sheet)}
-    <link rel="stylesheet" href="{$sheet}" {if isNonnull($media)}{sp}media="{$media}"{/if} />
+    <link rel="stylesheet" href="{$sheet}"{if isNonnull($media)} media="{$media}"{/if} />
   {/if}
 {/template}
