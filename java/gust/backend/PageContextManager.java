@@ -93,6 +93,23 @@ public class PageContextManager implements Closeable, AutoCloseable {
     return this.builtContext;
   }
 
+  // -- Page-level Interface (Context) -- //
+
+  /**
+   * Set the page title for the current render flow. If the app makes use of the framework's built-in page frame, the
+   * title will automatically be used.
+   *
+   * @param title Title to set for the current page. Do not pass `null`.
+   * @return Current page context manager (for call chain-ability).
+   * @throws IllegalArgumentException If `null` is passed for the title.
+   */
+  public @Nonnull PageContextManager title(@Nonnull String title) {
+    //noinspection ConstantConditions
+    if (title == null) throw new IllegalArgumentException("Cannot pass `null` for page title.");
+    this.context.getMetaBuilder().setTitle(title);
+    return this;
+  }
+
   // -- Map-like Interface (Props) -- //
 
   /**

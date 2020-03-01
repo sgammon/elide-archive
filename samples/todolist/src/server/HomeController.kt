@@ -48,6 +48,7 @@ class HomeController @Inject constructor (ctx: PageContextManager): AppControlle
     if (name != defaultName)
       logging.info("Greeting user with name '$name'...")
     return this.context
+      .title("Todolist - Homepage - Manage personal todo-lists across devices")
       .put("name", name)
       .render()
   }
