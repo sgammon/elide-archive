@@ -23,8 +23,7 @@ import javax.inject.Inject
 class HomeController @Inject constructor (ctx: PageContextManager): AppController(ctx) {
   companion object {
     // Logging pipe.
-    @JvmStatic
-    private val logging = LoggerFactory.getLogger(HomeController::class.java)
+    @JvmStatic private val logging = LoggerFactory.getLogger(HomeController::class.java)
 
     // Default name to show.
     private const val defaultName = "World"

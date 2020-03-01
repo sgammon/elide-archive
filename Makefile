@@ -122,17 +122,17 @@ endif
 
 all: devtools build test
 
-b build:  ## Build all framework targets.
+build:  ## Build all framework targets.
 	$(info Building $(PROJECT_NAME)...)
 	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) build $(TAG) $(BASE_ARGS) $(BUILD_ARGS) -- $(TARGETS)
 
-r run:  ## Run the specified target.
+run:  ## Run the specified target.
 	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) run $(TAG) $(BASE_ARGS) $(BUILD_ARGS) -- $(APP)
 
-d dev:  ## Develop against the specified target.
+dev:  ## Develop against the specified target.
 	$(_RULE)$(IBAZEL) run $(TAG) $(APP)
 
-c clean:  ## Clean ephemeral targets.
+clean:  ## Clean ephemeral targets.
 	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) clean
 
 bases:  ## Build base images and push them.
