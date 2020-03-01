@@ -1,12 +1,18 @@
-## `@elide-tools/elide` [![Build status](https://badge.buildkite.com/7a69b0fadb7d08b691e96177f589971a7646217b1a8b4a269e.svg)](https://buildkite.com/bloomworks/elide) [![codecov](https://codecov.io/gh/sgammon/GUST/branch/master/graph/badge.svg)](https://codecov.io/gh/sgammon/GUST) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/61aeb894c7914e3cac651d5eb2d86954)](https://www.codacy.com/manual/samuel-gammon/GUST?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=sgammon/GUST&amp;utm_campaign=Badge_Grade) [![Maintainability](https://api.codeclimate.com/v1/badges/3216f45caac250619f4f/maintainability)](https://codeclimate.com/github/sgammon/GUST/maintainability)
+## `@elide-tools/gust` [![Build status](https://badge.buildkite.com/7a69b0fadb7d08b691e96177f589971a7646217b1a8b4a269e.svg)](https://buildkite.com/bloomworks/elide) [![codecov](https://codecov.io/gh/sgammon/GUST/branch/master/graph/badge.svg)](https://codecov.io/gh/sgammon/GUST) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/61aeb894c7914e3cac651d5eb2d86954)](https://www.codacy.com/manual/samuel-gammon/GUST?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=sgammon/GUST&amp;utm_campaign=Badge_Grade) [![Maintainability](https://api.codeclimate.com/v1/badges/3216f45caac250619f4f/maintainability)](https://codeclimate.com/github/sgammon/GUST/maintainability)
 
-Elide is a polyglot software application development framework. Bring the most road-tested toolchain on the planet to your development process, with [Bazel](https://bazel.build), [Protobuf](https://developers.google.com/protocol-buffers), [gRPC](https://grpc.io), [Soy](https://github.com/google/closure-templates), and more, all pre-integrated and tested out of the box. Early support is included for Java, Kotlin, Python, and NodeJS on the backend; Closure, TypeScript, or even Java on the frontend (transpiled to highly-optimized and type-checked JS); and Java, Kotlin, Swift, Objective-C and C/C++ for mobile applications.
+| Language & Package System | Coordinate | Latest Version |
+| ------------------------- | ---------- | :------------: |
+| | | |
+| | | |
+| | | |
+
+Gust is a polyglot software application development framework. Bring the most road-tested toolchain on the planet to your development process, with [Bazel](https://bazel.build), [Protobuf](https://developers.google.com/protocol-buffers), [gRPC](https://grpc.io), [Soy](https://github.com/google/closure-templates), and more, all pre-integrated and tested out of the box. Early support is included for Java, Kotlin, Python, and NodeJS on the backend; Closure, TypeScript, or even Java on the frontend (transpiled to highly-optimized and type-checked JS); and Java, Kotlin, Swift, Objective-C and C/C++ for mobile applications.
 
 Runtime libraries are also published to support easy development of _web applications_ (in Java and Python using Soy), and _mobile applications_ (in Java and Swift). The framework is also capable of leveraging [GraalVM](https://graalvm.org) to build your app into a [native application](https://www.graalvm.org/docs/reference-manual/native-image/) (where supported), alleviating the need entirely for a JVM or Python runtime in your app containers. Native apps also have the nice benefit of _way_ shorter startup times (try `30ms`, lol!), and, in some cases, significant latency and memory use improvements.
 
 ### Sample Apps
 
-As part of the framework code, a few sample apps are included. Each of these is usable as its own project, simply by copying the files in that directory to another location on disk, and then running `bazel build //...` from inside the new directory. Each sample app demonstrates diverse functionality supported by Elide, including supported languages and use cases, and at least one holistic application:
+As part of the framework code, a few sample apps are included. Each of these is usable as its own project, simply by copying the files in that directory to another location on disk, and then running `bazel build //...` from inside the new directory. Each sample app demonstrates diverse functionality supported by Gust, including supported languages and use cases, and at least one holistic application:
 
 - `rest_mvc` (Java): Example of RESTful servers with Micronaut.
 - `soy_ssr` (Java): Server-side-rendered pages with Soy and Micronaut.
