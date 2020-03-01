@@ -15,7 +15,7 @@ As part of the framework code, a few sample apps are included. Each of these is 
 
 ### Todolist App ([Demo](https://todolist.apps.bloomworks.io))
 
-The richest and best example app is *Todolist*, which is designed to be an example SaaS startup in a box. This includes a server app, a web app, mobile apps (for Android and iOS), and full-blown declarative infrastructure to support it all. The app includes the following components and features:
+The richest and best example app is _Todolist_, which is designed to be an example SaaS startup in a box. This includes a server app, a web app, mobile apps (for Android and iOS), and full-blown declarative infrastructure to support it all. The app includes the following components and features:
 - **Devops toolkit**
   - Support for testing in each language, with coverage
   - Easy support for debugging the backend or frontend apps
