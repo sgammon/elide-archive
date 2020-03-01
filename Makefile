@@ -137,9 +137,9 @@ c clean:  ## Clean ephemeral targets.
 
 bases:  ## Build base images and push them.
 	@echo "Building Alpine base ('$(BASE_VERSION)')..."
-	$(_RULE)docker build -t us.gcr.io/$(IMAGE_PROJECT)/base/alpine:$(BASE_VERSION) ./base/alpine
+	$(_RULE)docker build -t us.gcr.io/$(IMAGE_PROJECT)/base/alpine:$(BASE_VERSION) ./images/base/alpine
 	@echo "Building Node base ('$(BASE_VERSION)')..."
-	$(_RULE)docker build -t us.gcr.io/$(IMAGE_PROJECT)/base/node:$(BASE_VERSION) ./base/node
+	$(_RULE)docker build -t us.gcr.io/$(IMAGE_PROJECT)/base/node:$(BASE_VERSION) ./images/base/node
 	@echo "Pushing bases..."
 	$(_RULE)docker push us.gcr.io/$(IMAGE_PROJECT)/base/alpine:$(BASE_VERSION)
 	$(_RULE)docker push us.gcr.io/$(IMAGE_PROJECT)/base/node:$(BASE_VERSION)
@@ -180,7 +180,7 @@ devtools:  ## Install local development dependencies.
 
 builder-image:  ## Build a new version of the CI builder image for Gust.
 	@echo "Building CI image..."
-	$(_RULE)gcloud builds submit ./.ci -t us.gcr.io/$(IMAGE_PROJECT)/tools/gcb
+	$(_RULE)gcloud builds submit ./images/ci -t us.gcr.io/$(IMAGE_PROJECT)/tools/gcb
 
 update-deps:  ## Re-seal and update all dependencies.
 	@echo "Re-pinning Maven dependencies..."
