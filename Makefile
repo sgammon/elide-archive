@@ -55,11 +55,11 @@ COVERABLE ?= //javatests:suite
 TAG ?=
 TEST_ARGS ?= --test_output=errors
 TEST_ARGS_WITH_COVERAGE ?= --combined_report=lcov --nocache_test_results
-BUILD_ARGS ?=
+BUILD_ARGS ?= --define project=$(PROJECT)
 
 POSIX_FLAGS ?=
 BAZELISK_ARGS ?=
-BASE_ARGS ?= --google_default_credentials=true --define project=$(PROJECT)
+BASE_ARGS ?=
 
 
 # Flag: `FORCE_COVERAGE`
@@ -100,6 +100,7 @@ BAZELISK ?= /bin/bazelisk
 GENHTML ?= /bin/genhtml
 else
 TAG += --config=dev
+IBAZEL ?= $(shell which ibazel)
 BAZELISK ?= $(shell which bazelisk)
 GENHTML ?= $(shell which genhtml)
 endif
@@ -108,13 +109,13 @@ endif
 ifeq ($(VERBOSE),yes)
 BASE_ARGS += -s --verbose_failures
 POSIX_FLAGS += -v
+_RULE =
 else
-_RULE = @
-endif
 
 # Flag: `QUIET`
 ifeq ($(QUIET),yes)
 _RULE = @
+endif
 endif
 
 
@@ -126,6 +127,9 @@ b build:  ## Build all framework targets.
 
 r run:  ## Run the specified target.
 	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) run $(TAG) $(BASE_ARGS) $(BUILD_ARGS) -- $(APP)
+
+d dev:  ## Develop against the specified target.
+	$(_RULE)$(IBAZEL) run $(TAG) $(APP)
 
 c clean:  ## Clean ephemeral targets.
 	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) clean

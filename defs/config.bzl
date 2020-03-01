@@ -98,3 +98,13 @@ KOTLIN_LANGUAGE_LEVEL = "1.3"
 ## ------------------------------------
 ## Sets the version for the Kubectl tool, etc.
 K8S_VERSION = "1.15.9"
+
+## Protobuf toolchain version.
+## ------------------------------------
+## Sets the version enforced throughout for Protobuf.
+PROTOBUF_VERSION = "3.11.4"
+
+## JVM-based app debug port.
+## ------------------------------------
+## Sets the port to wait/listen for remote JVM tools on (for launching a debugger).
+JVM_DEBUG_PORT = "5005"

@@ -1,5 +1,10 @@
 
 load(
+    "//defs:config.bzl",
+    _JVM_DEBUG_PORT = "JVM_DEBUG_PORT",
+)
+
+load(
     "@rules_pkg//pkg:pkg.bzl",
     _pkg_tar = "pkg_tar",
 )
@@ -116,6 +121,15 @@ INJECTED_CONTROLLER_DEPS = [
     "//java/gust/backend:PageContextManager",
     "//java/gust/backend:BaseController",
     "//java/gust/backend:AppController",
+]
+
+
+_JVM_APP_DEBUG_FLAGS = [
+    "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:%s" % _JVM_DEBUG_PORT,
+]
+
+_JVM_APP_RELEASE_FLAGS = [
+    # None yet.
 ]
 
 
@@ -337,6 +351,7 @@ def _micronaut_application(name,
                            jvm_flags = [],
                            defs = {},
                            ports = [],
+                           tags = [],
                            inject_main = True,
                            reflection_configuration = None,
                            **kwargs):
@@ -488,7 +503,13 @@ def _micronaut_application(name,
         resources = resources,
         classpath_resources = [config, logging_config],
         main_class = main_class or "gust.backend.Application",
-        jvm_flags = computed_jvm_flags,
+        jvm_flags = computed_jvm_flags + select({
+            "//defs/conditions:release": _JVM_APP_RELEASE_FLAGS,
+            "//defs/conditions:debug": _JVM_APP_DEBUG_FLAGS,
+        }),
+        tags = (tags or []) + [
+          "ibazel_notify_changes",
+        ],
         **kwargs
     )
 

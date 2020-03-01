@@ -9,6 +9,7 @@ import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.QueryValue
 import io.micronaut.security.annotation.Secured
 import io.micronaut.views.View
+import org.slf4j.LoggerFactory
 import javax.inject.Inject
 
 
@@ -20,6 +21,15 @@ import javax.inject.Inject
 @Controller
 @Secured("isAnonymous()")
 class HomeController @Inject constructor (ctx: PageContextManager): AppController(ctx) {
+  companion object {
+    // Logging pipe.
+    @JvmStatic
+    private val logging = LoggerFactory.getLogger(HomeController::class.java)
+
+    // Default name to show.
+    private const val defaultName = "World"
+  }
+
   /**
    * `/` (`HTTP GET`): Handler for the root homepage for Todolist - i.e. `/`. Serves the preview page if the user isn't
    * logged in, or the regular app page & container if they are.
@@ -35,7 +45,9 @@ class HomeController @Inject constructor (ctx: PageContextManager): AppControlle
    */
   @Get("/", produces = [MediaType.TEXT_HTML])
   @View("todolist.home.page")
-  fun home(@QueryValue("name", defaultValue = "World") name: String): PageContext {
+  fun home(@QueryValue("name", defaultValue = defaultName) name: String): PageContext {
+    if (name != defaultName)
+      logging.info("Greeting user with name '$name'...")
     return this.context
       .put("name", name)
       .render()

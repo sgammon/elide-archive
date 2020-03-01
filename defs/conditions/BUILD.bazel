@@ -3,11 +3,26 @@ package(
 )
 
 
+## Condition: `debug`
+## ------------------------
+## Activates when running or building with Bazel's main debug mode active.
+config_setting(
+    name = "debug",
+    values = {"compilation_mode": "dbg"},
+)
+
+## Condition: `release`
+## ------------------------
+## Activates when running or building with Bazel's release mode active.
+config_setting(
+    name = "release",
+    values = {"compilation_mode": "opt"},
+)
+
 ## Condition: `zulu`
 ## ------------------------
 ## Activates when we are running in IntelliJ/locally.
 config_setting(
     name = "zulu",
     values = {"define": "jdk=zulu"},
-    visibility = ["//visibility:public"],
 )

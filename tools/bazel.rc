@@ -18,6 +18,9 @@ common --experimental_allow_incremental_repository_updates
 run --incompatible_depset_union=false
 build --incompatible_depset_union=false
 
+build:dev --define=project=bloom-sandbox
+build:dev --google_default_credentials=true
+
 build --watchfs
 build --symlink_prefix=dist/
 build --nolegacy_external_runfiles
