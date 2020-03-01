@@ -366,8 +366,8 @@ DEPS = {
     "io_micronaut_micronaut_views": {
         "type": "java",
         "licenses": ["notice"],
-        "targets": ["https://storage.googleapis.com/bloom-software/micronaut-views-core-1.3.2.BUILD.jar"],
-        "seal": "e896ef7612ecfc9e62f400e4ab994a6868f9ec64206c3eaf16265801a3ca2300",
+        "targets": ["https://storage.googleapis.com/bloom-software/micronaut/b1/views-core-1.3.2.BUILD-SNAPSHOT.jar"],
+        "seal": "fbebc71ff66cc18513f45dcc200fc79bda23fabcba3a5c57db435a1985dc2e84",
         "deps": [
             maven("io.micronaut:micronaut-runtime"),
             maven("io.micronaut:micronaut-http-client"),
@@ -380,8 +380,8 @@ DEPS = {
     "io_micronaut_micronaut_views_soy": {
         "type": "java",
         "licenses": ["notice"],
-        "targets": ["https://storage.googleapis.com/bloom-software/micronaut-views-soy-1.3.2.BUILD.jar"],
-        "seal": "b4f94328ab0416c395eab55d5f8743f49ba66b7b514c5ffb4b3837fb36edc2d1",
+        "targets": ["https://storage.googleapis.com/bloom-software/micronaut/b1/views-soy-1.3.2.BUILD-SNAPSHOT.jar"],
+        "seal": "88b3e8f3eae9aef80377a0a98f9057acf716e8c65a9810c335423151949ba29e",
         "deps": [
             "@com_google_template_soy",
             "@com_google_common_html_types",
