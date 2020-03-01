@@ -17,6 +17,10 @@ RUN apt-get update \
         pip setuptools wheel \
     && python3 -m pip install --upgrade \
         pip setuptools wheel \
+    && python2 -m pip install --upgrade \
+        pypandoc \
+    && python3 -m pip install --upgrade \
+        pypandoc \
     && mkdir -p /builder/google-cloud-sdk \
     && ln -s /gcloud/google-cloud-sdk/bin /builder/google-cloud-sdk/bin \
     && echo "Build image ready."
