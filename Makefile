@@ -178,6 +178,10 @@ devtools:  ## Install local development dependencies.
 	@echo "Installing devtools..."
 	$(_RULE)git submodule update --init --recursive
 
+builder-image:  ## Build a new version of the CI builder image for Gust.
+	@echo "Building CI image..."
+	$(_RULE)gcloud builds submit ./.ci -t us.gcr.io/$(IMAGE_PROJECT)/tools/gcb
+
 update-deps:  ## Re-seal and update all dependencies.
 	@echo "Re-pinning Maven dependencies..."
 	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) run @unpinned_maven//:pin
