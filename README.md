@@ -1,4 +1,4 @@
-## `@elide-tools/elide` [![Build status](https://badge.buildkite.com/7a69b0fadb7d08b691e96177f589971a7646217b1a8b4a269e.svg)](https://buildkite.com/bloomworks/elide) [![codecov](https://codecov.io/gh/sgammon/GUST/branch/master/graph/badge.svg)](https://codecov.io/gh/sgammon/GUST) [![Maintainability](https://api.codeclimate.com/v1/badges/3216f45caac250619f4f/maintainability)](https://codeclimate.com/github/sgammon/GUST/maintainability) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/61aeb894c7914e3cac651d5eb2d86954)](https://www.codacy.com/manual/samuel-gammon/GUST?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=sgammon/GUST&amp;utm_campaign=Badge_Grade)
+## `@elide-tools/elide` [![Build status](https://badge.buildkite.com/7a69b0fadb7d08b691e96177f589971a7646217b1a8b4a269e.svg)](https://buildkite.com/bloomworks/elide) [![codecov](https://codecov.io/gh/sgammon/GUST/branch/master/graph/badge.svg)](https://codecov.io/gh/sgammon/GUST) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/61aeb894c7914e3cac651d5eb2d86954)](https://www.codacy.com/manual/samuel-gammon/GUST?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=sgammon/GUST&amp;utm_campaign=Badge_Grade) [![Maintainability](https://api.codeclimate.com/v1/badges/3216f45caac250619f4f/maintainability)](https://codeclimate.com/github/sgammon/GUST/maintainability)
 
 Elide is a polyglot software application development framework. Bring the most road-tested toolchain on the planet to your development process, with [Bazel](https://bazel.build), [Protobuf](https://developers.google.com/protocol-buffers), [gRPC](https://grpc.io), [Soy](https://github.com/google/closure-templates), and more, all pre-integrated and tested out of the box. Early support is included for Java, Kotlin, Python, and NodeJS on the backend; Closure, TypeScript, or even Java on the frontend (transpiled to highly-optimized and type-checked JS); and Java, Kotlin, Swift, Objective-C and C/C++ for mobile applications.
 
@@ -62,7 +62,10 @@ Most development tasks on the framework involve the `Makefile`, which offers con
 ```
 GUST Framework Tools:
 bases                          Build base images and push them.
+build                          Build all framework targets.
 builder-image                  Build a new version of the CI builder image for Gust.
+clean                          Clean ephemeral targets.
+dev                            Develop against the specified target.
 devtools                       Install local development dependencies.
 distclean                      Clean targets, caches and dependencies.
 docs                           Build documentation for the framework.
@@ -71,6 +74,7 @@ help                           Show this help text.
 release-images                 Pull, tag, and release Docker images.
 report-coverage                Report coverage results to Codecov.
 report-tests                   Report test results to Report.CI.
+run                            Run the specified target.
 samples                        Build and push sample app images.
 serve-coverage                 Serve the current coverage report (must generate first).
 test                           Run all framework testsuites.
