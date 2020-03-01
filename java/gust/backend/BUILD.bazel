@@ -30,11 +30,6 @@ alias(
     actual = "@native_base//image",
 )
 
-template_library(
-    name = "page",
-    srcs = ["page.soy"],
-)
-
 micronaut_library(
     name = "AppController",
     srcs = ["AppController.java"],
@@ -54,28 +49,31 @@ micronaut_library(
 )
 
 micronaut_library(
-    name = "SoyProtoContextMediator",
-    srcs = ["SoyProtoContextMediator.java"],
+    name = "PageRender",
+    srcs = ["PageRender.java"],
     proto_deps = ["//gust/page:page_proto"],
 )
 
 micronaut_library(
     name = "PageContext",
     srcs = ["PageContext.java"],
-    deps = [":SoyProtoContextMediator"],
+    deps = [":PageRender"],
     proto_deps = ["//gust/page:page_proto"],
 )
 
 micronaut_library(
     name = "PageContextManager",
     srcs = ["PageContextManager.java"],
-    deps = [":PageContext"],
+    deps = [
+        ":PageContext",
+        ":PageRender",
+    ],
 )
 
 micronaut_library(
     name = "TemplateProvider",
     srcs = ["TemplateProvider.java"],
-    templates = [":page"],
+    templates = ["//gust/page:page_soy"],
     deps = [maven("io.micronaut:micronaut-views-soy")],
 )
 

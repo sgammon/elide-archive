@@ -23,7 +23,7 @@ import java.util.Optional;
  */
 @Immutable
 @SuppressWarnings("unused")
-public final class PageContext implements SoyProtoContextMediator {
+public final class PageContext implements PageRender {
   /** Name at which proto-context is injected. */
   private static final String CONTEXT_PROPERTY_NAME = "context";
 

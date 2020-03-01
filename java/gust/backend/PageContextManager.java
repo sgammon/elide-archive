@@ -11,6 +11,7 @@ import tools.elide.page.Context;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.Closeable;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentSkipListMap;
@@ -25,7 +26,7 @@ import java.util.concurrent.ConcurrentSkipListMap;
  */
 @RequestScope
 @SuppressWarnings("unused")
-public class PageContextManager implements Closeable, AutoCloseable {
+public class PageContextManager implements Closeable, AutoCloseable, PageRender {
   private static final Logger LOG = LoggerFactory.getLogger(PageContextManager.class);
 
   /** Page context builder. */
@@ -79,7 +80,7 @@ public class PageContextManager implements Closeable, AutoCloseable {
     if (this.closed) {
       assert this.builtContext != null;
     } else {
-      this.close();
+      this.closed = true;
       if (LOG.isDebugEnabled())
         LOG.debug("Exporting page context...");
       this.builtContext = PageContext.fromProto(
@@ -88,7 +89,8 @@ public class PageContextManager implements Closeable, AutoCloseable {
         this.injected,
         this.namingMapProvider.orElse(null));
       if (LOG.isDebugEnabled())
-        LOG.debug(String.format("Exported page context: %s", this.builtContext));
+        LOG.debug(String.format("Exported page context proto: %s",
+          this.builtContext.getPageContext()));
     }
     return this.builtContext;
   }
@@ -107,6 +109,46 @@ public class PageContextManager implements Closeable, AutoCloseable {
     //noinspection ConstantConditions
     if (title == null) throw new IllegalArgumentException("Cannot pass `null` for page title.");
     this.context.getMetaBuilder().setTitle(title);
+    return this;
+  }
+
+  /**
+   * Include the specified JavaScript resource in the rendered page, according to enclosed settings (i.e. respecting
+   * <pre>defer</pre>, <pre>async</pre>, and other attributes). If the script asset has an ID, it will <b>not</b> be
+   * passed through ID rewriting before being rendered.
+   *
+   * <p><b>Behavior:</b> Script assets included in this manner are always loaded in the document head, so be judicious
+   * with <pre>defer</pre> if you are loading a significant amount of JavaScript. There are no default script assets.
+   * Scripts are emitted in the order in which they are attached to the page context (i.e. via this method).</p>
+   *
+   * @param script Script asset to load in the rendered page output. Do not pass `null`.
+   * @return Current page context manager (for call chain-ability).
+   * @throws IllegalArgumentException If `null` is passed for the script.
+   */
+  public @Nonnull PageContextManager script(@Nonnull Context.Scripts.JavaScript.Builder script) {
+    //noinspection ConstantConditions
+    if (script == null) throw new IllegalArgumentException("Cannot pass `null` for script.");
+    this.context.getScriptsBuilder().addLink(script);
+    return this;
+  }
+
+  /**
+   * Include the specified CSS stylesheet resource in the rendered page, according to the enclosed settings (i.e.
+   * respecting properties like <pre>media</pre>). If the stylesheet has an ID, it will <b>not</b> be passed through ID
+   * rewriting before being rendered.
+   *
+   * <p>Stylesheets included in this manner are always loaded in the head, via a link tag. If you want to defer loading
+   * of styles, you'll have to do so from JS. Stylesheet links are emitted in the order in which they are attached to
+   * the page context (i.e. via this method).</p>
+   *
+   * @param stylesheet Stylesheet asset to load in the rendered page output. Do not pass `null`.
+   * @return Current page context manager (for call chain-ability).
+   * @throws IllegalArgumentException If `null` is passed for the stylesheet.
+   */
+  public @Nonnull PageContextManager stylesheet(@Nonnull Context.Styles.Stylesheet.Builder stylesheet) {
+    //noinspection ConstantConditions
+    if (stylesheet == null) throw new IllegalArgumentException("Cannot pass `null` for stylesheet.");
+    this.context.getStylesBuilder().addLink(stylesheet);
     return this;
   }
 
@@ -218,6 +260,63 @@ public class PageContextManager implements Closeable, AutoCloseable {
    */
   @Override
   public void close() {
-    this.closed = true;
+    if (!this.closed) {
+      this.render();
+    }
+  }
+
+  // -- Interface: Delegated Context -- //
+
+  /**
+   * Retrieve serializable server-side-rendered page context, which should be assigned to the render flow bound to this
+   * context mediator.
+   *
+   * @return Server-side rendered page context.
+   */
+  @Override
+  public @Nonnull Context getPageContext() {
+    this.close();
+    if (this.builtContext == null) throw new IllegalStateException("Unable to read page context.");
+    return this.builtContext.getPageContext();
+  }
+
+  /**
+   * Retrieve properties which should be made available via regular, declared `@param` statements.
+   *
+   * @return Map of regular template properties.
+   */
+  @Nonnull
+  @Override
+  public Map<String, Object> getProperties() {
+    this.close();
+    if (this.builtContext == null) throw new IllegalStateException("Unable to read page context.");
+    return this.builtContext.getProperties();
+  }
+
+  /**
+   * Retrieve properties and values that should be made available via `@inject`.
+   *
+   * @return Map of injected properties and their values.
+   */
+  @Nonnull
+  @Override
+  public Map<String, Object> getInjectedProperties() {
+    this.close();
+    if (this.builtContext == null) throw new IllegalStateException("Unable to read page context.");
+    return this.builtContext.getInjectedProperties();
+  }
+
+  /**
+   * Specify a Soy renaming map which overrides the globally-installed map, if any. Renaming must still be activated via
+   * config, or manually, for the return value of this method to have any effect.
+   *
+   * @return {@link SoyNamingMapProvider} that should be used for this render routine.
+   */
+  @Nonnull
+  @Override
+  public Optional<SoyNamingMapProvider> overrideNamingMap() {
+    this.close();
+    if (this.builtContext == null) throw new IllegalStateException("Unable to read page context.");
+    return this.builtContext.overrideNamingMap();
   }
 }

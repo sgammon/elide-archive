@@ -14,7 +14,7 @@ import javax.annotation.Nonnull;
  * @author Sam Gammon (sam@momentum.io)
  * @see PageContext Default implementation of this interface
  */
-public interface SoyProtoContextMediator extends SoyContextMediator {
+public interface PageRender extends SoyContextMediator {
   /**
    * Retrieve serializable server-side-rendered page context, which should be assigned to the render flow bound to this
    * context mediator.

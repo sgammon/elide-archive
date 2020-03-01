@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.template.soy.shared.SoyCssRenamingMap;
 import com.google.template.soy.shared.SoyIdRenamingMap;
 import gust.backend.PageContext;
-import gust.backend.SoyProtoContextMediator;
+import gust.backend.PageRender;
 import io.micronaut.views.soy.SoyNamingMapProvider;
 import org.junit.Test;
 import tools.elide.page.Context;
@@ -94,7 +94,7 @@ public class PageContextTest {
       ((Context)ctx.getInjectedProperties().get("context")).getMeta().getTitle());
 
     assertEquals("proto context should be valid through interface or object",
-      ((SoyProtoContextMediator)ctx).getPageContext(),
+      ((PageRender)ctx).getPageContext(),
       ctx.getPageContext());
   }
 
