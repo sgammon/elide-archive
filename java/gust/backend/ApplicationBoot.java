@@ -28,15 +28,12 @@ public final class ApplicationBoot {
    * and reported in this manner are fatal.
    *
    * @param err Fatal error that occurred and prevented server startup.
-   * @param exitOnFail Whether to exit the program if a failure occurs.
    */
-  public static void reportStartupError(@Nonnull Throwable err, boolean exitOnFail) {
+  public static void reportStartupError(@Nonnull Throwable err) {
     System.err.println("Uncaught exception: " + err.getMessage());
     err.printStackTrace(System.err);
-    if (exitOnFail)
-      throw new IllegalStateException(
-        String.format("Catastrophic startup error thrown: %s.", err.getMessage()));
-    else throw new RuntimeException(err);
+    throw new IllegalStateException(
+      String.format("Catastrophic startup error thrown: %s.", err.getMessage()));
   }
 
   /**
@@ -80,7 +77,7 @@ public final class ApplicationBoot {
       loadConfig("app", rootConfig, defaultConfig);
       loadConfig("logging", loggingConfig, defaultLoggingConfig);
     } catch (Throwable ex) {
-      reportStartupError(ex, exitOnFail);
+      reportStartupError(ex);
       if (!exitOnFail) throw ex;
     }
   }

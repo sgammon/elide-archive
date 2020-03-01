@@ -24,8 +24,8 @@ public final class ApplicationTest {
   }
 
   /** Try reporting a fatal error that occurred during startup. This also shouldn't fail. */
-  @Test(expected = RuntimeException.class) public void testBasicReportErrorStderr() {
-    ApplicationBoot.reportStartupError(new IOException("Something happened"), false);
+  @Test(expected = IllegalStateException.class) public void testBasicReportErrorStderr() {
+    ApplicationBoot.reportStartupError(new IOException("Something happened"));
   }
 
   /** Test fallback configuration loading. Should not produce an error, even though the first file doesn't exist. */
