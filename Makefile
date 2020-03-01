@@ -19,6 +19,7 @@ REGISTRY ?= bloomworks
 PROJECT_NAME ?= GUST
 ENABLE_REPORTCI ?= yes
 JS_COVERAGE_REPORT ?= no
+CI_REPO ?= sgammon/GUST
 
 SAMPLES ?= //samples/rest_mvc/java:MicronautMVCSample //samples/soy_ssr/src:MicronautSSRSample
 
@@ -193,7 +194,14 @@ report-tests: ## Report test results to Report.CI.
 	$(_RULE)cd reports && python -m junit2htmlreport tests.xml
 ifeq ($(ENABLE_REPORTCI),yes)
 	@echo "Reporting test results..."
-	$(_RULE)-curl -s https://raw.githubusercontent.com/report-ci/scripts/master/upload.py | python - --include='reports/tests.xml' --framework=junit
+	TRAVIS=true \
+	    TRAVIS_COMMIT=$$BUILDKITE_COMMIT \
+	    TRAVIS_BRANCH=$$BUILDKITE_BRANCH \
+	    TRAVIS_COMMIT_MESSAGE=$$BUILDKITE_MESSAGE \
+	    TRAVIS_PULL_REQUEST=$$BUILDKITE_PULL_REQUEST \
+	    TRAVIS_PULL_REQUEST_BRANCH=$$BUILDKITE_PULL_REQUEST_BASE_BRANCH \
+	    TRAVIS_REPO_SLUG=$(CI_REPO) \
+	    $(_RULE)-curl -s https://raw.githubusercontent.com/report-ci/scripts/master/upload.py | python - --include='reports/tests.xml' --framework=junit
 endif
 
 report-coverage:  ## Report coverage results to Codecov.
