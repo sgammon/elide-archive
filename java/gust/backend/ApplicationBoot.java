@@ -33,7 +33,9 @@ public final class ApplicationBoot {
   public static void reportStartupError(@Nonnull Throwable err, boolean exitOnFail) {
     System.err.println("Uncaught exception: " + err.getMessage());
     err.printStackTrace(System.err);
-    if (exitOnFail) System.exit(1);
+    if (exitOnFail)
+      throw new IllegalStateException(
+        String.format("Catastrophic startup error thrown: %s.", err.getMessage()));
     else throw new RuntimeException(err);
   }
 

@@ -12,7 +12,7 @@ load(
 jdk_test(
     name = "ApplicationTest",
     srcs = ["ApplicationTest.java"],
-    deps = ["//java/gust/backend:Application"],
+    deps = ["//java/gust/backend:ApplicationBoot"],
     test_class = "javatests.gust.backend.ApplicationTest",
     testonly = True,
     classpath_resources = [
@@ -24,7 +24,7 @@ jdk_test(
 jdk_test(
     name = "NoConfigTest",
     srcs = ["NoConfigTest.java"],
-    deps = ["//java/gust/backend:Application"],
+    deps = ["//java/gust/backend:ApplicationBoot"],
     test_class = "javatests.gust.backend.NoConfigTest",
     testonly = True,
 )
