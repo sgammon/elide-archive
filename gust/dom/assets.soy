@@ -18,7 +18,7 @@
 
   <script type="text/javascript"
           src="{$script}"
-          {if isNonnull($id)} id="{$id}" {/if}
+          {if isNonnull($id) and $id != ''} id="{$id}" {/if}
           {if isNonnull($module) and $module} module{else}{if isNonnull($nomodule) and $nomodule}{sp} nomodule{/if}{/if}
           {if isNonnull($async) and $async} async{/if}
           {if isNonnull($defer) and $defer} defer{/if}

@@ -128,7 +128,7 @@
       {if isNonnull($context) and isNonnull($context.meta) and $context.meta.description}
         <meta name="description" content="{$context.meta.description}">
       {/if}
-      {if isNonnull($context) and isNonnull($context.meta) and $context.meta.keywordList}
+      {if isNonnull($context) and isNonnull($context.meta) and length($context.meta.keywordList) > 0}
           {let $metaKeywords kind="text"}
               {for $keyword in $context.meta.keywordList}
                   {if not isFirst($keyword)}, {/if}
