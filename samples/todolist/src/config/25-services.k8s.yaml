@@ -48,6 +48,35 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
+  name: todolist-gateway
+  namespace: todolist-gateway
+  labels:
+    app: todolist
+    role: server
+    environment: production
+  annotations:
+    cloud.google.com/load-balancer-type: "Internal"
+    networking.gke.io/internal-load-balancer-allow-global-access: "true"
+spec:
+  ports:
+    - name: tls-app
+      port: 8081
+      protocol: TCP
+      targetPort: 8081
+    - name: tls-rpc
+      port: 8082
+      protocol: TCP
+      targetPort: 8082
+  selector:
+    app: todolist
+    role: server
+    environment: production
+  type: LoadBalancer
+  publishNotReadyAddresses: yes
+---
+apiVersion: v1
+kind: Service
+metadata:
   name: gateway
   namespace: todolist
   labels:
