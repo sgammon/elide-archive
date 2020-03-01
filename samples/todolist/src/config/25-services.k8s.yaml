@@ -48,8 +48,8 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: todolist-gateway
-  namespace: todolist-gateway
+  name: todolist-usw2
+  namespace: todolist
   labels:
     app: todolist
     role: server
@@ -98,26 +98,4 @@ spec:
     role: gateway
     environment: production
   type: NodePort
-  publishNotReadyAddresses: yes
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: gateway-ext
-  namespace: todolist
-  labels:
-    app: todolist
-    role: gateway
-    environment: production
-spec:
-  ports:
-    - name: tls-ext
-      port: 443
-      protocol: TCP
-      targetPort: 443
-  selector:
-    app: todolist
-    role: gateway
-    environment: production
-  type: LoadBalancer
   publishNotReadyAddresses: yes
