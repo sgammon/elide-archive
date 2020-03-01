@@ -509,6 +509,7 @@ def _micronaut_application(name,
         }),
         tags = (tags or []) + [
           "ibazel_notify_changes",
+          "ibazel_live_reload",
         ],
         **kwargs
     )
