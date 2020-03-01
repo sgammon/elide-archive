@@ -80,9 +80,19 @@ micronaut_library(
 )
 
 jdk_library(
+    name = "ApplicationBoot",
+    srcs = ["ApplicationBoot.java"],
+    deps = [
+        "@com_google_code_findbugs_jsr305",
+        maven("io.micronaut:micronaut-runtime"),
+    ],
+)
+
+jdk_library(
     name = "Application",
     srcs = ["Application.java"],
     deps = [
+        ":ApplicationBoot",
         "@com_google_code_findbugs_jsr305",
         maven("io.micronaut:micronaut-runtime"),
     ],
@@ -94,9 +104,15 @@ jdk_library(
 jdk_library(
     name = "backend",
     runtime_deps = [
+        ":BaseController",
+        ":TemplateProvider",
+        ":ApplicationBoot",
         ":Application",
     ],
     exports = [
+        ":BaseController",
+        ":TemplateProvider",
+        ":ApplicationBoot",
         ":Application",
     ],
 )
