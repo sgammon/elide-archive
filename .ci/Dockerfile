@@ -3,7 +3,7 @@ FROM gcr.io/cloud-marketplace/google/ubuntu1804@sha256:ca6f2441610b5eca910cb7e5d
 RUN apt-get update \
     && apt-get upgrade -y \
     && apt-get install --no-install-recommends -y \
-        python python-pip python3 build-essential default-jdk git golang unzip \
+        python python-pip python3 python3-pip build-essential default-jdk git golang unzip \
     && apt-get autoremove \
     && apt-get clean \
     && curl -sSL https://sdk.cloud.google.com > /tmp/gcl && bash /tmp/gcl --install-dir=/gcloud --disable-prompts \
@@ -14,6 +14,8 @@ RUN apt-get update \
         appctl kpt kubectl bq gsutil docker-credential-gcr alpha beta \
     && rm -rf /var/lib/apt/lists/* \
     && python2 -m pip install --upgrade \
+        pip setuptools wheel \
+    && python3 -m pip install --upgrade \
         pip setuptools wheel \
     && mkdir -p /builder/google-cloud-sdk \
     && ln -s /gcloud/google-cloud-sdk/bin /builder/google-cloud-sdk/bin \
