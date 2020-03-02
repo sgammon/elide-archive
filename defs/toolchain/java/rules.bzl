@@ -66,6 +66,7 @@ INJECTED_MICRONAUT_DEPS = [
     "@javax_annotation_api",
     "@gust//java:framework",
     "@gust//defs/toolchain/java/plugins:micronaut",
+    "@gust//java/gust/backend/runtime:logging",
     "@com_google_guava",
     "@com_google_template_soy",
     "@com_google_common_html_types",
@@ -90,8 +91,11 @@ INJECTED_MICRONAUT_DEPS = [
     maven("io.micronaut:micronaut-tracing"),
     maven("io.micronaut:micronaut-session"),
     maven("io.micronaut:micronaut-security"),
+    maven("io.micronaut:micronaut-messaging"),
+    maven("io.micronaut:micronaut-websocket"),
     maven("io.micronaut:micronaut-multitenancy"),
     maven("io.micronaut:micronaut-runtime"),
+    maven("io.reactivex.rxjava2:rxjava"),
 ]
 
 INJECTED_MICRONAUT_GRPC_DEPS = [
@@ -109,6 +113,8 @@ INJECTED_MICRONAUT_GRPC_DEPS = [
 INJECTED_GAPI_DEPS = [
     maven("com.google.cloud:libraries-bom"),
     maven("com.google.cloud:google-cloud-firestore"),
+    maven("com.google.cloud:google-cloud-storage"),
+    maven("com.google.cloud:google-cloud-pubsub"),
 ]
 
 INJECTED_MICRONAUT_RUNTIME_DEPS = [

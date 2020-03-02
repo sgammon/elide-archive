@@ -1,11 +1,11 @@
 package gust.backend;
 
+import gust.backend.runtime.Logging;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.context.ServerRequestContext;
 import io.micronaut.runtime.http.scope.RequestScope;
 import io.micronaut.views.soy.SoyNamingMapProvider;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import tools.elide.page.Context;
 
 import javax.annotation.Nonnull;
@@ -27,7 +27,7 @@ import java.util.concurrent.ConcurrentSkipListMap;
 @RequestScope
 @SuppressWarnings("unused")
 public class PageContextManager implements Closeable, AutoCloseable, PageRender {
-  private static final Logger LOG = LoggerFactory.getLogger(PageContextManager.class);
+  private static final Logger LOG = Logging.logger(PageContextManager.class);
 
   /** Page context builder. */
   private final @Nonnull Context.Builder context;

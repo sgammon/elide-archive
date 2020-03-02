@@ -15,6 +15,9 @@ import javax.annotation.Nonnull;
  * @see PageContext Default implementation of this interface
  */
 public interface PageRender extends SoyContextMediator {
+  /** Name at which proto-context is injected. */
+  String PAGE_CONTEXT_IJ_NAME = "page";
+
   /**
    * Retrieve serializable server-side-rendered page context, which should be assigned to the render flow bound to this
    * context mediator.

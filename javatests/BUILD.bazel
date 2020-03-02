@@ -3,6 +3,10 @@ package(
 )
 
 
+exports_files([
+    "logback.xml",
+])
+
 test_suite(
     name = "suite",
     testonly = True,
@@ -12,5 +16,19 @@ test_suite(
         "//javatests/gust/backend:NoConfigTest",
         "//javatests/gust/backend:PageContextTest",
         "//javatests/gust/backend:TemplateProviderTest",
+        "//javatests/gust/backend/runtime:LoggingTest",
+        "//javatests/gust/backend/runtime:ReactiveFutureTest",
+        "//javatests/gust/backend/model:CollapsedMessageTest",
+        "//javatests/gust/backend/model:EncodedModelTest",
+        "//javatests/gust/backend/model:ModelExceptionTest",
+        "//javatests/gust/backend/model:ModelMetadataTest",
+        "//javatests/gust/backend/model:ModelOptionsTest",
+        "//javatests/gust/backend/model:PersistenceDriverTest",
+        "//javatests/gust/backend/model:ProtoModelCodecTest",
+        "//javatests/gust/backend/driver/inmemory:InMemoryAdapterTest",
+        "//javatests/gust/backend/driver/inmemory:InMemoryAdapterNoopCacheTest",
+        "//javatests/gust/backend/driver/inmemory:InMemoryAdapterWithCacheTest",
+        "//javatests/gust/backend/driver/inmemory:InMemoryCacheTest",
+        "//javatests/gust/backend/driver/inmemory:InMemoryDriverTest",
     ],
 )

@@ -1,0 +1,111 @@
+
+version: "2"
+
+checks:
+  argument-count:
+    config:
+      threshold: 10
+
+  complex-logic:
+    config:
+      threshold: 20
+
+  file-lines:
+    config:
+      threshold: 2000
+
+  method-complexity:
+    config:
+      threshold: 20
+
+  method-count:
+    config:
+      threshold: 30
+
+  method-lines:
+    config:
+      threshold: 100
+
+  return-statements:
+    config:
+      threshold: 5
+
+plugins:
+  bandit:
+    enabled: true
+
+  checkstyle:
+    enabled: true
+
+  csslint:
+    enabled: true
+
+  editorconfig:
+    enabled: true
+
+  eslint:
+    enabled: true
+
+  fixme:
+    enabled: true
+
+  gofmt:
+    enabled: true
+
+  golint:
+    enabled: true
+
+  govet:
+    enabled: true
+
+  markdownlint:
+    enabled: true
+
+  nodesecurity:
+    enabled: true
+
+  pep8:
+    enabled: true
+
+  pmd:
+    enabled: true
+
+  radon:
+   enabled: true
+
+  sass-lint:
+    enabled: true
+
+  scss-lint:
+    enabled: true
+
+  sonar-java:
+    enabled: true
+
+  sonar-python:
+    enabled: true
+
+  stylelint:
+    enabled: true
+
+  swiftlint:
+    enabled: true
+
+  tailor:
+    enabled: false
+
+  tslint:
+    enabled: true
+
+exclude_patterns:
+- "config/"
+- "dist/"
+- "**/node_modules/"
+- "**/test/"
+- "**/tests/"
+- "**/javatests/"
+- "**/jstests/"
+- "**/vendor/"
+- "**/*_test.go"
+- "**/*.d.ts"
+

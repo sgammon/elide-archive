@@ -15,6 +15,11 @@ load(
 )
 
 load(
+    "//defs/toolchain:deps.bzl",
+    _maven = "maven",
+)
+
+load(
     "//defs:config.bzl",
     _GRAALVM_VERSION = "GRAALVM_VERSION",
     _PROTOBUF_VERSION = "PROTOBUF_VERSION",
@@ -31,18 +36,34 @@ GRAALVM_VERSION = _GRAALVM_VERSION
 LOGBACK_VERSION = "1.2.3"
 PROTOBUF_VERSION = _PROTOBUF_VERSION
 
-GCLOUD_API_VERSION = "3.4.0"
+VALIDATION_VERSION = "2.0.0.Final"
+
+JUNIT_JUPITER_VERSION = "5.6.0"
+JUNIT_PLATFORM_VERSION = "1.6.0"
+
+GAX_VERSION = "1.54.0"
+RXJAVA_VERSION = "2.2.10"
+REACTIVE_VERSION = "1.0.3"
+THREETEN_VERSION = "1.4.0"
+GAPI_COMMON_VERSION = "1.8.1"
+GCLOUD_API_VERSION = "0.122.3-alpha"
+GCLOUD_GRPC_VERSION = "1.93.0"
+GCLOUD_TASKS_VERSION = "1.28.2"
+GCLOUD_PUBSUB_VERSION = "1.103.0"
+GCLOUD_STORAGE_VERSION = "1.105.0"
 GCLOUD_FIRESTORE_VERSION = "1.32.4"
+GCLOUD_MONITORING_VERSION = "1.99.2"
 
 GRPC_JAVA_VERSION = "1.27.1"
 OPENTRACING_VERSION = "0.2.1"
 
 MICRONAUT_VERSION = "1.3.1"
+MICRONAUT_DATA_VERSION = "1.0.0"
 MICRONAUT_GRPC_VERSION = "1.1.1"
 MICRONAUT_TEST_VERSION = "1.1.2"
+MICRONAUT_CACHE_VERSION = "1.1.0"
 MICRONAUT_REDIS_VERSION = "1.2.0"
 MICRONAUT_SECURITY_VERSION = "1.3.0"
-
 
 GRPC_EXCLUSIONS = [
       maven.exclusion(
@@ -67,6 +88,14 @@ GRPC_EXCLUSIONS = [
      ),
      maven.exclusion(
          artifact = "grpc-context",
+         group = "io.grpc",
+     ),
+     maven.exclusion(
+         artifact = "grpc-protobuf",
+         group = "io.grpc",
+     ),
+     maven.exclusion(
+         artifact = "grpc-protobuf-lite",
          group = "io.grpc",
      ),
 ]
@@ -95,15 +124,16 @@ GCLOUD_EXCLUSIONS = GRPC_EXCLUSIONS + SOY_EXCLUSIONS + [
 
 
 REPOSITORIES = [
-    "https://jcenter.bintray.com/",
-    "https://maven.google.com",
     "https://repo1.maven.org/maven2",
+    "https://maven.google.com",
     "https://dl.bintray.com/micronaut/core-releases-local",
+    "https://jcenter.bintray.com/",
 ]
 
 BUILD_ARTIFACTS = [
     "org.ow2.asm:asm:%s" % ASM_VERSION,
     "org.slf4j:slf4j-api:%s" % SLF4J_VERSION,
+    "javax.validation:validation-api:%s" % VALIDATION_VERSION,
 ]
 
 GRPC_BUILD_ARTIFACTS = [
@@ -116,6 +146,28 @@ GRPC_BUILD_ARTIFACTS = [
     "io.grpc:grpc-protobuf:%s" % GRPC_JAVA_VERSION,
 ]
 
+JUNIT_JUPITER_GROUP_ID = "org.junit.jupiter"
+JUNIT_JUPITER_ARTIFACT_ID_LIST = [
+    "junit-jupiter-api",
+    "junit-jupiter-engine",
+    "junit-jupiter-params",
+]
+
+JUNIT_PLATFORM_GROUP_ID = "org.junit.platform"
+JUNIT_PLATFORM_ARTIFACT_ID_LIST = [
+    "junit-platform-commons",
+    "junit-platform-console",
+    "junit-platform-engine",
+    "junit-platform-launcher",
+    "junit-platform-reporting",
+    "junit-platform-suite-api",
+]
+
+JUNIT_EXTRA_DEPENDENCIES = [
+    ("org.apiguardian", "apiguardian-api", "1.0.0"),
+    ("org.opentest4j", "opentest4j", "1.1.1"),
+]
+
 def _micronaut_artifact(coordinates):
 
     """ Inject exclusions for Micronaut. """
@@ -125,30 +177,45 @@ def _micronaut_artifact(coordinates):
         SOY_EXCLUSIONS +
         GRPC_EXCLUSIONS))
 
-MICRONAUT_BUILD_ARTIFACTS = [
-    _micronaut_artifact("io.micronaut:micronaut-aop:%s" % MICRONAUT_VERSION),
-    _micronaut_artifact("io.micronaut:micronaut-core:%s" % MICRONAUT_VERSION),
-    _micronaut_artifact("io.micronaut:micronaut-http:%s" % MICRONAUT_VERSION),
-    _micronaut_artifact("io.micronaut:micronaut-http-client:%s" % MICRONAUT_VERSION),
-    _micronaut_artifact("io.micronaut:micronaut-inject:%s" % MICRONAUT_VERSION),
-    _micronaut_artifact("io.micronaut:micronaut-inject-java:%s" % MICRONAUT_VERSION),
-    _micronaut_artifact("io.micronaut:micronaut-runtime:%s" % MICRONAUT_VERSION),
-    _micronaut_artifact("io.micronaut:micronaut-validation:%s" % MICRONAUT_VERSION),
-    _micronaut_artifact("io.micronaut:micronaut-http-server:%s" % MICRONAUT_VERSION),
-    _micronaut_artifact("io.micronaut:micronaut-http-server-netty:%s" % MICRONAUT_VERSION),
-    _micronaut_artifact("io.micronaut:micronaut-buffer-netty:%s" % MICRONAUT_VERSION),
-    _micronaut_artifact("io.micronaut:micronaut-graal:%s" % MICRONAUT_VERSION),
-    _micronaut_artifact("io.micronaut:micronaut-router:%s" % MICRONAUT_VERSION),
-    _micronaut_artifact("io.micronaut:micronaut-session:%s" % MICRONAUT_VERSION),
-    _micronaut_artifact("io.micronaut:micronaut-tracing:%s" % MICRONAUT_VERSION),
-    _micronaut_artifact("io.micronaut:micronaut-security:%s" % MICRONAUT_SECURITY_VERSION),
-    _micronaut_artifact("io.micronaut:micronaut-multitenancy:%s" % MICRONAUT_VERSION),
-    _micronaut_artifact("io.micronaut.grpc:micronaut-grpc-runtime:%s" % MICRONAUT_GRPC_VERSION),
-    _micronaut_artifact("io.micronaut.grpc:micronaut-grpc-annotation:%s" % MICRONAUT_GRPC_VERSION),
-    _micronaut_artifact("io.micronaut.grpc:micronaut-protobuff-support:%s" % MICRONAUT_GRPC_VERSION),
-    _micronaut_artifact("io.micronaut.configuration:micronaut-redis-lettuce:%s" % MICRONAUT_REDIS_VERSION),
+MICRONAUT_COORDINATES = [
+    "io.micronaut:micronaut-aop",
+    "io.micronaut:micronaut-core",
+    "io.micronaut:micronaut-http",
+    "io.micronaut:micronaut-http-client",
+    "io.micronaut:micronaut-inject",
+    "io.micronaut:micronaut-inject-java",
+    "io.micronaut:micronaut-runtime",
+    "io.micronaut:micronaut-validation",
+    "io.micronaut:micronaut-http-server",
+    "io.micronaut:micronaut-http-server-netty",
+    "io.micronaut:micronaut-buffer-netty",
+    "io.micronaut:micronaut-graal",
+    "io.micronaut:micronaut-router",
+    "io.micronaut:micronaut-session",
+    "io.micronaut:micronaut-tracing",
+    "io.micronaut:micronaut-security",
+    "io.micronaut:micronaut-messaging",
+    "io.micronaut:micronaut-multitenancy",
+    "io.micronaut:micronaut-websocket",
+]
 
+MICRONAUT_EXTRAS = [
+    ("io.micronaut.data:micronaut-data-processor", MICRONAUT_DATA_VERSION),
+    ("io.micronaut.grpc:micronaut-grpc-runtime", MICRONAUT_GRPC_VERSION),
+    ("io.micronaut.grpc:micronaut-grpc-annotation", MICRONAUT_GRPC_VERSION),
+    ("io.micronaut.grpc:micronaut-protobuff-support", MICRONAUT_GRPC_VERSION),
+    ("io.micronaut.configuration:micronaut-redis-lettuce", MICRONAUT_REDIS_VERSION),
+]
+
+MICRONAUT_BUILD_ARTIFACTS = ["%s:%s" % (i, MICRONAUT_VERSION) for i in MICRONAUT_COORDINATES] + [
+    _micronaut_artifact("%s:%s" % x) for x in MICRONAUT_EXTRAS
+] + [
+    ## Views Engine
     maven.artifact("io.micronaut", "micronaut-views", MICRONAUT_VERSION, exclusions = SOY_EXCLUSIONS),
+
+    ## Reactive Java
+    _micronaut_artifact("org.reactivestreams:reactive-streams:%s" % REACTIVE_VERSION),
+    _micronaut_artifact("io.reactivex.rxjava2:rxjava:%s" % RXJAVA_VERSION),
 ]
 
 RUNTIME_ARTIFACTS = [
@@ -161,16 +228,34 @@ MICRONAUT_RUNTIME_ARTIFACTS = [
     "io.opentracing.contrib:opentracing-grpc:%s" % OPENTRACING_VERSION,
 ]
 
+GOOGLE_COORDINATES = [
+    ("com.google.api:gax", GAX_VERSION),
+    ("com.google.api:gax-grpc", GAX_VERSION),
+    ("com.google.api:api-common", GAPI_COMMON_VERSION),
+    ("org.threeten:threetenbp", THREETEN_VERSION),
+]
+
+GOOGLE_CLOUD_COORDINATES = [
+    ("com.google.cloud:google-cloud-core-grpc", GCLOUD_GRPC_VERSION),
+    ("com.google.cloud:google-cloud-tasks", GCLOUD_TASKS_VERSION),
+    ("com.google.cloud:google-cloud-pubsub", GCLOUD_PUBSUB_VERSION),
+    ("com.google.cloud:google-cloud-storage", GCLOUD_STORAGE_VERSION),
+    ("com.google.cloud:google-cloud-firestore", GCLOUD_FIRESTORE_VERSION),
+    ("com.google.cloud:google-cloud-monitoring", GCLOUD_MONITORING_VERSION),
+]
+
 GOOGLE_ARTIFACTS = [
-    "com.google.protobuf:protobuf-java:%s" % PROTOBUF_VERSION,
-    maven.artifact("com.google.cloud", "libraries-bom",
-                   GCLOUD_API_VERSION, exclusions = GCLOUD_EXCLUSIONS),
-    maven.artifact("com.google.cloud", "google-cloud-firestore",
-                   GCLOUD_FIRESTORE_VERSION, exclusions = GCLOUD_EXCLUSIONS),
+    # Google API Extensions (GAX)
+    maven.artifact(i[0].split(":")[0], i[0].split(":")[1], i[1], exclusions = GCLOUD_EXCLUSIONS)
+    for i in GOOGLE_COORDINATES] + [
+
+    # Google Cloud
+    maven.artifact(i[0].split(":")[0], i[0].split(":")[1], i[1], exclusions = GCLOUD_EXCLUSIONS)
+    for i in ([("com.google.cloud:google-cloud-bom", GCLOUD_API_VERSION)] + GOOGLE_CLOUD_COORDINATES)
 ]
 
 TEST_ARTIFACTS = [
-    # No base testing artifacts yet.
+    # None yet.
 ] + RULES_WEBTESTING_ARTIFACTS
 
 MICRONAUT_TEST_ARTIFACTS = [
@@ -178,8 +263,48 @@ MICRONAUT_TEST_ARTIFACTS = [
     maven.artifact("io.micronaut.test", "micronaut-test-kotlintest", MICRONAUT_TEST_VERSION, testonly = True),
 ]
 
+def junit_jupiter_java_repositories(version = JUNIT_JUPITER_VERSION):
 
-def _gust_java_deps(micronaut = True):
+    """Imports dependencies for JUnit Jupiter"""
+
+    artifactset = []
+    for artifact_id in JUNIT_JUPITER_ARTIFACT_ID_LIST:
+        artifactset.append(maven.artifact(
+            JUNIT_JUPITER_GROUP_ID,
+            artifact_id,
+            version,
+            testonly = True,
+        ))
+
+    for t in JUNIT_EXTRA_DEPENDENCIES:
+        artifactset.append(maven.artifact(
+            testonly = True,
+            *t,
+        ))
+    return artifactset
+
+def junit_platform_java_repositories(version = JUNIT_PLATFORM_VERSION):
+
+    """Imports dependencies for JUnit Platform"""
+
+    artifactset = []
+    for artifact_id in JUNIT_PLATFORM_ARTIFACT_ID_LIST:
+        artifactset.append(maven.artifact(
+            JUNIT_PLATFORM_GROUP_ID,
+            artifact_id,
+            version,
+            testonly = True,
+        ))
+    return artifactset
+
+def _format_maven_jar_name(group_id, artifact_id):
+    return ("%s_%s" % (group_id, artifact_id)).replace(".", "_").replace("-", "_")
+
+def _format_maven_jar_dep_name(group_id, artifact_id):
+    return "@%s//jar" % _format_maven_jar_name(group_id, artifact_id)
+
+
+def _gust_java_deps(micronaut = True, junit5 = True):
 
     """ Install Gust runtime Java dependencies. """
 
@@ -191,6 +316,11 @@ def _gust_java_deps(micronaut = True):
             MICRONAUT_BUILD_ARTIFACTS +
             MICRONAUT_RUNTIME_ARTIFACTS +
             MICRONAUT_TEST_ARTIFACTS) if i not in artifacts]
+
+    if junit5:
+        artifacts += (
+            junit_platform_java_repositories() +
+            junit_jupiter_java_repositories())
 
     maven_install(
         artifacts = artifacts,
@@ -207,6 +337,8 @@ def _gust_java_deps(micronaut = True):
             "io.micronaut:micronaut-views": "@io_micronaut_micronaut_views",
             "io.micronaut:micronaut-views-soy": "@io_micronaut_micronaut_views_soy",
             "com.google.guava:guava": "@com_google_guava",
+            "com.google.protobuf:protobuf-java": "@com_google_protobuf//:protobuf_java",
+            "com.google.protobuf:protobuf-java-util": "@com_google_protobuf//:protobuf_java_util",
             "com.google.template:soy": "@com_google_template_soy",
             "com.google.common.html.types:types": "@com_google_template_soy",
             "com.google.code:gson": "@com_google_code_gson",
@@ -218,4 +350,39 @@ def _gust_java_deps(micronaut = True):
     )
 
 
+OVERRIDE_DEPS = [
+    "@io_micronaut_micronaut_views",
+    "@io_micronaut_micronaut_views_soy",
+    "@com_google_guava",
+    "@com_google_protobuf//:protobuf_java",
+    "@com_google_template_soy",
+    "@com_google_code_gson",
+    "@com_google_code_findbugs_jsr305",
+    "@com_google_closure_stylesheets",
+    "@javax_inject",
+    "@javax_annotation_api",
+]
+
+
+def _clean_versions(deps):
+
+    """ Clean version specifications from passed-in dependencies. """
+
+    return [_maven(":".join(dep.split(":")[0:2])) for dep in deps]
+
+
+ALL_DEPENDENCIES = (_clean_versions(
+    BUILD_ARTIFACTS +
+    GRPC_BUILD_ARTIFACTS +
+    MICRONAUT_COORDINATES +
+    RUNTIME_ARTIFACTS +
+    [x[0] for x in GOOGLE_COORDINATES] +
+    [x[0] for x in GOOGLE_CLOUD_COORDINATES] +
+    [x[0] for x in MICRONAUT_EXTRAS]) +
+
+    OVERRIDE_DEPS)
+
+
 gust_java_repositories = _gust_java_deps
+format_maven_jar_name = _format_maven_jar_name
+format_maven_jar_dep_name = _format_maven_jar_dep_name

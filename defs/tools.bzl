@@ -72,7 +72,7 @@ def _process_github_dep(key, repo):
     org = repo["repo"].split("/")[0]
     repoName = repo["repo"].split("/")[1]
 
-    if _LOCAL == True and repo.get("local") != None:
+    if (_LOCAL == True or repo.get("forceLocal") == True) and repo.get("local") != None:
         # local override
         if repo.get("overlay") != None:
             # local new

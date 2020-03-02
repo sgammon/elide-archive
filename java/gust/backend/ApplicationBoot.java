@@ -11,6 +11,8 @@ import java.io.InputStream;
  * force-resolving critical configuration files, setting up logging, and so on.
  */
 public final class ApplicationBoot {
+  private ApplicationBoot() { /* Disallow instantiation. */ }
+
   /** Root configuration for a Micronaut app. */
   public static final String rootConfig = "/application.yml";
 
@@ -68,17 +70,10 @@ public final class ApplicationBoot {
    * Load main application configs, including the `app` config (usually `application.yml`), containing configuration for
    * Micronaut, and `logback.xml` which contains configuration for logging. If either config file cannot be loaded, then
    * an error is thrown which prevents server startup.
-   *
-   * @param exitOnFail Whether to exit the program if a failure occurs.
    */
-  public static void load(boolean exitOnFail) {
-    try {
-      // validate config & start the server
-      loadConfig("app", rootConfig, defaultConfig);
-      loadConfig("logging", loggingConfig, defaultLoggingConfig);
-    } catch (Throwable ex) {
-      reportStartupError(ex);
-      if (!exitOnFail) throw ex;
-    }
+  public static void load() {
+    // validate config & start the server
+    loadConfig("app", rootConfig, defaultConfig);
+    loadConfig("logging", loggingConfig, defaultLoggingConfig);
   }
 }

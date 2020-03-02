@@ -22,6 +22,23 @@ load(
     "java_library",
 )
 
+load(
+    "//defs/toolchain/java:docs.bzl",
+    "javadoc_library",
+    "javadoc_zipfile",
+)
+
+load(
+    "//defs/toolchain/java:repos.bzl",
+    "ALL_DEPENDENCIES",
+)
+
+load(
+    "//defs/toolchain:deps.bzl",
+    "maven",
+    "javaproto",
+)
+
 
 exports_files([
     "application.yml",
@@ -49,7 +66,7 @@ cross_lib(
     ],
     jsdeps = [
         ":CoreModule",
-    ]
+    ],
 )
 
 js_module(
@@ -57,5 +74,39 @@ js_module(
     exports = [
         ":Core-j2cl",
         ":CoreModule",
+    ],
+)
+
+filegroup(
+    name = "sources",
+    srcs = glob([
+      "*.java"
+    ]) + [
+        "//java/gust/backend:sources",
     ]
+)
+
+javadoc_library(
+    name = "javadoc",
+    srcs = [
+        ":sources",
+    ],
+    deps = ALL_DEPENDENCIES + [
+        javaproto("//gust/core:datamodel"),
+        javaproto("//gust/page:page_proto"),
+    ],
+    bottom_text = "Copyright (©) 2020, The Gust Framework Authors",
+    doctitle = "GUST Framework",
+    extra_args = [
+        "-html5",
+        "-author",
+        "-charset", "UTF8",
+        "-docencoding", "UTF8",
+        "-keywords",
+        "-docfilessubdirs",
+        "-linksource",
+    ],
+    exclude_packages = [
+        "javatests",
+    ],
 )

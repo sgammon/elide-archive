@@ -64,9 +64,12 @@ $ make help
 
 GUST Framework Tools:
 
+all                            Build and test all framework targets.
 bases                          Build base images and push them.
 build                          Build all framework targets.
 builder-image                  Build a new version of the CI builder image for Gust.
+clean-docs                     Clean built documentation.
+clean-reports                  Clean built reports.
 clean                          Clean ephemeral targets.
 dev                            Develop against the specified target.
 devtools                       Install local development dependencies.
@@ -80,6 +83,7 @@ report-tests                   Report test results to Report.CI.
 run                            Run the specified target.
 samples                        Build and push sample app images.
 serve-coverage                 Serve the current coverage report (must generate first).
+serve-docs                     Serve the docs locally (must generate first).
 test                           Run all framework testsuites.
 update-deps                    Re-seal and update all dependencies.
 ```
@@ -88,8 +92,8 @@ Obviously, decrypting keys or pushing release images may require permissions, ho
 
 ### Licensing
 
-Below we specify licensing details for the Gust/Elide framework, including pointers to licenses for any dependent software. Gust/Elide itself is licensed under the Apache 2.0 License, which is enclosed in the `LICENSE.txt` file. Licenses for any dependent software (as required/applicable) are embedded in the `LICENSES/` directory, each within their own text file named for the software or framework.
+Below we specify licensing details for the Gust/Elide framework, including pointers to licenses for any dependent software. Gust/Elide itself is licensed under the Prosperity Public License 2.0.0, which is enclosed in the `LICENSE.txt` file. Licenses for any dependent software (as required/applicable) are embedded in the `LICENSES/` directory, each within their own text file named for the software or framework.
 
-- Gust/Elide: [Apache 2.0 License](https://github.com/sgammon/GUST/blob/master/LICENSE.txt)
+- Gust/Elide: [Prosperity License](https://github.com/sgammon/GUST/blob/master/LICENSE.txt)
 - `rules_closure`: Apache 2.0 (Entry 1 in `LICENSES.txt`)
 - gRPC Gateway: Roughly Apache 2.0 (Entry 2 in `LICENSES.txt`)

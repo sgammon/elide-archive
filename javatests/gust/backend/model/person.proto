@@ -1,0 +1,67 @@
+
+syntax = "proto3";
+
+package gust.backend.model;
+
+option optimize_for = SPEED;
+option cc_enable_arenas = true;
+option java_multiple_files = false;
+option java_string_check_utf8 = true;
+option java_outer_classname = "PersonRecord";
+
+import "gust/core/datamodel.proto";
+
+
+// Proto for dependency testing.
+message Person {
+  option (core.role) = OBJECT;
+
+  // Unique record ID.
+  PersonKey key = 1 [(core.field).type = KEY];
+
+  // Salutation name.
+  string name = 2;
+
+  // Person's contact info.
+  ContactInfo contact_info = 3;
+}
+
+
+// Models a key.
+message PersonKey {
+  option (core.role) = OBJECT_KEY;
+
+  // Unique record ID.
+  string id = 1 [(core.field).type = ID];
+}
+
+
+// Person's address.
+message PersonAddress {
+  // First line of the person's address.
+  string first_line = 1;
+
+  // Second line of the person's address.
+  string second_line = 2;
+}
+
+
+// Simple nested record.
+message ContactInfo {
+  option (core.db).mode = COLLECTION;
+
+  // Person's email address.
+  string email_address = 1;
+
+  // Person's phone number in E164 format.
+  string phone_e164 = 2;
+
+  // Person's address info.
+  PersonAddress address = 3;
+}
+
+
+// Models a non-object.
+message EnrollEvent {
+  option (core.role) = EVENT;
+}

@@ -13,6 +13,5 @@ jdk_test(
     name = "DualStackTest",
     srcs = ["DualStackTest.java"],
     deps = ["//java/gust:Core"],
-    test_class = "javatests.gust.DualStackTest",
-    testonly = True,
+    test_package = "gust",
 )

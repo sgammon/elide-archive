@@ -1,0 +1,107 @@
+package(
+    default_visibility = ["//visibility:public"],
+)
+
+load(
+    "//defs/toolchain/java:testing.bzl",
+    java_test = "jdk_test",
+)
+
+load(
+    "//defs/toolchain:deps.bzl",
+    "maven",
+    "javaproto",
+)
+
+_COMMON_DEPS = [
+    "//java/gust/backend/runtime:runtime",
+    maven("com.google.guava:guava"),
+    maven("com.google.protobuf:protobuf-java"),
+    maven("org.slf4j:slf4j-api"),
+]
+
+
+java_test(
+    name = "InMemoryAdapterNoopCacheTest",
+    srcs = ["InMemoryAdapterNoopCacheTest.java"],
+    test_package = "gust.backend.driver.inmemory",
+    deps = [
+        "//java/gust/backend/model:CacheDriver",
+        "//java/gust/backend/model:CacheOptions",
+        "//java/gust/backend/model:FetchOptions",
+        "//java/gust/backend/model:ModelAdapter",
+        "//java/gust/backend/model:PersistenceDriver",
+        "//java/gust/backend/driver/inmemory:InMemoryAdapter",
+        "//java/gust/backend/driver/inmemory:InMemoryCache",
+        javaproto("//javatests/gust/backend/model:person"),
+        "//javatests/gust/backend/model:GenericPersistenceAdapterTest",
+    ] + _COMMON_DEPS,
+)
+
+java_test(
+    name = "InMemoryAdapterTest",
+    srcs = ["InMemoryAdapterTest.java"],
+    test_package = "gust.backend.driver.inmemory",
+    deps = [
+        "//java/gust/backend/model:CacheDriver",
+        "//java/gust/backend/model:EncodedModel",
+        "//java/gust/backend/model:FetchOptions",
+        "//java/gust/backend/model:ModelAdapter",
+        "//java/gust/backend/model:ModelCodec",
+        "//java/gust/backend/model:WriteOptions",
+        "//java/gust/backend/runtime:runtime",
+        "//java/gust/backend/driver/inmemory:InMemoryAdapter",
+        "//java/gust/backend/driver/inmemory:InMemoryDriver",
+        javaproto("//javatests/gust/backend/model:person"),
+        "//javatests/gust/backend/model:GenericPersistenceAdapterTest",
+    ] + _COMMON_DEPS,
+)
+
+java_test(
+    name = "InMemoryAdapterWithCacheTest",
+    srcs = ["InMemoryAdapterWithCacheTest.java"],
+    test_package = "gust.backend.driver.inmemory",
+    deps = [
+        "//java/gust/backend/model:CacheDriver",
+        "//java/gust/backend/model:CacheOptions",
+        "//java/gust/backend/model:FetchOptions",
+        "//java/gust/backend/model:ModelAdapter",
+        "//java/gust/backend/model:PersistenceDriver",
+        "//java/gust/backend/driver/inmemory:InMemoryAdapter",
+        "//java/gust/backend/driver/inmemory:InMemoryCache",
+        javaproto("//javatests/gust/backend/model:person"),
+        "//javatests/gust/backend/model:GenericPersistenceAdapterTest",
+    ] + _COMMON_DEPS,
+)
+
+java_test(
+    name = "InMemoryCacheTest",
+    srcs = ["InMemoryCacheTest.java"],
+    test_package = "gust.backend.driver.inmemory",
+    deps = [
+        "//java/gust/backend/model:CacheDriver",
+        "//java/gust/backend/model:CacheOptions",
+        "//java/gust/backend/model:PersistenceDriver",
+        "//java/gust/backend/driver/inmemory:InMemoryCache",
+        javaproto("//javatests/gust/backend/model:person"),
+        "//javatests/gust/backend/model:GenericCacheDriverTest",
+    ] + _COMMON_DEPS,
+)
+
+java_test(
+    name = "InMemoryDriverTest",
+    srcs = ["InMemoryDriverTest.java"],
+    test_package = "gust.backend.driver.inmemory",
+    deps = [
+        "//java/gust/backend/model:CacheDriver",
+        "//java/gust/backend/model:EncodedModel",
+        "//java/gust/backend/model:FetchOptions",
+        "//java/gust/backend/model:ModelCodec",
+        "//java/gust/backend/model:WriteOptions",
+        "//java/gust/backend/runtime:runtime",
+        "//java/gust/backend/driver/inmemory:InMemoryAdapter",
+        "//java/gust/backend/driver/inmemory:InMemoryDriver",
+        javaproto("//javatests/gust/backend/model:person"),
+        "//javatests/gust/backend/model:GenericPersistenceDriverTest",
+    ] + _COMMON_DEPS,
+)

@@ -1,0 +1,43 @@
+package(
+    default_visibility = ["//visibility:public"],
+)
+
+load(
+    "//defs/toolchain/java:rules.bzl",
+    java_library = "jdk_library",
+)
+
+
+java_library(
+    name = "package-info",
+    srcs = ["package-info.java"],
+)
+
+alias(
+    name = "inmemory",
+    actual = "//java/gust/backend/driver/inmemory:inmemory",
+)
+
+alias(
+    name = "firestore",
+    actual = "//java/gust/backend/driver/firestore:firestore",
+)
+
+java_library(
+    name = "driver",
+    exports = [
+        ":package-info",
+
+        # Built-in Drivers
+        ":inmemory",
+        ":firestore",
+    ],
+)
+
+filegroup(
+    name = "sources",
+    srcs = glob(["*.java"]) + [
+        "//java/gust/backend/driver/inmemory:sources",
+        "//java/gust/backend/driver/firestore:sources",
+    ]
+)

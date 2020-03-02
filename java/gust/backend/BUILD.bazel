@@ -1,4 +1,3 @@
-
 package(
     default_visibility = ["//visibility:public"],
 )
@@ -20,6 +19,16 @@ load(
 )
 
 
+filegroup(
+    name = "sources",
+    srcs = glob(["*.java"]) + [
+        "//java/gust/backend/driver:sources",
+        "//java/gust/backend/model:sources",
+        "//java/gust/backend/runtime:sources",
+        "//java/gust/backend/transport:sources",
+    ]
+)
+
 alias(
     name = "base",
     actual = "@java_base//image",
@@ -28,6 +37,11 @@ alias(
 alias(
     name = "native",
     actual = "@native_base//image",
+)
+
+jdk_library(
+    name = "package-info",
+    srcs = ["package-info.java"],
 )
 
 micronaut_library(
@@ -108,9 +122,20 @@ jdk_library(
         ":Application",
     ],
     exports = [
+        # Base Package
+        ":package-info",
         ":BaseController",
         ":TemplateProvider",
         ":ApplicationBoot",
         ":Application",
+
+        # Model Tooling
+        "//java/gust/backend/model:model",
+
+        # Built-in Drivers
+        "//java/gust/backend/driver:driver",
+
+        # Transport Tooling
+        "//java/gust/backend/transport:transport",
     ],
 )

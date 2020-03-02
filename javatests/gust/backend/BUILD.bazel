@@ -13,8 +13,7 @@ jdk_test(
     name = "ApplicationTest",
     srcs = ["ApplicationTest.java"],
     deps = ["//java/gust/backend:ApplicationBoot"],
-    test_class = "javatests.gust.backend.ApplicationTest",
-    testonly = True,
+    test_package = "gust.backend",
     classpath_resources = [
         "//java/gust:logback.xml",
         "//java/gust:application.yml",
@@ -25,13 +24,13 @@ jdk_test(
     name = "NoConfigTest",
     srcs = ["NoConfigTest.java"],
     deps = ["//java/gust/backend:ApplicationBoot"],
-    test_class = "javatests.gust.backend.NoConfigTest",
-    testonly = True,
+    test_package = "gust.backend",
 )
 
 jdk_test(
     name = "PageContextTest",
     srcs = ["PageContextTest.java"],
+    test_package = "gust.backend",
     deps = [
         "//java/gust/backend:PageContext",
         "//java/gust/backend:PageRender",
@@ -39,14 +38,11 @@ jdk_test(
         "@com_google_template_soy",
         "@io_micronaut_micronaut_views_soy",
     ],
-    test_class = "javatests.gust.backend.PageContextTest",
-    testonly = True,
 )
 
 jdk_test(
     name = "TemplateProviderTest",
     srcs = ["TemplateProviderTest.java"],
     deps = ["//java/gust/backend:TemplateProvider"],
-    test_class = "javatests.gust.backend.TemplateProviderTest",
-    testonly = True,
+    test_package = "gust.backend",
 )

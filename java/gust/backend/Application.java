@@ -23,8 +23,12 @@ public final class Application {
    * @param args Arguments passed on the command line.
    */
   public static void main(String[] args) {
-    ApplicationBoot.load(true);
-    Micronaut.run(Application.class);
+    try {
+      ApplicationBoot.load();
+      Micronaut.run(Application.class);
+    } catch (Throwable thr) {
+      ApplicationBoot.reportStartupError(thr);
+    }
   }
 
   private Application() { /* Disallow instantiation. */ }

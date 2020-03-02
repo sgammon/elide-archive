@@ -1,0 +1,158 @@
+package(
+    default_visibility = ["//visibility:public"],
+)
+
+load(
+    "//defs/toolchain/java:rules.bzl",
+    java_library = "jdk_library",
+)
+
+load(
+    "//defs/toolchain:deps.bzl",
+    "maven",
+)
+
+_COMMON_DEPS = [
+    "@javax_inject",
+    "@com_google_guava",
+    "@javax_annotation_api",
+    "@com_google_code_findbugs_jsr305",
+    maven("org.slf4j:slf4j-api"),
+]
+
+
+java_library(
+    name = "package-info",
+    srcs = ["package-info.java"],
+)
+
+java_library(
+    name = "GoogleService",
+    srcs = ["GoogleService.java"],
+    deps = [
+        ":GoogleTransportConfig",
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "GoogleTransportConfig",
+    srcs = ["GoogleTransportConfig.java"],
+    deps = [
+        ":GrpcTransportConfig",
+        maven("com.google.api:gax"),
+        maven("com.google.api:gax-grpc"),
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "GoogleTransportManager",
+    srcs = [
+        "GoogleTransportManager.java",
+        "GoogleAPIChannel.java",
+    ],
+    deps = [
+        ":GoogleService",
+        ":GoogleTransportConfig",
+        ":TransportException",
+        ":TransportManager",
+        "//java/gust:Core",
+        "//java/gust/backend/runtime:logging",
+        "@com_google_protobuf//:protobuf_java",
+        maven("com.google.api:gax"),
+        maven("com.google.api:gax-grpc"),
+        maven("io.grpc:grpc-api"),
+        maven("io.micronaut:micronaut-aop"),
+        maven("io.micronaut:micronaut-core"),
+        maven("io.micronaut:micronaut-inject"),
+        maven("io.micronaut:micronaut-runtime"),
+        maven("org.threeten:threetenbp"),
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "GrpcTransportConfig",
+    srcs = ["GrpcTransportConfig.java"],
+    deps = [
+        ":GrpcTransportCredentials",
+        ":PooledTransportConfig",
+        ":TransportConfig",
+        maven("com.google.api:gax"),
+        maven("com.google.api:gax-grpc"),
+        maven("io.grpc:grpc-api"),
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "GrpcTransportCredentials",
+    srcs = ["GrpcTransportCredentials.java"],
+    deps = [
+        ":TransportCredentials",
+        maven("com.google.api:gax"),
+        maven("com.google.api:gax-grpc"),
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "PooledTransportConfig",
+    srcs = ["PooledTransportConfig.java"],
+    deps = [
+        ":TransportConfig",
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "TransportConfig",
+    srcs = ["TransportConfig.java"],
+    deps = [
+        # No deps yet.
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "TransportCredentials",
+    srcs = ["TransportCredentials.java"],
+    deps = [
+        # No deps yet.
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "TransportException",
+    srcs = ["TransportException.java"],
+    deps = [
+        # No deps yet.
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "TransportManager",
+    srcs = ["TransportManager.java"],
+    deps = [
+        ":TransportException",
+        maven("io.micronaut:micronaut-aop"),
+    ] + _COMMON_DEPS,
+)
+
+
+java_library(
+    name = "transport",
+    exports = [
+        ":package-info",
+        ":GoogleService",
+        ":GoogleTransportConfig",
+        ":GoogleTransportManager",
+        ":GrpcTransportConfig",
+        ":GrpcTransportCredentials",
+        ":PooledTransportConfig",
+        ":TransportConfig",
+        ":TransportCredentials",
+        ":TransportException",
+        ":TransportManager",
+    ]
+)
+
+filegroup(
+    name = "sources",
+    srcs = glob(["*.java"]),
+)
+

@@ -1,0 +1,104 @@
+package(
+    default_visibility = ["//visibility:public"],
+)
+
+load(
+    "//defs/toolchain/java:rules.bzl",
+    java_library = "jdk_library",
+)
+
+load(
+    "//defs/toolchain:deps.bzl",
+    "maven",
+)
+
+_COMMON_DEPS = [
+    "@javax_annotation_api",
+    "@com_google_code_findbugs_jsr305",
+    "@com_google_protobuf//:protobuf_java",
+    "//java/gust/backend/runtime:runtime",
+    maven("org.slf4j:slf4j-api"),
+    maven("com.google.cloud:google-cloud-firestore"),
+    maven("com.google.guava:guava"),
+    maven("io.micronaut:micronaut-inject"),
+    maven("io.micronaut:micronaut-runtime"),
+    maven("org.reactivestreams:reactive-streams"),
+    maven("javax.validation:validation-api"),
+]
+
+
+java_library(
+    name = "package-info",
+    srcs = ["package-info.java"],
+)
+
+java_library(
+    name = "FirestoreAdapter",
+    srcs = ["FirestoreAdapter.java"],
+    deps = [
+        ":FirestoreDriver",
+        "//java/gust/backend/model:CollapsedMessage",
+        "//java/gust/backend/model:CollapsedMessageCodec",
+        "//java/gust/backend/model:CacheDriver",
+        "//java/gust/backend/model:DatabaseAdapter",
+        "//java/gust/backend/model:DatabaseDriver",
+        "//java/gust/backend/model:ModelCodec",
+        "//java/gust/backend/model:ModelMetadata",
+        "//java/gust/backend/model:PersistenceDriver",
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "FirestoreDriver",
+    srcs = ["FirestoreDriver.java"],
+    deps = [
+        "//java/gust/backend/model:CollapsedMessage",
+        "//java/gust/backend/model:CollapsedMessageCodec",
+        "//java/gust/backend/model:DatabaseDriver",
+        "//java/gust/backend/model:FetchOptions",
+        "//java/gust/backend/model:ModelCodec",
+        "//java/gust/backend/model:ModelMetadata",
+        "//java/gust/backend/model:WriteOptions",
+        "//java/gust/backend/transport:GoogleService",
+        "//java/gust/backend/transport:GoogleTransportManager",
+        maven("io.grpc:grpc-api"),
+        maven("com.google.api:gax"),
+        maven("com.google.api:gax-grpc"),
+        maven("com.google.api:api-common"),
+        maven("com.google.cloud:google-cloud-core-grpc"),
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "FirestoreManager",
+    srcs = ["FirestoreManager.java"],
+    deps = [
+        ":FirestoreDriver",
+        "//java/gust/backend/model:DatabaseManager",
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "FirestoreTransportConfig",
+    srcs = ["FirestoreTransportConfig.java"],
+    deps = [
+        "//java/gust/backend/transport:GoogleTransportManager",
+        "//java/gust/backend/transport:GrpcTransportConfig",
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "firestore",
+    exports = [
+        ":package-info",
+        ":FirestoreAdapter",
+        ":FirestoreDriver",
+        ":FirestoreManager",
+        ":FirestoreTransportConfig",
+    ],
+)
+
+filegroup(
+    name = "sources",
+    srcs = glob(["*.java"]),
+)

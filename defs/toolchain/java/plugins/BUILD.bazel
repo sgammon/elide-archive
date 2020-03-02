@@ -22,6 +22,7 @@ java_library(
         maven("io.micronaut:micronaut-inject"),
         maven("io.micronaut:micronaut-inject-java"),
         maven("io.micronaut:micronaut-validation"),
+        maven("io.micronaut.data:micronaut-data-processor"),
     ],
     runtime_deps = [
         "@javax_annotation_api",
@@ -30,6 +31,7 @@ java_library(
         maven("io.micronaut:micronaut-inject-java"),
         maven("io.micronaut:micronaut-validation"),
         maven("io.micronaut:micronaut-graal"),
+        maven("io.micronaut.data:micronaut-data-processor"),
     ]
 )
 
@@ -64,6 +66,6 @@ java_library(
     exported_plugins = [
         ":micronaut-beans",
         ":micronaut-types",
-        ":micronaut-config"
+        ":micronaut-config",
     ],
 )

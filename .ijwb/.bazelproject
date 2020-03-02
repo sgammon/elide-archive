@@ -21,6 +21,8 @@ directories:
   .develop
   .buildkite
   -node_modules
+  -dist
+  -build
 
 targets:
   //samples/...

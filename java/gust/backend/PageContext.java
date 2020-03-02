@@ -24,9 +24,6 @@ import java.util.Optional;
 @Immutable
 @SuppressWarnings("unused")
 public final class PageContext implements PageRender {
-  /** Name at which proto-context is injected. */
-  private static final String CONTEXT_PROPERTY_NAME = "context";
-
   /** Shared singleton instance of an empty page context. */
   private static final PageContext _EMPTY = new PageContext(
     Context.getDefaultInstance(),
@@ -229,7 +226,7 @@ public final class PageContext implements PageRender {
   public Map<String, Object> getInjectedProperties() {
     return ImmutableMap
       .<String, Object>builder()
-      .put(CONTEXT_PROPERTY_NAME, protoContext)
+      .put(PAGE_CONTEXT_IJ_NAME, protoContext)
       .putAll(rawContext.getInjectedProperties())
       .build();
   }

@@ -7,8 +7,8 @@ import jsinterop.annotations.JsType;
 /**
  * Provides core values, utility methods, etc, which can be used throughout the back- and front-end of a Gust-based
  * application. Some of these methods or properties will return different values based on where the application is
- * executed. So, accessing, say, {@link #getEngine()} will return <pre>browser</pre> when invoked from JavaScript on the
- * front-end, and one of <pre>jvm</pre> or <pre>native</pre> when running on the backend.
+ * executed. So, accessing, say, {@link #getEngine()} will return {@code browser} when invoked from JavaScript on the
+ * front-end, and one of {@code jvm} or {@code native} when running on the backend.
  */
 @JsType
 @SuppressWarnings("WeakerAccess")

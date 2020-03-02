@@ -1,5 +1,4 @@
 
-
 def _closure_path(*path):
 
     """ Computes a Closure Library dependency path, based on the
@@ -27,5 +26,14 @@ def _maven(path):
             .replace("-", "_"))
 
 
+def _javaproto(path):
+
+    """ Computes a Java protobuf path, by appending the appropriate
+        prefix to the handed-in proto target path. """
+
+    return "%s-%s" % (path, "java_proto")  # todo(sgammon): don't hardcode this
+
+
 maven = _maven
+javaproto = _javaproto
 closure = _closure_path

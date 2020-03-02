@@ -3,15 +3,21 @@ package(
 )
 
 load(
-    "@rules_java//java:defs.bzl",
-    "java_library",
+    "//defs/toolchain/java:rules.bzl",
+    "jdk_library",
 )
 
-java_library(
-    name = "gustlib",
+
+jdk_library(
+    name = "gust",
     exports = [
         "//java/gust:Core",
     ],
+)
+
+alias(
+    name = "javadoc",
+    actual = "//java/gust:javadoc",
 )
 
 alias(
@@ -21,5 +27,10 @@ alias(
 
 alias(
     name = "framework",
-    actual = ":gustlib",
+    actual = ":gust",
+)
+
+alias(
+    name = "framework-javadoc",
+    actual = ":javadoc",
 )

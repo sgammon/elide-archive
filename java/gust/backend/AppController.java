@@ -26,7 +26,7 @@ import java.net.URL;
  * request method is invoked, the logic provided by this object will have been initialized and will be ready to use.</p>
  */
 @SuppressWarnings("unused")
-public class AppController extends BaseController {
+public abstract class AppController extends BaseController {
   /**
    * Private constructor, which accepts injected manager objects. Some or all of these are passed up to
    * {@link BaseController}.

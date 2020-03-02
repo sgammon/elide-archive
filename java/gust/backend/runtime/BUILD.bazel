@@ -1,0 +1,68 @@
+package(
+    default_visibility = ["//visibility:public"],
+)
+
+load(
+    "//defs/toolchain/java:rules.bzl",
+    java_library = "jdk_library",
+)
+
+load(
+    "//defs/toolchain:deps.bzl",
+    "maven",
+)
+
+_COMMON_DEPS = [
+    # No common runtime deps yet.
+]
+
+
+java_library(
+    name = "LoggingTools",
+    srcs = ["Logging.java"],
+    deps = [
+        maven("io.micronaut:micronaut-inject"),
+        maven("io.micronaut:micronaut-runtime"),
+        maven("org.slf4j:slf4j-api"),
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "logging",
+    exports = [
+        ":LoggingTools",
+    ]
+)
+
+java_library(
+    name = "ReactiveFuture",
+    srcs = ["ReactiveFuture.java"],
+    deps = [
+        maven("com.google.api:api-common"),
+        maven("com.google.guava:guava"),
+        maven("com.google.protobuf:protobuf-java"),
+        maven("org.reactivestreams:reactive-streams"),
+        maven("io.reactivex.rxjava2:rxjava"),
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "reactive",
+    exports = [
+        ":ReactiveFuture",
+    ],
+)
+
+
+java_library(
+    name = "runtime",
+    exports = [
+        ":logging",
+        ":reactive",
+    ]
+)
+
+filegroup(
+    name = "sources",
+    srcs = glob(["*.java"]),
+)

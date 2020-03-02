@@ -91,6 +91,9 @@ enum DatapointType {
   // The datamodel represents an object record.
   OBJECT = 0;
 
+  // Specifies that this datapoint type is a record key.
+  OBJECT_KEY = 1;
+
   // The datamodel represents an event type.
   EVENT = 2;
 

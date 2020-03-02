@@ -1,0 +1,403 @@
+package(
+    default_visibility = ["//visibility:public"],
+)
+
+load(
+    "//defs/toolchain/java:rules.bzl",
+    java_library = "jdk_library",
+)
+
+load(
+    "//defs/toolchain:deps.bzl",
+    "maven",
+    "javaproto",
+)
+
+_COMMON_DEPS = [
+    "@javax_annotation_api",
+    "@com_google_code_findbugs_jsr305",
+    "@com_google_protobuf//:protobuf_java",
+    "//java/gust/backend/runtime:runtime",
+    maven("com.google.guava:guava"),
+    maven("org.slf4j:slf4j-api"),
+]
+
+
+java_library(
+    name = "package-info",
+    srcs = ["package-info.java"],
+)
+
+java_library(
+    name = "CacheDriver",
+    srcs = ["CacheDriver.java"],
+    deps = [
+        ":FetchOptions",
+        ":ModelCodec",
+        ":PersistenceDriver",
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "CacheOptions",
+    srcs = ["CacheOptions.java"],
+    deps = [
+        ":OperationOptions",
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "CollapsedMessage",
+    srcs = ["CollapsedMessage.java"],
+    deps = [
+        # None yet.
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "CollapsedMessageCodec",
+    srcs = ["CollapsedMessageCodec.java"],
+    deps = [
+        ":CollapsedMessage",
+        ":ModelCodec",
+        ":ModelDeserializer",
+        ":ModelDeflateException",
+        ":ModelInflateException",
+        ":ModelSerializer",
+        maven("io.micronaut:micronaut-inject"),
+        maven("io.micronaut:micronaut-runtime"),
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "CollapsedMessageSerializer",
+    srcs = ["CollapsedMessageSerializer.java"],
+    deps = [
+        ":CollapsedMessage",
+        ":ModelSerializer",
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "DatabaseAdapter",
+    srcs = ["DatabaseAdapter.java"],
+    deps = [
+        ":ModelAdapter",
+        ":DatabaseDriver",
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "DatabaseDriver",
+    srcs = ["DatabaseDriver.java"],
+    deps = [
+        ":PersistenceDriver",
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "DatabaseManager",
+    srcs = ["DatabaseManager.java"],
+    deps = [
+        ":DatabaseDriver",
+        ":PersistenceManager",
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "EncodedModel",
+    srcs = ["EncodedModel.java"],
+    deps = [
+        ":EncodingMode",
+        "@com_google_protobuf//:protobuf_java_util",
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "EncodingMode",
+    srcs = ["EncodingMode.java"],
+    deps = [
+        # No deps.
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "FetchOptions",
+    srcs = ["FetchOptions.java"],
+    deps = [
+        ":CacheOptions",
+        ":OperationOptions",
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "InvalidModelType",
+    srcs = ["InvalidModelType.java"],
+    deps = [
+        ":PersistenceException",
+        javaproto("//gust/core:datamodel"),
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "MissingAnnotatedField",
+    srcs = ["MissingAnnotatedField.java"],
+    deps = [
+        ":PersistenceException",
+        javaproto("//gust/core:datamodel"),
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "ModelAdapter",
+    srcs = ["ModelAdapter.java"],
+    deps = [
+        ":CacheDriver",
+        ":FetchOptions",
+        ":ModelCodec",
+        ":ModelMetadata",
+        ":PersistenceDriver",
+        ":WriteOptions",
+        javaproto("//gust/core:datamodel"),
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "ModelCodec",
+    srcs = ["ModelCodec.java"],
+    deps = [
+        ":ModelDeserializer",
+        ":ModelDeflateException",
+        ":ModelInflateException",
+        ":ModelSerializer",
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "ModelDeflateException",
+    srcs = ["ModelDeflateException.java"],
+    deps = [
+        ":PersistenceException",
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "ModelDeserializer",
+    srcs = ["ModelDeserializer.java"],
+    deps = [
+        ":ModelInflateException",
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "ModelInflateException",
+    srcs = ["ModelInflateException.java"],
+    deps = [
+        ":PersistenceException",
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "ModelMetadata",
+    srcs = ["ModelMetadata.java"],
+    deps = [
+        ":InvalidModelType",
+        ":MissingAnnotatedField",
+        javaproto("//gust/core:datamodel"),
+        "@com_google_protobuf//:protobuf_java_util",
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "ModelSerializer",
+    srcs = ["ModelSerializer.java"],
+    deps = [
+        ":CollapsedMessage",
+        ":ModelDeflateException",
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "ModelWriteConflict",
+    srcs = ["ModelWriteConflict.java"],
+    deps = [
+        ":ModelWriteFailure",
+        ":WriteOptions",
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "ModelWriteFailure",
+    srcs = ["ModelWriteFailure.java"],
+    deps = [
+        ":PersistenceException",
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "ObjectModelCodec",
+    srcs = ["ObjectModelCodec.java"],
+    deps = [
+        ":ModelCodec",
+        ":ModelSerializer",
+        ":ModelDeserializer",
+        ":ObjectModelDeserializer",
+        ":ObjectModelSerializer",
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "ObjectModelDeserializer",
+    srcs = ["ObjectModelDeserializer.java"],
+    deps = [
+        ":ModelDeserializer",
+        ":ModelInflateException",
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "ObjectModelSerializer",
+    srcs = ["ObjectModelSerializer.java"],
+    deps = [
+        ":CollapsedMessage",
+        ":ModelDeflateException",
+        ":ModelSerializer",
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "OperationOptions",
+    srcs = ["OperationOptions.java"],
+    deps = [
+        # None yet.
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "PersistenceDriver",
+    srcs = ["PersistenceDriver.java"],
+    deps = [
+        ":FetchOptions",
+        ":MissingAnnotatedField",
+        ":ModelCodec",
+        ":ModelMetadata",
+        ":PersistenceException",
+        ":PersistenceFailure",
+        ":PersistenceOperationFailed",
+        ":WriteOptions",
+        javaproto("//gust/core:datamodel"),
+        maven("com.google.guava:guava"),
+        maven("org.reactivestreams:reactive-streams"),
+        maven("io.reactivex.rxjava2:rxjava"),
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "PersistenceException",
+    srcs = ["PersistenceException.java"],
+    deps = [
+        # None yet.
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "PersistenceFailure",
+    srcs = ["PersistenceFailure.java"],
+    deps = [
+        # None yet.
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "PersistenceManager",
+    srcs = ["PersistenceManager.java"],
+    deps = [
+        ":PersistenceDriver",
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "PersistenceOperationFailed",
+    srcs = ["PersistenceOperationFailed.java"],
+    deps = [
+        ":PersistenceException",
+        ":PersistenceFailure",
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "ProtoModelCodec",
+    srcs = ["ProtoModelCodec.java"],
+    deps = [
+        ":EncodedModel",
+        ":EncodingMode",
+        ":ModelCodec",
+        ":ModelDeserializer",
+        ":ModelDeflateException",
+        ":ModelInflateException",
+        ":ModelSerializer",
+        "@com_google_protobuf//:protobuf_java_util",
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "Transaction",
+    srcs = ["Transaction.java"],
+    deps = [
+
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "WriteOptions",
+    srcs = ["WriteOptions.java"],
+    deps = [
+        ":OperationOptions",
+    ] + _COMMON_DEPS,
+)
+
+
+java_library(
+    name = "model",
+    exports = [
+        ":package-info",
+        ":CacheDriver",
+        ":CacheOptions",
+        ":CollapsedMessage",
+        ":CollapsedMessageCodec",
+        ":CollapsedMessageSerializer",
+        ":DatabaseAdapter",
+        ":DatabaseDriver",
+        ":DatabaseManager",
+        ":EncodedModel",
+        ":EncodingMode",
+        ":FetchOptions",
+        ":InvalidModelType",
+        ":MissingAnnotatedField",
+        ":ModelAdapter",
+        ":ModelCodec",
+        ":ModelDeflateException",
+        ":ModelDeserializer",
+        ":ModelInflateException",
+        ":ModelSerializer",
+        ":ModelWriteConflict",
+        ":ModelWriteFailure",
+        ":ObjectModelCodec",
+        ":ObjectModelDeserializer",
+        ":ObjectModelSerializer",
+        ":OperationOptions",
+        ":PersistenceDriver",
+        ":PersistenceException",
+        ":PersistenceFailure",
+        ":PersistenceManager",
+        ":PersistenceOperationFailed",
+        ":ProtoModelCodec",
+        ":WriteOptions",
+        ":Transaction",
+    ]
+)
+
+filegroup(
+    name = "sources",
+    srcs = glob(["*.java"]),
+)
