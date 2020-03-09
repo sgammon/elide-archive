@@ -27,18 +27,30 @@ public final class InMemoryAdapterNoopCacheTest extends GenericPersistenceAdapte
   private static ListeningScheduledExecutorService executorService;
   private static InMemoryAdapter<PersonKey, Person> personAdapter;
   private static CacheDriver<PersonKey, Person> NOOP_CACHE = new CacheDriver<>() {
+    @Nonnull
     @Override
-    public @Nonnull
-    ReactiveFuture injectRecord(@Nonnull PersonKey personKey,
-                                @Nonnull Person person,
-                                @Nonnull ListeningScheduledExecutorService executor) {
+    public ReactiveFuture flush(@Nonnull ListeningScheduledExecutorService executor) {
+      return ReactiveFuture.cancelled();
+    }
+
+    @Nonnull
+    @Override
+    public ReactiveFuture evict(@Nonnull PersonKey personKey, @Nonnull ListeningScheduledExecutorService executor) {
       return ReactiveFuture.cancelled();
     }
 
     @Override
-    public @Nonnull ReactiveFuture<Optional<Person>> fetchCached(@Nonnull PersonKey personKey,
-                                                                 @Nonnull FetchOptions option,
-                                                                 @Nonnull ListeningScheduledExecutorService executor) {
+    public @Nonnull
+    ReactiveFuture put(@Nonnull PersonKey personKey,
+                       @Nonnull Person person,
+                       @Nonnull ListeningScheduledExecutorService executor) {
+      return ReactiveFuture.cancelled();
+    }
+
+    @Override
+    public @Nonnull ReactiveFuture<Optional<Person>> fetch(@Nonnull PersonKey personKey,
+                                                           @Nonnull FetchOptions option,
+                                                           @Nonnull ListeningScheduledExecutorService executor) {
       return ReactiveFuture.wrap(Futures.immediateFuture(Optional.empty()), executorService);
     }
   };

@@ -87,7 +87,7 @@ public abstract class GenericCacheDriverTest<Driver extends CacheDriver<PersonKe
 
   /** Test fetching an item from the cache, that we know isn't there. */
   protected void testFetchMiss() throws InterruptedException, TimeoutException, ExecutionException {
-    ReactiveFuture<Optional<Person>> personRecord = cache().fetchCached(PersonKey.newBuilder()
+    ReactiveFuture<Optional<Person>> personRecord = cache().fetch(PersonKey.newBuilder()
       .setId("i-do-not-exist")
       .build(),
       FetchOptions.DEFAULTS,
@@ -107,12 +107,12 @@ public abstract class GenericCacheDriverTest<Driver extends CacheDriver<PersonKe
       .setName("Jane Doe")
       .build();
 
-    var injectOp = cache().injectRecord(injected.getKey(), injected, executorService);
+    var injectOp = cache().put(injected.getKey(), injected, executorService);
     assertNotNull(injectOp, "should not get `null` from cache injection");
     injectOp.get(timeout(), timeoutUnit());
     assertTrue(injectOp.isDone(), "should be able to finish injection future");
 
-    ReactiveFuture<Optional<Person>> personRecord = cache().fetchCached(PersonKey.newBuilder()
+    ReactiveFuture<Optional<Person>> personRecord = cache().fetch(PersonKey.newBuilder()
         .setId("sample123")
         .build(),
       FetchOptions.DEFAULTS,
