@@ -14,8 +14,8 @@ import static org.junit.jupiter.api.Assertions.*;
 public final class ModelOptionsTest {
   /** Default write disposition should remain {@code BLIND}. */
   @Test void testDefaultWriteDisposition() {
-    assertEquals((new WriteOptions() {}).writeMode(), WriteOptions.WriteDisposition.BLIND,
-      "default write disposition should be `BLIND`");
+    assertFalse((new WriteOptions() {}).writeMode().isPresent(),
+      "default write disposition should be empty");
   }
 
   /** Test each cache eviction mode for general compliance. */

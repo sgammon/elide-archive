@@ -12,6 +12,7 @@ import org.junit.jupiter.api.DynamicTest;
 import javax.annotation.Nonnull;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -25,7 +26,7 @@ import static org.junit.jupiter.api.DynamicTest.dynamicTest;
 @SuppressWarnings({"WeakerAccess", "DuplicatedCode", "CodeBlock2Expr", "unchecked"})
 public abstract class GenericPersistenceDriverTest<Driver extends PersistenceDriver> {
   /** Describes data keys touched in this test case. */
-  protected final HashSet<Object> touchedKeys = new HashSet<>();
+  protected final HashSet<Message> touchedKeys = new HashSet<>();
 
   /** Empty person instance, for testing. */
   private final static Person emptyInstance = Person.getDefaultInstance();
@@ -43,7 +44,9 @@ public abstract class GenericPersistenceDriverTest<Driver extends PersistenceDri
       dynamicTest(format("%s: `storeAndFetchEntityMasked`", subcase), this::storeAndFetchEntityMasked),
       dynamicTest(format("%s: `storeEntityCollission`", subcase), this::storeEntityCollission),
       dynamicTest(format("%s: `storeEntityUpdate`", subcase), this::storeEntityUpdate),
-      dynamicTest(format("%s: `storeEntityUpdateNotFound`", subcase), this::storeEntityUpdateNotFound)
+      dynamicTest(format("%s: `storeEntityUpdateNotFound`", subcase), this::storeEntityUpdateNotFound),
+      dynamicTest(format("%s: `createEntityThenUpdate`", subcase), this::createEntityThenUpdate),
+      dynamicTest(format("%s: `createEntityThenDelete`", subcase), this::createEntityThenDelete)
     );
 
     tests.addAll(subclassTests().orElse(Collections.emptyList()));
@@ -188,7 +191,9 @@ public abstract class GenericPersistenceDriverTest<Driver extends PersistenceDri
     assertFalse(op.isCancelled(), "write future should not present as cancelled after completing");
     Optional<PersonKey> key = ModelMetadata.key(model);
     assertTrue(key.isPresent(), "key should be present on model after storing");
-    touchedKeys.add(key);
+    touchedKeys.add(key.get());
+
+    var keySpliced = ModelMetadata.spliceKey(model, Optional.of(key.get()));
 
     // fetch the record
     ReactiveFuture<Optional<Person>> personFuture = acquire().retrieve(key.get(), FetchOptions.DEFAULTS);
@@ -200,8 +205,8 @@ public abstract class GenericPersistenceDriverTest<Driver extends PersistenceDri
     assertFalse(personFuture.isCancelled(), "read future should not present as cancelled after completing");
     assertNotNull(refetched, "should not get `null` for optional after record fetch");
     assertTrue(refetched.isPresent(), "should find record we just stored");
-    assertEquals(person.toString(), refetched.get().toString(),
-      "fetched person record should match identically");
+    assertEquals(keySpliced.toString(), refetched.get().toString(),
+      "fetched person record should match identically, but with key");
 
     // fetch the record a second time
     ReactiveFuture<Optional<Person>> personFuture2 = acquire().retrieve(key.get(), FetchOptions.DEFAULTS);
@@ -213,8 +218,8 @@ public abstract class GenericPersistenceDriverTest<Driver extends PersistenceDri
     assertFalse(personFuture2.isCancelled(), "read future should not present as cancelled after completing");
     assertNotNull(refetched2, "should not get `null` for optional after record fetch");
     assertTrue(refetched2.isPresent(), "should find record we just stored");
-    assertEquals(person.toString(), refetched2.get().toString(),
-      "fetched person record should match identically");
+    assertEquals(keySpliced.toString(), refetched2.get().toString(),
+      "fetched person record should match identically, but with key");
   }
 
   /** Create a simple entity, store it, and then fetch it, but with a field mask. */
@@ -236,7 +241,7 @@ public abstract class GenericPersistenceDriverTest<Driver extends PersistenceDri
     assertFalse(op.isCancelled(), "write future should not present as cancelled after completing");
     Optional<PersonKey> key = ModelMetadata.key(model);
     assertTrue(key.isPresent(), "key should be present on model after storing");
-    touchedKeys.add(key);
+    touchedKeys.add(key.get());
 
     // fetch the record
     ReactiveFuture<Optional<Person>> personFuture = acquire().retrieve(key.get(), new FetchOptions() {
@@ -288,8 +293,15 @@ public abstract class GenericPersistenceDriverTest<Driver extends PersistenceDri
     assertFalse(op1.isCancelled(), "future from persist should not start in cancelled state");
     assertFalse(op2.isCancelled(), "future from persist should not start in cancelled state");
 
-    var key1 = op1.get(timeout(), timeoutUnit()).getKey();
-    var key2 = op2.get(timeout(), timeoutUnit()).getKey();
+    Person model1 = op1.get(timeout(), timeoutUnit());
+    Person model2 = op2.get(timeout(), timeoutUnit());
+    Optional<PersonKey> key1Op = ModelMetadata.key(model1);
+    Optional<PersonKey> key2Op = ModelMetadata.key(model2);
+    assertTrue(key1Op.isPresent(), "key should be present after persist");
+    assertTrue(key2Op.isPresent(), "key should be present after persist");
+    var key1 = key1Op.get();
+    var key2 = key2Op.get();
+    var keySpliced = ModelMetadata.spliceKey(person1, Optional.of(key1));
     assertNotEquals(key1, key2, "keys for two written entities should not collide");
     touchedKeys.add(key1);
     touchedKeys.add(key2);
@@ -309,13 +321,13 @@ public abstract class GenericPersistenceDriverTest<Driver extends PersistenceDri
     assertFalse(personFuture.isCancelled(), "read future should not present as cancelled after completing");
     assertNotNull(refetched, "should not get `null` for optional after record fetch");
     assertTrue(refetched.isPresent(), "should find record we just stored");
-    assertEquals(person1.toString(), refetched.get().toString(),
-      "fetched person record should match identically");
+    assertEquals(keySpliced.toString(), refetched.get().toString(),
+      "fetched person record should match identically, but with key");
 
     var overwrite = acquire().persist(key1, person1, new WriteOptions() {
       @Override
-      public @Nonnull WriteDisposition writeMode() {
-        return WriteDisposition.MUST_NOT_EXIST;
+      public @Nonnull Optional<WriteDisposition> writeMode() {
+        return Optional.of(WriteDisposition.MUST_NOT_EXIST);
       }
     });
 
@@ -334,11 +346,13 @@ public abstract class GenericPersistenceDriverTest<Driver extends PersistenceDri
         .setPhoneE164("+12345679001"))
       .build();
 
-    var op = acquire().persist(null, person, WriteOptions.DEFAULTS);
+    ReactiveFuture<Person> op = acquire().persist(null, person, WriteOptions.DEFAULTS);
     assertFalse(op.isCancelled(), "future from persist should not start in cancelled state");
 
-    Object key = op.get(timeout(), timeoutUnit());
-    touchedKeys.add(key);
+    Person record = op.get(timeout(), timeoutUnit());
+    Optional<PersonKey> key = ModelMetadata.key(record);
+    assertTrue(key.isPresent(), "key should be present on written record");
+    touchedKeys.add(key.get());
 
     assertNotNull(key, "should get a key back from a persist operation");
     assertTrue(op.isDone(), "future should report as done after store operation finishes");
@@ -348,20 +362,22 @@ public abstract class GenericPersistenceDriverTest<Driver extends PersistenceDri
       .setName("Jane Doe")
       .build();
 
-    var op2 = acquire().persist(null, updated, new WriteOptions() {
+    ReactiveFuture<Person> op2 = acquire().persist(null, updated, new WriteOptions() {
       @Override
-      public @Nonnull WriteDisposition writeMode() {
-        return WriteDisposition.MUST_EXIST;
+      public @Nonnull Optional<WriteDisposition> writeMode() {
+        return Optional.of(WriteDisposition.MUST_EXIST);
       }
     });
 
     assertFalse(op2.isCancelled(), "second write future should not present as cancelled after completing");
-    Object key2 = op2.get(timeout(), timeoutUnit());
+    Person record2 = op2.get(timeout(), timeoutUnit());
+    Optional<PersonKey> key2 = ModelMetadata.key(record2);
 
+    assertTrue(key2.isPresent(), "resulting key should be present after write");
     assertTrue(op2.isDone(), "future should report as done after store operation finishes");
     assertNotNull(key2, "should get a key back from a persist operation");
     assertFalse(op2.isCancelled(), "write future should not present as cancelled after completing");
-    touchedKeys.add(key2);
+    touchedKeys.add(key2.get());
   }
 
   /** Create a simple entity, store it, and then try to update an entity that does not exist. */
@@ -374,18 +390,20 @@ public abstract class GenericPersistenceDriverTest<Driver extends PersistenceDri
         .setPhoneE164("+12345679001"))
       .build();
 
-    ReactiveFuture<?> op = acquire().persist(null, person, WriteOptions.DEFAULTS);
+    ReactiveFuture<Person> op = acquire().persist(null, person, WriteOptions.DEFAULTS);
     assertFalse(op.isCancelled(), "future from persist should not start in cancelled state");
 
-    Object key = op.get(timeout(), timeoutUnit());
-    touchedKeys.add(key);
+    Person record = op.get(timeout(), timeoutUnit());
+    Optional<PersonKey> key = ModelMetadata.key(record);
+    assertTrue(key.isPresent(), "key should be present on written record");
+    touchedKeys.add(key.get());
 
     // generate a key that does not match
     var genkey = acquire().generateKey(emptyInstance);
-    var op2 = acquire().persist(genkey, person, new WriteOptions() {
+    ReactiveFuture<Person> op2 = acquire().persist(genkey, person, new WriteOptions() {
       @Override
-      public @Nonnull WriteDisposition writeMode() {
-        return WriteDisposition.MUST_EXIST;
+      public @Nonnull Optional<WriteDisposition> writeMode() {
+        return Optional.of(WriteDisposition.MUST_EXIST);
       }
     });
 
@@ -394,5 +412,138 @@ public abstract class GenericPersistenceDriverTest<Driver extends PersistenceDri
     assertThrows(ExecutionException.class, () -> {
       op2.get(timeout(), timeoutUnit());
     });
+  }
+
+  /** Create a simple entity, and then use the `update`-based interfaces to update it. */
+  protected void createEntityThenUpdate() throws TimeoutException, ExecutionException, InterruptedException {
+    // persist the record
+    Person person = Person.newBuilder()
+      .setName("John Doe")
+      .setContactInfo(ContactInfo.newBuilder()
+        .setEmailAddress("john@doe.com")
+        .setPhoneE164("+12345679001"))
+      .build();
+
+    // create it
+    ReactiveFuture<Person> op = acquire().create(person, WriteOptions.DEFAULTS);
+    Person record = op.get(timeout(), timeoutUnit());
+    Optional<PersonKey> recordKey = ModelMetadata.key(record);
+    assertTrue(recordKey.isPresent(), "record key should be present after create");
+    var key = recordKey.get();
+    touchedKeys.add(key);
+
+    // update it
+    Person changed = record.toBuilder()
+      .setName("John J. Doe")
+      .build();
+
+    // setup a reusable test function
+    BiConsumer<ReactiveFuture<Person>, Person> tester = (personFuture, expectedPerson) -> {
+      assertNotNull(personFuture, "should never get `null` from `update`");
+      assertFalse(personFuture.isCancelled(), "update future should not be initially cancelled");
+
+      try {
+        var updatedRecord = personFuture.get(timeout(), timeoutUnit());
+        assertNotNull(personFuture, "should never get `null` from update future");
+        assertEquals(expectedPerson.toString(), updatedRecord.toString(),
+          "updated person should match expected result record");
+
+      } catch (Exception exc) {
+        throw new RuntimeException(exc);
+      }
+    };
+
+    // try a each update interface
+    ReactiveFuture<Person> updatedOp = acquire().update(changed);
+    tester.accept(updatedOp, changed);
+    ReactiveFuture<Person> updatedOp2 = acquire().update(key, changed);
+    tester.accept(updatedOp2, changed);
+    ReactiveFuture<Person> updatedOp3 = acquire().update(key, changed, UpdateOptions.DEFAULTS);
+    tester.accept(updatedOp3, changed);
+
+    // try each with a sub-object update
+    Person changed2 = changed.toBuilder()
+      .setContactInfo(changed.getContactInfo().toBuilder()
+        .setEmailAddress("john2@doe.com"))
+      .build();
+
+    ReactiveFuture<Person> updatedOp4 = acquire().update(changed2);
+    tester.accept(updatedOp4, changed2);
+    ReactiveFuture<Person> updatedOp5 = acquire().update(key, changed2);
+    tester.accept(updatedOp5, changed2);
+    ReactiveFuture<Person> updatedOp6 = acquire().update(key, changed2, UpdateOptions.DEFAULTS);
+    tester.accept(updatedOp6, changed2);
+
+    // try again with a cleared field
+    Person changed3 = changed2.toBuilder()
+      .clearName()
+      .build();
+
+    ReactiveFuture<Person> updatedOp7 = acquire().update(changed3);
+    tester.accept(updatedOp7, changed3);
+    ReactiveFuture<Person> updatedOp8 = acquire().update(key, changed3);
+    tester.accept(updatedOp8, changed3);
+    ReactiveFuture<Person> updatedOp9 = acquire().update(key, changed3, UpdateOptions.DEFAULTS);
+    tester.accept(updatedOp9, changed3);
+
+    // restore the name, clear the contact info
+    Person changed4 = changed3.toBuilder()
+      .clearName()
+      .build();
+
+    ReactiveFuture<Person> updatedOp10 = acquire().update(changed4);
+    tester.accept(updatedOp10, changed4);
+    ReactiveFuture<Person> updatedOp11 = acquire().update(key, changed4);
+    tester.accept(updatedOp11, changed4);
+    ReactiveFuture<Person> updatedOp12 = acquire().update(key, changed4, UpdateOptions.DEFAULTS);
+    tester.accept(updatedOp12, changed4);
+  }
+
+  /** Create a simple entity, then delete it, then try to re-fetch to make sure it was deleted. */
+  protected void createEntityThenDelete() throws TimeoutException, ExecutionException, InterruptedException {
+    // persist the record
+    Person person = Person.newBuilder()
+      .setName("John Doe")
+      .setContactInfo(ContactInfo.newBuilder()
+        .setEmailAddress("john@doe.com")
+        .setPhoneE164("+12345679001"))
+      .build();
+
+    // create it
+    ReactiveFuture<Person> op = acquire().create(person);
+    Person record = op.get(timeout(), timeoutUnit());
+    Optional<PersonKey> recordKey = ModelMetadata.key(record);
+    assertTrue(recordKey.isPresent(), "record key should be present after create");
+    var key = recordKey.get();
+    touchedKeys.add(key);
+
+    // fetch it, to make sure it's there
+    ReactiveFuture<Optional<Person>> refetchedOp = acquire().fetchAsync(key);
+    assertNotNull(refetchedOp, "should never get `null` from `fetchAsync`");
+    assertFalse(refetchedOp.isCancelled(), "re-fetch future should not immediately be cancelled");
+    Optional<Person> refetched = refetchedOp.get(timeout(), timeoutUnit());
+    assertNotNull(refetched, "should never get `null` from `get`");
+    assertTrue(refetched.isPresent(), "re-fetched record should be present");
+    assertEquals(record.toString(), refetched.get().toString(),
+      "re-fetched person record should be identical");
+
+    // delete it, mercilessly
+    ReactiveFuture<PersonKey> deleteOp = acquire().delete(key);
+    assertNotNull(deleteOp, "should not get `null` from `delete`");
+    assertFalse(deleteOp.isCancelled(), "delete future should not immediately be cancelled");
+    PersonKey deletedKey = deleteOp.get(timeout(), timeoutUnit());
+    assertTrue(deleteOp.isDone(), "delete op should complete after `get()`");
+    assertNotNull(deletedKey, "should not get `null` from delete future result");
+    assertEquals(key.toString(), deletedKey.toString(),
+      "deleted key should be identical to key provided for delete");
+
+    // try to fetch it, we shouldn't be able to find it
+    ReactiveFuture<Optional<Person>> fetchAfterDelete = acquire().fetchAsync(deletedKey);
+    assertNotNull(fetchAfterDelete, "should not get `null` from `fetchAsync`");
+    assertFalse(fetchAfterDelete.isCancelled(), "fetch after delete should not be immediately cancelled");
+    Optional<Person> refetchedAfterDelete = fetchAfterDelete.get(timeout(), timeoutUnit());
+    assertNotNull(refetchedAfterDelete, "refetched-after-delete optional should never be `null`");
+    assertFalse(refetchedAfterDelete.isPresent(),
+      "refetched-after-delete optional should present as not-present");
   }
 }

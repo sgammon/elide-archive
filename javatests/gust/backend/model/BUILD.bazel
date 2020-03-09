@@ -94,6 +94,7 @@ java_library(
         "//java/gust/backend/model:ModelMetadata",
         "//java/gust/backend/model:ModelWriteConflict",
         "//java/gust/backend/model:PersistenceDriver",
+        "//java/gust/backend/model:UpdateOptions",
         "//java/gust/backend/model:WriteOptions",
         "//java/gust/backend/runtime:ReactiveFuture",
         javaproto(":person"),
