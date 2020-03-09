@@ -13,6 +13,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
 
 import static java.lang.String.format;
 import static gust.backend.model.ModelMetadata.*;
@@ -175,6 +176,17 @@ public interface ModelAdapter<Key extends Message, Model extends Message, Interm
   @Override
   default @Nonnull ReactiveFuture<Key> delete(@Nonnull Key key,
                                               @Nonnull DeleteOptions options) {
-    return engine().delete(key, options);
+    ReactiveFuture<Key> op = engine().delete(key, options);
+    if (options.enableCache()) {
+      // if caching is enabled and a cache driver is present, make sure to evict any cached record behind this key.
+      Optional<CacheDriver<Key, Model>> cacheDriver = this.cache();
+      if (cacheDriver.isPresent()) {
+        ListeningScheduledExecutorService exec = options.executorService().orElseGet(this::executorService);
+        ReactiveFuture<Key> storageDelete = engine().delete(key, options);
+        ReactiveFuture<Key> cacheEvict = cacheDriver.get().evict(key, exec);
+        return ReactiveFuture.wrap(Futures.whenAllComplete(storageDelete, cacheEvict).call(() -> key, exec));
+      }
+    }
+    return op;
   }
 }

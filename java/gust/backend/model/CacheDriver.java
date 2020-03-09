@@ -50,9 +50,9 @@ public interface CacheDriver<Key extends Message, Model extends Message> {
    *
    * @param key Key for the record to force-evict from the cache.
    * @param executor Executor to use for any async operations.
-   * @return Future, which simply completes when the evict operation is done.
+   * @return Future, which resolves to the evicted key when the operation completes.
    */
-  @Nonnull ReactiveFuture evict(@Nonnull Key key, @Nonnull ListeningScheduledExecutorService executor);
+  @Nonnull ReactiveFuture<Key> evict(@Nonnull Key key, @Nonnull ListeningScheduledExecutorService executor);
 
   /**
    * Force-evict the set of cached records specified by {@code keys}, in the cache managed by this driver. This

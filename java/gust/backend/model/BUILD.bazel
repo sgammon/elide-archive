@@ -108,6 +108,7 @@ java_library(
     name = "DeleteOptions",
     srcs = ["DeleteOptions.java"],
     deps = [
+        ":CacheOptions",
         ":OperationOptions",
     ] + _COMMON_DEPS,
 )

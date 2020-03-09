@@ -1,6 +1,7 @@
 package gust.backend.model;
 
 import javax.annotation.Nonnull;
+import java.util.Optional;
 
 
 /** Describes options involved with operations to persist model entities. */
@@ -21,7 +22,7 @@ public interface WriteOptions extends OperationOptions {
   }
 
   /** @return Specifies the write mode for an operation. Overridden by some methods (for instance, {@code create}). */
-  default @Nonnull WriteDisposition writeMode() {
-    return WriteDisposition.BLIND;
+  default @Nonnull Optional<WriteDisposition> writeMode() {
+    return Optional.empty();
   }
 }

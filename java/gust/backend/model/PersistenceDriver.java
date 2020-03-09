@@ -592,7 +592,8 @@ public interface PersistenceDriver<Key extends Message, Model extends Message, I
    * @throws MissingAnnotatedField If a required annotated field cannot be located (i.e. {@code ID} or {@code KEY}).
    */
   default @Nonnull ReactiveFuture<Model> create(@Nonnull Model model) {
-    return create(null, model);
+    //noinspection unchecked
+    return create((Key)key(model).orElse(null), model);
   }
 
   /**
@@ -616,10 +617,33 @@ public interface PersistenceDriver<Key extends Message, Model extends Message, I
   default @Nonnull ReactiveFuture<Model> create(@Nullable Key key, @Nonnull Model model) {
     return create(key, model, new WriteOptions() {
       @Override
-      public @Nonnull WriteDisposition writeMode() {
-        return WriteDisposition.MUST_NOT_EXIST;
+      public @Nonnull Optional<WriteDisposition> writeMode() {
+        return Optional.of(WriteDisposition.MUST_NOT_EXIST);
       }
     });
+  }
+
+  /**
+   * Create the record specified by {@code model} using the specified set of {@code options}, in underlying storage. If
+   * the provided mode's key or ID is empty or {@code null}, the engine will provision a key or ID for the record. The
+   * persisted entity is returned or an error occurs.
+   *
+   * <p>This operation will enforce the option {@code MUST_NOT_EXIST} for the write - i.e., "creating" a record implies
+   * that it must not exist beforehand. Additionally, if the record is missing a unique ID or key (one or the other must
+   * be annotated on the record), then a semi-random value will be generated for the record.</p>
+   *
+   * <p>The returned record will be re-constituted, with the spliced-in ID or key value, as applicable, and with any
+   * computed or framework-related properties filled in (i.e. automatic timestamping).</p>
+   *
+   * @param model Model to create in underlying storage. Requires a {@code ID} or {@code KEY}-annotated field.
+   * @return Future value, which resolves to the stored model entity, affixed with an assigned ID or key.
+   * @throws InvalidModelType If the specified model record is not usable with storage.
+   * @throws PersistenceException If an unexpected failure occurs, of any kind, while creating the record.
+   * @throws MissingAnnotatedField If a required annotated field cannot be located (i.e. {@code ID} or {@code KEY}).
+   */
+  default @Nonnull ReactiveFuture<Model> create(@Nonnull Model model, @Nonnull WriteOptions options) {
+    //noinspection unchecked
+    return create((Key)key(model).orElse(null), model, options);
   }
 
   /**
@@ -643,7 +667,10 @@ public interface PersistenceDriver<Key extends Message, Model extends Message, I
    */
   @Nonnull
   default ReactiveFuture<Model> create(@Nullable Key key, @Nonnull Model model, @Nonnull WriteOptions options) {
-    Internals.enforceOption(options.writeMode(), WriteOptions.WriteDisposition.MUST_NOT_EXIST,
+    Internals.enforceOption(
+      options.writeMode()
+        .orElse(WriteOptions.WriteDisposition.MUST_NOT_EXIST),
+      WriteOptions.WriteDisposition.MUST_NOT_EXIST,
       "Write options for `create` must specify `MUST_NOT_EXIST` write disposition.");
     return persist(key, model, options);
   }
@@ -670,7 +697,7 @@ public interface PersistenceDriver<Key extends Message, Model extends Message, I
   default @Nonnull ReactiveFuture<Model> update(@Nonnull Model model) {
     //noinspection unchecked
     return update(
-      (Key)key(model).orElseThrow(() -> new MissingAnnotatedField(model.getDescriptorForType(), FieldType.KEY)),
+      (Key)key(model).orElseThrow(() -> new IllegalStateException("Failed to resolve a key value for record.")),
       model);
   }
 
@@ -696,8 +723,8 @@ public interface PersistenceDriver<Key extends Message, Model extends Message, I
   default @Nonnull ReactiveFuture<Model> update(@Nonnull Key key, @Nonnull Model model) {
     return update(key, model, new UpdateOptions() {
       @Override
-      public @Nonnull WriteDisposition writeMode() {
-        return WriteDisposition.MUST_EXIST;
+      public @Nonnull Optional<WriteDisposition> writeMode() {
+        return Optional.of(WriteDisposition.MUST_EXIST);
       }
     });
   }
@@ -725,7 +752,9 @@ public interface PersistenceDriver<Key extends Message, Model extends Message, I
    */
   @Nonnull
   default ReactiveFuture<Model> update(@Nonnull Key key, @Nonnull Model model, @Nonnull UpdateOptions options) {
-    Internals.enforceOption(options.writeMode(), WriteOptions.WriteDisposition.MUST_EXIST,
+    Internals.enforceOption(
+      options.writeMode().orElse(WriteOptions.WriteDisposition.MUST_EXIST),
+      WriteOptions.WriteDisposition.MUST_EXIST,
       "Write options for `update` must specify `MUST_EXIST` write disposition.");
     return persist(key, model, options);
   }

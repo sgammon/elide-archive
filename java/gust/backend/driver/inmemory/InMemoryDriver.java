@@ -142,7 +142,7 @@ public final class InMemoryDriver<Key extends Message, Model extends Message>
           logging.info(format("Retrieved record at ID '%s' from in-memory storage.", id));
 
         // we found encoded data at the provided key. inflate it with the codec.
-        return Optional.of(applyMask(deserialized, options));
+        return Optional.of(spliceKey(applyMask(deserialized, options), Optional.of(key)));
       } else {
         if (logging.isWarnEnabled())
           logging.warn(format("Model not found at ID '%s'.", id));
@@ -172,7 +172,8 @@ public final class InMemoryDriver<Key extends Message, Model extends Message>
 
     return ReactiveFuture.wrap(this.executorService.submit(() -> {
       WriteOptions.WriteDisposition writeMode = (
-        key == null ? WriteOptions.WriteDisposition.MUST_NOT_EXIST : options.writeMode());
+        key == null ? WriteOptions.WriteDisposition.MUST_NOT_EXIST : options.writeMode()
+          .orElse(WriteOptions.WriteDisposition.BLIND));
 
       if (logging.isTraceEnabled())
         logging.trace(format(
