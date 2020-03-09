@@ -183,4 +183,11 @@ public final class FirestoreDriver<Key extends Message, Model extends Message>
                                                 @Nonnull WriteOptions options) {
     return null;
   }
+
+  // -- API: Delete -- //
+  /** {@inheritDoc} */
+  @Override
+  public @Nonnull ReactiveFuture<Key> delete(@Nonnull Key key, @Nonnull DeleteOptions options) {
+    return null;
+  }
 }

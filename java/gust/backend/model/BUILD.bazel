@@ -105,6 +105,14 @@ java_library(
 )
 
 java_library(
+    name = "DeleteOptions",
+    srcs = ["DeleteOptions.java"],
+    deps = [
+        ":OperationOptions",
+    ] + _COMMON_DEPS,
+)
+
+java_library(
     name = "EncodedModel",
     srcs = ["EncodedModel.java"],
     deps = [
@@ -153,6 +161,7 @@ java_library(
     srcs = ["ModelAdapter.java"],
     deps = [
         ":CacheDriver",
+        ":DeleteOptions",
         ":FetchOptions",
         ":ModelCodec",
         ":ModelMetadata",
@@ -277,6 +286,7 @@ java_library(
     name = "PersistenceDriver",
     srcs = ["PersistenceDriver.java"],
     deps = [
+        ":DeleteOptions",
         ":FetchOptions",
         ":MissingAnnotatedField",
         ":ModelCodec",
@@ -284,6 +294,7 @@ java_library(
         ":PersistenceException",
         ":PersistenceFailure",
         ":PersistenceOperationFailed",
+        ":UpdateOptions",
         ":WriteOptions",
         javaproto("//gust/core:datamodel"),
         maven("com.google.guava:guava"),
@@ -344,7 +355,15 @@ java_library(
     name = "Transaction",
     srcs = ["Transaction.java"],
     deps = [
+        # None yet.
+    ] + _COMMON_DEPS,
+)
 
+java_library(
+    name = "UpdateOptions",
+    srcs = ["UpdateOptions.java"],
+    deps = [
+        ":WriteOptions",
     ] + _COMMON_DEPS,
 )
 
@@ -369,6 +388,7 @@ java_library(
         ":DatabaseAdapter",
         ":DatabaseDriver",
         ":DatabaseManager",
+        ":DeleteOptions",
         ":EncodedModel",
         ":EncodingMode",
         ":FetchOptions",
@@ -392,8 +412,9 @@ java_library(
         ":PersistenceManager",
         ":PersistenceOperationFailed",
         ":ProtoModelCodec",
-        ":WriteOptions",
         ":Transaction",
+        ":UpdateOptions",
+        ":WriteOptions",
     ]
 )
 

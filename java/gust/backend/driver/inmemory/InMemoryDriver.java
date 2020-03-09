@@ -17,6 +17,7 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 
+import static java.lang.String.format;
 import static gust.backend.model.ModelMetadata.*;
 
 
@@ -120,14 +121,32 @@ public final class InMemoryDriver<Key extends Message, Model extends Message>
     Objects.requireNonNull(key, "Cannot fetch model with `null` for key.");
     Objects.requireNonNull(options, "Cannot fetch model without `options`.");
     enforceRole(key, DatapointType.OBJECT_KEY);
-    var id = id(key).orElseThrow(() -> new IllegalArgumentException("Cannot fetch model with empty key."));
+    final var id = id(key).orElseThrow(() -> new IllegalArgumentException("Cannot fetch model with empty key."));
+
+    if (logging.isDebugEnabled())
+      logging.debug(format("Retrieving model at ID '%s' from in-memory storage.", id));
 
     return ReactiveFuture.wrap(this.executorService.submit(() -> {
+      if (logging.isTraceEnabled())
+        logging.trace(format("Began async task to retrieve model at ID '%s' from in-memory storage.", id));
+
       EncodedModel data = InMemoryStorage.acquire().get(id);
       if (data != null) {
+        if (logging.isTraceEnabled())
+          logging.trace(format("Model found at ID '%s'. Sending to deserializer...", id));
+
+        var deserialized = this.codec.deserialize(data);
+        if (logging.isDebugEnabled())
+          logging.debug(format("Found and deserialized model at ID '%s'. Record follows:\n%s", id, deserialized));
+        if (logging.isInfoEnabled())
+          logging.info(format("Retrieved record at ID '%s' from in-memory storage.", id));
+
         // we found encoded data at the provided key. inflate it with the codec.
-        return Optional.of(applyMask(this.codec.deserialize(data), options));
+        return Optional.of(applyMask(deserialized, options));
       } else {
+        if (logging.isWarnEnabled())
+          logging.warn(format("Model not found at ID '%s'.", id));
+
         // the model was not found.
         return Optional.empty();
       }
@@ -143,14 +162,23 @@ public final class InMemoryDriver<Key extends Message, Model extends Message>
     Objects.requireNonNull(model, "Cannot persist `null` model.");
     Objects.requireNonNull(options, "Cannot persist model without `options`.");
 
-    return ReactiveFuture.wrap(this.executorService.submit(() -> {
-      // resolve target key, and then write mode
-      @Nonnull Message targetKey = key != null ? key : generateKey(model);
-      //noinspection OptionalGetWithoutIsPresent
-      @Nonnull Object targetId = id(targetKey).get();
+    // resolve target key, and then write mode
+    final @Nonnull Key targetKey = key != null ? key : generateKey(model);
+    //noinspection OptionalGetWithoutIsPresent
+    final @Nonnull Object targetId = id(targetKey).get();
 
+    if (logging.isDebugEnabled())
+      logging.debug(format("Persisting model at ID '%s' using in-memory storage.", targetId));
+
+    return ReactiveFuture.wrap(this.executorService.submit(() -> {
       WriteOptions.WriteDisposition writeMode = (
         key == null ? WriteOptions.WriteDisposition.MUST_NOT_EXIST : options.writeMode());
+
+      if (logging.isTraceEnabled())
+        logging.trace(format(
+          "Began async task to write model at ID '%s' to in-memory storage. Write disposition: '%s'.",
+          targetId,
+          writeMode.name()));
 
       // enforce write mode
       boolean conflictFailure = false;
@@ -160,8 +188,7 @@ public final class InMemoryDriver<Key extends Message, Model extends Message>
         case BLIND: break;
       }
       if (conflictFailure) {
-        logging.error(String.format(
-          "Encountered conflict failure: key collision at ID '%s'.", targetId));
+        logging.error(format("Encountered conflict failure: key collision at ID '%s'.", targetId));
         throw new ModelWriteConflict(targetId, model, writeMode);
       }
 
@@ -170,7 +197,52 @@ public final class InMemoryDriver<Key extends Message, Model extends Message>
         .acquire()
         .put(targetId, codec.serialize(model));
 
-      return spliceKey(model, Optional.of(targetKey));
+      if (logging.isTraceEnabled())
+        logging.trace(format(
+          "No conflict failure encountered, model was written at ID '%s'.",
+          targetId));
+
+      var rval = ModelMetadata.<Model, Key>spliceKey(model, Optional.of(targetKey));
+      if (logging.isInfoEnabled())
+        logging.info(format(
+          "Wrote record to in-memory storage at ID '%s'.",
+          targetId));
+      if (logging.isDebugEnabled())
+        logging.debug(format(
+          "Returning written model at ID '%s' after write to in-memory storage. Record follows:\n%s",
+          targetId,
+          rval));
+
+      return rval;
+
     }), options.executorService().orElse(this.executorService));
+  }
+
+  // -- API: Delete -- //
+  /** {@inheritDoc} */
+  @Override
+  public @Nonnull ReactiveFuture<Key> delete(@Nonnull Key key, @Nonnull DeleteOptions options) {
+    Objects.requireNonNull(key, "Cannot delete `null` key.");
+    Objects.requireNonNull(options, "Cannot delete model without `options`.");
+
+    final @Nonnull Object targetId = id(key)
+      .orElseThrow(() -> new IllegalStateException("Cannot delete record with empty key/ID."));
+
+    if (logging.isDebugEnabled())
+      logging.debug(format("Deleting model at ID '%s' from in-memory storage.", targetId));
+
+    return ReactiveFuture.wrap(this.executorService.submit(() -> {
+      if (logging.isTraceEnabled())
+        logging.trace(format("Began async task to delete model at ID '%s' from in-memory storage.", targetId));
+
+      InMemoryStorage
+        .acquire()
+        .remove(targetId);
+
+      if (logging.isInfoEnabled())
+        logging.info(format("Model at ID '%s' deleted from in-memory storage.", targetId));
+
+      return key;
+    }));
   }
 }

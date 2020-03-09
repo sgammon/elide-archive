@@ -694,7 +694,7 @@ public interface PersistenceDriver<Key extends Message, Model extends Message, I
    * @throws IllegalStateException If a required annotated field value cannot be resolved (i.e. an empty key or ID).
    */
   default @Nonnull ReactiveFuture<Model> update(@Nonnull Key key, @Nonnull Model model) {
-    return update(key, model, new WriteOptions() {
+    return update(key, model, new UpdateOptions() {
       @Override
       public @Nonnull WriteDisposition writeMode() {
         return WriteDisposition.MUST_EXIST;
@@ -724,7 +724,7 @@ public interface PersistenceDriver<Key extends Message, Model extends Message, I
    * @throws IllegalArgumentException If an incompatible {@link WriteOptions.WriteDisposition} value is specified.
    */
   @Nonnull
-  default ReactiveFuture<Model> update(@Nonnull Key key, @Nonnull Model model, @Nonnull WriteOptions options) {
+  default ReactiveFuture<Model> update(@Nonnull Key key, @Nonnull Model model, @Nonnull UpdateOptions options) {
     Internals.enforceOption(options.writeMode(), WriteOptions.WriteDisposition.MUST_EXIST,
       "Write options for `update` must specify `MUST_EXIST` write disposition.");
     return persist(key, model, options);
@@ -736,7 +736,10 @@ public interface PersistenceDriver<Key extends Message, Model extends Message, I
    *
    * <p>Optionally, a key may be provided as a nominated value to the storage engine. Whether the engine accepts
    * nominated keys is up to the implementation. In all cases, the engine must return the key used to store and address
-   * the value henceforth.</p>
+   * the value henceforth. If the engine <i>does</i> support nominated keys, it <i>must</i> operate in an idempotent
+   * manner with regard to those keys. In other words, repeated calls to create the same entity with the same key will
+   * not cause spurious side-effects - only one record will be created, with the remaining calls being rejected by the
+   * underlying engine.</p>
    *
    * <p>All futures emitted via the persistence framework (and Gust writ-large) are {@link ListenableFuture}-compliant
    * implementations under the hood, but {@link ReactiveFuture} allows a model-layer result to be used as a
@@ -760,4 +763,86 @@ public interface PersistenceDriver<Key extends Message, Model extends Message, I
    * @throws MissingAnnotatedField If the specified key record has no resolvable ID field.
    */
   @Nonnull ReactiveFuture<Model> persist(@Nullable Key key, @Nonnull Model model, @Nonnull WriteOptions options);
+
+  // -- API: Delete -- //
+  /**
+   * Delete and fully erase the record referenced by {@code key} from underlying storage, permanently. The resulting
+   * future resolves to the provided key value once the operation completes. If any issue occurs (besides encountering
+   * an already-deleted entity, which is not an error), an exception is raised.
+   *
+   * @param key Key referring to the record which should be deleted, permanently, from underlying storage.
+   * @return Future, which resolves to the provided key when the operation is complete.
+   * @throws InvalidModelType If the specified key type is not compatible with model-layer operations.
+   * @throws PersistenceException If an unexpected failure occurs, of any kind, while deleting the requested resource.
+   * @throws MissingAnnotatedField If the specified key record has no resolvable ID field.
+   * @throws IllegalStateException If a required annotated field value cannot be resolved (i.e. an empty key or ID).
+   */
+  default @Nonnull ReactiveFuture<Key> delete(@Nonnull Key key) {
+    return delete(key, DeleteOptions.DEFAULTS);
+  }
+
+  /**
+   * Delete and fully erase the supplied {@code model} from underlying storage, permanently. The resulting future
+   * resolves to the provided record's key value once the operation completes. If any issue occurs (besides encountering
+   * an already-deleted entity, which is not an error), an exception is raised.
+   *
+   * @param model Model instance to delete from underlying storage.
+   * @return Future, which resolves to the provided key when the operation is complete.
+   * @throws InvalidModelType If the specified key type is not compatible with model-layer operations.
+   * @throws PersistenceException If an unexpected failure occurs, of any kind, while deleting the requested resource.
+   * @throws MissingAnnotatedField If the specified key record has no resolvable ID field.
+   * @throws IllegalStateException If a required annotated field value cannot be resolved (i.e. an empty key or ID).
+   */
+  default @Nonnull ReactiveFuture<Key> deleteRecord(@Nonnull Model model) {
+    return deleteRecord(model, DeleteOptions.DEFAULTS);
+  }
+
+  /**
+   * Delete and fully erase the supplied {@code model} from underlying storage, permanently. The resulting future
+   * resolves to the provided record's key value once the operation completes. If any issue occurs (besides encountering
+   * an already-deleted entity, which is not an error), an exception is raised.
+   *
+   * @param model Model instance to delete from underlying storage.
+   * @param options Options to apply to this specific delete operation.
+   * @return Future, which resolves to the provided key when the operation is complete.
+   * @throws InvalidModelType If the specified key type is not compatible with model-layer operations.
+   * @throws PersistenceException If an unexpected failure occurs, of any kind, while deleting the requested resource.
+   * @throws MissingAnnotatedField If the specified key record has no resolvable ID field.
+   * @throws IllegalStateException If a required annotated field value cannot be resolved (i.e. an empty key or ID).
+   */
+  default @Nonnull ReactiveFuture<Key> deleteRecord(@Nonnull Model model, @Nonnull DeleteOptions options) {
+    //noinspection unchecked
+    return delete((Key)key(model)
+        .orElseThrow(() -> new IllegalStateException("Cannot delete record with empty key/ID.")),
+      options);
+  }
+
+  /**
+   * Low-level record delete method. Effectively called by all other delete variants. Asynchronously and permanently
+   * erase an existing data model instance from storage, addressed by its key unique key or ID.
+   *
+   * <p>If no key or ID field, or value, may be located, an error is raised (see below for details). This operation is
+   * expected to operate in an <i>idempotent</i> manner (i.e. repeated calls with identical parameters do not yield
+   * different side effects). Calls referring to an already-deleted entity should silently succeed.</p>
+   *
+   * <p>All futures emitted via the persistence framework (and Gust writ-large) are {@link ListenableFuture}-compliant
+   * implementations under the hood, but {@link ReactiveFuture} allows a model-layer result to be used as a
+   * {@link Future}, or a one-item reactive {@link Publisher}.</p>
+   *
+   * <p>This method additionally enables specification of custom {@link DeleteOptions}, which are applied on a per-
+   * operation basis to override global defaults.</p>
+   *
+   * <p><b>Exceptions:</b> Instead of throwing a {@link PersistenceException} as other methods do, this operation will
+   * <i>emit</i> the exception over the {@link Future} channel instead, or raise the exception in the event
+   * {@link Future#get()} is called to surface it in the invoking (or dependent) code.</p>
+   *
+   * @param key Unique key referring to the record in storage that should be deleted.
+   * @param options Options to apply to this specific delete operation.
+   * @return Future value, which resolves to the deleted record's key when the operation completes.
+   * @throws InvalidModelType If the specified key type is not compatible with model-layer operations.
+   * @throws PersistenceException If an unexpected failure occurs, of any kind, while deleting the requested resource.
+   * @throws MissingAnnotatedField If the specified key record has no resolvable ID field.
+   * @throws IllegalStateException If a required annotated field value cannot be resolved (i.e. an empty key or ID).
+   */
+  @Nonnull ReactiveFuture<Key> delete(@Nonnull Key key, @Nonnull DeleteOptions options);
 }

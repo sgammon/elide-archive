@@ -169,4 +169,12 @@ public interface ModelAdapter<Key extends Message, Model extends Message, Interm
                                                  @Nonnull WriteOptions options) {
     return engine().persist(key, model, options);
   }
+
+  // -- Interface: Delete -- //
+  /** {@inheritDoc} */
+  @Override
+  default @Nonnull ReactiveFuture<Key> delete(@Nonnull Key key,
+                                              @Nonnull DeleteOptions options) {
+    return engine().delete(key, options);
+  }
 }

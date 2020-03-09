@@ -33,9 +33,11 @@ java_library(
     deps = [
         "//java/gust/backend/model:CacheDriver",
         "//java/gust/backend/model:CacheOptions",
+        "//java/gust/backend/model:DeleteOptions",
         "//java/gust/backend/model:FetchOptions",
         "//java/gust/backend/model:ModelCodec",
         "//java/gust/backend/model:ModelMetadata",
+        "//java/gust/backend/model:UpdateOptions",
         "//java/gust/backend/model:WriteOptions",
         maven("com.google.guava:guava"),
         maven("org.reactivestreams:reactive-streams"),
@@ -66,6 +68,7 @@ java_library(
     name = "InMemoryDriver",
     srcs = ["InMemoryDriver.java"],
     deps = [
+        "//java/gust/backend/model:DeleteOptions",
         "//java/gust/backend/model:EncodedModel",
         "//java/gust/backend/model:FetchOptions",
         "//java/gust/backend/model:ModelCodec",
@@ -74,6 +77,7 @@ java_library(
         "//java/gust/backend/model:ModelMetadata",
         "//java/gust/backend/model:PersistenceDriver",
         "//java/gust/backend/model:PersistenceException",
+        "//java/gust/backend/model:UpdateOptions",
         "//java/gust/backend/model:WriteOptions",
         maven("com.google.guava:guava"),
         javaproto("//gust/core:datamodel"),
