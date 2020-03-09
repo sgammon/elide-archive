@@ -127,7 +127,7 @@ public final class FirestoreDriver<Key extends Message, Model extends Message>
    * @return Inflated object record, or {@link Optional#empty()}.
    */
   private @Nonnull Model deserialize(@Nonnull DocumentSnapshot snapshot) {
-    throw new IllegalStateException("not yet implemented");
+    throw new IllegalStateException("not yet implemented: " + snapshot.toString());
   }
 
   // -- Getters -- //

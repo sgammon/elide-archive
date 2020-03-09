@@ -71,4 +71,12 @@ public final class ObjectModelCodec<Model extends Message> implements ModelCodec
   public @Nonnull ModelDeserializer<Map<String, ?>, Model> deserializer() {
     return null;
   }
+
+  // -- Getters -- //
+  /**
+   * @return Builder for the model handled by this codec.
+   */
+  public Message.Builder getBuilder() {
+    return builder;
+  }
 }
