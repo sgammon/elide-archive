@@ -75,22 +75,7 @@ public final class InMemoryCache<K extends Message, M extends Message> implement
                                      @Nonnull ListeningScheduledExecutorService executor) {
     final String id = (
       ModelMetadata.<String>id(key).orElseThrow(() -> new IllegalArgumentException("Cannot add to cache with empty key.")));
-
-    return ReactiveFuture.wrap(executor.submit(() -> {
-      CACHE.acquire().put(id, model);
-    }), executor);
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public @Nonnull ReactiveFuture expire(@Nonnull K key,
-                                        @Nonnull ListeningScheduledExecutorService executor) {
-    final String id = (
-      ModelMetadata.<String>id(key).orElseThrow(() -> new IllegalArgumentException("Cannot expire with empty key.")));
-
-    return ReactiveFuture.wrap(executor.submit(() -> {
-      CACHE.acquire().invalidate(id);
-    }), executor);
+    return ReactiveFuture.wrap(executor.submit(() -> CACHE.acquire().put(id, model)), executor);
   }
 
   /** {@inheritDoc} */
@@ -98,13 +83,32 @@ public final class InMemoryCache<K extends Message, M extends Message> implement
   public @Nonnull ReactiveFuture<Optional<M>> fetch(@Nonnull K key,
                                                     @Nonnull FetchOptions options,
                                                     @Nonnull ListeningScheduledExecutorService executor) {
+    final String id = (
+      ModelMetadata.<String>id(key).orElseThrow(() -> new IllegalArgumentException("Cannot fetch empty key.")));
+
     return ReactiveFuture.wrap(options.executorService().orElse(executor).submit(() -> {
-      String id = (
-        ModelMetadata.<String>id(key).orElseThrow(() -> new IllegalArgumentException("Cannot fetch empty key.")));
       Message cached = (CACHE.acquire().getIfPresent(id));
 
       //noinspection unchecked
       return cached == null ? Optional.empty() : Optional.of((M)cached);
+    }), executor);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public @Nonnull ReactiveFuture evict(@Nonnull K key, @Nonnull ListeningScheduledExecutorService executor) {
+    final String id = (
+      ModelMetadata.<String>id(key).orElseThrow(() -> new IllegalArgumentException("Cannot expire with empty key.")));
+
+    return ReactiveFuture.wrap(executor.submit(() -> CACHE.acquire().invalidate(id)), executor);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public @Nonnull ReactiveFuture flush(@Nonnull ListeningScheduledExecutorService executor) {
+    return ReactiveFuture.wrap(executor.submit(() -> {
+      CACHE.acquire().invalidateAll();
+      CACHE.acquire().cleanUp();
     }), executor);
   }
 }

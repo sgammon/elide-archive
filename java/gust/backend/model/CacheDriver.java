@@ -1,11 +1,13 @@
 package gust.backend.model;
 
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningScheduledExecutorService;
 import com.google.protobuf.Message;
 import gust.backend.runtime.ReactiveFuture;
 
 import javax.annotation.Nonnull;
-import java.util.Optional;
+import java.util.*;
 
 
 /**
@@ -19,6 +21,15 @@ import java.util.Optional;
  */
 @SuppressWarnings("UnstableApiUsage")
 public interface CacheDriver<Key extends Message, Model extends Message> {
+  /**
+   * Flush the entire cache managed by this driver. This should drop all keys related to model instance caching that are
+   * currently held by the cache.
+   *
+   * @param executor Executor to use for any async operations.
+   * @return Future, which simply completes when the flush is done.
+   */
+  @Nonnull ReactiveFuture flush(@Nonnull ListeningScheduledExecutorService executor);
+
   /**
    * Write a record ({@code model}) at {@code key} into the cache, overwriting any model currently stored at the same
    * key, if applicable. The resulting future completes with no value, when the cache write has finished, to let the
@@ -34,14 +45,30 @@ public interface CacheDriver<Key extends Message, Model extends Message> {
                               @Nonnull ListeningScheduledExecutorService executor);
 
   /**
-   * Force-expire any cached record at the provided {@code key} in the cache managed by this driver. This operation is
+   * Force-evict any cached record at the provided {@code key} in the cache managed by this driver. This operation is
    * expected to succeed in all cases and perform its work in an idempotent manner.
    *
-   * @param key Key for the record to force-expire in the cache.
+   * @param key Key for the record to force-evict from the cache.
    * @param executor Executor to use for any async operations.
-   * @return Future, which simply completes when the expire operation is done.
+   * @return Future, which simply completes when the evict operation is done.
    */
-  @Nonnull ReactiveFuture expire(@Nonnull Key key, @Nonnull ListeningScheduledExecutorService executor);
+  @Nonnull ReactiveFuture evict(@Nonnull Key key, @Nonnull ListeningScheduledExecutorService executor);
+
+  /**
+   * Force-evict the set of cached records specified by {@code keys}, in the cache managed by this driver. This
+   * operation is expected to succeed in all cases and perform its work in an idempotent manner, similar to the single-
+   * key version of this method (see: {@link #evict(Message, ListeningScheduledExecutorService)}).
+   *
+   * @param keys Set of keys to evict from the cache.
+   * @param executor Executor to sue for any async operations.
+   * @return Future, which simply completes when the bulk-evict operation is done.
+   */
+  default @Nonnull ReactiveFuture evict(@Nonnull Iterable<Key> keys,
+                                        @Nonnull ListeningScheduledExecutorService executor) {
+    List<ListenableFuture<?>> evictions = new ArrayList<>();
+    keys.forEach((key) -> evictions.add(evict(key, executor)));
+    return ReactiveFuture.wrap(Futures.allAsList(evictions));
+  }
 
   /**
    * Attempt to resolve a known model, addressed by {@code key}, from the cache powered/backed by this driver, according
