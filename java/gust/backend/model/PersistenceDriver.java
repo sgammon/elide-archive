@@ -137,6 +137,24 @@ public interface PersistenceDriver<Key extends Message, Model extends Message, I
 
       }
     }
+
+    /**
+     * Enforce that a particular model operation have the provided value present, and equal to the expected value. If
+     * these expectations are violated, an exception is thrown.
+     *
+     * @param value Value in the option set for this method.
+     * @param expected Expected value from the option set.
+     * @param expectation Message to throw if the expectation is violated.
+     * @param <R> Return value type - same as {@code value} and {@code expected}.
+     * @return Expected value if it is equal to {@code value}.
+     */
+    @CanIgnoreReturnValue
+    static <R> R enforceOption(@Nullable R value, @Nonnull R expected, @Nonnull String expectation) {
+      if (value != null && value.equals(expected)) {
+        return value;
+      }
+      throw new IllegalArgumentException("Operation failed: " + expectation);
+    }
   }
 
   // -- API: Execution -- //
@@ -555,7 +573,163 @@ public interface PersistenceDriver<Key extends Message, Model extends Message, I
    */
   @Nonnull ReactiveFuture<Optional<Model>> retrieve(@Nonnull Key key, @Nonnull FetchOptions options);
 
-  // -- API: Create -- //
+  // -- API: Persist -- //
+  /**
+   * Create the record specified by {@code model} in underlying storage, provisioning a key or ID for the record if
+   * needed. The persisted entity is returned or an error occurs.
+   *
+   * <p>This operation will enforce the option {@code MUST_NOT_EXIST} for the write - i.e., "creating" a record implies
+   * that it must not exist beforehand. Additionally, if the record is missing a unique ID or key (one or the other must
+   * be annotated on the record), then a semi-random value will be generated for the record.</p>
+   *
+   * <p>The returned record will be re-constituted, with the spliced-in ID or key value, as applicable, and with any
+   * computed or framework-related properties filled in (i.e. automatic timestamping).</p>
+   *
+   * @param model Model to create in underlying storage. Requires a {@code ID} or {@code KEY}-annotated field.
+   * @return Future value, which resolves to the stored model entity, affixed with an assigned ID or key.
+   * @throws InvalidModelType If the specified model record is not usable with storage.
+   * @throws PersistenceException If an unexpected failure occurs, of any kind, while creating the record.
+   * @throws MissingAnnotatedField If a required annotated field cannot be located (i.e. {@code ID} or {@code KEY}).
+   */
+  default @Nonnull ReactiveFuture<Model> create(@Nonnull Model model) {
+    return create(null, model);
+  }
+
+  /**
+   * Create the record specified by {@code model} using the optional pre-fabricated {@code key}, in underlying storage.
+   * If the provided key is empty or {@code null}, the engine will provision a key or ID for the record. The persisted
+   * entity is returned or an error occurs.
+   *
+   * <p>This operation will enforce the option {@code MUST_NOT_EXIST} for the write - i.e., "creating" a record implies
+   * that it must not exist beforehand. Additionally, if the record is missing a unique ID or key (one or the other must
+   * be annotated on the record), then a semi-random value will be generated for the record.</p>
+   *
+   * <p>The returned record will be re-constituted, with the spliced-in ID or key value, as applicable, and with any
+   * computed or framework-related properties filled in (i.e. automatic timestamping).</p>
+   *
+   * @param model Model to create in underlying storage. Requires a {@code ID} or {@code KEY}-annotated field.
+   * @return Future value, which resolves to the stored model entity, affixed with an assigned ID or key.
+   * @throws InvalidModelType If the specified model record is not usable with storage.
+   * @throws PersistenceException If an unexpected failure occurs, of any kind, while creating the record.
+   * @throws MissingAnnotatedField If a required annotated field cannot be located (i.e. {@code ID} or {@code KEY}).
+   */
+  default @Nonnull ReactiveFuture<Model> create(@Nullable Key key, @Nonnull Model model) {
+    return create(key, model, new WriteOptions() {
+      @Override
+      public @Nonnull WriteDisposition writeMode() {
+        return WriteDisposition.MUST_NOT_EXIST;
+      }
+    });
+  }
+
+  /**
+   * Create the record specified by {@code model} using the optional pre-fabricated {@code key}, and making use of the
+   * specified {@code options}, in underlying storage. If the provided key is empty or {@code null}, the engine will
+   * provision a key or ID for the record. The persisted entity is returned or an error occurs.
+   *
+   * <p>This operation will enforce the option {@code MUST_NOT_EXIST} for the write - i.e., "creating" a record implies
+   * that it must not exist beforehand. Additionally, if the record is missing a unique ID or key (one or the other must
+   * be annotated on the record), then a semi-random value will be generated for the record.</p>
+   *
+   * <p>The returned record will be re-constituted, with the spliced-in ID or key value, as applicable, and with any
+   * computed or framework-related properties filled in (i.e. automatic timestamping).</p>
+   *
+   * @param model Model to create in underlying storage. Requires a {@code ID} or {@code KEY}-annotated field.
+   * @return Future value, which resolves to the stored model entity, affixed with an assigned ID or key.
+   * @throws InvalidModelType If the specified model record is not usable with storage.
+   * @throws PersistenceException If an unexpected failure occurs, of any kind, while creating the record.
+   * @throws MissingAnnotatedField If a required annotated field cannot be located (i.e. {@code ID} or {@code KEY}).
+   * @throws IllegalArgumentException If an incompatible {@link WriteOptions.WriteDisposition} value is specified.
+   */
+  @Nonnull
+  default ReactiveFuture<Model> create(@Nullable Key key, @Nonnull Model model, @Nonnull WriteOptions options) {
+    Internals.enforceOption(options.writeMode(), WriteOptions.WriteDisposition.MUST_NOT_EXIST,
+      "Write options for `create` must specify `MUST_NOT_EXIST` write disposition.");
+    return persist(key, model, options);
+  }
+
+  /**
+   * Update the record specified by {@code model} in underlying storage, using the existing key or ID value affixed to
+   * the model. The entity is returned in its updated form, or an error occurs.
+   *
+   * <p>This operation will enforce the option {@code MUST_EXIST} for the write - i.e., "updating" a record implies that
+   * it must exist beforehand. This means, if the record is missing a unique ID or key (one or the other must be
+   * annotated on the record), then an error occurs (specifically, either {@link MissingAnnotatedField}) for a  missing
+   * schema field, or {@link IllegalStateException} for a missing required value).</p>
+   *
+   * <p>The returned record will be re-constituted, with the ID or key value unmodified, as applicable, and with any
+   * computed or framework-related properties updated in (i.e. automatic update timestamping).</p>
+   *
+   * @param model Model to update in underlying storage. Requires a {@code ID} or {@code KEY}-annotated field and value.
+   * @return Future value, which resolves to the stored model entity, after it has been updated.
+   * @throws InvalidModelType If the specified model record is not usable with storage.
+   * @throws PersistenceException If an unexpected failure occurs, of any kind, while updated the record.
+   * @throws MissingAnnotatedField If a required annotated field cannot be located (i.e. {@code ID} or {@code KEY}).
+   * @throws IllegalStateException If a required annotated field value cannot be resolved (i.e. an empty key or ID).
+   */
+  default @Nonnull ReactiveFuture<Model> update(@Nonnull Model model) {
+    //noinspection unchecked
+    return update(
+      (Key)key(model).orElseThrow(() -> new MissingAnnotatedField(model.getDescriptorForType(), FieldType.KEY)),
+      model);
+  }
+
+  /**
+   * Update the record specified by {@code model}, and addressed by {@code key}, in underlying storage. The entity is
+   * returned in its updated form, or an error occurs.
+   *
+   * <p>This operation will enforce the option {@code MUST_EXIST} for the write - i.e., "updating" a record implies that
+   * it must exist beforehand. This means, if the record is missing a unique ID or key (one or the other must be
+   * annotated on the record), then an error occurs (specifically, either {@link MissingAnnotatedField}) for a  missing
+   * schema field, or {@link IllegalStateException} for a missing required value).</p>
+   *
+   * <p>The returned record will be re-constituted, with the ID or key value unmodified, as applicable, and with any
+   * computed or framework-related properties updated in (i.e. automatic update timestamping).</p>
+   *
+   * @param model Model to update in underlying storage. Requires a {@code ID} or {@code KEY}-annotated field and value.
+   * @return Future value, which resolves to the stored model entity, after it has been updated.
+   * @throws InvalidModelType If the specified model record is not usable with storage.
+   * @throws PersistenceException If an unexpected failure occurs, of any kind, while updated the record.
+   * @throws MissingAnnotatedField If a required annotated field cannot be located (i.e. {@code ID} or {@code KEY}).
+   * @throws IllegalStateException If a required annotated field value cannot be resolved (i.e. an empty key or ID).
+   */
+  default @Nonnull ReactiveFuture<Model> update(@Nonnull Key key, @Nonnull Model model) {
+    return update(key, model, new WriteOptions() {
+      @Override
+      public @Nonnull WriteDisposition writeMode() {
+        return WriteDisposition.MUST_EXIST;
+      }
+    });
+  }
+
+  /**
+   * Update the record specified by {@code model}, and addressed by {@code key}, in underlying storage. The entity is
+   * returned in its updated form, or an error occurs. This method variant additionally allows specification of custom
+   * {@code options} for this individual operation.
+   *
+   * <p>This operation will enforce the option {@code MUST_EXIST} for the write - i.e., "updating" a record implies that
+   * it must exist beforehand. This means, if the record is missing a unique ID or key (one or the other must be
+   * annotated on the record), then an error occurs (specifically, either {@link MissingAnnotatedField}) for a  missing
+   * schema field, or {@link IllegalStateException} for a missing required value).</p>
+   *
+   * <p>The returned record will be re-constituted, with the ID or key value unmodified, as applicable, and with any
+   * computed or framework-related properties updated in (i.e. automatic update timestamping).</p>
+   *
+   * @param model Model to update in underlying storage. Requires a {@code ID} or {@code KEY}-annotated field and value.
+   * @return Future value, which resolves to the stored model entity, after it has been updated.
+   * @throws InvalidModelType If the specified model record is not usable with storage.
+   * @throws PersistenceException If an unexpected failure occurs, of any kind, while updated the record.
+   * @throws MissingAnnotatedField If a required annotated field cannot be located (i.e. {@code ID} or {@code KEY}).
+   * @throws IllegalStateException If a required annotated field value cannot be resolved (i.e. an empty key or ID).
+   * @throws IllegalArgumentException If an incompatible {@link WriteOptions.WriteDisposition} value is specified.
+   */
+  @Nonnull
+  default ReactiveFuture<Model> update(@Nonnull Key key, @Nonnull Model model, @Nonnull WriteOptions options) {
+    Internals.enforceOption(options.writeMode(), WriteOptions.WriteDisposition.MUST_EXIST,
+      "Write options for `update` must specify `MUST_EXIST` write disposition.");
+    return persist(key, model, options);
+  }
+
   /**
    * Low-level record persistence method. Effectively called by all other create/put variants. Asynchronously write a
    * data model instance to storage, which will populate the provided {@link ReactiveFuture} value.
