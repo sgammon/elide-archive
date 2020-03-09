@@ -79,6 +79,15 @@ public final class GoogleTransportManager implements TransportManager<GoogleAPIC
   /** Tag to append to the user-agent on outgoing calls. */
   private final static String GUST_TAG = "gust/" + Core.getGustVersion();
 
+  /** Map of pooled connections, grouped per-service. */
+  private final ConcurrentMap<GoogleService, ManagedChannelPool> poolMap;
+
+  /** Maximum size of any one service connection pool. */
+  private volatile int maxPoolSize = DEFAULT_MAX_POOL_SIZE;
+
+  /** Executor service to use for RPC traffic. */
+  private volatile @Nonnull ScheduledExecutorService executorService;
+
   /** Thrown when required transport configuration is missing. */
   private static final class TransportConfigMissing extends TransportException {
     /**
@@ -307,17 +316,8 @@ public final class GoogleTransportManager implements TransportManager<GoogleAPIC
   private static void primeManagedChannel(@Nonnull GoogleService service,
                                           @Nonnull GoogleTransportConfig config,
                                           @Nonnull ManagedChannel channel) {
-
+    throw new IllegalStateException("channel priming is not yet supported");
   }
-
-  /** Map of pooled connections, grouped per-service. */
-  private final ConcurrentMap<GoogleService, ManagedChannelPool> poolMap;
-
-  /** Maximum size of any one service connection pool. */
-  private volatile int maxPoolSize = DEFAULT_MAX_POOL_SIZE;
-
-  /** Executor service to use for RPC traffic. */
-  private volatile @Nonnull ScheduledExecutorService executorService;
 
   /**
    * Initialize a new Google Transport Manager.

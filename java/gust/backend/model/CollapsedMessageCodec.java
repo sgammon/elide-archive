@@ -97,4 +97,9 @@ public final class CollapsedMessageCodec<Model extends Message> implements Model
       return null;
     }
   }
+
+  /** @return Builder for the model handled by this codec. */
+  public Message.Builder getBuilder() {
+    return builder;
+  }
 }
