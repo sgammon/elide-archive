@@ -34,6 +34,16 @@ public interface CacheDriver<Key extends Message, Model extends Message> {
                               @Nonnull ListeningScheduledExecutorService executor);
 
   /**
+   * Force-expire any cached record at the provided {@code key} in the cache managed by this driver. This operation is
+   * expected to succeed in all cases and perform its work in an idempotent manner.
+   *
+   * @param key Key for the record to force-expire in the cache.
+   * @param executor Executor to use for any async operations.
+   * @return Future, which simply completes when the expire operation is done.
+   */
+  @Nonnull ReactiveFuture expire(@Nonnull Key key, @Nonnull ListeningScheduledExecutorService executor);
+
+  /**
    * Attempt to resolve a known model, addressed by {@code key}, from the cache powered/backed by this driver, according
    * to {@code options} and making use of {@code executor}.
    *

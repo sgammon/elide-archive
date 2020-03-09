@@ -73,10 +73,23 @@ public final class InMemoryCache<K extends Message, M extends Message> implement
   public @Nonnull ReactiveFuture put(@Nonnull Message key,
                                      @Nonnull Message model,
                                      @Nonnull ListeningScheduledExecutorService executor) {
+    final String id = (
+      ModelMetadata.<String>id(key).orElseThrow(() -> new IllegalArgumentException("Cannot add to cache with empty key.")));
+
     return ReactiveFuture.wrap(executor.submit(() -> {
-      String id = (
-        ModelMetadata.<String>id(key).orElseThrow(() -> new IllegalArgumentException("Cannot inject with empty key.")));
       CACHE.acquire().put(id, model);
+    }), executor);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public @Nonnull ReactiveFuture expire(@Nonnull K key,
+                                        @Nonnull ListeningScheduledExecutorService executor) {
+    final String id = (
+      ModelMetadata.<String>id(key).orElseThrow(() -> new IllegalArgumentException("Cannot expire with empty key.")));
+
+    return ReactiveFuture.wrap(executor.submit(() -> {
+      CACHE.acquire().invalidate(id);
     }), executor);
   }
 
