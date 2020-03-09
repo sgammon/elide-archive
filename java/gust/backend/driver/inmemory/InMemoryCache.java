@@ -70,9 +70,9 @@ public final class InMemoryCache<K extends Message, M extends Message> implement
 
   /** {@inheritDoc} */
   @Override
-  public @Nonnull ReactiveFuture injectRecord(@Nonnull Message key,
-                                              @Nonnull Message model,
-                                              @Nonnull ListeningScheduledExecutorService executor) {
+  public @Nonnull ReactiveFuture put(@Nonnull Message key,
+                                     @Nonnull Message model,
+                                     @Nonnull ListeningScheduledExecutorService executor) {
     return ReactiveFuture.wrap(executor.submit(() -> {
       String id = (
         ModelMetadata.<String>id(key).orElseThrow(() -> new IllegalArgumentException("Cannot inject with empty key.")));
@@ -82,9 +82,9 @@ public final class InMemoryCache<K extends Message, M extends Message> implement
 
   /** {@inheritDoc} */
   @Override
-  public @Nonnull ReactiveFuture<Optional<M>> fetchCached(@Nonnull K key,
-                                                          @Nonnull FetchOptions options,
-                                                          @Nonnull ListeningScheduledExecutorService executor) {
+  public @Nonnull ReactiveFuture<Optional<M>> fetch(@Nonnull K key,
+                                                    @Nonnull FetchOptions options,
+                                                    @Nonnull ListeningScheduledExecutorService executor) {
     return ReactiveFuture.wrap(options.executorService().orElse(executor).submit(() -> {
       String id = (
         ModelMetadata.<String>id(key).orElseThrow(() -> new IllegalArgumentException("Cannot fetch empty key.")));

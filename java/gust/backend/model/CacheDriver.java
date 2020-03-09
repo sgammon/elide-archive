@@ -29,9 +29,9 @@ public interface CacheDriver<Key extends Message, Model extends Message> {
    * @param executor Executor to use for any async operations.
    * @return Future, which simply completes when the write is done.
    */
-  @Nonnull ReactiveFuture injectRecord(@Nonnull Key key,
-                                       @Nonnull Model model,
-                                       @Nonnull ListeningScheduledExecutorService executor);
+  @Nonnull ReactiveFuture put(@Nonnull Key key,
+                              @Nonnull Model model,
+                              @Nonnull ListeningScheduledExecutorService executor);
 
   /**
    * Attempt to resolve a known model, addressed by {@code key}, from the cache powered/backed by this driver, according
@@ -39,14 +39,14 @@ public interface CacheDriver<Key extends Message, Model extends Message> {
    *
    * <p>If no value is available in the cache, {@link Optional#empty()} must be returned, which triggers a call to the
    * driver to resolve the record. If the record can be fetched originally, it will later be added to the cache by a
-   * separate call to {@link #injectRecord(Message, Message, ListeningScheduledExecutorService)}.</p>
+   * separate call to {@link #put(Message, Message, ListeningScheduledExecutorService)}.</p>
    *
    * @param key Key for the record which we should look for in the cache.
    * @param options Options to apply to the fetch routine taking place.
    * @param executor Executor to use for async tasks. Provided by the driver or adapter.
    * @return Future value, which resolves either to {@link Optional#empty()} or a wrapped result value.
    */
-  @Nonnull ReactiveFuture<Optional<Model>> fetchCached(@Nonnull Key key,
-                                                       @Nonnull FetchOptions options,
-                                                       @Nonnull ListeningScheduledExecutorService executor);
+  @Nonnull ReactiveFuture<Optional<Model>> fetch(@Nonnull Key key,
+                                                 @Nonnull FetchOptions options,
+                                                 @Nonnull ListeningScheduledExecutorService executor);
 }

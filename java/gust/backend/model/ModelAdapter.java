@@ -91,7 +91,7 @@ public interface ModelAdapter<Key extends Message, Model extends Message, Interm
 
       // cache result future
       final ReactiveFuture<Optional<Model>> cacheFetchFuture = Objects.requireNonNull(
-        cache.get().fetchCached(key, options, exec), "Cache cannot return `null` for `retrieve`.");
+        cache.get().fetch(key, options, exec), "Cache cannot return `null` for `retrieve`.");
 
       // wrap in a future, with a non-propagating cancelling timeout, which handles any nulls from the cache.
       final ListenableFuture<Optional<Model>> cacheFuture = (Futures.nonCancellationPropagating(
@@ -142,7 +142,7 @@ public interface ModelAdapter<Key extends Message, Model extends Message, Interm
               Internals.swallowExceptions(() -> {
                 Optional<Model> fetchResult = record.get();
                 if (fetchResult.isPresent()) {
-                  cache.get().injectRecord(
+                  cache.get().put(
                     key,
                     fetchResult.get(),
                     options.executorService().orElseGet(ModelAdapter.this::executorService));
