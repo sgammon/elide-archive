@@ -1,0 +1,413 @@
+/*
+ * Copyright © 2020, The Gust Framework Authors. All rights reserved.
+ *
+ * The Gust/Elide framework and tools, and all associated source or object computer code, except where otherwise noted,
+ * are licensed under the Zero Prosperity license, which is enclosed in this repository, in the file LICENSE.txt. Use of
+ * this code in object or source form requires and implies consent and agreement to that license in principle and
+ * practice. Source or object code not listing this header, or unless specified otherwise, remain the property of
+ * Elide LLC and its suppliers, if any. The intellectual and technical concepts contained herein are proprietary to
+ * Elide LLC and its suppliers and may be covered by U.S. and Foreign Patents, or patents in process, and are protected
+ * by trade secret and copyright law. Dissemination of this information, or reproduction of this material, in any form,
+ * is strictly forbidden except in adherence with assigned license requirements.
+ */
+
+/**
+ * Defines structures related to "page context" - i.e. the typed base context for rendering pages server-side. These
+ * structures provide definitions for the page head, scripts appended to the body, and other page metadata.
+ */
+syntax = "proto3";
+package page;
+
+option optimize_for = SPEED;
+option cc_enable_arenas = true;
+option java_multiple_files = true;
+option java_string_check_utf8 = true;
+option java_outer_classname = "WebContext";
+option php_namespace = "Elide";
+option php_class_prefix = "ELD";
+option swift_prefix = "Elide";
+option objc_class_prefix = "ELD";
+option ruby_package = "Elide::Page";
+option java_package = "tools.elide.page";
+option csharp_namespace = "Elide.Page";
+option go_package = "github.com/elide-tools/elide/page";
+
+import "webutil/html/types/html.proto";
+
+import "gust/base/language.proto";
+import "gust/page/semantic.proto";
+
+
+// Defines the notion of a *Render Context* for server-side pages in Gust. This protocol message is filled out with data
+// as configured by the developer (from `application.yml` and the active controller, as applicable) and provided as an
+// injected value to all server-side render operations.
+//
+// When preparing context in Gust, adding a static script or stylesheet is done through `Context`. Setting page metadata
+// like the title, keywords, and manifest - also all done through `Context`. This of course has the added benefit of
+// being completely serializable, repeatable, and so on (i.e. all the benefits Protobuf brings).
+//
+// Major context modules include:
+// - *Metadata*: Page-level metadata.
+//    - *OpenGraph*: Properties for OG tags.
+//    - *Twitter*: Properties for Twitter cards.
+// - *AppManifest*: Information to link or derive a web application manifest.
+// - *Styles*: Stylesheets and inline head-injected styles ("lifted styles").
+// - *Scripts*: Scripts to include, and inline head-injected logic ("lifted JS").
+message Context {
+  // Defines the structure of well-known page-level metadata, including the page title, description,
+  // keywords, and so on.
+  message Metadata {
+    // Tags for the Facebook Crawler.
+    message OpenGraph {
+      // Name of the website.
+      string site_name = 1;
+
+      // Title of the page.
+      string title = 2;
+
+      // Description of the page.
+      string description = 3;
+
+      // The language the page is written in.
+      base.LanguageSpec locale = 4;
+
+      // The type of page - i.e. article, website, video.
+      string type = 5;
+
+      // Thumbnail to display when page is shared.
+      string image = 6;
+
+      // Directs facebook to scrape another url instead of the url the page was served from.
+      string url = 7;
+    }
+
+    // Tags for the Twitter Crawler.
+    message Twitter {
+      // Name of the website.
+      string site_name = 1;
+
+      // Title of the page.
+      string title = 2;
+
+      // Description of the page.
+      string description = 3;
+
+      // The language the page is written in.
+      base.LanguageSpec locale = 4;
+
+      // The type of card to display on Twitter.
+      string card = 5;
+
+      // Thumbnail to display when page is shared.
+      string image = 6;
+
+      // Directs facebook to scrape another url instead of the url the page was served from.
+      string url = 7;
+    }
+
+    // Defines the HTML title for the page, emitted in the <head>.
+    string title = 1;
+
+    // Defines the meta description content for the page.
+    string description = 2;
+
+    // Defines meta tag keywords, to be included in the page.
+    repeated string keyword = 3;
+
+    // Defines semantic content structure and binding content.
+    page.SemanticMetadata semantic = 4;
+
+    // Defines the viewport settings that should be used by the rendered page.
+    string viewport = 5;
+
+    // Defines a link to a web application manifest, if applicable.
+    webutil.html.types.TrustedResourceUrlProto manifest = 6;
+
+    // Defines a hex code to use as the primary theme color for the application.
+    string theme = 7;
+
+    // Defines an icon to use in iOS circumstances, when used as an app shortcut.
+    string touch_icon = 8;
+
+    // Defines an image to use in iOS circumstances, when launching as an app shortcut.
+    string startup_image = 9;
+
+    // Defines a favicon image link to apply to the browser tab.
+    webutil.html.types.TrustedResourceUrlProto favicon = 10;
+
+    // Defines the language we are rendering the page for.
+    base.LanguageSpec language = 11;
+
+    // Identifier for Google Tag Manager.
+    string gtm_id = 12;
+
+    // Facebook application identifier.
+    string fb_app_id = 13;
+
+    // Describes OpenGraph data for a given page.
+    OpenGraph open_graph = 14;
+
+    // Directive for indexers/robots.
+    string robots = 15;
+
+    // Directive for color scheme compatibility.
+    string color_scheme = 16;
+  }
+
+  // Specifies details about an application manifest, which should be or is linked to a given web
+  // page, that is being rendered by the render engine.
+  message AppManifest {
+    // Specifies the structure of an icon graphic linked to this web page via an application manifest.
+    // Icons can be specified in multiple formats and sizes.
+    message Icon {
+      // Specifies the URI for a given icon.
+      webutil.html.types.TrustedResourceUrlProto src = 1;
+
+      // Specifies the sizes that a given icon is available in.
+      repeated uint32 size = 2;
+
+      // Specifies the content type of a given icon.
+      string mime_type = 3;
+    }
+
+    // Enumerates display modes which are available for selection in the web application manifest
+    // spec. Each display mode is described herein.
+    enum DisplayMode {
+      // Regular browser UI. Default value if left unspecified.
+      BROWSER = 0;
+
+      // All of the available display area is used and no user agent chrome is shown.
+      FULLSCREEN = 1;
+
+      // The application will look and feel like a standalone application. This can include the application
+      // having a different window, its own icon in the application launcher, etc. In this mode, the user
+      // agent will exclude UI elements for controlling navigation, but can include other UI elements such
+      // as a status bar.
+      STANDALONE = 2;
+
+      // The application will look and feel like a standalone application, but will have a minimal set of UI
+      // elements for controlling navigation. The elements will vary by browser.
+      MINIMAL_UI = 3;
+    }
+
+    // Describes available orientation modes, for specifying the default orientation mode for an application
+    // within a web app manifest.
+    enum OrientationMode {
+      // Unspecified, or default, orientation mode/settings.
+      UNSPECIFIED_ORIENTATION = 0;
+
+      // Any orientation mode is supported.
+      ANY = 1;
+
+      // Use the natural orientation mode for the device.
+      NATURAL = 2;
+
+      // Use landscape mode by default.
+      LANDSCAPE = 3;
+
+      // Use portrait mode by default.
+      PORTRAIT = 4;
+    }
+
+    // Specifies details about a related application, which should be considered canonically the same
+    // as this application, but for a different platform.
+    message RelatedApplication {
+      // Enumerates known platforms where related applications might reside.
+      enum AppPlatform {
+        // Unspecified application platform.
+        UNSPECIFIED_APP_PLATFORM = 0;
+
+        // Apple App Store.
+        APPSTORE = 1;
+
+        // Google Play Store.
+        PLAYSTORE = 2;
+
+        // Additional web application.
+        WEB = 3;
+      }
+
+      // ID for this alternative application option.
+      string id = 1;
+
+      // Platform that the related app is listed on.
+      AppPlatform platform = 2;
+
+      // URI where the alternative application can be downloaded.
+      webutil.html.types.TrustedResourceUrlProto uri = 3;
+    }
+
+    // Full name for this application.
+    string name = 1;
+
+    // Short name for this application.
+    string short_name = 2;
+
+    // Starting URL where this application can be entered.
+    string start_url = 3;
+
+    // Defines the developers' preferred display mode for this application.
+    DisplayMode display = 4;
+
+    // Defines the expected application background color.
+    string background_color = 5;
+
+    // Specifies a narrative description about this application.
+    string description = 6;
+
+    // Specifies the language direction - RTL or LTR, for this application.
+    string direction = 7;
+
+    // Specifies the language this application is being served in.
+    base.LanguageSpec language = 8;
+
+    // Specifies expected screen orientation for this application.
+    OrientationMode orientation = 9;
+
+    // Defines the navigation scope for this web application's context.
+    string scope = 11;
+
+    // Flag indicating whether we want to prefer native apps for the user's experience.
+    bool prefer_related_applications = 12;
+
+    // Related native applications that should be considered along with this web application.
+    repeated RelatedApplication related_application = 13;
+
+    // Application icons listed with this manifest.
+    repeated Icon app_icon = 14;
+  }
+
+  // Defines page-level style settings (CSS), including external stylesheets, lifted CSS that should
+  // be rendered in the <head>, and more.
+  message Styles {
+    // Defines the notion of an external stylesheet document, written in CSS, which should be included
+    // via reference rather than inline.
+    message Stylesheet {
+      // URI to a given stylesheet asset.
+      webutil.html.types.TrustedResourceUrlProto uri = 1;
+
+      // Media setting to apply to the style sheet.
+      string media = 2;
+    }
+
+    // CSS code that should be emitted early in the <head>.
+    webutil.html.types.SafeStyleProto lifted = 1;
+
+    // External CSS code to be included in <link> tags.
+    repeated Stylesheet link = 2;
+  }
+
+  // Specifies information about sets of fonts to include in the page via CSS declarations, or imports/link
+  // references. Fonts are considered part of the stylesheet set of a page.
+  message Fonts {
+    // Specifies types of references to font assets that are understood by the rendering system.
+    enum FontReferenceType {
+      // Specifies an internal font, or an explicit set of font assets.
+      INTERNAL = 0;
+
+      // Specifies a font hosted on Google Fonts.
+      GOOGLE_FONTS = 1;
+    }
+
+    // Specifies types of font formats supported for serving by the system.
+    enum FontFormat {
+      // Unspecified font format.
+      UNSPECIFIED_FORMAT = 0;
+
+      // OpenType Format (OTF).
+      OPENTYPE = 1;
+
+      // TrueType Format (TTF).
+      TRUETYPE = 2;
+
+      // Scalable Vector Graphics (SVG).
+      VECTOR = 3;
+
+      // Web Open Font Format (WOFF).
+      WEBFONT = 4;
+
+      // Web Open Font Format 2 (WOFF2).
+      WEBFONT2 = 5;
+
+      // Embedded OpenType (EOT).
+      EMBEDDED_OPENTYPE = 6;
+    }
+
+    // Specifies information about an individual reference to a font file.
+    message FontReference {
+      // Specifies the type of reference being made.
+      FontReferenceType type = 1;
+
+      // Specifies the format of the font reference being made.
+      FontFormat format = 2;
+
+      // Name of the font reference.
+      string name = 3;
+
+      // Weight of the font reference.
+      string weight = 4;
+
+      // Variant of the font reference.
+      string variant = 5;
+
+      // URI reference to this font asset.
+      webutil.html.types.TrustedResourceUrlProto uri = 6;
+    }
+
+    // Specifies a package of fonts included for reference in a given web page.
+    message FontPackage {
+      // Specifies the CSS name used for this font package/family.
+      string name = 1;
+
+      // References to individual constituent font assets.
+      repeated FontReference reference = 2;
+    }
+
+    // Specifies packages of fonts included for reference.
+    repeated FontPackage package = 1;
+  }
+
+  // Specifies information about JavaScript code that should be included with a given page render. Scripts
+  // included in this manner may be emitted inline or by reference (URI).
+  message Scripts {
+    // Defines the notion of an external script document, written in JavaScript, which should be included
+    // via reference rather than inline.
+    message JavaScript {
+      // URI to a given script asset.
+      webutil.html.types.TrustedResourceUrlProto uri = 1;
+
+      // Whether to add the `module` flag to a script.
+      bool module = 2;
+
+      // Whether to add the `defer` flag to a script.
+      bool defer = 3;
+
+      // Whether to add the `async` flag to a script.
+      bool async = 4;
+
+      // ID at which to attach the script tag.
+      string id = 5;
+    }
+
+    // JavaScript code that should be emitted early in the <head>.
+    webutil.html.types.SafeScriptProto lifted = 1;
+
+    // External JavaScript code to be included in <link> tags.
+    repeated JavaScript link = 2;
+  }
+
+  // Metadata definitions for this web page render context.
+  Metadata meta = 1;
+
+  // CSS definitions and lifted code for the page head.
+  Styles styles = 2;
+
+  // Fonts to include/load on the page.
+  Fonts fonts = 3;
+
+  // Scripts to include on the page or lift into the head.
+  Scripts scripts = 4;
+
+  // Application manifest for a given page or web app.
+  AppManifest manifest = 7;
+}

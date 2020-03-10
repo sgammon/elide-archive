@@ -1,3 +1,15 @@
+##
+# Copyright © 2020, The Gust Framework Authors. All rights reserved.
+#
+# The Gust/Elide framework and tools, and all associated source or object computer code, except where otherwise noted,
+# are licensed under the Zero Prosperity license, which is enclosed in this repository, in the file LICENSE.txt. Use of
+# this code in object or source form requires and implies consent and agreement to that license in principle and
+# practice. Source or object code not listing this header, or unless specified otherwise, remain the property of
+# Elide LLC and its suppliers, if any. The intellectual and technical concepts contained herein are proprietary to
+# Elide LLC and its suppliers and may be covered by U.S. and Foreign Patents, or patents in process, and are protected
+# by trade secret and copyright law. Dissemination of this information, or reproduction of this material, in any form,
+# is strictly forbidden except in adherence with assigned license requirements.
+##
 
 ##
 ## GUST: Makefile
@@ -7,33 +19,75 @@ CI ?= no
 CACHE ?= yes
 REMOTE ?= no
 VERBOSE ?= no
-QUIET ?= no
+QUIET ?= yes
 STRICT ?= no
-COVERAGE ?= no
+COVERAGE ?= yes
+FORCE_COVERAGE ?= no
 PROJECT ?= bloom-sandbox
 IMAGE_PROJECT ?= elide-tools
 RBE_INSTANCE ?= default_instance
 CACHE_KEY ?= GustBuild
-REVISION ?= $(shell git describe --abbrev=7 --always --tags HEAD)
-VERSION ?= $(shell (cat package.json | grep version | head -1 | awk -F: '{ print $2 }' | sed 's/[",]//g' | tr -d '[[:space:]]' | sed 's/version\://g'))
 REGISTRY ?= bloomworks
+PROJECT_NAME ?= GUST
+ENABLE_REPORTCI ?= yes
+JS_COVERAGE_REPORT ?= no
+REPORTS ?= reports
+CI_REPO ?= sgammon/GUST
+
+SAMPLES ?= //samples/rest_mvc/java:MicronautMVCSample //samples/soy_ssr/src:MicronautSSRSample
+
+
+ifneq (,$(findstring Darwin,$(shell uname -a)))
+OUTPUT_BASE ?= darwin-dbg
+else
+OUTPUT_BASE ?= k8-fastbuild
+endif
+
+DOCS ?= docs
+DISTPATH ?= dist
+OUTPATH ?= $(DISTPATH)/out
+BINPATH ?= $(DISTPATH)/bin
+UNZIP ?= $(shell which unzip)
+REVISION ?= $(shell git describe --abbrev=7 --always --tags HEAD)
+BASE_VERSION ?= v1a
+VERSION ?= $(shell (cat package.json | grep version | head -1 | awk -F: '{ print $2 }' | sed 's/[",]//g' | tr -d '[[:space:]]' | sed 's/version\://g'))
+CHROME_COVERAGE ?= $(shell find dist/out/$(OUTPUT_BASE)/bin -name "coverage*.dat" | grep chrome | xargs)
+COVERAGE_DATA ?= $(OUTPATH)/_coverage/_coverage_report.dat
+COVERAGE_REPORT ?= $(REPORTS)/coverage
+COVERAGE_ARGS ?= --function-coverage \
+                 --branch-coverage \
+                 --highlight \
+                 --demangle-cpp \
+                 --show-details \
+                 --title "$(PROJECT_NAME)" \
+                 --precision 2 \
+                 --legend \
+                 --rc genhtml_med_limit=60 \
+                 --rc genhtml_hi_limit=90
 
 APP ?=
-TARGETS ?= //java/... //proto/... //js/... //style/...
-TESTS ?= //javatests/...
+TARGETS ?= //java/... //gust/... //js/... //style/... //jstests/...
+TESTS ?= //tests/...
+COVERABLE ?= //javatests:suite
 
 TAG ?=
+ifeq ($(QUIET),yes)
+TEST_ARGS ?=
+else
 TEST_ARGS ?= --test_output=errors
-BUILD_ARGS ?=
+endif
+TEST_ARGS_WITH_COVERAGE ?= --combined_report=lcov --nocache_test_results
+BUILD_ARGS ?= --define project=$(PROJECT)
 
+POSIX_FLAGS ?=
 BAZELISK_ARGS ?=
-BASE_ARGS ?= --google_default_credentials=true --define project=$(PROJECT)
+BASE_ARGS ?=
 
 
-# Flag: `COVERAGE`
-ifeq ($(COVERAGE),yes)
+# Flag: `FORCE_COVERAGE`
+ifeq ($(FORCE_COVERAGE),yes)
 TEST_COMMAND ?= coverage
-TEST_ARGS += --combined_report=lcov
+TEST_ARGS += $(TEST_ARGS_WITH_COVERAGE)
 else
 TEST_COMMAND ?= test
 endif
@@ -45,7 +99,7 @@ endif
 
 # Flag: `CACHE`.
 ifeq ($(CACHE),yes)
-BASE_ARGS += --remote_cache=grpcs://remotebuildexecution.googleapis.com \
+BASE_ARGS += --remote_cache=grpcs://remotebuildexecution.googleapis.com --google_default_credentials=true \
              --remote_instance_name=projects/$(PROJECT)/instances/$(RBE_INSTANCE) \
 	     --host_platform_remote_properties_override='properties:{name:"cache-silo-key" value:"$(CACHE_KEY)"}'
 endif
@@ -65,51 +119,88 @@ TAG += --config=ci
 _DEFAULT_JAVA_HOME = $(shell echo $$JAVA_HOME_12_X64)
 BASE_ARGS += --define=ZULUBASE=$(_DEFAULT_JAVA_HOME) --define=jdk=zulu
 BAZELISK ?= /bin/bazelisk
+GENHTML ?= /bin/genhtml
 else
 TAG += --config=dev
+IBAZEL ?= $(shell which ibazel)
 BAZELISK ?= $(shell which bazelisk)
+GENHTML ?= $(shell which genhtml)
 endif
 
 # Flag: `VERBOSE`
 ifeq ($(VERBOSE),yes)
 BASE_ARGS += -s --verbose_failures
-endif
+POSIX_FLAGS += -v
+_RULE =
+else
 
 # Flag: `QUIET`
-ifeq ($(VERBOSE),yes)
+ifeq ($(QUIET),yes)
 _RULE = @
+endif
 endif
 
 
-all: devtools build test
+all: devtools build test  ## Build and test all framework targets.
 
-b build:  ## Build all framework targets.
+build:  ## Build all framework targets.
+	$(info Building $(PROJECT_NAME)...)
 	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) build $(TAG) $(BASE_ARGS) $(BUILD_ARGS) -- $(TARGETS)
 
-r run:  ## Run the specified target.
+run:  ## Run the specified target.
 	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) run $(TAG) $(BASE_ARGS) $(BUILD_ARGS) -- $(APP)
 
-c clean:  ## Clean ephemeral targets.
+dev:  ## Develop against the specified target.
+	$(_RULE)$(IBAZEL) run $(TAG) $(APP)
+
+clean: clean-docs clean-reports  ## Clean ephemeral targets.
 	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) clean
 
-samples:  ## Build and push sample app images.
-	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) run $(TAG) $(BASE_ARGS) $(BUILD_ARGS) //javatests/server:BasicTestApplication-image-push
-	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) run $(TAG) $(BASE_ARGS) $(BUILD_ARGS) //javatests/server:BasicTestApplication-native-image-push
-	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) run $(TAG) $(BASE_ARGS) $(BUILD_ARGS) //javatests/ssr:SSRTestApplication-image-push
-	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) run $(TAG) $(BASE_ARGS) $(BUILD_ARGS) //javatests/ssr:SSRTestApplication-native-image-push
+clean-docs:  ## Clean built documentation.
+	@echo "Cleaning docs..."
+	$(_RULE)rm -fr $(POSIX_FLAGS) $(DOCS)
 
-distclean:  ## Clean targets, caches and dependencies.
+clean-reports:  ## Clean built reports.
+	@echo "Cleaning reports..."
+	$(_RULE) -fr $(POSIX_FLAGS) $(REPORTS)
+
+bases:  ## Build base images and push them.
+	@echo "Building Alpine base ('$(BASE_VERSION)')..."
+	$(_RULE)docker build -t us.gcr.io/$(IMAGE_PROJECT)/base/alpine:$(BASE_VERSION) ./images/base/alpine
+	@echo "Building Node base ('$(BASE_VERSION)')..."
+	$(_RULE)docker build -t us.gcr.io/$(IMAGE_PROJECT)/base/node:$(BASE_VERSION) ./images/base/node
+	@echo "Pushing bases..."
+	$(_RULE)docker push us.gcr.io/$(IMAGE_PROJECT)/base/alpine:$(BASE_VERSION)
+	$(_RULE)docker push us.gcr.io/$(IMAGE_PROJECT)/base/node:$(BASE_VERSION)
+
+samples:  ## Build and push sample app images.
+	$(_RULE)for target in $(SAMPLES) ; do \
+        $(BAZELISK) $(BAZELISK_ARGS) run $(TAG) $(BASE_ARGS) $(BUILD_ARGS) $$(echo "$$target")-image-push && \
+        $(BAZELISK) $(BAZELISK_ARGS) run $(TAG) $(BASE_ARGS) $(BUILD_ARGS) $$(echo "$$target")-native-image-push; \
+        done
+
+distclean: clean  ## Clean targets, caches and dependencies.
 	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) clean --expunge_async
 
 forceclean: distclean  ## Clean everything, and sanitize the codebase (DANGEROUS).
 	$(_RULE)git reset --hard && git clean -xdf
 
 test:  ## Run all framework testsuites.
+ifeq ($(COVERAGE),yes)
 	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) $(TEST_COMMAND) $(TAG) $(BASE_ARGS) $(TEST_ARGS) -- $(TESTS)
+	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) coverage $(TAG) $(BASE_ARGS) $(TEST_ARGS) $(TEST_ARGS_WITH_COVERAGE) -- $(COVERABLE)
+	$(_RULE)$(GENHTML) $(COVERAGE_DATA) --output-directory $(COVERAGE_REPORT) $(COVERAGE_ARGS)
+	$(_RULE)cp -f $(POSIX_FLAGS) $(COVERAGE_DATA) $(COVERAGE_REPORT)/lcov.dat
+else
+	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) $(TEST_COMMAND) $(TAG) $(BASE_ARGS) $(TEST_ARGS) -- $(TESTS) $(COVERABLE)
+endif
 
 docs:  ## Build documentation for the framework.
-	@echo "Building GUST docs..."
-	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) build $(TAG) $(BASE_ARGS) //:docs
+	@echo "Building GUST framework docs (Java)..."
+	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) build $(TAG) $(BASE_ARGS) -- //java:javadoc && \
+		mkdir -p $(DOCS)/java && \
+		$(UNZIP) -o -d $(DOCS)/java/ $(BINPATH)/java/gust/javadoc.jar;
+	@#$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) build $(TAG) $(BASE_ARGS) //:docs
 
 help:  ## Show this help text.
 	$(info GUST Framework Tools:)
@@ -119,9 +210,49 @@ devtools:  ## Install local development dependencies.
 	@echo "Installing devtools..."
 	$(_RULE)git submodule update --init --recursive
 
+builder-image:  ## Build a new version of the CI builder image for Gust.
+	@echo "Building CI image..."
+	$(_RULE)gcloud builds submit ./images/ci -t us.gcr.io/$(IMAGE_PROJECT)/tools/gcb
+
 update-deps:  ## Re-seal and update all dependencies.
 	@echo "Re-pinning Maven dependencies..."
 	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) run @unpinned_maven//:pin
+
+serve-docs: clean-docs docs  ## Serve the docs locally (must generate first).
+	@echo "Serving framework docs..."
+	$(_RULE)cd $(DOCS) && python -m SimpleHTTPServer
+
+serve-coverage:  ## Serve the current coverage report (must generate first).
+	@echo "Serving coverage report..."
+	$(_RULE)cd $(COVERAGE_REPORT) && python -m SimpleHTTPServer
+
+report-tests: ## Report test results to Report.CI.
+	@echo "Scanning for test results..."
+	$(_RULE)pip install -r tools/requirements.txt
+	$(_RULE)find dist/out/$(OUTPUT_BASE) -name test.xml | xargs python tools/merge_test_results.py reports/tests.xml
+	@echo "Generating HTML test report..."
+	$(_RULE)cd reports && python -m junit2htmlreport tests.xml
+ifeq ($(ENABLE_REPORTCI),yes)
+	@echo "Reporting test results..."
+	$(_RULE)-TRAVIS=true \
+	    TRAVIS_COMMIT=$$BUILDKITE_COMMIT \
+	    TRAVIS_BRANCH=$$BUILDKITE_BRANCH \
+	    TRAVIS_COMMIT_MESSAGE=$$BUILDKITE_MESSAGE \
+	    TRAVIS_PULL_REQUEST=$$BUILDKITE_PULL_REQUEST \
+	    TRAVIS_PULL_REQUEST_BRANCH=$$BUILDKITE_PULL_REQUEST_BASE_BRANCH \
+	    TRAVIS_REPO_SLUG=$(CI_REPO) \
+	    curl -s https://raw.githubusercontent.com/report-ci/scripts/master/upload.py | python - --include='reports/tests.xml' --framework=junit
+endif
+
+report-coverage:  ## Report coverage results to Codecov.
+	@echo "Building coverage tarball..."
+	@cd reports/coverage && tar -czvf ../coverage.tar.gz ./*
+	@echo "Reporting Java coverage to Codecov..."
+	$(_RULE)tools/report_java_coverage.sh $(COVERAGE_REPORT) backend,jvm javatests;
+ifeq ($(JS_COVERAGE_REPORT),yes)
+	@echo "Reporting JS (frontend) coverage to Codecov..."
+	$(_RULE)tools/report_js_coverage.sh frontend,js tests "$(addprefix -f ,$(CHROME_COVERAGE))";
+endif
 
 release-images:  ## Pull, tag, and release Docker images.
 	@echo "Pulling images for revision $(REVISION)..."

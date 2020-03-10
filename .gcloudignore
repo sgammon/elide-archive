@@ -1,0 +1,6 @@
+.git/modules
+node_modules/
+dist/
+build/
+vendor/
+#!include:.gitignore

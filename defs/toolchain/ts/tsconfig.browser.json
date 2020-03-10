@@ -1,0 +1,28 @@
+{
+  "extends": "tsconfig.common.json",
+  "compilerOptions": {
+    "lib": [
+      "es5",
+      "es6",
+      "dom",
+      "dom.iterable",
+      "esnext",
+      "esnext.array",
+      "esnext.asynciterable"
+    ],
+    "target": "es5",
+    "module": "ES2015",
+    "paths": {
+      "closure:*": ["./node_modules/closure-library.d.ts/index.d.ts"]
+    }
+  },
+  "include": [
+    "js/frontend/**/*.ts"
+  ],
+  "bazelOptions": {
+      "tsickle": true,
+      "tsickleGenerateExterns": true,
+      "tsickleExternsPath": "externs.js",
+      "googmodule": true
+  }
+}

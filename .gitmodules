@@ -3,7 +3,7 @@
 	url = git@github.com:protocolbuffers/protobuf.git
 	shallow = true
 	ignore = dirty
-	tag = v3.11.3
+	tag = v3.11.4
 [submodule "J2CL"]
 	path = vendor/bazel/j2cl
 	url = git@github.com:sgammon/j2cl.git
@@ -20,3 +20,12 @@
 [submodule "bazel-ij"]
 	path = vendor/bazel/intellij
 	url = git@github.com:bazelbuild/intellij.git
+[submodule "api_common"]
+	path = vendor/google/api-common
+	url = git@github.com:googleapis/api-common-protos.git
+[submodule "safe_html_types"]
+	path = vendor/google/safe-html-types
+	url = git@github.com:google/safe-html-types.git
+[submodule "bazel_common"]
+	path = vendor/bazel/common
+	url = git@github.com:sgammon/bazel-common.git

@@ -2,13 +2,16 @@ import .bazelproject
 
 build_flags:
   --config=dev
+  --define=todolist_release_tag=latest
 
 directories:
   defs
   external
   js
   java
-  proto
+  gust
+  tests
+  jstests
   javatests
   tools
   types
@@ -18,10 +21,15 @@ directories:
   .develop
   .buildkite
   -node_modules
+  -dist
+  -build
 
 targets:
-  //proto/...
+  //samples/...
+  //gust/...
   //java/...
   //js/...
   //style/...
+  //tests/...
+  //jstests/...
   //javatests/...

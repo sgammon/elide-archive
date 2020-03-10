@@ -1,0 +1,137 @@
+##
+# Copyright © 2020, The Gust Framework Authors. All rights reserved.
+#
+# The Gust/Elide framework and tools, and all associated source or object computer code, except where otherwise noted,
+# are licensed under the Zero Prosperity license, which is enclosed in this repository, in the file LICENSE.txt. Use of
+# this code in object or source form requires and implies consent and agreement to that license in principle and
+# practice. Source or object code not listing this header, or unless specified otherwise, remain the property of
+# Elide LLC and its suppliers, if any. The intellectual and technical concepts contained herein are proprietary to
+# Elide LLC and its suppliers and may be covered by U.S. and Foreign Patents, or patents in process, and are protected
+# by trade secret and copyright law. Dissemination of this information, or reproduction of this material, in any form,
+# is strictly forbidden except in adherence with assigned license requirements.
+##
+
+package(
+    default_visibility = ["//visibility:public"],
+)
+
+load(
+    "@gust//defs/toolchain:schema.bzl",
+    "service",
+)
+
+load(
+    "@gust//defs/toolchain:templates.bzl",
+    "ssr_library",
+)
+
+load(
+    "@gust//defs/toolchain:deps.bzl",
+    "maven",
+)
+
+load(
+    "@gust//defs/toolchain:backend.bzl",
+    "micronaut_library",
+    "micronaut_service",
+    "micronaut_controller",
+    "micronaut_application",
+    "micronaut_interceptor",
+)
+
+
+exports_files([
+    "api.yml",
+    "application.yml",
+    "logback.xml",
+    "reflection.json",
+])
+
+service(
+    name = "todolist_proto",
+    srcs = ["todolist.proto"],
+    deps = [
+        "//gust/page:media_proto",
+        "@proto_common//:type_month",
+        "@proto_common//:type_latlng",
+        "@proto_common//:type_timeofday",
+        "@proto_common//:rpc_status",
+        "@proto_common//:rpc_error_details",
+        "@proto_common//google/api:annotations_proto",
+        "@proto_common//google/api:client_proto",
+        "@proto_common//google/api:field_behavior",
+        "@com_google_protobuf//:any_proto",
+        "@com_google_protobuf//:empty_proto",
+        "@com_google_protobuf//:timestamp_proto",
+        "@com_google_protobuf//:field_mask_proto",
+    ]
+)
+
+ssr_library(
+    name = "home_soy",
+    srcs = ["home.soy"],
+    proto_deps = [":todolist_proto"],
+)
+
+micronaut_interceptor(
+    name = "TodolistInterceptor",
+    srcs = ["server/TodolistInterceptor.kt"],
+)
+
+micronaut_library(
+    name = "ReflectionService",
+    srcs = ["server/ReflectionService.kt"],
+    deps = [
+        maven("io.grpc:grpc-api"),
+        maven("io.grpc:grpc-services"),
+    ],
+)
+
+micronaut_library(
+    name = "TodolistLogic",
+    srcs = ["server/TodolistLogic.kt"],
+    proto_deps = [":todolist_proto"],
+)
+
+micronaut_service(
+    name = "TasksService",
+    srcs = ["server/TasksService.kt"],
+    services = [":todolist_proto"],
+    deps = [
+        ":TodolistLogic",
+        ":TodolistInterceptor",
+    ],
+)
+
+micronaut_controller(
+    name = "HomeController",
+    srcs = ["server/HomeController.kt"],
+    templates = [":home_soy"],
+    proto_deps = [":todolist_proto"],
+    deps = [":TodolistLogic"],
+)
+
+micronaut_application(
+    # -- App Info -- #
+    name = "TodolistServer",
+    config = ":application.yml",
+    logging_config = ":logback.xml",
+    ports = ["8081", "8082"],
+
+    # -- Controllers -- #
+    controllers = [
+        ":HomeController",
+    ],
+
+    services = [
+        ":TasksService",
+        ":ReflectionService",
+    ],
+
+    # -- Publishing / Images -- #
+    native = False,
+    tag = "$(todolist_release_tag)",
+    repository = "elide-tools/sample/todolist/jvm",
+    native_repository = "elide-tools/sample/todolist/native",
+    reflection_configuration = ":reflection.json",
+)

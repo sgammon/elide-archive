@@ -1,3 +1,15 @@
+##
+# Copyright © 2020, The Gust Framework Authors. All rights reserved.
+#
+# The Gust/Elide framework and tools, and all associated source or object computer code, except where otherwise noted,
+# are licensed under the Zero Prosperity license, which is enclosed in this repository, in the file LICENSE.txt. Use of
+# this code in object or source form requires and implies consent and agreement to that license in principle and
+# practice. Source or object code not listing this header, or unless specified otherwise, remain the property of
+# Elide LLC and its suppliers, if any. The intellectual and technical concepts contained herein are proprietary to
+# Elide LLC and its suppliers and may be covered by U.S. and Foreign Patents, or patents in process, and are protected
+# by trade secret and copyright law. Dissemination of this information, or reproduction of this material, in any form,
+# is strictly forbidden except in adherence with assigned license requirements.
+##
 
 load(
     "//defs:tools.bzl",
@@ -6,13 +18,32 @@ load(
     "git_repository",
 )
 
+load(
+    "//defs/toolchain:deps.bzl",
+    "maven",
+)
+
 DEPS = {
     # Bazel: Skylib
     "bazel_skylib": {
         "type": "github",
         "repo": "bazelbuild/bazel-skylib",
-        "target": "1c5ed0706a8e2f73116e128184be64a99e66e83d",
-        "seal": "02a5ead53c54e77686a7ae678179cdd37780d5534e16176831328a8cb3646011"},
+        "target": "add8e42934d1bf63ecf27f5439574383e74ef8fc",
+        "seal": "088e451fbee1fadf328d69bd243f8de5b3a44f329946edc79bff7fca9382379c"},
+
+    "bazel_common": {
+        "type": "github",
+        "repo": "sgammon/bazel-common",
+        "target": "7aef387013f54dbdd28a3a2b10f234bb5a18a892",
+        "local": "/workspace/GUST/vendor/bazel/common",
+        "seal": "1ce4440462a39d35927fbac005b5eb67d49af53450b2d9c42dfded4df619ecc8"},
+
+    # Bazel: Packaging
+    "rules_pkg": {
+        "type": "github",
+        "repo": "bazelbuild/rules_pkg",
+        "target": "b1014c8e56c27cc8199eaf747e671d0c32582175",
+        "seal": "59fe36ba70c97a52745a28503d48cd15bdc9b8745945d32d2a0ca9aeef2d9342"},
 
     # Bazel: Stardoc
     "io_bazel_stardoc": {
@@ -25,37 +56,30 @@ DEPS = {
     "bazel_gazelle": {
         "type": "github",
         "repo": "bazelbuild/bazel-gazelle",
-        "target": "b38f32ee6304d3fb1d98e83497ce238cbcc5e2e0",
-        "seal": "4b5d8160a5ad0a1edf9dc84c4c205a4e4565b4022bf1b0a0fc00b90890e0e232"},
+        "target": "57357431fc160b6877f632677d92657defd5ccbb",
+        "seal": "f44b6750927a36ca616041ad8fd44878f008d5ad0c76e6ce8ddd89f30cf99595"},
 
     # Bazel: Toolchains
     "bazel_toolchains": {
         "type": "github",
         "repo": "bazelbuild/bazel-toolchains",
-        "target": "2cd73fd57fc4b8e90e6f47e7254496279c747862",
-        "seal": "7fb8cfb86fffed4574b255ffe3c188403b505f5e502367fc90b6290257ca9d17"},
+        "target": "9b20ae1817490a2adb3b38d7f2e2898b537cccb9",
+        "seal": "d516d4bdc38b79ed752e37fa6821c51d35d7ba3c6ecc040b94b92e705349bdec"},
 
     # Rules: Closure
     "io_bazel_rules_closure": {
         "type": "github",
         "repo": "sgammon/rules_closure",
-        "target": "4dc8434e964fa69d9c16d0936a706614c430ee1d",
+        "target": "25ab3fd2ea18b932ce892dbdddc931eec6586a6f",
         "local": "/workspace/GUST/vendor/bazel/rules_closure",
-        "seal": "90fa364333565bd6ad26dd48a58285c54967f8e335471a388a2e046bfaec390d"},
-
-    # Rules: SASS
-    "io_bazel_rules_sass": {
-        "type": "github",
-        "repo": "bazelbuild/rules_sass",
-        "target": "7e798ffb0f4a6147b766ee2a62d7f18b8155452e",
-        "seal": "bf228b61d852fd38688ca4c1b9148b6bdc888053c4a86bffc451853124f5b2b1"},
+        "seal": "0dec33ed4cdf979d1ac5f574eb1671b70bbdc317b13c38dd3ed0774f05d59ba8"},
 
     # Rules: Protobuf
     "rules_proto": {
         "type": "github",
         "repo": "bazelbuild/rules_proto",
-        "target": "673e59d983eeef2e2ae0cfbb98ea87aad9de1795",
-        "seal": "e2a3d5da2a8e316b5c3623e7d7047cdd942f2d0eb43f8c84ca0470f5413f128d"},
+        "target": "f6b8d89b90a7956f6782a4a3609b2f0eee3ce965",
+        "seal": "4d421d51f9ecfe9bf96ab23b55c6f2b809cbaf0eea24952683e397decfbd0dd0"},
 
     # Rules: Python
     "rules_python": {
@@ -68,16 +92,16 @@ DEPS = {
     "rules_java": {
         "type": "github",
         "repo": "bazelbuild/rules_java",
-        "target": "32ddd6c4f0ad38a54169d049ec05febc393b58fc",
-        "seal": "1969a89e8da396eb7754fd0247b7df39b6df433c3dcca0095b4ba30a5409cc9d"},
+        "target": "9eb38ebffbaf4414fa3d2292b28e604a256dd5a5",
+        "seal": "a0adff084a3e8ffac3b88582b208897cd615a29620aa5416337df93a3d3bfd15"},
 
     # Rules: GraalVM
     "rules_graal": {
         "type": "github",
         "repo": "sgammon/rules_graal",
-        "target": "596162673fca8fae1f7e8742b1893096ed075e43",
+        "target": "36fad5adcb2ee3ce02ae5c66092b81eb416eb210",
         "local": "/workspace/GUST/vendor/bazel/rules_graal",
-        "seal": "c0cf58dcc502688c533850ed15b3e87d40e7c4493d77d76fd27609a3c0a6e5ba"},
+        "seal": "ec810cf18ead709c87c1736d70603ef40318f8d219ebee8c821f57e035bc4cfa"},
 
     # Rules: Kotlin
     "io_bazel_rules_kotlin": {
@@ -90,26 +114,40 @@ DEPS = {
     "rules_jvm_external": {
         "type": "github",
         "repo": "bazelbuild/rules_jvm_external",
-        "target": "030ea9ef8e4ea491fed13de1771e225eb5a52d18",
-        "seal": "3f9456f7edb5644639cf362f15ae3bf8b3605c7a0400544c059f92786f551921"},
+        "target": "d442b54d22ec60010053bb20c783e87558f3632e",
+        "seal": "39bd9c3b485d85c37c351edc4930a458412b1178776e4c12f754dadc74a14b65"},
+
+    # Rules: Apple (iOS/macOS/tvOS)
+    "build_bazel_rules_apple": {
+        "type": "github",
+        "repo": "bazelbuild/rules_apple",
+        "target": "5b47855a8be997c1463a1c0425b9aa08f2ba826f",
+        "seal": "074ec4fee68b37a25e1935e53cf4cd2c9bfa103be39256fa7836473855615436"},
+
+    # Rules: Apple (Swift)
+    "build_bazel_rules_swift": {
+        "type": "github",
+        "repo": "bazelbuild/rules_swift",
+        "target": "ebef63d4fd639785e995b9a2b20622ece100286a",
+        "seal": "ce30e25bed943a9edae90770a5121618a7239d09f8e05bdc1aaa5643f730ad7b"},
 
     # Rules: Go
     "io_bazel_rules_go": {
         "type": "github",
         "repo": "bazelbuild/rules_go",
-        "target": "7d825a39a9c5fc49f4dfe7b09c8ce8ec59ea6be8",
-        "seal": "62cf913701c81c0f5a3a2772fee652f44b994248608df155e4b61139b7127a88"},
+        "target": "b763c84aa4f124273bb6048136fe86a4de60a1ae",
+        "seal": "d54e3c4ac3420f002c6d8940200ee86411635b472e044858d7f6b91241f89f1b"},
 
     # Rules: Web Testing
     "io_bazel_rules_webtesting": {
         "type": "github",
         "repo": "sgammon/rules_webtesting",
-        "target": "0a1cbf2c5bb878eb2ccbc304342b6a3619ba6e7d",
-        "seal": "01a8fd568b26dff2c8afd68a673890c38d2ea5324d2259580106e7b8ad3f8e95",
-        "local": "/workspace/GUST/vendor/bazel/rules_webtesting"},
+        "target": "b861fa9748410131d9eab2318163006efd02e96a",
+        "local": "/workspace/GUST/vendor/bazel/rules_webtesting",
+        "seal": "887ebbdc0815c7e61376d8b74f03a5692dcbe857bc61b8b4bb4d94322b276d4e"},
 
     # Rules: SCSS/SASS
-    "rules_sass": {
+    "io_bazel_rules_sass": {
         "type": "github",
         "repo": "bazelbuild/rules_sass",
         "target": "7e798ffb0f4a6147b766ee2a62d7f18b8155452e",
@@ -119,23 +157,44 @@ DEPS = {
     "io_bazel_rules_docker": {
         "type": "github",
         "repo": "bazelbuild/rules_docker",
-        "target": "d28594b57f4b14663efc0e667651a4ee12ab7246",
-        "seal": "f95bb2c2c713fea13ace65898256435814aa006cd725985545379b3e8aaaee27"},
+        "target": "e3ccf5006e17b83f2bab0f9764396dabb337172e",
+        "seal": "3e9559277c0e990f9043aa7a6fb817fedf0c3fe77b582d386015bd9e4c52b506"},
+
+    # Rules: Kubernetes
+    "io_bazel_rules_k8s": {
+        "type": "github",
+        "repo": "bazelbuild/rules_k8s",
+        "target": "0a9e6d75ca7e544a2fc3c6d770db01ba930d7f20",
+        "seal": "c114b47a1a3f07fb70b4017912bffa049c0189369410f6ce6d6f39c60c67f79b"},
+
+    # Google: Protobuf
+    "com_google_protobuf": {
+        "type": "github",
+        "repo": "google/protobuf",
+        "target": "d0bfd5221182da1a7cc280f3337b5e41a89539cf",
+        "seal": "2435b7fb83b8a608c24ca677907aa9a35e482a7f018e65ca69481b3c8c9f7caf"},
 
     # Google: J2CL (Java-to-Closure)
     "com_google_j2cl": {
         "type": "github",
         "repo": "sgammon/j2cl",
-        "target": "3e3092f86b0cc0958a2dbc2c8098484acc1ddff0",
-        "seal": "807d0c61bf966d70dbcfdf89f7fffd001ef9b66c472ef2b6e51031f70cc9c1c9",
-        "local": "/workspace/GUST/vendor/bazel/j2cl"},
+        "target": "6d4af3938679f20c90bc27efbd66e60a7e96c9b6",
+        "local": "/workspace/GUST/vendor/bazel/j2cl",
+        "seal": "81db591a5dade1cee0d2f8793139ac2090ea9a69b11f3ebd94fbc0d5ce1ef45d"},
 
     # Google: Elemental2
     "com_google_elemental2": {
         "type": "github",
         "repo": "google/elemental2",
-        "target": "6567f2ad00379f34f4a1e080faf90fc284615354",
-        "seal": "94a978b5b4ced58b0ce95bfa6d3e08a3c55af4c89e49449aa6b61c2f34b931ab"},
+        "target": "2c571902974ed8a69a27f8c6e13dd94742395dc9",
+        "seal": "7bcf693dbfd700dd68f9b3685a6a035070e378ee6bce90dbdf7b9a9077d62827"},
+
+    # Google: JS Interop (Base)
+    "com_google_jsinterop_base": {
+        "type": "github",
+        "repo": "google/jsinterop-base",
+        "target": "172a78020d428e46cc86bcaebe946589c07452ae",
+        "seal": "8edf4e4e51cff5c7346f6d43f2b822767ae16f1b65ca4d26b7040111d1f62c48"},
 
     # Google: JS Interop (Generator)
     "com_google_jsinterop_generator": {
@@ -144,33 +203,33 @@ DEPS = {
         "target": "4d566c621720f47d0b5adb1e03d617c1819d2e87",
         "seal": "df4aafb211742493b8bf6a0e176312d56d4a8d92aa8b50568ea2912be9bb615f"},
 
-    # Google: API (Core)
-    "com_google_api": {
-        "type": "github",
-        "repo": "googleapis/googleapis",
-        "target": "e2faab04f4cb7f9755072330866689b1943a16e9",
-        "seal": "baf88715f8ea0e44f059565b7e7995fa8fd14eaeecc8266645c613a8c86bc2de"},
-
-    # Google: API (Codegen)
-    "com_google_api_codegen": {
-        "type": "github",
-        "repo": "googleapis/gapic-generator",
-        "target": "a57f59b05d63e811cac6436af29378ed47ef50ed",
-        "seal": "5dd6787e2e942b51b344ccce429c6eddeab54545c799c0067c4b02fc59a5d6f0"},
-
-    # Google: GWT
-    "org_gwtproject_gwt": {
-        "type": "github",
-        "repo": "gwtproject/gwt",
-        "target": "2b2b39a124e30800f51a30c1e253fdb3ad521b2d",
-        "seal": "af1a6fd3b20f2c5aebf6c8d3e35f9aec0faee20e9c5a2e6fdb14e588996cfaec"},
-
-    # Google: JS Interop
+    # Google: JS Interop (Annotations)
     "com_google_jsinterop_annotations_head": {
         "type": "github",
         "repo": "google/jsinterop-annotations",
         "target": "8b6080dd1b0b9f60f4175243ea8038bf7fb8a557",
         "seal": "51aa1d36cbe736fc98fa53a825eff25c6e0811dc656d23979d837721f72e78cf"},
+
+    # Google: API (Core)
+    "com_google_api": {
+        "type": "github",
+        "repo": "googleapis/googleapis",
+        "target": "a9639a0a9854fd6e1be08bba1ac3897f4f16cb2f",
+        "seal": "f8d381d8a5bc186e30f0cfb6c2ebdbe42c12bf30f0bf46a4a7d071be1c36b20f"},
+
+    # Google: API (Codegen)
+    "com_google_api_codegen": {
+        "type": "github",
+        "repo": "googleapis/gapic-generator",
+        "target": "102ce460e9be8f42f7eb05442be6ce4e4dfb6a98",
+        "seal": "e9801c52adf7b4d2bb4e07ce1584602cfb955f3c97e4016bd02640ac444150f6"},
+
+    # Google: GWT
+    "org_gwtproject_gwt": {
+        "type": "github",
+        "repo": "gwtproject/gwt",
+        "target": "f236a6964669a70253ad16fdb9f627834997519e",
+        "seal": "6256fb60b6749789a40203d32daf217638b0ae5daeca93056b9c1fb048672042"},
 
     # BuildStack: Protobuf Rules
     "build_stack_rules_proto": {
@@ -178,14 +237,6 @@ DEPS = {
         "repo": "stackb/rules_proto",
         "target": "734b8d41d39a903c70132828616f26cb2c7f908c",
         "seal": "c89348b73f4bc59c0add4074cc0c620a5a2a08338eb4ef207d57eaa8453b82e8"},
-
-    # HTML5 Boilerplate
-    "org_html5_boilerplate": {
-        "type": "github",
-        "repo": "h5bp/html5-boilerplate",
-        "target": "36c8988392777cd3c2c6718bfa1114c79b344601",
-        "overlay": "h5bp.bzl",
-        "seal": None},
 
     # Normalize CSS
     "org_normalize_css": {
@@ -202,6 +253,50 @@ DEPS = {
         "target": "7e10595660b9c56ab67203f8ba966cb4883e1547",
         "overlay": "mdl.bzl",
         "seal": "f65b744aa0865bce2f9727b1b116fadf10639b63f4b511165a2ab65afa6d1046"},
+
+    # Common Protocol Buffers
+    "proto_common": {
+        "type": "github",
+        "repo": "googleapis/api-common-protos",
+        "target": "fd62e4d97ca6829b9166ae86bc6429574ff4e5db",
+        "overlay": "proto_common.bzl",
+        "seal": "4a84c293b3758d2cd5b6da27ffb0166f6ce23b99f70ea14ef28cb77099744889"},
+
+    # Safe HTML Types
+    "safe_html_types": {
+        "type": "github",
+        "repo": "google/safe-html-types",
+        "target": "8507735457ea41a37dfa027fb176d49d5783c4ba",
+        "overlay": "safe_html_types.bzl",
+        "seal": "2356090e7632f49ea581bb6f8808fa038a7433d433f3e8d7045a36f81fb39d65"},
+
+    # gRPC: Core
+    "com_github_grpc_grpc": {
+        "type": "github",
+        "repo": "grpc/grpc",
+        "target": "be1715d82f7b32e838565631ab7ad04850bfd4ff",
+        "seal": "ba8f098924ac373c9a8f08a8179f073c4df1c45b9966ae6aaff87b53b7f0e009"},
+
+    # gRPC: Java
+    "io_grpc_java": {
+        "type": "github",
+        "repo": "grpc/grpc-java",
+        "target": "0b4fa21d50578d917f15dad41ca7a7ab2612356b",
+        "seal": "c47132e0dc0977a8434e3fb3b0e97b0f6269c31b3b77042a81d9e834f61cda1b"},
+
+    # Security/TLS: BoringSSL
+    "boringssl": {
+        "type": "github",
+        "repo": "google/boringssl",
+        "target": "1c2769383f027befac5b75b6cedd25daf3bf4dcf",
+        "seal": "a3d4de4f03cb321ef943678d72a045c9a19d26b23d6f4e313f97600c65201a27"},
+
+    # Kubernetes: Build Tools
+    "io_kubernetes_build": {
+        "type": "github",
+        "repo": "kubernetes/repo-infra",
+        "target": "dccb5aa645ea455a1c8c4c97a2a72b640036efc9",
+        "seal": "f4a99337b43b742d35f8592055af72aeb5ea0cdfa1acadd99d9e972d9aedd2b1"},
 
     # Google: Closure Stylesheets
     "com_google_closure_stylesheets": {
@@ -226,12 +321,22 @@ DEPS = {
         ]),
     },
 
+    # JavaX: Annotations API
+    "javax_annotation_api": {
+        "type": "java",
+        "licenses": ["notice"],  # Apache 2.0
+        "seal": None,
+        "targets": [
+          "https://repo1.maven.org/maven2/javax/annotation/javax.annotation-api/1.3.2/javax.annotation-api-1.3.2.jar",
+        ],
+    },
+
     # Google: Soy
     "com_google_template_soy": {
         "type": "java",
         "licenses": ["notice"],
-        "targets": ["https://storage.googleapis.com/bloom-software/frontend/soy/soy-lib-b25.jar"],
-        "seal": "3222dc45b2ec908d49b595c6476b8b98be354e5c73501db4393bc90aa49313ae",
+        "targets": ["https://storage.googleapis.com/bloom-software/frontend/soy/soy-lib-b28.jar"],
+        "seal": "4c95ff7fc4947273fab84958266098bebe4d991ea7e0c289211d81603d6a4ff6",
         "deps": [
             "@args4j",
             "@com_google_code_findbugs_jsr305",
@@ -241,7 +346,6 @@ DEPS = {
             "@com_google_inject_extensions_guice_assistedinject",
             "@com_google_inject_extensions_guice_multibindings",
             "@com_google_inject_guice",
-            "@com_google_protobuf//:protobuf_java",
             "@com_ibm_icu_icu4j",
             "@javax_inject",
             "@org_json",
@@ -249,6 +353,7 @@ DEPS = {
             "@org_ow2_asm_analysis",
             "@org_ow2_asm_commons",
             "@org_ow2_asm_util",
+            "@com_google_protobuf//:protobuf_java",
         ],
         "inject": "\n".join([
             ("java_binary(\n" +
@@ -273,8 +378,38 @@ DEPS = {
         "type": "archive",
         "format": "zip",
         "overlay": "@io_bazel_rules_closure//closure/templates:soy_jssrc.BUILD",
-        "targets": ["https://storage.googleapis.com/bloom-software/frontend/soy/soy-jssrc-b25.jar"],
-        "seal": "f14f8428776fa3388d7c81258ca219f38e7d74d103e7b632f77d6f70ef5d1ed2"},
+        "targets": ["https://storage.googleapis.com/bloom-software/frontend/soy/soy-jssrc-b28.jar"],
+        "seal": "0e0506261139b7d008cad47c721d55210785f33fbd4beedd3cb36e6752d85320"},
+
+    # Micronaut: Views (Core)
+    "io_micronaut_micronaut_views": {
+        "type": "java",
+        "licenses": ["notice"],
+        "targets": ["https://storage.googleapis.com/bloom-software/micronaut/b1/views-core-1.3.2.BUILD-SNAPSHOT.jar"],
+        "seal": "fbebc71ff66cc18513f45dcc200fc79bda23fabcba3a5c57db435a1985dc2e84",
+        "deps": [
+            maven("io.micronaut:micronaut-runtime"),
+            maven("io.micronaut:micronaut-http-client"),
+            maven("io.micronaut:micronaut-http-server-netty"),
+            maven("io.micronaut:micronaut-security"),
+        ],
+    },
+
+    # Micronaut: Views (Soy)
+    "io_micronaut_micronaut_views_soy": {
+        "type": "java",
+        "licenses": ["notice"],
+        "targets": ["https://storage.googleapis.com/bloom-software/micronaut/b1/views-soy-1.3.2.BUILD-SNAPSHOT.jar"],
+        "seal": "88b3e8f3eae9aef80377a0a98f9057acf716e8c65a9810c335423151949ba29e",
+        "deps": [
+            "@com_google_template_soy",
+            "@com_google_common_html_types",
+            maven("io.micronaut:micronaut-runtime"),
+            maven("io.micronaut:micronaut-http"),
+            maven("io.micronaut:micronaut-http-server"),
+            maven("io.micronaut:micronaut-buffer-netty"),
+        ],
+    },
 }
 
 

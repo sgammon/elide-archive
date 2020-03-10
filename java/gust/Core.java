@@ -1,4 +1,15 @@
-
+/*
+ * Copyright © 2020, The Gust Framework Authors. All rights reserved.
+ *
+ * The Gust/Elide framework and tools, and all associated source or object computer code, except where otherwise noted,
+ * are licensed under the Zero Prosperity license, which is enclosed in this repository, in the file LICENSE.txt. Use of
+ * this code in object or source form requires and implies consent and agreement to that license in principle and
+ * practice. Source or object code not listing this header, or unless specified otherwise, remain the property of
+ * Elide LLC and its suppliers, if any. The intellectual and technical concepts contained herein are proprietary to
+ * Elide LLC and its suppliers and may be covered by U.S. and Foreign Patents, or patents in process, and are protected
+ * by trade secret and copyright law. Dissemination of this information, or reproduction of this material, in any form,
+ * is strictly forbidden except in adherence with assigned license requirements.
+ */
 package gust;
 
 import jsinterop.annotations.JsType;
@@ -7,23 +18,25 @@ import jsinterop.annotations.JsType;
 /**
  * Provides core values, utility methods, etc, which can be used throughout the back- and front-end of a Gust-based
  * application. Some of these methods or properties will return different values based on where the application is
- * executed. So, accessing, say, {@link #getEngine()} will return <pre>browser</pre> when invoked from JavaScript on the
- * front-end, and one of <pre>jvm</pre> or <pre>native</pre> when running on the backend.
+ * executed. So, accessing, say, {@link #getEngine()} will return {@code browser} when invoked from JavaScript on the
+ * front-end, and one of {@code jvm} or {@code native} when running on the backend.
  */
 @JsType
 @SuppressWarnings("WeakerAccess")
-public class Core {
+public final class Core {
+  /** Holds the current runtime engine. */
+  static final String currentEngine = System.getProperty("gust.engine", "unknown");
+
   /** Version of the framework. Injected at build time. */
   static final String frameworkVersion = System.getProperty("gust.version", "alpha");
 
-  /** Holds the current runtime engine. */
-  static final String currentEngine = System.getProperty("gust.engine", "unknown");
+  /** Holds the current `dev` flag status. */
+  static final Boolean devMode = Boolean.parseBoolean(System.getProperty("gust.dev", "false"));
 
   /** Holds the current `debug` flag status. */
   static final Boolean debugMode = Boolean.parseBoolean(System.getProperty("gust.debug", "false"));
 
-  /** Holds the current `dev` flag status. */
-  static final Boolean devMode = Boolean.parseBoolean(System.getProperty("gust.dev", "false"));
+  private Core() { /* Disallow instantiation. */ }
 
   /**
    * Retrieve the application version setting, which is applied via the JVM system property <pre>gust.version</pre>.
@@ -54,7 +67,7 @@ public class Core {
    *
    * @return Whether we are running in debug mode, or production mode (in which case this is `false`).
    */
-  public static boolean isDebugMode() {
+  public static Boolean isDebugMode() {
     return debugMode;
   }
 
@@ -66,7 +79,7 @@ public class Core {
    *
    * @return Whether we are running in dev mode, or production mode (in which case this is `false`).
    */
-  public static boolean isDevMode() {
+  public static Boolean isDevMode() {
     return devMode;
   }
 
@@ -77,7 +90,7 @@ public class Core {
    *
    * @return Whether we are running in production mode or not (`true` when `dev` and `debug` are both `false`).
    */
-  public static boolean isProductionMode() {
+  public static Boolean isProductionMode() {
     return !debugMode && !devMode;
   }
 }

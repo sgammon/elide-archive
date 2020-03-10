@@ -1,3 +1,15 @@
+##
+# Copyright © 2020, The Gust Framework Authors. All rights reserved.
+#
+# The Gust/Elide framework and tools, and all associated source or object computer code, except where otherwise noted,
+# are licensed under the Zero Prosperity license, which is enclosed in this repository, in the file LICENSE.txt. Use of
+# this code in object or source form requires and implies consent and agreement to that license in principle and
+# practice. Source or object code not listing this header, or unless specified otherwise, remain the property of
+# Elide LLC and its suppliers, if any. The intellectual and technical concepts contained herein are proprietary to
+# Elide LLC and its suppliers and may be covered by U.S. and Foreign Patents, or patents in process, and are protected
+# by trade secret and copyright law. Dissemination of this information, or reproduction of this material, in any form,
+# is strictly forbidden except in adherence with assigned license requirements.
+##
 
 load(
     "@com_google_j2cl//build_defs:rules.bzl",
@@ -6,7 +18,6 @@ load(
 
 load(
     "@io_bazel_rules_closure//closure:defs.bzl",
-    _closure_js_test = "closure_js_test",
     _closure_js_library = "closure_js_library",
     _closure_js_binary = "closure_js_binary",
     _closure_js_template_library = "closure_js_template_library",
@@ -18,20 +29,6 @@ load(
     _annotate_defs_dict = "annotate_defs_dict",
     _annotate_defs_flags = "annotate_defs_flags",
 )
-
-
-def _js_test(name, srcs = None, deps = None, defs = {}, **kwargs):
-
-    """ Build a closure JS test. """
-
-    overlay_defs = _annotate_defs_flags(defs)
-    _closure_js_test(
-        name = name,
-        srcs = srcs or [],
-        deps = (deps or []) + ["@io_bazel_rules_closure//closure/library:testing"],
-        defs = overlay_defs,
-        **kwargs
-    )
 
 
 def _js_module(name, srcs = None, deps = None, **kwargs):
@@ -71,5 +68,4 @@ def _js_app(name,
 
 
 js_app = _js_app
-js_test = _js_test
 js_module = _js_module

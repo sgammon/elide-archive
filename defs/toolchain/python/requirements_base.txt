@@ -1,2 +1,1 @@
 protobuf==3.11.2
-selenium_unittest==0.2.3

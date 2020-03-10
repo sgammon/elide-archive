@@ -1,7 +1,24 @@
+##
+# Copyright © 2020, The Gust Framework Authors. All rights reserved.
+#
+# The Gust/Elide framework and tools, and all associated source or object computer code, except where otherwise noted,
+# are licensed under the Zero Prosperity license, which is enclosed in this repository, in the file LICENSE.txt. Use of
+# this code in object or source form requires and implies consent and agreement to that license in principle and
+# practice. Source or object code not listing this header, or unless specified otherwise, remain the property of
+# Elide LLC and its suppliers, if any. The intellectual and technical concepts contained herein are proprietary to
+# Elide LLC and its suppliers and may be covered by U.S. and Foreign Patents, or patents in process, and are protected
+# by trade secret and copyright law. Dissemination of this information, or reproduction of this material, in any form,
+# is strictly forbidden except in adherence with assigned license requirements.
+##
 
 load(
-    "@bazel_tools//tools/build_defs/pkg:pkg.bzl",
-    "pkg_tar",
+    "//defs:config.bzl",
+    _JVM_DEBUG_PORT = "JVM_DEBUG_PORT",
+)
+
+load(
+    "@rules_pkg//pkg:pkg.bzl",
+    _pkg_tar = "pkg_tar",
 )
 
 load(
@@ -39,6 +56,7 @@ load(
 
 load(
     "//defs/toolchain:schema.bzl",
+    "GRPCJAVA_POSTFIX_",
     "JAVAPROTO_POSTFIX_",
     "CLOSUREPROTO_POSTFIX_",
 )
@@ -56,11 +74,19 @@ load(
 
 
 INJECTED_MICRONAUT_DEPS = [
+    "@javax_inject",
+    "@javax_annotation_api",
+    "@gust//java:framework",
     "@gust//defs/toolchain/java/plugins:micronaut",
-    maven("com.google.guava:guava"),
-    maven("com.google.template:soy"),
+    "@gust//java/gust/backend/runtime:logging",
+    "@com_google_guava",
+    "@com_google_template_soy",
+    "@com_google_common_html_types",
+    "@com_google_code_findbugs_jsr305",
+    "@io_micronaut_micronaut_views",
+    "@io_micronaut_micronaut_views_soy",
+    maven("org.slf4j:slf4j-api"),
     maven("com.google.protobuf:protobuf-java"),
-    maven("com.google.code.findbugs:jsr305"),
     maven("io.micronaut:micronaut-aop"),
     maven("io.micronaut:micronaut-core"),
     maven("io.micronaut:micronaut-http"),
@@ -72,12 +98,56 @@ INJECTED_MICRONAUT_DEPS = [
     maven("io.micronaut:micronaut-http-server-netty"),
     maven("io.micronaut:micronaut-graal"),
     maven("io.micronaut:micronaut-views"),
+    maven("io.micronaut:micronaut-views-soy"),
     maven("io.micronaut:micronaut-router"),
+    maven("io.micronaut:micronaut-tracing"),
+    maven("io.micronaut:micronaut-session"),
+    maven("io.micronaut:micronaut-security"),
+    maven("io.micronaut:micronaut-messaging"),
+    maven("io.micronaut:micronaut-websocket"),
+    maven("io.micronaut:micronaut-multitenancy"),
+    maven("io.micronaut:micronaut-runtime"),
+    maven("io.reactivex.rxjava2:rxjava"),
+]
+
+INJECTED_MICRONAUT_GRPC_DEPS = [
+    maven("io.grpc:grpc-core"),
+    maven("io.grpc:grpc-auth"),
+    maven("io.grpc:grpc-api"),
+    maven("io.grpc:grpc-stub"),
+    maven("io.grpc:grpc-context"),
+    maven("io.grpc:grpc-protobuf"),
+    maven("io.micronaut.grpc:micronaut-grpc-runtime"),
+    maven("io.micronaut.grpc:micronaut-grpc-annotation"),
+    maven("io.micronaut.grpc:micronaut-protobuff-support"),
+]
+
+INJECTED_GAPI_DEPS = [
+    maven("com.google.cloud:libraries-bom"),
+    maven("com.google.cloud:google-cloud-firestore"),
+    maven("com.google.cloud:google-cloud-storage"),
+    maven("com.google.cloud:google-cloud-pubsub"),
 ]
 
 INJECTED_MICRONAUT_RUNTIME_DEPS = [
-    maven("org.slf4j:slf4j-jdk14"),
+    maven("ch.qos.logback:logback-classic"),
     maven("io.micronaut:micronaut-runtime"),
+]
+
+INJECTED_CONTROLLER_DEPS = [
+    "//java/gust/backend:PageContext",
+    "//java/gust/backend:PageContextManager",
+    "//java/gust/backend:BaseController",
+    "//java/gust/backend:AppController",
+]
+
+
+_JVM_APP_DEBUG_FLAGS = [
+    "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:%s" % _JVM_DEBUG_PORT,
+]
+
+_JVM_APP_RELEASE_FLAGS = [
+    # None yet.
 ]
 
 
@@ -207,9 +277,8 @@ def _micronaut_library(name,
 def _micronaut_controller(name,
                           srcs,
                           deps = [],
-                          protos = [],
-                          templates = [],
                           proto_deps = [],
+                          templates = [],
                           runtime_deps = [],
                           data = [],
                           **kwargs):
@@ -220,8 +289,37 @@ def _micronaut_controller(name,
     _micronaut_library(
         name = name,
         srcs = srcs,
-        proto_deps = protos,
+        proto_deps = proto_deps,
         templates = templates,
+        deps = _dedupe_deps((deps or []) + INJECTED_CONTROLLER_DEPS),
+        runtime_deps = runtime_deps,
+        data = data,
+        **kwargs
+    )
+
+
+
+def _micronaut_service(name,
+                       srcs,
+                       deps = [],
+                       proto_deps = [],
+                       services = [],
+                       templates = [],
+                       runtime_deps = [],
+                       data = [],
+                       **kwargs):
+
+    """ Wraps a Micronaut library with dependencies for services via gRPC. """
+
+    _micronaut_library(
+        name = name,
+        srcs = srcs,
+        proto_deps = proto_deps + services,
+        templates = templates,
+        deps = (deps or []) + [
+            ("%s-%s" % (svc, GRPCJAVA_POSTFIX_))
+            for svc in services
+        ] + INJECTED_MICRONAUT_GRPC_DEPS,
         runtime_deps = runtime_deps,
         data = data,
         **kwargs
@@ -261,6 +359,7 @@ def _micronaut_application(name,
                            image_format = "OCI",
                            srcs = [],
                            controllers = [],
+                           services = [],
                            tag = None,
                            deps = None,
                            proto_deps = [],
@@ -269,6 +368,8 @@ def _micronaut_application(name,
                            runtime_deps = [],
                            jvm_flags = [],
                            defs = {},
+                           ports = [],
+                           tags = [],
                            inject_main = True,
                            reflection_configuration = None,
                            **kwargs):
@@ -278,10 +379,10 @@ def _micronaut_application(name,
     computed_jvm_flags = _annotate_jvm_flags([i for i in jvm_flags], defs)
 
     if len(srcs) > 0:
-        computed_deps = _dedupe_deps((deps or []) + INJECTED_MICRONAUT_DEPS + controllers)
+        computed_deps = _dedupe_deps((deps or []) + INJECTED_MICRONAUT_DEPS + controllers + services)
         computed_image_deps = _dedupe_deps((deps or []) + INJECTED_MICRONAUT_DEPS)
         computed_image_layers = _dedupe_deps((
-            INJECTED_MICRONAUT_RUNTIME_DEPS + [template_loader] + controllers))
+            INJECTED_MICRONAUT_RUNTIME_DEPS + [template_loader] + controllers + services))
         computed_runtime_deps = [template_loader]
 
         if inject_main:
@@ -293,6 +394,7 @@ def _micronaut_application(name,
         computed_runtime_deps = _dedupe_deps(
             (deps or []) +
             INJECTED_MICRONAUT_DEPS +
+            services +
             controllers + [
                 maven("io.micronaut:micronaut-runtime"),
             ] + [template_loader] + [("%s-%s" % (
@@ -333,7 +435,7 @@ def _micronaut_application(name,
         resource_jars = [
             ("%s-lib" % r) for r in native_configsets
         ],
-        resource_strip_prefix = "java/gust/",
+        resource_strip_prefix = "java/gust" in config and "java/gust/" or None,
     )
 
     if native:
@@ -364,7 +466,7 @@ def _micronaut_application(name,
             reflection_configuration = reflection_configuration,
         )
 
-        pkg_tar(
+        _pkg_tar(
             name = "%s-native-pkg" % name,
             extension = "tar",
             srcs = ["%s-native-bin" % name],
@@ -376,6 +478,7 @@ def _micronaut_application(name,
             directory = "/app",
             files = ["%s-native-bin" % name],
             workdir = "/app",
+            ports = ports,
             cmd = None,
             env = {
                 "PORT": "8080",
@@ -418,7 +521,13 @@ def _micronaut_application(name,
         resources = resources,
         classpath_resources = [config, logging_config],
         main_class = main_class or "gust.backend.Application",
-        jvm_flags = computed_jvm_flags,
+        jvm_flags = computed_jvm_flags + select({
+            "//defs/conditions:release": _JVM_APP_RELEASE_FLAGS,
+            "//defs/conditions:debug": _JVM_APP_DEBUG_FLAGS,
+        }),
+        tags = (tags or []) + [
+          "ibazel_live_reload",
+        ],
         **kwargs
     )
 
@@ -430,6 +539,8 @@ ensure_types_ = _ensure_types
 jdk_binary = _jdk_binary
 jdk_library = _jdk_library
 micronaut_library = _micronaut_library
+micronaut_service = _micronaut_service
 micronaut_controller = _micronaut_controller
+micronaut_interceptor = _micronaut_service
 micronaut_application = _micronaut_application
 micronaut_native_configset = _micronaut_native_configset

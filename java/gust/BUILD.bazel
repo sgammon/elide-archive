@@ -1,3 +1,16 @@
+##
+# Copyright © 2020, The Gust Framework Authors. All rights reserved.
+#
+# The Gust/Elide framework and tools, and all associated source or object computer code, except where otherwise noted,
+# are licensed under the Zero Prosperity license, which is enclosed in this repository, in the file LICENSE.txt. Use of
+# this code in object or source form requires and implies consent and agreement to that license in principle and
+# practice. Source or object code not listing this header, or unless specified otherwise, remain the property of
+# Elide LLC and its suppliers, if any. The intellectual and technical concepts contained herein are proprietary to
+# Elide LLC and its suppliers and may be covered by U.S. and Foreign Patents, or patents in process, and are protected
+# by trade secret and copyright law. Dissemination of this information, or reproduction of this material, in any form,
+# is strictly forbidden except in adherence with assigned license requirements.
+##
+
 package(
     default_visibility = ["//visibility:public"],
 )
@@ -20,6 +33,23 @@ load(
 load(
     "@rules_java//java:defs.bzl",
     "java_library",
+)
+
+load(
+    "//defs/toolchain/java:docs.bzl",
+    "javadoc_library",
+    "javadoc_zipfile",
+)
+
+load(
+    "//defs/toolchain/java:repos.bzl",
+    "ALL_DEPENDENCIES",
+)
+
+load(
+    "//defs/toolchain:deps.bzl",
+    "maven",
+    "javaproto",
 )
 
 
@@ -49,7 +79,7 @@ cross_lib(
     ],
     jsdeps = [
         ":CoreModule",
-    ]
+    ],
 )
 
 js_module(
@@ -57,5 +87,39 @@ js_module(
     exports = [
         ":Core-j2cl",
         ":CoreModule",
+    ],
+)
+
+filegroup(
+    name = "sources",
+    srcs = glob([
+      "*.java"
+    ]) + [
+        "//java/gust/backend:sources",
     ]
+)
+
+javadoc_library(
+    name = "javadoc",
+    srcs = [
+        ":sources",
+    ],
+    deps = ALL_DEPENDENCIES + [
+        javaproto("//gust/core:datamodel"),
+        javaproto("//gust/page:page_proto"),
+    ],
+    bottom_text = "Copyright (©) 2020, The Gust Framework Authors",
+    doctitle = "GUST Framework",
+    extra_args = [
+        "-html5",
+        "-author",
+        "-charset", "UTF8",
+        "-docencoding", "UTF8",
+        "-keywords",
+        "-docfilessubdirs",
+        "-linksource",
+    ],
+    exclude_packages = [
+        "javatests",
+    ],
 )
