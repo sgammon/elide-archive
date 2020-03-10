@@ -309,12 +309,12 @@ public final class ModelMetadata {
       }
     } else {
       // need to recurse
-      String segment = remaining.substring(0, remaining.indexOf("."));
+      String segment = remaining.substring(0, remaining.indexOf('.'));
       var messageField = descriptor.findFieldByName(segment);
       if (messageField != null && messageField.getType() == FieldDescriptor.Type.MESSAGE) {
         // found the next tier
         var subType = messageField.getMessageType();
-        String newRemainder = remaining.substring(remaining.indexOf(".") + 1);
+        String newRemainder = remaining.substring(remaining.indexOf('.') + 1);
         return resolveArbitraryField(
           original,
           subType,
@@ -377,8 +377,8 @@ public final class ModelMetadata {
       return (Builder)original;
     } else {
       // we have a sub-message that is initialized, so we need to recurse.
-      String segment = remaining.substring(0, remaining.indexOf("."));
-      String newRemainder = remaining.substring(remaining.indexOf(".") + 1);
+      String segment = remaining.substring(0, remaining.indexOf('.'));
+      String newRemainder = remaining.substring(remaining.indexOf('.') + 1);
       return spliceArbitraryField(
         original,
         builder.getFieldBuilder(Objects.requireNonNull(descriptor.findFieldByName(segment))),
@@ -420,7 +420,7 @@ public final class ModelMetadata {
       }
     } else {
       // find next segment
-      String segment = remaining.substring(0, remaining.indexOf("."));
+      String segment = remaining.substring(0, remaining.indexOf('.'));
       var messageField = descriptor.findFieldByName(segment);
       if (messageField != null && messageField.getType() == FieldDescriptor.Type.MESSAGE) {
         if (!instance.hasField(messageField)) {
@@ -430,7 +430,7 @@ public final class ModelMetadata {
             Optional.empty());
         } else {
           // we have a sub-message that is initialized, so we need to recurse.
-          String newRemainder = remaining.substring(remaining.indexOf(".") + 1);
+          String newRemainder = remaining.substring(remaining.indexOf('.') + 1);
           return pluckFieldRecursive(
             original,
             (Message)instance.getField(messageField),

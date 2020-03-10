@@ -663,7 +663,7 @@ public final class ReactiveFuture<R> implements Publisher<R>, ListenableFuture<R
               Throwable err = null;
               try {
                 val = this.future.get();
-              } catch (Throwable exc) {
+              } catch (Exception exc) {
                 err = exc;
               }
 
@@ -678,7 +678,7 @@ public final class ReactiveFuture<R> implements Publisher<R>, ListenableFuture<R
                 }
               }
             }, this.executor);
-          } catch (Throwable e) {
+          } catch (Exception e) {
             subscriber.onError(e);
           }
         } else if (n != 1) {

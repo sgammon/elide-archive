@@ -153,6 +153,18 @@ public final class EncodedModel implements Serializable, Cloneable {
     return new EncodedModel(data, mode, type);
   }
 
+  // -- Cloneable -- //
+
+  /** {@inheritDoc} */
+  @Override
+  @SuppressWarnings("MethodDoesntCallSuperMethod")
+  protected EncodedModel clone() {
+    byte[] rawData = new byte[this.rawBytes.length];
+    System.arraycopy(this.rawBytes, 0, rawData, 0, this.rawBytes.length);
+    return new EncodedModel(rawData, this.dataMode, this.type);
+  }
+
+
   // -- Equals/Hash -- //
 
   /** {@inheritDoc} */

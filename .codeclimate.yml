@@ -57,6 +57,8 @@ plugins:
         enabled: false
       com.puppycrawl.tools.checkstyle.checks.whitespace.OperatorWrapCheck:
         enabled: false
+      com.puppycrawl.tools.checkstyle.checks.naming.InterfaceTypeParameterNameCheck:
+        enabled: false
 
   csslint:
     enabled: true
@@ -102,6 +104,15 @@ plugins:
 
   sonar-java:
     enabled: true
+    checks:
+      squid:S3776:
+        enabled: false
+      squid:SwitchLastCaseIsDefaultCheck:
+        enabled: false
+      squid:S1214:
+        enabled: false
+      squid:S00115:
+        enabled: false
 
   sonar-python:
     enabled: true
