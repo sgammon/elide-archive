@@ -36,6 +36,11 @@ plugins:
 
   checkstyle:
     enabled: true
+    config:
+      file: "tools/checkstyle.xml"
+    checks:
+      com.puppycrawl.tools.checkstyle.checks.whitespace.EmptyLineSeparatorCheck:
+        enabled: false
 
   csslint:
     enabled: true
