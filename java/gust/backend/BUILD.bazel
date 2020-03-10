@@ -101,7 +101,9 @@ micronaut_library(
     name = "TemplateProvider",
     srcs = ["TemplateProvider.java"],
     templates = ["//gust/page:page_soy"],
-    deps = [maven("io.micronaut:micronaut-views-soy")],
+    deps = [
+        "@io_micronaut_micronaut_views_soy",
+    ],
 )
 
 jdk_library(

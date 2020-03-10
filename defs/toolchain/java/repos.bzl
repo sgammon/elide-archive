@@ -41,7 +41,7 @@ FETCH_SOURCES = True
 STRICT_DEPENDENCIES = True
 
 ASM_VERSION = "7.0"
-SLF4J_VERSION = "1.7.26"
+SLF4J_VERSION = "1.7.30"
 
 GRAALVM_VERSION = _GRAALVM_VERSION
 
@@ -54,28 +54,27 @@ JUNIT_JUPITER_VERSION = "5.6.0"
 JUNIT_PLATFORM_VERSION = "1.6.0"
 
 GAX_VERSION = "1.54.0"
-RXJAVA_VERSION = "2.2.10"
+RXJAVA_VERSION = "2.2.18"
 REACTIVE_VERSION = "1.0.3"
-THREETEN_VERSION = "1.4.0"
+THREETEN_VERSION = "1.4.1"
 GAPI_COMMON_VERSION = "1.8.1"
 GCLOUD_API_VERSION = "0.122.3-alpha"
-GCLOUD_GRPC_VERSION = "1.93.0"
+GCLOUD_GRPC_VERSION = "1.93.1"
 GCLOUD_TASKS_VERSION = "1.28.2"
-GCLOUD_PUBSUB_VERSION = "1.103.0"
-GCLOUD_STORAGE_VERSION = "1.105.0"
-GCLOUD_FIRESTORE_VERSION = "1.32.4"
+GCLOUD_PUBSUB_VERSION = "1.103.1"
+GCLOUD_STORAGE_VERSION = "1.105.1"
+GCLOUD_FIRESTORE_VERSION = "1.32.5"
 GCLOUD_MONITORING_VERSION = "1.99.2"
 
-GRPC_JAVA_VERSION = "1.27.1"
+GRPC_JAVA_VERSION = "1.27.2"
 OPENTRACING_VERSION = "0.2.1"
 
-MICRONAUT_VERSION = "1.3.1"
+MICRONAUT_VERSION = "1.3.2"
 MICRONAUT_DATA_VERSION = "1.0.0"
 MICRONAUT_GRPC_VERSION = "1.1.1"
-MICRONAUT_TEST_VERSION = "1.1.2"
-MICRONAUT_CACHE_VERSION = "1.1.0"
+MICRONAUT_TEST_VERSION = "1.1.5"
 MICRONAUT_REDIS_VERSION = "1.2.0"
-MICRONAUT_SECURITY_VERSION = "1.3.0"
+MICRONAUT_SECURITY_VERSION = "1.3.1"
 
 GRPC_EXCLUSIONS = [
       maven.exclusion(
@@ -205,13 +204,13 @@ MICRONAUT_COORDINATES = [
     "io.micronaut:micronaut-router",
     "io.micronaut:micronaut-session",
     "io.micronaut:micronaut-tracing",
-    "io.micronaut:micronaut-security",
     "io.micronaut:micronaut-messaging",
     "io.micronaut:micronaut-multitenancy",
     "io.micronaut:micronaut-websocket",
 ]
 
 MICRONAUT_EXTRAS = [
+    ("io.micronaut:micronaut-security", MICRONAUT_SECURITY_VERSION),
     ("io.micronaut.data:micronaut-data-processor", MICRONAUT_DATA_VERSION),
     ("io.micronaut.grpc:micronaut-grpc-runtime", MICRONAUT_GRPC_VERSION),
     ("io.micronaut.grpc:micronaut-grpc-annotation", MICRONAUT_GRPC_VERSION),
@@ -222,9 +221,6 @@ MICRONAUT_EXTRAS = [
 MICRONAUT_BUILD_ARTIFACTS = ["%s:%s" % (i, MICRONAUT_VERSION) for i in MICRONAUT_COORDINATES] + [
     _micronaut_artifact("%s:%s" % x) for x in MICRONAUT_EXTRAS
 ] + [
-    ## Views Engine
-    maven.artifact("io.micronaut", "micronaut-views", MICRONAUT_VERSION, exclusions = SOY_EXCLUSIONS),
-
     ## Reactive Java
     _micronaut_artifact("org.reactivestreams:reactive-streams:%s" % REACTIVE_VERSION),
     _micronaut_artifact("io.reactivex.rxjava2:rxjava:%s" % RXJAVA_VERSION),

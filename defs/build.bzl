@@ -28,8 +28,8 @@ DEPS = {
     "bazel_skylib": {
         "type": "github",
         "repo": "bazelbuild/bazel-skylib",
-        "target": "add8e42934d1bf63ecf27f5439574383e74ef8fc",
-        "seal": "088e451fbee1fadf328d69bd243f8de5b3a44f329946edc79bff7fca9382379c"},
+        "target": "6970e21d290ceaa36502d0c94533b26e5ec18c0b",
+        "seal": "534ffdf8beffdbf37b101accb959e7c076cacbc1a704bfeda0f74b9009a65e31"},
 
     "bazel_common": {
         "type": "github",
@@ -42,29 +42,29 @@ DEPS = {
     "rules_pkg": {
         "type": "github",
         "repo": "bazelbuild/rules_pkg",
-        "target": "b1014c8e56c27cc8199eaf747e671d0c32582175",
-        "seal": "59fe36ba70c97a52745a28503d48cd15bdc9b8745945d32d2a0ca9aeef2d9342"},
+        "target": "3349f129a4f3c475ca32949c26dc90822ffebaac",
+        "seal": "9b2f6a6cf61b075ae9b6dbbe675d4e5432aab0d62da680d554baf114c1a42844"},
 
     # Bazel: Stardoc
     "io_bazel_stardoc": {
         "type": "github",
         "repo": "bazelbuild/stardoc",
-        "target": "7c18f436bcb2b9fa38d0a4353faacf0e2b214c4f",
-        "seal": "6cceb8bdb4b75ba7c779ef2cbb3bd81c842fb7afeeb2f3895c041393e58ef025"},
+        "target": "87545335ef7fb248051a7e049e88177ac8168c03",
+        "seal": "6266a305d6e7b794a39ca4563cc173af25719e7eeefa9a99c1d478f1f44db431"},
 
     # Bazel: Gazelle
     "bazel_gazelle": {
         "type": "github",
         "repo": "bazelbuild/bazel-gazelle",
-        "target": "57357431fc160b6877f632677d92657defd5ccbb",
-        "seal": "f44b6750927a36ca616041ad8fd44878f008d5ad0c76e6ce8ddd89f30cf99595"},
+        "target": "83b2dc564469ef341d2e84f358ebf24ffa003a71",
+        "seal": "191ebb38376bb8de3ddc5097c98fe49690bb8cc4ed7b9673bab38ffc87305b3f"},
 
     # Bazel: Toolchains
     "bazel_toolchains": {
         "type": "github",
         "repo": "bazelbuild/bazel-toolchains",
-        "target": "9b20ae1817490a2adb3b38d7f2e2898b537cccb9",
-        "seal": "d516d4bdc38b79ed752e37fa6821c51d35d7ba3c6ecc040b94b92e705349bdec"},
+        "target": "d5f69dc774b11ba97431a0594bf7278efb6a8b5c",
+        "seal": "b69ec6ba40eb210ee00d13af31f32ebb92c1f9b3bb212efcf3e99bc4d7a195d7"},
 
     # Rules: Closure
     "io_bazel_rules_closure": {
@@ -78,15 +78,15 @@ DEPS = {
     "rules_proto": {
         "type": "github",
         "repo": "bazelbuild/rules_proto",
-        "target": "f6b8d89b90a7956f6782a4a3609b2f0eee3ce965",
-        "seal": "4d421d51f9ecfe9bf96ab23b55c6f2b809cbaf0eea24952683e397decfbd0dd0"},
+        "target": "218ffa7dfa5408492dc86c01ee637614f8695c45",
+        "seal": "2490dca4f249b8a9a3ab07bd1ba6eca085aaf8e45a734af92aad0c42d9dc7aaf"},
 
     # Rules: Python
     "rules_python": {
         "type": "github",
         "repo": "bazelbuild/rules_python",
-        "target": "38f86fb55b698c51e8510c807489c9f4e047480e",
-        "seal": "c911dc70f62f507f3a361cbc21d6e0d502b91254382255309bc60b7a0f48de28"},
+        "target": "748aa53d7701e71101dfd15d800e100f6ff8e5d1",
+        "seal": "64a3c26f95db470c32ad86c924b23a821cd16c3879eed732a7841779a32a60f8"},
 
     # Rules: Java
     "rules_java": {
@@ -114,29 +114,36 @@ DEPS = {
     "rules_jvm_external": {
         "type": "github",
         "repo": "bazelbuild/rules_jvm_external",
-        "target": "d442b54d22ec60010053bb20c783e87558f3632e",
-        "seal": "39bd9c3b485d85c37c351edc4930a458412b1178776e4c12f754dadc74a14b65"},
+        "target": "4489ffeaaa9adcad4fa2657c1ca2eeb7b1ad4b84",
+        "seal": "6be1e2c4ad81cb00851df5ec7dcc2547cdd5cb555d829c5b665470f3d4d3229b"},
 
     # Rules: Apple (iOS/macOS/tvOS)
     "build_bazel_rules_apple": {
         "type": "github",
         "repo": "bazelbuild/rules_apple",
-        "target": "5b47855a8be997c1463a1c0425b9aa08f2ba826f",
-        "seal": "074ec4fee68b37a25e1935e53cf4cd2c9bfa103be39256fa7836473855615436"},
+        "target": "3bbee3a593d1f6ddb3391ba3a99ffe3f09a4821b",
+        "seal": "389c9fb1829d96b9fd553c9203bddccee14f3b58a85eb4b0c70642a2d4289f77"},
 
     # Rules: Apple (Swift)
     "build_bazel_rules_swift": {
         "type": "github",
         "repo": "bazelbuild/rules_swift",
-        "target": "ebef63d4fd639785e995b9a2b20622ece100286a",
-        "seal": "ce30e25bed943a9edae90770a5121618a7239d09f8e05bdc1aaa5643f730ad7b"},
+        "target": "bbe187c4b1f55c0974a0da345e5e313eaed37c05",
+        "seal": "359d4dede116b3440cdc080220002cc8e78182ae6da7f9974bc838888d366db4"},
+
+    # Deps: Apple Support
+    "build_bazel_apple_support": {
+        "type": "github",
+        "repo": "bazelbuild/apple_support",
+        "target": "501b4afb27745c4813a88ffa28acd901408014e4",
+        "seal": "ad8ae80e93612b8151019367a3d1604d7a51c14480dae1254e10252007e8260c"},
 
     # Rules: Go
     "io_bazel_rules_go": {
         "type": "github",
         "repo": "bazelbuild/rules_go",
-        "target": "b763c84aa4f124273bb6048136fe86a4de60a1ae",
-        "seal": "d54e3c4ac3420f002c6d8940200ee86411635b472e044858d7f6b91241f89f1b"},
+        "target": "87cc49af2c6d52eb3445860a15fcd264c86c5e80",
+        "seal": "91c34d38f1740dcd9d321928cdf28bd9ba28e58a0717662ef850d42bb694531b"},
 
     # Rules: Web Testing
     "io_bazel_rules_webtesting": {
@@ -150,22 +157,22 @@ DEPS = {
     "io_bazel_rules_sass": {
         "type": "github",
         "repo": "bazelbuild/rules_sass",
-        "target": "7e798ffb0f4a6147b766ee2a62d7f18b8155452e",
-        "seal": "bf228b61d852fd38688ca4c1b9148b6bdc888053c4a86bffc451853124f5b2b1"},
+        "target": "2c07f6ddc6ea1228519007e6548f2df915b13b0c",
+        "seal": "abe16bfc95dd203be64afa7e1cbfed3bbe7c30a1e6274e1a69a31a1ab4514705"},
 
     # Rules: Docker
     "io_bazel_rules_docker": {
         "type": "github",
         "repo": "bazelbuild/rules_docker",
-        "target": "e3ccf5006e17b83f2bab0f9764396dabb337172e",
-        "seal": "3e9559277c0e990f9043aa7a6fb817fedf0c3fe77b582d386015bd9e4c52b506"},
+        "target": "9e5b065ed0699bd8491ba1f6bef6eb428f2d230c",
+        "seal": "5b5941ba81a8f92d6cf1af5176ccfd3b5f2f7e5672741c3fa64f4023c22bed01"},
 
     # Rules: Kubernetes
     "io_bazel_rules_k8s": {
         "type": "github",
         "repo": "bazelbuild/rules_k8s",
-        "target": "0a9e6d75ca7e544a2fc3c6d770db01ba930d7f20",
-        "seal": "c114b47a1a3f07fb70b4017912bffa049c0189369410f6ce6d6f39c60c67f79b"},
+        "target": "3dcc327551590e7bdc16e40c9ead13a26b7c3c10",
+        "seal": "0f19a0a10a2e756959d4084c5f18e46b8ea3e2c62ee795340d7d8f32aff7f2cd"},
 
     # Google: Protobuf
     "com_google_protobuf": {
@@ -178,51 +185,51 @@ DEPS = {
     "com_google_j2cl": {
         "type": "github",
         "repo": "sgammon/j2cl",
-        "target": "6d4af3938679f20c90bc27efbd66e60a7e96c9b6",
+        "target": "9f499e7973afda4c485d9c68659fb7b1f1d8b023",
         "local": "/workspace/GUST/vendor/bazel/j2cl",
-        "seal": "81db591a5dade1cee0d2f8793139ac2090ea9a69b11f3ebd94fbc0d5ce1ef45d"},
+        "seal": "e776e27b538e7b09f17e83df5926a2199b86f020bc6734ca4a8664478572e014"},
 
     # Google: Elemental2
     "com_google_elemental2": {
         "type": "github",
-        "repo": "google/elemental2",
-        "target": "2c571902974ed8a69a27f8c6e13dd94742395dc9",
-        "seal": "7bcf693dbfd700dd68f9b3685a6a035070e378ee6bce90dbdf7b9a9077d62827"},
+        "repo": "sgammon/elemental2",
+        "target": "aab248e2170e9250e992aee97d476d3d768fe583",
+        "seal": "71caae6d7886515f347cef6c605186a6f2329b618af67fcd85b03bd7c7529363"},
 
     # Google: JS Interop (Base)
     "com_google_jsinterop_base": {
         "type": "github",
         "repo": "google/jsinterop-base",
-        "target": "172a78020d428e46cc86bcaebe946589c07452ae",
-        "seal": "8edf4e4e51cff5c7346f6d43f2b822767ae16f1b65ca4d26b7040111d1f62c48"},
+        "target": "1e7fc7ad4088882f9633d4e34d86f6797d06b623",
+        "seal": "36b9b5990102805d52f04e546233c324d200d89dc50a885d060f3981824fd6fd"},
 
     # Google: JS Interop (Generator)
     "com_google_jsinterop_generator": {
         "type": "github",
         "repo": "google/jsinterop-generator",
-        "target": "4d566c621720f47d0b5adb1e03d617c1819d2e87",
-        "seal": "df4aafb211742493b8bf6a0e176312d56d4a8d92aa8b50568ea2912be9bb615f"},
+        "target": "3fb3be7cf0e9b58900ea9c1f17f0b64f2a3c77ac",
+        "seal": "aca596250300a92555197a2254e0c76493c10ee7e06e6de4454482a3c13a37ed"},
 
     # Google: JS Interop (Annotations)
     "com_google_jsinterop_annotations_head": {
         "type": "github",
         "repo": "google/jsinterop-annotations",
-        "target": "8b6080dd1b0b9f60f4175243ea8038bf7fb8a557",
-        "seal": "51aa1d36cbe736fc98fa53a825eff25c6e0811dc656d23979d837721f72e78cf"},
+        "target": "d9ed0742444dfbb06a37d01df01e4bd3fc5b3c05",
+        "seal": "7f8d5788187840d02f1d80c100147a41dc02686e769ec704652680c82419ccbc"},
 
     # Google: API (Core)
     "com_google_api": {
         "type": "github",
         "repo": "googleapis/googleapis",
-        "target": "a9639a0a9854fd6e1be08bba1ac3897f4f16cb2f",
-        "seal": "f8d381d8a5bc186e30f0cfb6c2ebdbe42c12bf30f0bf46a4a7d071be1c36b20f"},
+        "target": "4ba9aa8a4a1413b88dca5a8fa931824ee9c284e6",
+        "seal": "d9cb67c305d39fbd7a1a0faff27a14b32ec28399d523c8b78be94f4cfdb4fa94"},
 
     # Google: API (Codegen)
     "com_google_api_codegen": {
         "type": "github",
         "repo": "googleapis/gapic-generator",
-        "target": "102ce460e9be8f42f7eb05442be6ce4e4dfb6a98",
-        "seal": "e9801c52adf7b4d2bb4e07ce1584602cfb955f3c97e4016bd02640ac444150f6"},
+        "target": "65fd292290d5e389ffa555f6f8cd71582a9607b3",
+        "seal": "71d5cefc80aa7b085e2c64ba3489039826d65477085d01fc3f63a4e0ccaa1d0c"},
 
     # Google: GWT
     "org_gwtproject_gwt": {
@@ -235,8 +242,8 @@ DEPS = {
     "build_stack_rules_proto": {
         "type": "github",
         "repo": "stackb/rules_proto",
-        "target": "734b8d41d39a903c70132828616f26cb2c7f908c",
-        "seal": "c89348b73f4bc59c0add4074cc0c620a5a2a08338eb4ef207d57eaa8453b82e8"},
+        "target": "1d6b84118399828511faeecc145d399c1e7bdee2",
+        "seal": "7e421578cba10736b6411d991514771996c7d21b4575d7f33e1d606a6a2cfe4d"},
 
     # Normalize CSS
     "org_normalize_css": {
@@ -244,7 +251,7 @@ DEPS = {
         "repo": "necolas/normalize.css",
         "target": "fc091cce1534909334c1911709a39c22d406977b",
         "overlay": "normalize.bzl",
-        "seal": None},
+        "seal": "53933ba214ab20b501a4ed1f08796ef716a5f1ccb8e0f9977a27f802cb09bcda"},
 
     # Material Design Lite
     "com_google_mdl": {
@@ -274,22 +281,22 @@ DEPS = {
     "com_github_grpc_grpc": {
         "type": "github",
         "repo": "grpc/grpc",
-        "target": "be1715d82f7b32e838565631ab7ad04850bfd4ff",
-        "seal": "ba8f098924ac373c9a8f08a8179f073c4df1c45b9966ae6aaff87b53b7f0e009"},
+        "target": "e73882dc0fcedab1ffe789e44ed6254819639ce3",
+        "seal": "8fe4e5aa436037a08634eb29bde99c02cd804df9f4da383ec738165fd6cdcadf"},
 
     # gRPC: Java
     "io_grpc_java": {
         "type": "github",
         "repo": "grpc/grpc-java",
-        "target": "0b4fa21d50578d917f15dad41ca7a7ab2612356b",
-        "seal": "c47132e0dc0977a8434e3fb3b0e97b0f6269c31b3b77042a81d9e834f61cda1b"},
+        "target": "47d545ad70dbf33b3f00052c1b519394ba52e222",
+        "seal": "5685ed4875fae4a5d11e31c4431bffa7672ce5451c598ebe1c2e0bd1d96c0286"},
 
     # Security/TLS: BoringSSL
     "boringssl": {
         "type": "github",
         "repo": "google/boringssl",
-        "target": "1c2769383f027befac5b75b6cedd25daf3bf4dcf",
-        "seal": "a3d4de4f03cb321ef943678d72a045c9a19d26b23d6f4e313f97600c65201a27"},
+        "target": "0b710a305b42b67522003a314dea3e3868485665",
+        "seal": "10a93b319f9f0a396d7c3d6c05b6195b2f002ae9002e492b5457298dac160993"},
 
     # Kubernetes: Build Tools
     "io_kubernetes_build": {
@@ -325,7 +332,7 @@ DEPS = {
     "javax_annotation_api": {
         "type": "java",
         "licenses": ["notice"],  # Apache 2.0
-        "seal": None,
+        "seal": "e04ba5195bcd555dc95650f7cc614d151e4bcd52d29a10b8aa2197f3ab89ab9b",
         "targets": [
           "https://repo1.maven.org/maven2/javax/annotation/javax.annotation-api/1.3.2/javax.annotation-api-1.3.2.jar",
         ],

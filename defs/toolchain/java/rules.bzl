@@ -97,8 +97,6 @@ INJECTED_MICRONAUT_DEPS = [
     maven("io.micronaut:micronaut-http-server"),
     maven("io.micronaut:micronaut-http-server-netty"),
     maven("io.micronaut:micronaut-graal"),
-    maven("io.micronaut:micronaut-views"),
-    maven("io.micronaut:micronaut-views-soy"),
     maven("io.micronaut:micronaut-router"),
     maven("io.micronaut:micronaut-tracing"),
     maven("io.micronaut:micronaut-session"),
