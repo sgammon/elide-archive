@@ -1,5 +1,7 @@
 ## `@elide-tools/gust` [![Build status](https://badge.buildkite.com/7a69b0fadb7d08b691e96177f589971a7646217b1a8b4a269e.svg)](https://buildkite.com/bloomworks/elide) [![codecov](https://codecov.io/gh/sgammon/GUST/branch/master/graph/badge.svg)](https://codecov.io/gh/sgammon/GUST) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/61aeb894c7914e3cac651d5eb2d86954)](https://www.codacy.com/manual/samuel-gammon/GUST?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=sgammon/GUST&amp;utm_campaign=Badge_Grade) [![Maintainability](https://api.codeclimate.com/v1/badges/3216f45caac250619f4f/maintainability)](https://codeclimate.com/github/sgammon/GUST/maintainability)
 
+_Gust is alpha software. Consider yourself warned..._
+
 Gust is a polyglot software application development framework. Bring the most road-tested toolchain on the planet to your development process, with [Bazel](https://bazel.build), [Protobuf](https://developers.google.com/protocol-buffers), [gRPC](https://grpc.io), [Soy](https://github.com/google/closure-templates), and more, all pre-integrated and tested out of the box. Early support is included for Java, Kotlin, Python, and NodeJS on the backend; Closure, TypeScript, or even Java on the frontend (transpiled to highly-optimized and type-checked JS); and Java, Kotlin, Swift, Objective-C and C/C++ for mobile applications.
 
 Runtime libraries are also published to support easy development of _web applications_ (in Java and Python using Soy), and _mobile applications_ (in Java and Swift). The framework is also capable of leveraging [GraalVM](https://graalvm.org) to build your app into a [native application](https://www.graalvm.org/docs/reference-manual/native-image/) (where supported), alleviating the need entirely for a JVM or Python runtime in your app containers. Native apps also have the nice benefit of _way_ shorter startup times (try `30ms`, lol!), and, in some cases, significant latency and memory use improvements.
@@ -64,9 +66,12 @@ $ make help
 
 GUST Framework Tools:
 
+all                            Build and test all framework targets.
 bases                          Build base images and push them.
 build                          Build all framework targets.
 builder-image                  Build a new version of the CI builder image for Gust.
+clean-docs                     Clean built documentation.
+clean-reports                  Clean built reports.
 clean                          Clean ephemeral targets.
 dev                            Develop against the specified target.
 devtools                       Install local development dependencies.
@@ -80,6 +85,7 @@ report-tests                   Report test results to Report.CI.
 run                            Run the specified target.
 samples                        Build and push sample app images.
 serve-coverage                 Serve the current coverage report (must generate first).
+serve-docs                     Serve the docs locally (must generate first).
 test                           Run all framework testsuites.
 update-deps                    Re-seal and update all dependencies.
 ```
@@ -88,8 +94,8 @@ Obviously, decrypting keys or pushing release images may require permissions, ho
 
 ### Licensing
 
-Below we specify licensing details for the Gust/Elide framework, including pointers to licenses for any dependent software. Gust/Elide itself is licensed under the Apache 2.0 License, which is enclosed in the `LICENSE.txt` file. Licenses for any dependent software (as required/applicable) are embedded in the `LICENSES/` directory, each within their own text file named for the software or framework.
+Below we specify licensing details for the Gust/Elide framework, including pointers to licenses for any dependent software. Gust/Elide itself is licensed under the Prosperity Public License 2.0.0, which is enclosed in the `LICENSE.txt` file. Licenses for any dependent software (as required/applicable) are embedded in the `LICENSES/` directory, each within their own text file named for the software or framework.
 
-- Gust/Elide: [Apache 2.0 License](https://github.com/sgammon/GUST/blob/master/LICENSE.txt)
+- Gust/Elide: [Prosperity License](https://github.com/sgammon/GUST/blob/master/LICENSE.txt)
 - `rules_closure`: Apache 2.0 (Entry 1 in `LICENSES.txt`)
 - gRPC Gateway: Roughly Apache 2.0 (Entry 2 in `LICENSES.txt`)

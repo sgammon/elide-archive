@@ -1,3 +1,15 @@
+/*
+ * Copyright © 2020, The Gust Framework Authors. All rights reserved.
+ *
+ * The Gust/Elide framework and tools, and all associated source or object computer code, except where otherwise noted,
+ * are licensed under the Zero Prosperity license, which is enclosed in this repository, in the file LICENSE.txt. Use of
+ * this code in object or source form requires and implies consent and agreement to that license in principle and
+ * practice. Source or object code not listing this header, or unless specified otherwise, remain the property of
+ * Elide LLC and its suppliers, if any. The intellectual and technical concepts contained herein are proprietary to
+ * Elide LLC and its suppliers and may be covered by U.S. and Foreign Patents, or patents in process, and are protected
+ * by trade secret and copyright law. Dissemination of this information, or reproduction of this material, in any form,
+ * is strictly forbidden except in adherence with assigned license requirements.
+ */
 package gust.backend;
 
 import com.google.common.collect.ImmutableMap;
@@ -24,9 +36,6 @@ import java.util.Optional;
 @Immutable
 @SuppressWarnings("unused")
 public final class PageContext implements PageRender {
-  /** Name at which proto-context is injected. */
-  private static final String CONTEXT_PROPERTY_NAME = "context";
-
   /** Shared singleton instance of an empty page context. */
   private static final PageContext _EMPTY = new PageContext(
     Context.getDefaultInstance(),
@@ -229,7 +238,7 @@ public final class PageContext implements PageRender {
   public Map<String, Object> getInjectedProperties() {
     return ImmutableMap
       .<String, Object>builder()
-      .put(CONTEXT_PROPERTY_NAME, protoContext)
+      .put(PAGE_CONTEXT_IJ_NAME, protoContext)
       .putAll(rawContext.getInjectedProperties())
       .build();
   }

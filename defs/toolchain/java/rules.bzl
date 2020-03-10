@@ -1,3 +1,15 @@
+##
+# Copyright © 2020, The Gust Framework Authors. All rights reserved.
+#
+# The Gust/Elide framework and tools, and all associated source or object computer code, except where otherwise noted,
+# are licensed under the Zero Prosperity license, which is enclosed in this repository, in the file LICENSE.txt. Use of
+# this code in object or source form requires and implies consent and agreement to that license in principle and
+# practice. Source or object code not listing this header, or unless specified otherwise, remain the property of
+# Elide LLC and its suppliers, if any. The intellectual and technical concepts contained herein are proprietary to
+# Elide LLC and its suppliers and may be covered by U.S. and Foreign Patents, or patents in process, and are protected
+# by trade secret and copyright law. Dissemination of this information, or reproduction of this material, in any form,
+# is strictly forbidden except in adherence with assigned license requirements.
+##
 
 load(
     "//defs:config.bzl",
@@ -66,6 +78,7 @@ INJECTED_MICRONAUT_DEPS = [
     "@javax_annotation_api",
     "@gust//java:framework",
     "@gust//defs/toolchain/java/plugins:micronaut",
+    "@gust//java/gust/backend/runtime:logging",
     "@com_google_guava",
     "@com_google_template_soy",
     "@com_google_common_html_types",
@@ -90,8 +103,11 @@ INJECTED_MICRONAUT_DEPS = [
     maven("io.micronaut:micronaut-tracing"),
     maven("io.micronaut:micronaut-session"),
     maven("io.micronaut:micronaut-security"),
+    maven("io.micronaut:micronaut-messaging"),
+    maven("io.micronaut:micronaut-websocket"),
     maven("io.micronaut:micronaut-multitenancy"),
     maven("io.micronaut:micronaut-runtime"),
+    maven("io.reactivex.rxjava2:rxjava"),
 ]
 
 INJECTED_MICRONAUT_GRPC_DEPS = [
@@ -109,6 +125,8 @@ INJECTED_MICRONAUT_GRPC_DEPS = [
 INJECTED_GAPI_DEPS = [
     maven("com.google.cloud:libraries-bom"),
     maven("com.google.cloud:google-cloud-firestore"),
+    maven("com.google.cloud:google-cloud-storage"),
+    maven("com.google.cloud:google-cloud-pubsub"),
 ]
 
 INJECTED_MICRONAUT_RUNTIME_DEPS = [

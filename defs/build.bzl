@@ -1,3 +1,15 @@
+##
+# Copyright © 2020, The Gust Framework Authors. All rights reserved.
+#
+# The Gust/Elide framework and tools, and all associated source or object computer code, except where otherwise noted,
+# are licensed under the Zero Prosperity license, which is enclosed in this repository, in the file LICENSE.txt. Use of
+# this code in object or source form requires and implies consent and agreement to that license in principle and
+# practice. Source or object code not listing this header, or unless specified otherwise, remain the property of
+# Elide LLC and its suppliers, if any. The intellectual and technical concepts contained herein are proprietary to
+# Elide LLC and its suppliers and may be covered by U.S. and Foreign Patents, or patents in process, and are protected
+# by trade secret and copyright law. Dissemination of this information, or reproduction of this material, in any form,
+# is strictly forbidden except in adherence with assigned license requirements.
+##
 
 load(
     "//defs:tools.bzl",
@@ -18,6 +30,13 @@ DEPS = {
         "repo": "bazelbuild/bazel-skylib",
         "target": "add8e42934d1bf63ecf27f5439574383e74ef8fc",
         "seal": "088e451fbee1fadf328d69bd243f8de5b3a44f329946edc79bff7fca9382379c"},
+
+    "bazel_common": {
+        "type": "github",
+        "repo": "sgammon/bazel-common",
+        "target": "7aef387013f54dbdd28a3a2b10f234bb5a18a892",
+        "local": "/workspace/GUST/vendor/bazel/common",
+        "seal": "1ce4440462a39d35927fbac005b5eb67d49af53450b2d9c42dfded4df619ecc8"},
 
     # Bazel: Packaging
     "rules_pkg": {
@@ -51,9 +70,9 @@ DEPS = {
     "io_bazel_rules_closure": {
         "type": "github",
         "repo": "sgammon/rules_closure",
-        "target": "5c6004c5378cb4339f9054acab3c07ada8c1c7ae",
+        "target": "25ab3fd2ea18b932ce892dbdddc931eec6586a6f",
         "local": "/workspace/GUST/vendor/bazel/rules_closure",
-        "seal": "5b895c0885ed3e7fbee5d4bb28af21ce312ae934596e1ab018133ebcd320fd62"},
+        "seal": "0dec33ed4cdf979d1ac5f574eb1671b70bbdc317b13c38dd3ed0774f05d59ba8"},
 
     # Rules: Protobuf
     "rules_proto": {
@@ -152,23 +171,23 @@ DEPS = {
     "com_google_protobuf": {
         "type": "github",
         "repo": "google/protobuf",
-        "target": "29cd005ce1fe1a8fabf11e325cb13006a6646d59",
-        "seal": "51398b0b97b353c1c226d0ade0bae80c80380e691cba7c1a108918986784a1c7"},
+        "target": "d0bfd5221182da1a7cc280f3337b5e41a89539cf",
+        "seal": "2435b7fb83b8a608c24ca677907aa9a35e482a7f018e65ca69481b3c8c9f7caf"},
 
     # Google: J2CL (Java-to-Closure)
     "com_google_j2cl": {
         "type": "github",
         "repo": "sgammon/j2cl",
-        "target": "7fd9c21a6cbd9fa044ada83f772281cf87f2aa8a",
+        "target": "6d4af3938679f20c90bc27efbd66e60a7e96c9b6",
         "local": "/workspace/GUST/vendor/bazel/j2cl",
-        "seal": "a45e6f1c94651c5babc461a78d04ca005a7720741aa4ad63612ad68715de3a70"},
+        "seal": "81db591a5dade1cee0d2f8793139ac2090ea9a69b11f3ebd94fbc0d5ce1ef45d"},
 
     # Google: Elemental2
     "com_google_elemental2": {
         "type": "github",
         "repo": "google/elemental2",
-        "target": "d328c1e688cc5e7e9eaec5c5d264423878827925",
-        "seal": "ac6018af3274fd80d7d185305575474b4dfa1367e2c360e9f3c038f06affd7da"},
+        "target": "2c571902974ed8a69a27f8c6e13dd94742395dc9",
+        "seal": "7bcf693dbfd700dd68f9b3685a6a035070e378ee6bce90dbdf7b9a9077d62827"},
 
     # Google: JS Interop (Base)
     "com_google_jsinterop_base": {

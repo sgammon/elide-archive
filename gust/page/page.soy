@@ -1,4 +1,15 @@
-
+/*
+ * Copyright © 2020, The Gust Framework Authors. All rights reserved.
+ *
+ * The Gust/Elide framework and tools, and all associated source or object computer code, except where otherwise noted,
+ * are licensed under the Zero Prosperity license, which is enclosed in this repository, in the file LICENSE.txt. Use of
+ * this code in object or source form requires and implies consent and agreement to that license in principle and
+ * practice. Source or object code not listing this header, or unless specified otherwise, remain the property of
+ * Elide LLC and its suppliers, if any. The intellectual and technical concepts contained herein are proprietary to
+ * Elide LLC and its suppliers and may be covered by U.S. and Foreign Patents, or patents in process, and are protected
+ * by trade secret and copyright law. Dissemination of this information, or reproduction of this material, in any form,
+ * is strictly forbidden except in adherence with assigned license requirements.
+ */
 {namespace gust.page}
 
 
@@ -35,7 +46,7 @@
  * already exists when rendering occurs.
  */
 {template .wrap}
-  {@inject context: page.Context}  /** Main page-level context, provided to include metadata and page assets. */
+  {@inject page: page.Context}  /** Main page-level context, provided to include metadata and page assets. */
   {@param? pageId: string}  /** CSS ID to apply to the whole page, optionally. */
   {@param? base: trusted_resource_uri}  /** Optional page base to apply. */
   {@param? pageClass: string}  /** Class name(s) to apply to the whole page, optionally. */
@@ -51,9 +62,9 @@
   {@inject? contentSecurity: [header: string, policy: string]}  /** Injected CSP to apply via meta tags. */
 
   {let $languageSpec kind="text"}
-    {if isNonnull($context) and isNonnull($context.meta) and isNonnull($context.meta.language)}
+    {if isNonnull($page) and isNonnull($page.meta) and isNonnull($page.meta.language)}
       {call gust.base.languageSpec}
-          {param spec: $context.meta.language /}
+          {param spec: $page.meta.language /}
       {/call}
     {else}en-US{/if}
   {/let}
@@ -79,24 +90,24 @@
       {if isNonnull($liftedCSS)}
         <style type="text/css">{$liftedCSS}</style>
       {/if}
-      {if isNonnull($context) and isNonnull($context.styles) and isNonnull($context.styles.linkList)}
-          {for $styleDirective in $context.styles.linkList}
+      {if isNonnull($page) and isNonnull($page.styles) and isNonnull($page.styles.linkList)}
+          {for $styleDirective in $page.styles.linkList}
               {call gust.dom.assets.stylesheet}
                   {param sheet: $styleDirective.uri /}
                   {param media: $styleDirective.media /}
               {/call}
           {/for}
       {/if}
-      {if isNonnull($context) and isNonnull($context.meta) and $context.meta.viewport}
-        <meta name="viewport" content="{$context.meta.viewport}">
+      {if isNonnull($page) and isNonnull($page.meta) and $page.meta.viewport}
+        <meta name="viewport" content="{$page.meta.viewport}">
       {else}
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, viewport-fit=cover">
       {/if}
-      {if isNonnull($context) and isNonnull($context.meta) and $context.meta.favicon}
-        <link rel="icon" href="{$context.meta.favicon}">
+      {if isNonnull($page) and isNonnull($page.meta) and $page.meta.favicon}
+        <link rel="icon" href="{$page.meta.favicon}">
       {/if}
-      {if isNonnull($context) and isNonnull($context.meta) and $context.meta.manifest}
-        <link rel="manifest" href="{$context.meta.manifest}">
+      {if isNonnull($page) and isNonnull($page.meta) and $page.meta.manifest}
+        <link rel="manifest" href="{$page.meta.manifest}">
       {/if}
       {if isNonnull($liftedJS)}
         <script type="text/javascript">
@@ -105,8 +116,8 @@
                 {/if}
         </script>
       {/if}
-      {if isNonnull($context) and isNonnull($context.scripts) and $context.scripts.linkList}
-          {for $scriptDirective in $context.scripts.linkList}
+      {if isNonnull($page) and isNonnull($page.scripts) and $page.scripts.linkList}
+          {for $scriptDirective in $page.scripts.linkList}
               {call gust.dom.assets.script}
                   {param script: $scriptDirective.uri /}
                   {param id: $scriptDirective.id /}
@@ -116,21 +127,21 @@
               {/call}
           {/for}
       {/if}
-      {if isNonnull($context) and isNonnull($context.meta) and $context.meta.theme}
-        <meta name="theme-color" content="{$context.meta.theme}">
+      {if isNonnull($page) and isNonnull($page.meta) and $page.meta.theme}
+        <meta name="theme-color" content="{$page.meta.theme}">
       {/if}
-      {if isNonnull($context) and isNonnull($context.meta) and $context.meta.touchIcon}
-        <link rel="apple-touch-icon" href="{$context.meta.touchIcon}">
+      {if isNonnull($page) and isNonnull($page.meta) and $page.meta.touchIcon}
+        <link rel="apple-touch-icon" href="{$page.meta.touchIcon}">
       {/if}
-      {if isNonnull($context) and isNonnull($context.meta) and $context.meta.startupImage}
-        <link rel="apple-touch-startup-image" href="{$context.meta.startupImage}">
+      {if isNonnull($page) and isNonnull($page.meta) and $page.meta.startupImage}
+        <link rel="apple-touch-startup-image" href="{$page.meta.startupImage}">
       {/if}
-      {if isNonnull($context) and isNonnull($context.meta) and $context.meta.description}
-        <meta name="description" content="{$context.meta.description}">
+      {if isNonnull($page) and isNonnull($page.meta) and $page.meta.description}
+        <meta name="description" content="{$page.meta.description}">
       {/if}
-      {if isNonnull($context) and isNonnull($context.meta) and length($context.meta.keywordList) > 0}
+      {if isNonnull($page) and isNonnull($page.meta) and length($page.meta.keywordList) > 0}
           {let $metaKeywords kind="text"}
-              {for $keyword in $context.meta.keywordList}
+              {for $keyword in $page.meta.keywordList}
                   {if not isFirst($keyword)}, {/if}
                   {$keyword}
               {/for}
@@ -138,30 +149,30 @@
         <meta name="keywords" content="{$metaKeywords}">
       {/if}
       {if $additionalHead}{$additionalHead}{/if}
-      {if isNonnull($context) and isNonnull($context.meta) and isNonnull($context.meta.title)}
-        <title>{$context.meta.title}</title>
+      {if isNonnull($page) and isNonnull($page.meta) and isNonnull($page.meta.title)}
+        <title>{$page.meta.title}</title>
       {/if}
-      {if isNonnull($context) and isNonnull($context.meta) and isNonnull($context.meta.openGraph)}
-        {if $context.meta.openGraph.url}
-          <meta property="og:url" content="{$context.meta.openGraph.url}">
+      {if isNonnull($page) and isNonnull($page.meta) and isNonnull($page.meta.openGraph)}
+        {if $page.meta.openGraph.url}
+          <meta property="og:url" content="{$page.meta.openGraph.url}">
         {/if}
-        {if $context.meta.openGraph.title}
-          <meta property="og:title" content="{$context.meta.openGraph.title}">
-          <meta name="twitter:title" content="{$context.meta.openGraph.title}">
+        {if $page.meta.openGraph.title}
+          <meta property="og:title" content="{$page.meta.openGraph.title}">
+          <meta name="twitter:title" content="{$page.meta.openGraph.title}">
         {/if}
-        {if $context.meta.openGraph.description}
-          <meta property="og:description" content="{$context.meta.openGraph.description}">
-          <meta name="twitter:description" content="{$context.meta.openGraph.description}">
+        {if $page.meta.openGraph.description}
+          <meta property="og:description" content="{$page.meta.openGraph.description}">
+          <meta name="twitter:description" content="{$page.meta.openGraph.description}">
         {/if}
-        {if $context.meta.openGraph.image}
-          <meta property="og:image" content="{$context.meta.openGraph.image}">
-          <meta name="twitter:image:src" content="{$context.meta.openGraph.image}">
+        {if $page.meta.openGraph.image}
+          <meta property="og:image" content="{$page.meta.openGraph.image}">
+          <meta name="twitter:image:src" content="{$page.meta.openGraph.image}">
         {/if}
         {if $languageSpec}
           <meta property="og:locale" content="{$languageSpec}">
         {/if}
-        {if $context.meta.openGraph.type}
-          <meta property="og:type" content="{$context.meta.openGraph.type}">
+        {if $page.meta.openGraph.type}
+          <meta property="og:type" content="{$page.meta.openGraph.type}">
           <meta name="twitter:card" content="summary">
         {/if}
         <meta name="twitter:site" content="@bloomworksIO">

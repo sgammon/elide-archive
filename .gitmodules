@@ -26,3 +26,6 @@
 [submodule "safe_html_types"]
 	path = vendor/google/safe-html-types
 	url = git@github.com:google/safe-html-types.git
+[submodule "bazel_common"]
+	path = vendor/bazel/common
+	url = git@github.com:sgammon/bazel-common.git

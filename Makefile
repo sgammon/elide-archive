@@ -1,3 +1,15 @@
+##
+# Copyright © 2020, The Gust Framework Authors. All rights reserved.
+#
+# The Gust/Elide framework and tools, and all associated source or object computer code, except where otherwise noted,
+# are licensed under the Zero Prosperity license, which is enclosed in this repository, in the file LICENSE.txt. Use of
+# this code in object or source form requires and implies consent and agreement to that license in principle and
+# practice. Source or object code not listing this header, or unless specified otherwise, remain the property of
+# Elide LLC and its suppliers, if any. The intellectual and technical concepts contained herein are proprietary to
+# Elide LLC and its suppliers and may be covered by U.S. and Foreign Patents, or patents in process, and are protected
+# by trade secret and copyright law. Dissemination of this information, or reproduction of this material, in any form,
+# is strictly forbidden except in adherence with assigned license requirements.
+##
 
 ##
 ## GUST: Makefile
@@ -19,6 +31,7 @@ REGISTRY ?= bloomworks
 PROJECT_NAME ?= GUST
 ENABLE_REPORTCI ?= yes
 JS_COVERAGE_REPORT ?= no
+REPORTS ?= reports
 CI_REPO ?= sgammon/GUST
 
 SAMPLES ?= //samples/rest_mvc/java:MicronautMVCSample //samples/soy_ssr/src:MicronautSSRSample
@@ -30,13 +43,17 @@ else
 OUTPUT_BASE ?= k8-fastbuild
 endif
 
-OUTPATH ?= dist/out
+DOCS ?= docs
+DISTPATH ?= dist
+OUTPATH ?= $(DISTPATH)/out
+BINPATH ?= $(DISTPATH)/bin
+UNZIP ?= $(shell which unzip)
 REVISION ?= $(shell git describe --abbrev=7 --always --tags HEAD)
 BASE_VERSION ?= v1a
 VERSION ?= $(shell (cat package.json | grep version | head -1 | awk -F: '{ print $2 }' | sed 's/[",]//g' | tr -d '[[:space:]]' | sed 's/version\://g'))
 CHROME_COVERAGE ?= $(shell find dist/out/$(OUTPUT_BASE)/bin -name "coverage*.dat" | grep chrome | xargs)
 COVERAGE_DATA ?= $(OUTPATH)/_coverage/_coverage_report.dat
-COVERAGE_REPORT ?= reports/coverage
+COVERAGE_REPORT ?= $(REPORTS)/coverage
 COVERAGE_ARGS ?= --function-coverage \
                  --branch-coverage \
                  --highlight \
@@ -54,7 +71,11 @@ TESTS ?= //tests/...
 COVERABLE ?= //javatests:suite
 
 TAG ?=
+ifeq ($(QUIET),yes)
+TEST_ARGS ?=
+else
 TEST_ARGS ?= --test_output=errors
+endif
 TEST_ARGS_WITH_COVERAGE ?= --combined_report=lcov --nocache_test_results
 BUILD_ARGS ?= --define project=$(PROJECT)
 
@@ -120,7 +141,7 @@ endif
 endif
 
 
-all: devtools build test
+all: devtools build test  ## Build and test all framework targets.
 
 build:  ## Build all framework targets.
 	$(info Building $(PROJECT_NAME)...)
@@ -132,8 +153,16 @@ run:  ## Run the specified target.
 dev:  ## Develop against the specified target.
 	$(_RULE)$(IBAZEL) run $(TAG) $(APP)
 
-clean:  ## Clean ephemeral targets.
+clean: clean-docs clean-reports  ## Clean ephemeral targets.
 	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) clean
+
+clean-docs:  ## Clean built documentation.
+	@echo "Cleaning docs..."
+	$(_RULE)rm -fr $(POSIX_FLAGS) $(DOCS)
+
+clean-reports:  ## Clean built reports.
+	@echo "Cleaning reports..."
+	$(_RULE) -fr $(POSIX_FLAGS) $(REPORTS)
 
 bases:  ## Build base images and push them.
 	@echo "Building Alpine base ('$(BASE_VERSION)')..."
@@ -150,7 +179,7 @@ samples:  ## Build and push sample app images.
         $(BAZELISK) $(BAZELISK_ARGS) run $(TAG) $(BASE_ARGS) $(BUILD_ARGS) $$(echo "$$target")-native-image-push; \
         done
 
-distclean:  ## Clean targets, caches and dependencies.
+distclean: clean  ## Clean targets, caches and dependencies.
 	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) clean --expunge_async
 
 forceclean: distclean  ## Clean everything, and sanitize the codebase (DANGEROUS).
@@ -167,8 +196,11 @@ else
 endif
 
 docs:  ## Build documentation for the framework.
-	@echo "Building GUST docs..."
-	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) build $(TAG) $(BASE_ARGS) //:docs
+	@echo "Building GUST framework docs (Java)..."
+	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) build $(TAG) $(BASE_ARGS) -- //java:javadoc && \
+		mkdir -p $(DOCS)/java && \
+		$(UNZIP) -o -d $(DOCS)/java/ $(BINPATH)/java/gust/javadoc.jar;
+	@#$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) build $(TAG) $(BASE_ARGS) //:docs
 
 help:  ## Show this help text.
 	$(info GUST Framework Tools:)
@@ -186,6 +218,10 @@ update-deps:  ## Re-seal and update all dependencies.
 	@echo "Re-pinning Maven dependencies..."
 	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) run @unpinned_maven//:pin
 
+serve-docs: clean-docs docs  ## Serve the docs locally (must generate first).
+	@echo "Serving framework docs..."
+	$(_RULE)cd $(DOCS) && python -m SimpleHTTPServer
+
 serve-coverage:  ## Serve the current coverage report (must generate first).
 	@echo "Serving coverage report..."
 	$(_RULE)cd $(COVERAGE_REPORT) && python -m SimpleHTTPServer
@@ -198,14 +234,14 @@ report-tests: ## Report test results to Report.CI.
 	$(_RULE)cd reports && python -m junit2htmlreport tests.xml
 ifeq ($(ENABLE_REPORTCI),yes)
 	@echo "Reporting test results..."
-	TRAVIS=true \
+	$(_RULE)-TRAVIS=true \
 	    TRAVIS_COMMIT=$$BUILDKITE_COMMIT \
 	    TRAVIS_BRANCH=$$BUILDKITE_BRANCH \
 	    TRAVIS_COMMIT_MESSAGE=$$BUILDKITE_MESSAGE \
 	    TRAVIS_PULL_REQUEST=$$BUILDKITE_PULL_REQUEST \
 	    TRAVIS_PULL_REQUEST_BRANCH=$$BUILDKITE_PULL_REQUEST_BASE_BRANCH \
 	    TRAVIS_REPO_SLUG=$(CI_REPO) \
-	    $(_RULE)-curl -s https://raw.githubusercontent.com/report-ci/scripts/master/upload.py | python - --include='reports/tests.xml' --framework=junit
+	    curl -s https://raw.githubusercontent.com/report-ci/scripts/master/upload.py | python - --include='reports/tests.xml' --framework=junit
 endif
 
 report-coverage:  ## Report coverage results to Codecov.

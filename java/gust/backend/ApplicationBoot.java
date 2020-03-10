@@ -1,15 +1,28 @@
+/*
+ * Copyright © 2020, The Gust Framework Authors. All rights reserved.
+ *
+ * The Gust/Elide framework and tools, and all associated source or object computer code, except where otherwise noted,
+ * are licensed under the Zero Prosperity license, which is enclosed in this repository, in the file LICENSE.txt. Use of
+ * this code in object or source form requires and implies consent and agreement to that license in principle and
+ * practice. Source or object code not listing this header, or unless specified otherwise, remain the property of
+ * Elide LLC and its suppliers, if any. The intellectual and technical concepts contained herein are proprietary to
+ * Elide LLC and its suppliers and may be covered by U.S. and Foreign Patents, or patents in process, and are protected
+ * by trade secret and copyright law. Dissemination of this information, or reproduction of this material, in any form,
+ * is strictly forbidden except in adherence with assigned license requirements.
+ */
 package gust.backend;
-
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
 
+
 /**
  * Responsible for any testable functionality that occurs when bootstrapping a Java-based application, including
  * force-resolving critical configuration files, setting up logging, and so on.
  */
+@SuppressWarnings("WeakerAccess")
 public final class ApplicationBoot {
   /** Root configuration for a Micronaut app. */
   public static final String rootConfig = "/application.yml";
@@ -22,6 +35,8 @@ public final class ApplicationBoot {
 
   /** Default configuration provided by Gust. */
   private static final String defaultLoggingConfig = "/gust" + loggingConfig;
+
+  private ApplicationBoot() { /* Disallow instantiation. */ }
 
   /**
    * Report an error that occurred during server startup, which prevented the server from starting. Errors encountered
@@ -68,17 +83,10 @@ public final class ApplicationBoot {
    * Load main application configs, including the `app` config (usually `application.yml`), containing configuration for
    * Micronaut, and `logback.xml` which contains configuration for logging. If either config file cannot be loaded, then
    * an error is thrown which prevents server startup.
-   *
-   * @param exitOnFail Whether to exit the program if a failure occurs.
    */
-  public static void load(boolean exitOnFail) {
-    try {
-      // validate config & start the server
-      loadConfig("app", rootConfig, defaultConfig);
-      loadConfig("logging", loggingConfig, defaultLoggingConfig);
-    } catch (Throwable ex) {
-      reportStartupError(ex);
-      if (!exitOnFail) throw ex;
-    }
+  public static void load() {
+    // validate config & start the server
+    loadConfig("app", rootConfig, defaultConfig);
+    loadConfig("logging", loggingConfig, defaultLoggingConfig);
   }
 }

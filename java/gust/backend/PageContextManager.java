@@ -1,11 +1,23 @@
+/*
+ * Copyright © 2020, The Gust Framework Authors. All rights reserved.
+ *
+ * The Gust/Elide framework and tools, and all associated source or object computer code, except where otherwise noted,
+ * are licensed under the Zero Prosperity license, which is enclosed in this repository, in the file LICENSE.txt. Use of
+ * this code in object or source form requires and implies consent and agreement to that license in principle and
+ * practice. Source or object code not listing this header, or unless specified otherwise, remain the property of
+ * Elide LLC and its suppliers, if any. The intellectual and technical concepts contained herein are proprietary to
+ * Elide LLC and its suppliers and may be covered by U.S. and Foreign Patents, or patents in process, and are protected
+ * by trade secret and copyright law. Dissemination of this information, or reproduction of this material, in any form,
+ * is strictly forbidden except in adherence with assigned license requirements.
+ */
 package gust.backend;
 
+import gust.backend.runtime.Logging;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.context.ServerRequestContext;
 import io.micronaut.runtime.http.scope.RequestScope;
 import io.micronaut.views.soy.SoyNamingMapProvider;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import tools.elide.page.Context;
 
 import javax.annotation.Nonnull;
@@ -27,7 +39,7 @@ import java.util.concurrent.ConcurrentSkipListMap;
 @RequestScope
 @SuppressWarnings("unused")
 public class PageContextManager implements Closeable, AutoCloseable, PageRender {
-  private static final Logger LOG = LoggerFactory.getLogger(PageContextManager.class);
+  private static final Logger LOG = Logging.logger(PageContextManager.class);
 
   /** Page context builder. */
   private final @Nonnull Context.Builder context;
