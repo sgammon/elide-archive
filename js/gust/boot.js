@@ -10,6 +10,7 @@
  * by trade secret and copyright law. Dissemination of this information, or reproduction of this material, in any form,
  * is strictly forbidden except in adherence with assigned license requirements.
  */
+/*global goog*/
 goog.module('gust.boot');
 
 const Core = goog.require('gust.Core');
