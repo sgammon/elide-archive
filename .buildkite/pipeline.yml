@@ -27,6 +27,7 @@ steps:
   - command: "make build CI=yes TARGETS='//samples/rest_mvc/java:MicronautMVCSample-native-bin' && make build CI=yes TARGETS='//samples/soy_ssr/src:MicronautSSRSample-native-bin'"
     label: ":java: Build: Native Binaries"
     depends_on: framework-build
+    if: build.branch == "native"
     key: native-build
     soft_fail:
       - exit_status: 2
@@ -39,6 +40,7 @@ steps:
   - command: "make build samples CI=yes"
     label: ":gcloud: Publish: Images"
     depends_on: native-build
+    if: build.branch == "native"
     soft_fail:
       - exit_status: 2
 
