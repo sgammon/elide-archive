@@ -46,7 +46,9 @@ public abstract class GenericPersistenceDriverTest<Driver extends PersistenceDri
       dynamicTest(format("%s: `storeEntityUpdate`", subcase), this::storeEntityUpdate),
       dynamicTest(format("%s: `storeEntityUpdateNotFound`", subcase), this::storeEntityUpdateNotFound),
       dynamicTest(format("%s: `createEntityThenUpdate`", subcase), this::createEntityThenUpdate),
-      dynamicTest(format("%s: `createEntityThenDelete`", subcase), this::createEntityThenDelete)
+      dynamicTest(format("%s: `createEntityThenDelete`", subcase), this::createEntityThenDelete),
+      dynamicTest(format("%s: `createEntityThenDeleteByRecord`", subcase), this::createEntityThenDeleteByRecord),
+      dynamicTest(format("%s: `createUpdateWithInvalidOptions`", subcase), this::createUpdateWithInvalidOptions)
     );
 
     tests.addAll(subclassTests().orElse(Collections.emptyList()));
@@ -527,6 +529,11 @@ public abstract class GenericPersistenceDriverTest<Driver extends PersistenceDri
     assertEquals(record.toString(), refetched.get().toString(),
       "re-fetched person record should be identical");
 
+    // should fail because it has no key
+    assertThrows(IllegalStateException.class, () -> {
+      acquire().delete(person);
+    });
+
     // delete it, mercilessly
     ReactiveFuture<PersonKey> deleteOp = acquire().delete(key);
     assertNotNull(deleteOp, "should not get `null` from `delete`");
@@ -545,5 +552,90 @@ public abstract class GenericPersistenceDriverTest<Driver extends PersistenceDri
     assertNotNull(refetchedAfterDelete, "refetched-after-delete optional should never be `null`");
     assertFalse(refetchedAfterDelete.isPresent(),
       "refetched-after-delete optional should present as not-present");
+  }
+
+  /** Create a simple entity, then delete it, then try to re-fetch to make sure it was deleted. */
+  protected void createEntityThenDeleteByRecord() throws TimeoutException, ExecutionException, InterruptedException {
+    // persist the record
+    final Person person = Person.newBuilder()
+      .setName("John Doe")
+      .setContactInfo(ContactInfo.newBuilder()
+        .setEmailAddress("john@doe.com")
+        .setPhoneE164("+12345679001"))
+      .build();
+
+    // create it
+    ReactiveFuture<Person> op = acquire().create(person);
+    Person record = op.get(timeout(), timeoutUnit());
+    Optional<PersonKey> recordKey = ModelMetadata.key(record);
+    assertTrue(recordKey.isPresent(), "record key should be present after create");
+    var key = recordKey.get();
+    touchedKeys.add(key);
+
+    // fetch it, to make sure it's there
+    ReactiveFuture<Optional<Person>> refetchedOp = acquire().fetchAsync(key);
+    assertNotNull(refetchedOp, "should never get `null` from `fetchAsync`");
+    assertFalse(refetchedOp.isCancelled(), "re-fetch future should not immediately be cancelled");
+    Optional<Person> refetched = refetchedOp.get(timeout(), timeoutUnit());
+    assertNotNull(refetched, "should never get `null` from `get`");
+    assertTrue(refetched.isPresent(), "re-fetched record should be present");
+    assertEquals(record.toString(), refetched.get().toString(),
+      "re-fetched person record should be identical");
+
+    // should fail because it has no key
+    assertThrows(IllegalStateException.class, () -> {
+      acquire().delete(person);
+    });
+
+    // delete it, mercilessly
+    ReactiveFuture<PersonKey> deleteOp = acquire().deleteRecord(refetched.get());
+    assertNotNull(deleteOp, "should not get `null` from `delete`");
+    assertFalse(deleteOp.isCancelled(), "delete future should not immediately be cancelled");
+    PersonKey deletedKey = deleteOp.get(timeout(), timeoutUnit());
+    assertTrue(deleteOp.isDone(), "delete op should complete after `get()`");
+    assertNotNull(deletedKey, "should not get `null` from delete future result");
+    assertEquals(key.toString(), deletedKey.toString(),
+      "deleted key should be identical to key provided for delete");
+
+    // try to fetch it, we shouldn't be able to find it
+    ReactiveFuture<Optional<Person>> fetchAfterDelete = acquire().fetchAsync(deletedKey);
+    assertNotNull(fetchAfterDelete, "should not get `null` from `fetchAsync`");
+    assertFalse(fetchAfterDelete.isCancelled(), "fetch after delete should not be immediately cancelled");
+    Optional<Person> refetchedAfterDelete = fetchAfterDelete.get(timeout(), timeoutUnit());
+    assertNotNull(refetchedAfterDelete, "refetched-after-delete optional should never be `null`");
+    assertFalse(refetchedAfterDelete.isPresent(),
+      "refetched-after-delete optional should present as not-present");
+  }
+
+  /** Test that invalid/incompatible options are disallowed properly. */
+  protected void createUpdateWithInvalidOptions() {
+    // persist the record
+    final Person person = Person.newBuilder()
+      .setKey(PersonKey.newBuilder().setId("abc123").build())
+      .setName("John Doe")
+      .setContactInfo(ContactInfo.newBuilder()
+        .setEmailAddress("john@doe.com")
+        .setPhoneE164("+12345679001"))
+      .build();
+
+    assertThrows(IllegalArgumentException.class, () -> {
+      acquire().create(person, new WriteOptions() {
+        @Nonnull
+        @Override
+        public Optional<WriteDisposition> writeMode() {
+          return Optional.of(WriteDisposition.MUST_EXIST);
+        }
+      });
+    });
+
+    assertThrows(IllegalArgumentException.class, () -> {
+      acquire().update(person, new UpdateOptions() {
+        @Nonnull
+        @Override
+        public Optional<WriteDisposition> writeMode() {
+          return Optional.of(WriteDisposition.MUST_NOT_EXIST);
+        }
+      });
+    });
   }
 }

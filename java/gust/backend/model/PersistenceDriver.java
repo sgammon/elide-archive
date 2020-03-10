@@ -702,6 +702,34 @@ public interface PersistenceDriver<Key extends Message, Model extends Message, I
   }
 
   /**
+   * Update the record specified by {@code model} in underlying storage, making use of the specified {@code options},
+   * using the existing key or ID value affixed to the model. The entity is returned in its updated form, or an error
+   * occurs.
+   *
+   * <p>This operation will enforce the option {@code MUST_EXIST} for the write - i.e., "updating" a record implies that
+   * it must exist beforehand. This means, if the record is missing a unique ID or key (one or the other must be
+   * annotated on the record), then an error occurs (specifically, either {@link MissingAnnotatedField}) for a  missing
+   * schema field, or {@link IllegalStateException} for a missing required value).</p>
+   *
+   * <p>The returned record will be re-constituted, with the ID or key value unmodified, as applicable, and with any
+   * computed or framework-related properties updated in (i.e. automatic update timestamping).</p>
+   *
+   * @param model Model to update in underlying storage. Requires a {@code ID} or {@code KEY}-annotated field and value.
+   * @return Future value, which resolves to the stored model entity, after it has been updated.
+   * @throws InvalidModelType If the specified model record is not usable with storage.
+   * @throws PersistenceException If an unexpected failure occurs, of any kind, while updated the record.
+   * @throws MissingAnnotatedField If a required annotated field cannot be located (i.e. {@code ID} or {@code KEY}).
+   * @throws IllegalStateException If a required annotated field value cannot be resolved (i.e. an empty key or ID).
+   */
+  default @Nonnull ReactiveFuture<Model> update(@Nonnull Model model, @Nonnull UpdateOptions options) {
+    //noinspection unchecked
+    return update(
+      (Key)key(model).orElseThrow(() -> new IllegalStateException("Failed to resolve a key value for record.")),
+      model,
+      options);
+  }
+
+  /**
    * Update the record specified by {@code model}, and addressed by {@code key}, in underlying storage. The entity is
    * returned in its updated form, or an error occurs.
    *

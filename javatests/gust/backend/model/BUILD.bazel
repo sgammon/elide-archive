@@ -63,6 +63,7 @@ java_library(
         "//java/gust/backend/model:CacheDriver",
         "//java/gust/backend/model:CacheOptions",
         "//java/gust/backend/model:FetchOptions",
+        "//java/gust/backend/model:ModelMetadata",
         "//java/gust/backend/model:PersistenceDriver",
         "//java/gust/backend/model:PersistenceException",
         "//java/gust/backend/runtime:ReactiveFuture",
