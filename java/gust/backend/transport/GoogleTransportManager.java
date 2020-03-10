@@ -153,7 +153,7 @@ public final class GoogleTransportManager implements TransportManager<GoogleAPIC
 
   /** Wrapper object that manages a set of pooled connections. */
   @Immutable
-  private final static class ManagedChannelPool {
+  private static final class ManagedChannelPool {
     /** Known service we will be managing connections for. */
     private final GoogleService service;
 

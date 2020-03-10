@@ -8,7 +8,7 @@ checks:
 
   complex-logic:
     config:
-      threshold: 20
+      threshold: 40
 
   file-lines:
     config:
@@ -20,7 +20,7 @@ checks:
 
   method-count:
     config:
-      threshold: 30
+      threshold: 50
 
   method-lines:
     config:
@@ -40,6 +40,22 @@ plugins:
       file: "tools/checkstyle.xml"
     checks:
       com.puppycrawl.tools.checkstyle.checks.whitespace.EmptyLineSeparatorCheck:
+        enabled: false
+      com.puppycrawl.tools.checkstyle.checks.imports.CustomImportOrderCheck:
+        enabled: false
+      com.puppycrawl.tools.checkstyle.checks.javadoc.SingleLineJavadocCheck:
+        enabled: false
+      com.puppycrawl.tools.checkstyle.checks.javadoc.SummaryJavadocCheck:
+        enabled: false
+      com.puppycrawl.tools.checkstyle.checks.naming.AbbreviationAsWordInNameCheck:
+        enabled: false
+      com.puppycrawl.tools.checkstyle.checks.blocks.RightCurlyCheck:
+        enabled: false
+      com.puppycrawl.tools.checkstyle.checks.blocks.NeedBracesCheck:
+        enabled: false
+      com.puppycrawl.tools.checkstyle.checks.naming.ParameterNameCheck:
+        enabled: false
+      com.puppycrawl.tools.checkstyle.checks.whitespace.OperatorWrapCheck:
         enabled: false
 
   csslint:
@@ -76,7 +92,7 @@ plugins:
     enabled: true
 
   radon:
-   enabled: true
+    enabled: true
 
   sass-lint:
     enabled: true
