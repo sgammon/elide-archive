@@ -14,11 +14,6 @@ package gust.backend;
 
 import io.micronaut.runtime.Micronaut;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.io.IOException;
-import java.io.InputStream;
-
 
 /**
  * Main application class, which bootstraps a backend Gust app via Micronaut, including any configured controllers,
@@ -26,7 +21,6 @@ import java.io.InputStream;
  * processing, and a number of other techniques, to pre-initialize and wire up the app before it ever gets to the
  * server to be executed at runtime.
  */
-@SuppressWarnings("WeakerAccess")
 public final class Application {
   /**
    * Main entrypoint into a Gust backend application, powered by Micronaut. This function will pre-load any static stuff

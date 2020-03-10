@@ -18,8 +18,8 @@ echo "Uploading to Codecov...";
 curl -L https://codecov.io/bash > ./.codecov.sh && chmod +x ./.codecov.sh && \
 	./.codecov.sh -f "$1/lcov.dat" \
                 -X gcov -X coveragepy -X search -X xcode -X gcovout -Z \
-                -F $2 \
-                -n $3; \
+                -F "$2" \
+                -n "$3"; \
 	rm -f ./.codecov.sh;
 
 echo "Uploading to CodeClimate...";

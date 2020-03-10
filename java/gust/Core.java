@@ -24,8 +24,6 @@ import jsinterop.annotations.JsType;
 @JsType
 @SuppressWarnings("WeakerAccess")
 public final class Core {
-  private Core() { /* Disallow instantiation. */ }
-
   /** Holds the current runtime engine. */
   static final String currentEngine = System.getProperty("gust.engine", "unknown");
 
@@ -37,6 +35,8 @@ public final class Core {
 
   /** Holds the current `debug` flag status. */
   static final Boolean debugMode = Boolean.parseBoolean(System.getProperty("gust.debug", "false"));
+
+  private Core() { /* Disallow instantiation. */ }
 
   /**
    * Retrieve the application version setting, which is applied via the JVM system property <pre>gust.version</pre>.

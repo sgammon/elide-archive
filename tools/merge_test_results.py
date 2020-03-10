@@ -6,7 +6,7 @@ import logging
 import colorlog
 
 from os import path
-from junitparser import JUnitXml, TestSuite, TestCase
+from junitparser import JUnitXml
 
 
 loglevel = logging.DEBUG
@@ -41,7 +41,7 @@ logger.addHandler(handler)
 
 def merge_reports(reports, out):
 
-    """ Parses each JUnit result and merges it into one. """
+    """Parses each JUnit result and merges it into one."""
 
     tests = 0
     suites = 0
@@ -112,7 +112,7 @@ def merge_reports(reports, out):
 
 def main():
 
-    """ Run the tool, merging any provided JUnit files. """
+    """Run the tool, merging any provided JUnit files."""
 
     if len(sys.argv) < 2:
         logger.error("Please provide the output file as the first argument, if you want to merge test results.")
