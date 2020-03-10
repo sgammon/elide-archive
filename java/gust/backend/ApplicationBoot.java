@@ -10,9 +10,8 @@ import java.io.InputStream;
  * Responsible for any testable functionality that occurs when bootstrapping a Java-based application, including
  * force-resolving critical configuration files, setting up logging, and so on.
  */
+@SuppressWarnings("WeakerAccess")
 public final class ApplicationBoot {
-  private ApplicationBoot() { /* Disallow instantiation. */ }
-
   /** Root configuration for a Micronaut app. */
   public static final String rootConfig = "/application.yml";
 
@@ -24,6 +23,8 @@ public final class ApplicationBoot {
 
   /** Default configuration provided by Gust. */
   private static final String defaultLoggingConfig = "/gust" + loggingConfig;
+
+  private ApplicationBoot() { /* Disallow instantiation. */ }
 
   /**
    * Report an error that occurred during server startup, which prevented the server from starting. Errors encountered
