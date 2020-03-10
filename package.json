@@ -1,6 +1,6 @@
 {
   "name": "@sgammon/gust",
-  "version": "1.0.0-alpha1",
+  "version": "1.0.0-alpha2",
   "description": "The Little Framework that Could",
   "repository": {
     "type": "git",
@@ -10,7 +10,8 @@
   "license": "MIT",
   "scripts": {
     "build": "bazel build --config=dev //js/... //java/... //proto/... //style/...",
-    "test": "bazel test --config=dev //javatests/..."
+    "test": "bazel test --config=dev //javatests/...",
+    "grpc": "dist/bin/external/com_github_grpc_grpc/test/cpp/util/grpc_cli"
   },
   "devDependencies": {
     "@bazel/bazel": "2.1.0",

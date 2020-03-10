@@ -1,3 +1,15 @@
+##
+# Copyright © 2020, The Gust Framework Authors. All rights reserved.
+#
+# The Gust/Elide framework and tools, and all associated source or object computer code, except where otherwise noted,
+# are licensed under the Zero Prosperity license, which is enclosed in this repository, in the file LICENSE.txt. Use of
+# this code in object or source form requires and implies consent and agreement to that license in principle and
+# practice. Source or object code not listing this header, or unless specified otherwise, remain the property of
+# Elide LLC and its suppliers, if any. The intellectual and technical concepts contained herein are proprietary to
+# Elide LLC and its suppliers and may be covered by U.S. and Foreign Patents, or patents in process, and are protected
+# by trade secret and copyright law. Dissemination of this information, or reproduction of this material, in any form,
+# is strictly forbidden except in adherence with assigned license requirements.
+##
 
 ## `Local` mode.
 ## ------------------------------------
@@ -17,7 +29,7 @@ DEV = True
 ## Framework version tag.
 ## ------------------------------------
 ## Displayed in certain areas of the app, mostly when `DEV` is active.
-VERSION = "1.0.0-alpha1"
+VERSION = "1.0.0-alpha2"
 
 ## `Renaming` mode.
 ## ------------------------------------
@@ -93,3 +105,18 @@ JAVA_LANGUAGE_LEVEL = "11"
 ## ------------------------------------
 ## Sets the Kotlin API and runtime version.
 KOTLIN_LANGUAGE_LEVEL = "1.3"
+
+## Kubernetes toolchain version.
+## ------------------------------------
+## Sets the version for the Kubectl tool, etc.
+K8S_VERSION = "1.15.9"
+
+## Protobuf toolchain version.
+## ------------------------------------
+## Sets the version enforced throughout for Protobuf.
+PROTOBUF_VERSION = "3.11.4"
+
+## JVM-based app debug port.
+## ------------------------------------
+## Sets the port to wait/listen for remote JVM tools on (for launching a debugger).
+JVM_DEBUG_PORT = "5005"

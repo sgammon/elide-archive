@@ -1,0 +1,52 @@
+/*
+ * Copyright © 2020, The Gust Framework Authors. All rights reserved.
+ *
+ * The Gust/Elide framework and tools, and all associated source or object computer code, except where otherwise noted,
+ * are licensed under the Zero Prosperity license, which is enclosed in this repository, in the file LICENSE.txt. Use of
+ * this code in object or source form requires and implies consent and agreement to that license in principle and
+ * practice. Source or object code not listing this header, or unless specified otherwise, remain the property of
+ * Elide LLC and its suppliers, if any. The intellectual and technical concepts contained herein are proprietary to
+ * Elide LLC and its suppliers and may be covered by U.S. and Foreign Patents, or patents in process, and are protected
+ * by trade secret and copyright law. Dissemination of this information, or reproduction of this material, in any form,
+ * is strictly forbidden except in adherence with assigned license requirements.
+ */
+{namespace gust.dom.assets}
+
+
+/**
+ * Render a script asset link from a given `JavaScript` proto type. These style references are always made via URIs
+ * listed in HTML <script> tags.
+ */
+{template .script}
+  {@param script: trusted_resource_uri}  /** JavaScript asset that we wish to create a link for. */
+  {@param? id: string}  /** Optional ID at which to attach the script in the DOM. */
+  {@param? module: bool}  /** Whether this should be a module or not. */
+  {@param? nomodule: bool}  /** whether this should be a `nomodule`-flagged script or not. */
+  {@param? async: bool}  /** Whether we should add the async flag. */
+  {@param? defer: bool}  /** Whether we should add the defer flag. */
+  {@param? integrity: string}  /** Integrity fingerprint to apply. */
+  {@param? crossorigin: string} /** Cross-origin value to use. */
+
+  <script type="text/javascript"
+          src="{$script}"
+          {if isNonnull($id) and $id != ''} id="{$id}" {/if}
+          {if isNonnull($module) and $module} module{else}{if isNonnull($nomodule) and $nomodule}{sp} nomodule{/if}{/if}
+          {if isNonnull($async) and $async} async{/if}
+          {if isNonnull($defer) and $defer} defer{/if}
+          {if isNonnull($integrity)} integrity="{$integrity}"{/if}
+          {if isNonnull($crossorigin)} crossorigin="{$crossorigin}"{/if}></script>
+{/template}
+
+
+/**
+ * Render a stylesheet asset link from a given `Stylesheet` proto type. These style references are always made via URIs
+ * listed in HTML links.
+ */
+{template .stylesheet}
+  {@param sheet: trusted_resource_uri}  /** URI at which to include the stylesheet. */
+  {@param? media: string}  /** Media attribute to specify for the stylesheet. */
+
+  {if isNonnull($sheet)}
+    <link rel="stylesheet" href="{$sheet}"{if isNonnull($media)} media="{$media}"{/if} />
+  {/if}
+{/template}

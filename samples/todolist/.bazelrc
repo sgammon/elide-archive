@@ -1,0 +1,99 @@
+##
+# Copyright © 2020, The Gust Framework Authors. All rights reserved.
+#
+# The Gust/Elide framework and tools, and all associated source or object computer code, except where otherwise noted,
+# are licensed under the Zero Prosperity license, which is enclosed in this repository, in the file LICENSE.txt. Use of
+# this code in object or source form requires and implies consent and agreement to that license in principle and
+# practice. Source or object code not listing this header, or unless specified otherwise, remain the property of
+# Elide LLC and its suppliers, if any. The intellectual and technical concepts contained herein are proprietary to
+# Elide LLC and its suppliers and may be covered by U.S. and Foreign Patents, or patents in process, and are protected
+# by trade secret and copyright law. Dissemination of this information, or reproduction of this material, in any form,
+# is strictly forbidden except in adherence with assigned license requirements.
+##
+
+##
+# Base Settings
+##
+
+build --embed_label=alpha
+build --define project=elide-tools
+build --define cluster=gke_bloom-sandbox_us-west2-c_k9-v4c
+
+common --experimental_allow_incremental_repository_updates
+
+build --watchfs
+build --symlink_prefix=dist/
+build --nolegacy_external_runfiles
+build --disk_cache=~/.cache/bazel-disk-cache
+build --incompatible_strict_action_env
+build --javacopt="-source 8 -target 8 -encoding UTF-8"
+build --strict_java_deps=strict
+build --use_ijars
+build --interface_shared_objects
+build --java_toolchain=@bazel_tools//tools/jdk:toolchain_java11
+build --host_java_toolchain=@bazel_tools//tools/jdk:toolchain_java11
+
+run --incompatible_strict_action_env
+
+build:ci --spawn_strategy=local
+build:ci --javabase=//defs/toolchain/java:java_runtime
+
+build:release --compilation_mode=opt
+
+build:dev --define=todolist_release_tag=latest
+build:dev --compilation_mode=dbg
+build:dev --spawn_strategy=local
+build:dev --strategy=J2cl=worker
+build:dev --strategy=Closure=worker
+build:dev --strategy=TypeScriptCompile=worker
+build:dev --experimental_persistent_javac
+
+run:dev --define=VERBOSE_LOGS=1 -- --node_options=--inspect-brk
+
+query --output=label_kind
+
+# This .bazelrc file contains all of the flags required for the provided
+# toolchain with Remote Build Execution.
+# Note your WORKSPACE must contain an rbe_autoconfig target with
+# name="rbe_default" to use these flags as-is.
+build:remote --jobs=5
+
+# Platform flags:
+# The toolchain container used for execution is defined in the target indicated
+# by "extra_execution_platforms", "host_platform" and "platforms".
+# More about platforms: https://docs.bazel.build/versions/master/platforms.html
+build:remote --extra_toolchains=@rbe_default//config:cc-toolchain
+build:remote --extra_execution_platforms=@rbe_default//config:platform
+build:remote --host_platform=@rbe_default//config:platform
+build:remote --platforms=@rbe_default//config:platform
+build:remote --host_javabase=@rbe_default//java:jdk
+build:remote --javabase=@rbe_default//java:jdk
+build:remote --host_java_toolchain=@bazel_tools//tools/jdk:toolchain_hostjdk8
+build:remote --java_toolchain=@bazel_tools//tools/jdk:toolchain_hostjdk8
+build:remote --crosstool_top=@rbe_default//cc:toolchain
+build:remote --action_env=BAZEL_DO_NOT_DETECT_CPP_TOOLCHAIN=1
+build:remote --spawn_strategy=remote
+
+# Starting with Bazel 0.27.0 strategies do not need to be explicitly
+# defined. See https://github.com/bazelbuild/bazel/issues/7480
+build:remote --define=EXECUTOR=remote
+
+# Enable remote execution so actions are performed on the remote systems.
+build:remote --remote_executor=grpcs://remotebuildexecution.googleapis.com
+
+# Enforce stricter environment rules, which eliminates some non-hermetic
+# behavior and therefore improves both the remote cache hit rate and the
+# correctness and repeatability of the build.
+build:remote --incompatible_strict_action_env=true
+
+# Set a higher timeout value, just in case.
+build:remote --remote_timeout=3600
+
+# Enable authentication. This will pick up application default credentials by
+# default. You can use --google_credentials=some_file.json to use a service
+# account credential instead.
+build:remote --google_default_credentials=true
+
+try-import %workspace%/.bazelrc.user
+
+

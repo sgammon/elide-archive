@@ -1,0 +1,125 @@
+##
+# Copyright © 2020, The Gust Framework Authors. All rights reserved.
+#
+# The Gust/Elide framework and tools, and all associated source or object computer code, except where otherwise noted,
+# are licensed under the Zero Prosperity license, which is enclosed in this repository, in the file LICENSE.txt. Use of
+# this code in object or source form requires and implies consent and agreement to that license in principle and
+# practice. Source or object code not listing this header, or unless specified otherwise, remain the property of
+# Elide LLC and its suppliers, if any. The intellectual and technical concepts contained herein are proprietary to
+# Elide LLC and its suppliers and may be covered by U.S. and Foreign Patents, or patents in process, and are protected
+# by trade secret and copyright law. Dissemination of this information, or reproduction of this material, in any form,
+# is strictly forbidden except in adherence with assigned license requirements.
+##
+
+## Sample Workspace
+workspace(
+  name = "todolist",
+  managed_directories = {"@npm": ["node_modules"]})
+
+
+## NodeJS Bootstrap
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+http_archive(
+    name = "build_bazel_rules_nodejs",
+    sha256 = "591d2945b09ecc89fde53e56dd54cfac93322df3bc9d4747cb897ce67ba8cdbf",
+    urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/1.2.0/rules_nodejs-1.2.0.tar.gz"],
+)
+
+load("@build_bazel_rules_nodejs//:index.bzl",
+     "node_repositories",
+     "yarn_install")
+
+node_repositories(
+    package_json = ["//:package.json"],
+    node_version = "10.13.0",
+    yarn_version = "1.12.1")
+
+yarn_install(
+    name = "npm",
+    package_json = "//:package.json",
+    yarn_lock = "//:yarn.lock")
+
+load("@npm//:install_bazel_dependencies.bzl",
+     "install_bazel_dependencies")
+
+install_bazel_dependencies()
+
+## Gust Bootstrap
+load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
+git_repository(
+    name = "gust",
+    remote = "git@github.com:sgammon/gust.git",
+    commit = "cf40b14f84e716ee6fdbe01a780ed611d1102a2e",
+    shallow_since = "1580619116 -0800",
+)
+
+load("@gust//defs:build.bzl", "install_dependencies")
+install_dependencies()
+
+## Kotlin
+load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kotlin_repositories", "kt_register_toolchains")
+kotlin_repositories()
+register_toolchains("@gust//defs/toolchain/kt:kotlin_toolchain")
+
+## Python
+load("@rules_python//python:repositories.bzl", "py_repositories")
+py_repositories()
+
+load("@rules_python//python:pip.bzl", "pip_repositories")
+pip_repositories()
+
+load("@rules_python//python:pip.bzl", pip_import = "pip3_import")
+
+pip_import(
+    name = "py",
+    requirements = "@gust//defs/toolchain/python:requirements_base.txt")
+
+pip_import(
+    name = "werkzeug",
+    requirements = "@gust//defs/toolchain/python:requirements_werkzeug.txt")
+
+load("@gust//defs/toolchain/python:repos.bzl", "gust_python_repositories")
+gust_python_repositories()
+
+## Java
+load("@gust//defs/toolchain/java:repos.bzl", "gust_java_repositories")
+gust_java_repositories()
+
+load("@maven//:defs.bzl", "pinned_maven_install")
+pinned_maven_install()
+
+load("@gust//defs:workspace.bzl", "setup_workspace")
+setup_workspace()
+
+## K8S Setup
+load("@io_bazel_rules_k8s//k8s:k8s.bzl", "k8s_defaults")
+
+k8s_defaults(
+  name = "k9",
+  kind = "deployment",
+  cluster = "$(cluster)",
+)
+
+## Containers
+load("@io_bazel_rules_docker//container:container.bzl", "container_pull")
+
+container_pull(
+    name = "java_base",
+    registry = "gcr.io",
+    repository = "distroless/java",
+    digest = "sha256:0ce06c40e99e0dce26bdbcec30afe7a890a57bbd250777bd31ff2d1b798c7809",
+)
+
+container_pull(
+    name = "native_base",
+    registry = "us.gcr.io",
+    repository = "elide-tools/base/alpine",
+    digest = "sha256:decbf1b8ba41c556941f2fbd82811822f7b9622cbd3a17d5d4041cb5438bae2d",
+)
+
+container_pull(
+    name = "envoy_base",
+    registry = "index.docker.io",
+    repository = "envoyproxy/envoy-alpine",
+    digest = "sha256:19f3b361450e31f68b46f891b0c8726041739f44ab9b90aecbca5f426c0d2eaf",
+)

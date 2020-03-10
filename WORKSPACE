@@ -1,9 +1,22 @@
+##
+# Copyright © 2020, The Gust Framework Authors. All rights reserved.
+#
+# The Gust/Elide framework and tools, and all associated source or object computer code, except where otherwise noted,
+# are licensed under the Zero Prosperity license, which is enclosed in this repository, in the file LICENSE.txt. Use of
+# this code in object or source form requires and implies consent and agreement to that license in principle and
+# practice. Source or object code not listing this header, or unless specified otherwise, remain the property of
+# Elide LLC and its suppliers, if any. The intellectual and technical concepts contained herein are proprietary to
+# Elide LLC and its suppliers and may be covered by U.S. and Foreign Patents, or patents in process, and are protected
+# by trade secret and copyright law. Dissemination of this information, or reproduction of this material, in any form,
+# is strictly forbidden except in adherence with assigned license requirements.
+##
+
 workspace(
   name = "gust",
   managed_directories = {"@npm": ["node_modules"]})
 
 load("//defs:build.bzl", "install_dependencies")
-load("//defs:config.bzl", "CHROMIUM", "FIREFOX", "SAUCE", "GRAALVM_VERSION", "GRAALVM_JDK_VERSION")
+load("//defs:config.bzl", "CHROMIUM", "FIREFOX", "SAUCE", "GRAALVM_VERSION", "GRAALVM_JDK_VERSION", "K8S_VERSION")
 install_dependencies()
 
 load("//defs:workspace.bzl", "setup_workspace")
@@ -165,8 +178,33 @@ pip_import(
     name = "werkzeug",
     requirements = "//defs/toolchain/python:requirements_werkzeug.txt")
 
+pip_import(
+    name = "grpc_python_dependencies",
+    requirements = "@com_github_grpc_grpc//:requirements.bazel.txt")
+
+load("@grpc_python_dependencies//:requirements.bzl", grpc_pip_install="pip_install")
+grpc_pip_install()
+
 load("//defs/toolchain/python:repos.bzl", "gust_python_repositories")
 gust_python_repositories()
+
+## gRPC Core
+load("@com_github_grpc_grpc//bazel:grpc_deps.bzl", "grpc_deps", "grpc_test_only_deps")
+grpc_deps()
+grpc_test_only_deps()
+
+load("@com_github_grpc_grpc//bazel:grpc_extra_deps.bzl", "grpc_extra_deps")
+grpc_extra_deps()
+
+## gRPC Java
+load("@io_grpc_java//:repositories.bzl", "grpc_java_repositories")
+grpc_java_repositories()
+
+load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
+protobuf_deps()
+
+load("@io_bazel_rules_k8s//k8s:k8s_go_deps.bzl", k8s_go_deps = "deps")
+k8s_go_deps()
 
 ## Java Containers
 load("@io_bazel_rules_docker//container:container.bzl", "container_pull")
@@ -190,4 +228,34 @@ container_pull(
     registry = "us.gcr.io",
     repository = "elide-tools/base/node",
     digest = "sha256:76b64868e73d27361e294fd346b72aa6c50ad4e669bd9c2684fbdda7e839ea39",
+)
+
+container_pull(
+    name = "envoy_base",
+    registry = "index.docker.io",
+    repository = "envoyproxy/envoy-alpine",
+    digest = "sha256:19f3b361450e31f68b46f891b0c8726041739f44ab9b90aecbca5f426c0d2eaf",
+)
+
+## K8S Setup
+load("@io_bazel_rules_k8s//toolchains/kubectl:kubectl_configure.bzl", "kubectl_configure")
+kubectl_configure(
+    name="k8s_config",
+    build_srcs = True,
+    k8s_commit = "v%s" % K8S_VERSION,
+    k8s_prefix = "kubernetes-%s" % K8S_VERSION,
+    k8s_sha256 = "e091944229641c5b2b2a6ac57767802548b50830cf6710bc676e851bd8233f74",
+    k8s_repo_tools_commit = "df02ded38f9506e5bbcbf21702034b4fef815f2f",
+    k8s_repo_tools_prefix = "repo-infra-df02ded38f9506e5bbcbf21702034b4fef815f2f",
+    k8s_repo_tools_sha = "4a8384320fba401cbf21fef177aa113ed8fe35952ace98e00b796cac87ae7868",
+)
+
+load("@io_bazel_rules_k8s//k8s:k8s.bzl", "k8s_repositories")
+k8s_repositories()
+
+load("@io_bazel_rules_k8s//k8s:k8s.bzl", "k8s_defaults")
+k8s_defaults(
+  name = "k9",
+  kind = "deployment",
+  cluster = "$(cluster)",
 )

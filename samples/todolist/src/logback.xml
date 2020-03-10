@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <withJansi>true</withJansi>
+        <encoder>
+            <pattern>%cyan(%d{HH:mm:ss.SSS}) %gray([%thread]) %highlight(%-5level) %magenta(%logger{36}) - %msg%n</pattern>
+        </encoder>
+    </appender>
+    <root level="info">
+        <appender-ref ref="STDOUT" />
+    </root>
+    <logger name="gust.backend.PageContextManager" level="DEBUG" />
+    <logger name="gust.backend.model.ModelAdapter" level="TRACE" />
+    <logger name="gust.backend.model.PersistenceDriver" level="TRACE" />
+    <logger name="gust.backend.model.ProtoModelCodec" level="TRACE" />
+    <logger name="gust.backend.model.ObjectModelCodec" level="TRACE" />
+    <logger name="gust.backend.driver.inmemory.InMemoryDriver" level="TRACE" />
+    <logger name="gust.backend.driver.inmemory.InMemoryAdapter" level="TRACE" />
+    <logger name="gust.backend.driver.inmemory.InMemoryManager" level="TRACE" />
+    <logger name="gust.backend.driver.firestore.FirestoreAdapter" level="TRACE" />
+    <logger name="gust.backend.driver.firestore.FirestoreDriver" level="TRACE" />
+    <logger name="gust.backend.driver.firestore.FirestoreManager" level="TRACE" />
+    <logger name="gust.backend.transport.GoogleTransportManager" level="TRACE" />
+    <logger name="server.HomeController" level="DEBUG" />
+</configuration>
