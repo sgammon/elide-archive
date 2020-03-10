@@ -167,9 +167,9 @@
     tmp "0.1.0"
 
 "@bazel/rollup@^1.3.0":
-  version "1.3.0"
-  resolved "https://registry.yarnpkg.com/@bazel/rollup/-/rollup-1.3.0.tgz#266b5621bee430efdeb453ade97aa76700c78fd2"
-  integrity sha512-8DnFc4ZUT8kJmZ1bZ86wkqVJYYGBt22p30NhpKUEKUQxROvSr+9lKoAEW+vdJ16rtu8UZDOvHlxr1MqkgnD8Jg==
+  version "1.4.1"
+  resolved "https://registry.yarnpkg.com/@bazel/rollup/-/rollup-1.4.1.tgz#395fbd2611867a54be154ecff1239fcde261371b"
+  integrity sha512-CU0D+xPQbspuVsKhv2sP0kWhIuEQo8eYjhQXP9BXVZ02uc+YCOkW/5JHIhF946QYljp++W6mcVUGFdBYcrVZow==
 
 "@bazel/source-map-support@latest":
   version "0.5.9-c"
