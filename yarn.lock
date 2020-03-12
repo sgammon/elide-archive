@@ -116,9 +116,9 @@
     "@bazel/bazel-win32_x64" "2.1.0"
 
 "@bazel/buildifier@latest":
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/@bazel/buildifier/-/buildifier-2.2.0.tgz#b3914066d8b10472a4891b843d48c6b6b4c874e5"
-  integrity sha512-YLIJFCEahgRZJdKnMJTwSxvMwB657Elt0GZljG2i6rWYaJfI4itDTy0Scbg0g+AF5uJnLdGlMdj27jDcsLBvdw==
+  version "2.2.1"
+  resolved "https://registry.yarnpkg.com/@bazel/buildifier/-/buildifier-2.2.1.tgz#b5b21d0042ea48a9c43b54ec4824d4d6505988bc"
+  integrity sha512-fDWMV2x03/K5dZnAEBeKS0gpn0LWCiv5kjhMB6q0f1Q5x6S7/+xoownxgWyNRo+qHxn+a2CtQSCRUpSC8QNg/w==
 
 "@bazel/hide-bazel-files@latest":
   version "1.3.0"
