@@ -18,7 +18,7 @@ import javax.annotation.Nonnull;
 /** Provides utilities for encoding values into hex, or decoding values from hex. */
 public final class Hex {
   /** Array of hex-allowable characters. */
-  private static final char[] HEX_ARRAY = "0123456789ABCDEF".toCharArray();
+  private static final char[] HEX_ARRAY = "0123456789abcdef".toCharArray();
 
   /**
    * Convert a byte array to hex.
@@ -39,7 +39,7 @@ public final class Hex {
    */
   public static @Nonnull String bytesToHex(byte[] bytes, int maxChars) {
     char[] hexChars = new char[bytes.length * 2];
-    for (int j = 0; j < (maxChars == -1 ? bytes.length : (maxChars / 2)); j++) {
+    for (int j = 0; j < (maxChars == -1 ? bytes.length : Math.min(bytes.length, maxChars / 2)); j++) {
       int v = bytes[j] & 0xFF;
       hexChars[j * 2] = HEX_ARRAY[v >>> 4];
       hexChars[j * 2 + 1] = HEX_ARRAY[v & 0x0F];
