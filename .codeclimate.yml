@@ -2,6 +2,14 @@
 version: "2"
 
 checks:
+  similar-code:
+    config:
+      threshold: 30
+
+  identical-code:
+    config:
+      threshold: 30
+
   argument-count:
     config:
       threshold: 10
@@ -39,6 +47,8 @@ plugins:
     config:
       file: "tools/checkstyle.xml"
     checks:
+      com.puppycrawl.tools.checkstyle.checks.coding.OneStatementPerLineCheck:
+        enabled: false
       com.puppycrawl.tools.checkstyle.checks.whitespace.EmptyLineSeparatorCheck:
         enabled: false
       com.puppycrawl.tools.checkstyle.checks.imports.CustomImportOrderCheck:
@@ -66,6 +76,8 @@ plugins:
       AnnotationLocationMostCases:
         enabled: false
       RightCurlyAlone:
+        enabled: false
+      com.puppycrawl.tools.checkstyle.checks.imports.AvoidStarImportCheck:
         enabled: false
 
   csslint:
