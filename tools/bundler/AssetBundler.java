@@ -305,6 +305,8 @@ public class AssetBundler implements Callable<Integer> {
      * @param paths Source file paths.
      */
     BaseAssetModule(@Nonnull String module, @Nonnull Collection<String> paths) {
+      if (Objects.requireNonNull(module).isEmpty() || module.length() < 2)
+        throw new IllegalArgumentException(format("Invalid asset module name: %s.", module));
       this.module = module;
       this.paths = new TreeSet<>(paths);
     }
@@ -596,11 +598,11 @@ public class AssetBundler implements Callable<Integer> {
    *
    * @param args Arguments to run the tool with.
    */
-  public static int main(String... args) {
+  public static void main(String... args) {
     var cl = new CommandLine(new AssetBundler());
     cl.registerConverter(JsModule.class, AssetBundler::interpretJsModule);
     cl.registerConverter(CssModule.class, AssetBundler::interpretCssModule);
-    return cl.execute(args);
+    System.exit(cl.execute(args));
   }
 
   private AssetBundler() { /* Disallow empty instantiation, except by DI. */ }
@@ -1006,7 +1008,7 @@ public class AssetBundler implements Callable<Integer> {
     verbose("Processing asset metadata for module '%s'.", module.module);
     if (module instanceof JsModule) {
       // prep a JS module and attach it
-      var bundle = ScriptBundle.newBuilder();
+      var bundle = ScriptBundle.newBuilder().setModule(module.module);
 
       // build an asset for each script target
       bundle.addAllAsset(module.paths.parallelStream().map((path) -> {
@@ -1026,7 +1028,7 @@ public class AssetBundler implements Callable<Integer> {
 
     } else if (module instanceof CssModule) {
       // prep a CSS module and attach it
-      var bundle = StyleBundle.newBuilder();
+      var bundle = StyleBundle.newBuilder().setModule(module.module);
 
       // build an asset for each script target
       bundle.addAllAsset(module.paths.parallelStream().map((path) -> {
