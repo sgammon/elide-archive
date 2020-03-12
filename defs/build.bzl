@@ -431,7 +431,7 @@ DEPS = {
     "io_micronaut_micronaut_views": {
         "type": "java",
         "licenses": ["notice"],
-        "forceLocal": True,
+        "forceLocal": False,
         "overlay": "micronaut-views-core.bzl",
         "local": "/workspace/GUST/vendor/micronaut/views/views-core",
         "targets": ["https://storage.googleapis.com/bloom-software/micronaut/b3/views-core-1.3.4.BUILD-SNAPSHOT.jar"],
@@ -448,7 +448,7 @@ DEPS = {
     "io_micronaut_micronaut_views_soy": {
         "type": "java",
         "licenses": ["notice"],
-        "forceLocal": True,
+        "forceLocal": False,
         "overlay": "micronaut-views-soy.bzl",
         "local": "/workspace/GUST/vendor/micronaut/views/views-soy",
         "targets": ["https://storage.googleapis.com/bloom-software/micronaut/b3/views-soy-1.3.4.BUILD-SNAPSHOT.jar"],
