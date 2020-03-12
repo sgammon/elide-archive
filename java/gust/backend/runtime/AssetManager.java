@@ -92,9 +92,12 @@ public final class AssetManager {
 
   /** Holds on to info related to a raw asset file. */
   @Immutable
-  private static final class ContentInfo {
+  static final class ContentInfo {
     /** Unique token for this asset. */
     final @Nonnull String token;
+
+    /** Unique token for this asset. */
+    final @Nonnull String module;
 
     /** Original filename for this asset. */
     final @Nonnull String filename;
@@ -122,6 +125,7 @@ public final class AssetManager {
 
     /** Raw constructor for content info metadata. */
     private ContentInfo(@Nonnull String token,
+                        @Nonnull String module,
                         @Nonnull String filename,
                         @Nonnull Long size,
                         @Nonnull String etag,
@@ -131,6 +135,7 @@ public final class AssetManager {
                         @Nonnull EnumSet<CompressionMode> compressionOptions,
                         @Nonnull AssetBundle.AssetContent content) {
       this.token = token;
+      this.module = module;
       this.filename = filename;
       this.size = size;
       this.etag = etag;
@@ -142,14 +147,16 @@ public final class AssetManager {
     }
 
     /**
-     * Inflate a {@link ContentInfo} record from an {@link AssetBundle.AssetContent} definition.
+     * Inflate a {@link ContentInfo} record from an {@link AssetBundle.AssetContent} definition. This method variant
+     * additionally allows specification of a custom `ETag` digest algorithm.
      *
      * @param content Asset content protocol object.
+     * @param algorithm Algorithm to use for etags.
      * @return Checked content info object.
      */
-    static @Nonnull ContentInfo fromProto(AssetBundle.AssetContent content) {
+    static @Nonnull ContentInfo fromProto(AssetBundle.AssetContent content, String algorithm) {
       try {
-        MessageDigest digester = MessageDigest.getInstance(ETAG_DIGEST_ALGORITHM);
+        MessageDigest digester = MessageDigest.getInstance(algorithm);
         digester.update(content.getModule().getBytes(StandardCharsets.UTF_8));
         digester.update(content.getFilename().getBytes(StandardCharsets.UTF_8));
         digester.update(content.getToken().getBytes(StandardCharsets.UTF_8));
@@ -176,6 +183,7 @@ public final class AssetManager {
 
         return new ContentInfo(
           content.getToken(),
+          content.getModule(),
           content.getFilename(),
           uncompressedAssetSize,
           Hex.bytesToHex(etagDigest, ETAG_LENGTH),
@@ -188,6 +196,16 @@ public final class AssetManager {
       } catch (NoSuchAlgorithmException exc) {
         throw new RuntimeException(exc);
       }
+    }
+
+    /**
+     * Inflate a {@link ContentInfo} record from an {@link AssetBundle.AssetContent} definition.
+     *
+     * @param content Asset content protocol object.
+     * @return Checked content info object.
+     */
+    static @Nonnull ContentInfo fromProto(AssetBundle.AssetContent content) {
+      return fromProto(content, ETAG_DIGEST_ALGORITHM);
     }
   }
 
@@ -202,7 +220,7 @@ public final class AssetManager {
 
   /** Holds on to info related to an asset module's metadata. */
   @Immutable
-  private static final class ModuleMetadata<M extends Message> {
+  static final class ModuleMetadata<M extends Message> {
     /** Name of this asset module. */
     final @Nonnull String name;
 
@@ -210,12 +228,12 @@ public final class AssetManager {
     final @Nonnull ModuleType type;
 
     /** Raw asset records for this module. */
-    final @Nonnull Collection<M> assets;
+    final @Nonnull List<M> assets;
 
     /** Raw constructor for asset module metadata. */
     private ModuleMetadata(@Nonnull ModuleType type,
                            @Nonnull String name,
-                           @Nonnull Collection<M> assets) {
+                           @Nonnull List<M> assets) {
       this.name = name;
       this.type = type;
       this.assets = assets;
@@ -282,6 +300,11 @@ public final class AssetManager {
     /** @return Opaque token identifying this asset content. */
     public @Nonnull String getToken() {
       return content.token;
+    }
+
+    /** @return Module name for this content chunk. */
+    public @Nonnull String getModule() {
+      return content.module;
     }
 
     /** @return Pre-calculated ETag value for this asset. */
@@ -407,6 +430,9 @@ public final class AssetManager {
     assetMap.putAll(loadedBundle.getStylesMap().entrySet().stream()
       .map((entry) -> Pair.of(entry.getKey(), ModuleMetadata.fromStyleProto(entry.getValue())))
       .peek((pair) -> {
+        // map each asset to its constituent module
+        pair.getValue().assets.forEach((asset) -> modulesToTokens.put(pair.getKey(), asset.getToken()));
+
         if (logging.isTraceEnabled())
           logging.trace(format("- Indexing style module '%s' of type %s.",
             pair.getKey(),
@@ -419,6 +445,9 @@ public final class AssetManager {
     assetMap.putAll(loadedBundle.getScriptsMap().entrySet().stream()
       .map((entry) -> Pair.of(entry.getKey(), ModuleMetadata.fromScriptProto(entry.getValue())))
       .peek((pair) -> {
+        // map each asset to its constituent module
+        pair.getValue().assets.forEach((asset) -> modulesToTokens.put(pair.getKey(), asset.getToken()));
+
         if (logging.isTraceEnabled())
           logging.trace(format("- Indexing script module '%s' of type %s.",
             pair.getKey(),
@@ -466,6 +495,21 @@ public final class AssetManager {
       }
     }
   }
+
+  /**
+   * Acquire a new instance of the asset manager. The instance provided by this method is not guaranteed to be fresh for
+   * every invocation (it may be a shared object), but all operations on the asset manager are threadsafe nonetheless.
+   *
+   * @return Asset manager instance.
+   */
+  public static AssetManager acquire() throws IOException {
+    AssetManager.load();
+    return new AssetManager();
+  }
+
+  /** Package-private constructor. Acquire an instance through {@link #acquire()}. */
+  @SuppressWarnings("WeakerAccess")
+  AssetManager() { /* Disallow instantiation except through DI. */ }
 
   // -- Public API -- //
 
@@ -515,7 +559,7 @@ public final class AssetManager {
     ImmutableSortedSet.Builder<ManagedAssetContent> assetsBuilder = ImmutableSortedSet.naturalOrder();
     Collection<String> contentTokens = modulesToTokens.get(module);
 
-    final Collection<ManagedAssetContent> contents;
+    Collection<ManagedAssetContent> contents = Collections.emptySet();
     if (!contentTokens.isEmpty()) {
       // resolve content for each token
       assetsBuilder.addAll((Iterable<ManagedAssetContent>)contentTokens.parallelStream()
@@ -526,11 +570,6 @@ public final class AssetManager {
             logging.debug(format("Resolved content block at token '%s' for module '%s.'",
               pair.getKey(),
               module));
-
-          } else if (!content.isPresent()) {
-            logging.warn(format("Failed to locate content block at token '%s' for module '%s'.",
-              pair.getKey(),
-              module));
           }
         })
         .filter((pair) -> pair.getValue().isPresent())
@@ -539,8 +578,6 @@ public final class AssetManager {
         .collect(Collectors.toCollection(ConcurrentSkipListSet::new)));
 
       contents = assetsBuilder.build();
-    } else {
-      contents = Collections.emptySet();
     }
 
     if (logging.isDebugEnabled())
