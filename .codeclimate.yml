@@ -61,6 +61,12 @@ plugins:
         enabled: false
       com.puppycrawl.tools.checkstyle.checks.indentation.IndentationCheck:
         enabled: false
+      com.puppycrawl.tools.checkstyle.checks.coding.MissingSwitchDefaultCheck:
+        enabled: false
+      AnnotationLocationMostCases:
+        enabled: false
+      RightCurlyAlone:
+        enabled: false
 
   csslint:
     enabled: true

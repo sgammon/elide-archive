@@ -105,7 +105,7 @@ public class AssetBundler implements Callable<Integer> {
   static {
     String jniLibrary = System.getProperty("BROTLI_JNI_LIBRARY");
     if (jniLibrary != null) {
-      System.load(new java.io.File(jniLibrary).getAbsolutePath());
+      System.load(new File(jniLibrary).getAbsolutePath());
     }
   }
 
@@ -291,7 +291,7 @@ public class AssetBundler implements Callable<Integer> {
   // -- Asset Classes -- //
 
   /** Encapsulates shared functionality between asset module types. */
-  private static abstract class BaseAssetModule {
+  private abstract static class BaseAssetModule {
     /** Specifies the name of this asset module. */
     protected final @Nonnull String module;
 
@@ -596,11 +596,11 @@ public class AssetBundler implements Callable<Integer> {
    *
    * @param args Arguments to run the tool with.
    */
-  public static void main(String... args) {
+  public static int main(String... args) {
     var cl = new CommandLine(new AssetBundler());
     cl.registerConverter(JsModule.class, AssetBundler::interpretJsModule);
     cl.registerConverter(CssModule.class, AssetBundler::interpretCssModule);
-    System.exit(cl.execute(args));
+    return cl.execute(args);
   }
 
   private AssetBundler() { /* Disallow empty instantiation, except by DI. */ }

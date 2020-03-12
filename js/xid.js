@@ -11,7 +11,7 @@
  * is strictly forbidden except in adherence with assigned license requirements.
  */
 
-/* global goog */
+/* global goog,ui */
 
 goog.provide('xid');
 goog.provide('ui.xid');
