@@ -20,6 +20,7 @@ import tools.elide.core.data.CompressionMode;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.SortedSet;
 import java.util.concurrent.TimeUnit;
 
 
@@ -28,6 +29,11 @@ import java.util.concurrent.TimeUnit;
 public interface AssetConfiguration {
   /** Sensible defaults for asset configuration. */
   AssetConfiguration DEFAULTS = new AssetConfiguration() {};
+
+  /** Specifies a bump value to apply to all asset URLs. */
+  @Bindable("bump") default Optional<Integer> bump() {
+    return Optional.empty();
+  }
 
   /** Specifies whether to affix {@code ETag} values. */
   @Bindable("etags") default Boolean enableETags() {
@@ -42,6 +48,11 @@ public interface AssetConfiguration {
   /** Specifies whether to affix a {@code X-Content-Type-Options} policy for {@code nosniff}. */
   @Bindable("noSniff") default Boolean enableNoSniff() {
     return true;
+  }
+
+  /** Specifies settings regarding CDN use. */
+  @Bindable("cdn") default ContentDistributionConfiguration cdn() {
+    return ContentDistributionConfiguration.DEFAULTS;
   }
 
   /** Specifies settings for HTTP compression. */
@@ -115,6 +126,23 @@ public interface AssetConfiguration {
     /** Time unit to apply to the value specified by {@link #sharedTtl()}. Defaults to {@code SECONDS}. */
     default TimeUnit sharedTtlUnit() {
       return TimeUnit.SECONDS;
+    }
+  }
+
+  /** Describes the structure of CDN-related asset settings. */
+  @ConfigurationProperties("gust.assets.cdn")
+  interface ContentDistributionConfiguration {
+    /** Sensible defaults for asset CDN settings. */
+    ContentDistributionConfiguration DEFAULTS = new ContentDistributionConfiguration() {};
+
+    /** Whether to enable CDN features. */
+    @Bindable("enabled") default Boolean enabled() {
+      return false;
+    }
+
+    /** CDN host names to use for assets. When running over HTTP/2, only the first hostname is employed. */
+    @Bindable("hostnames") default SortedSet<String> hostnames() {
+      return Collections.emptySortedSet();
     }
   }
 }
