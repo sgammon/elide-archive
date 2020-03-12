@@ -26,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 
 /** Tests the {@link PageContext} class for various behavioral contracts. */
-public class PageContextTest {
+public final class PageContextTest {
   /** Test that a simple map context works fine with {@link PageContext}. */
   @Test void testMapContext() {
     String hiprop = "hi";

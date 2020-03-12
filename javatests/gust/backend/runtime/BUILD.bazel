@@ -16,6 +16,11 @@ package(
 )
 
 load(
+    "//defs/toolchain/java:rules.bzl",
+    java_library = "jdk_library",
+)
+
+load(
     "//defs/toolchain/java:testing.bzl",
     java_test = "jdk_test",
 )
@@ -23,12 +28,47 @@ load(
 load(
     "//defs/toolchain:deps.bzl",
     "maven",
+    "javaproto",
 )
 
 _COMMON_DEPS = [
     maven("org.slf4j:slf4j-api"),
 ]
 
+
+exports_files([
+    "assets.pb",
+])
+
+java_test(
+    name = "AssetManagerFailTest",
+    srcs = ["AssetManagerFailTest.java"],
+    test_package = "gust.backend.runtime",
+    deps = [
+        "//java/gust/backend/runtime:AssetManager",
+        maven("ch.qos.logback:logback-classic"),
+    ] + _COMMON_DEPS,
+    classpath_resources = [
+        "//javatests:logback.xml",
+        "//java/gust:application.yml",
+    ],
+)
+
+java_test(
+    name = "AssetManagerTest",
+    srcs = ["AssetManagerTest.java"],
+    test_package = "gust.backend.runtime",
+    deps = [
+        javaproto("//gust/assets:bundle_proto"),
+        "//java/gust/backend/runtime:AssetManager",
+        maven("ch.qos.logback:logback-classic"),
+    ] + _COMMON_DEPS,
+    classpath_resources = [
+        ":assets.pb",
+        "//javatests:logback.xml",
+        "//java/gust:application.yml",
+    ],
+)
 
 java_test(
     name = "LoggingTest",
@@ -39,7 +79,7 @@ java_test(
         maven("ch.qos.logback:logback-classic"),
     ] + _COMMON_DEPS,
     classpath_resources = [
-        "//java/gust:logback.xml",
+        "//javatests:logback.xml",
         "//java/gust:application.yml",
     ],
 )
