@@ -43,6 +43,7 @@ else
 OUTPUT_BASE ?= k8-fastbuild
 endif
 
+ARGS ?=
 DOCS ?= docs
 DISTPATH ?= dist
 OUTPATH ?= $(DISTPATH)/out
@@ -148,7 +149,7 @@ build:  ## Build all framework targets.
 	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) build $(TAG) $(BASE_ARGS) $(BUILD_ARGS) -- $(TARGETS)
 
 run:  ## Run the specified target.
-	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) run $(TAG) $(BASE_ARGS) $(BUILD_ARGS) -- $(APP)
+	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) run $(TAG) $(BASE_ARGS) $(BUILD_ARGS) -- $(APP) $(ARGS)
 
 dev:  ## Develop against the specified target.
 	$(_RULE)$(IBAZEL) run $(TAG) $(APP)

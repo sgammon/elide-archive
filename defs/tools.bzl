@@ -67,14 +67,29 @@ def _process_java_dep(key, repo):
 
     """ Process an external Java dependency. """
 
-    _java_import_external(
-        name = key,
-        licenses = repo.get("licenses"),
-        jar_urls = repo["targets"],
-        jar_sha256 = repo.get("seal"),
-        deps = repo.get("deps", []),
-        extra_build_file_content = repo.get("inject"),
-    )
+    if (_LOCAL == True or repo.get("forceLocal") == True) and repo.get("local") != None:
+        # local override
+        if repo.get("overlay") != None:
+            # local new
+            native.new_local_repository(
+                name = key,
+                build_file = "//external:%s" % repo["overlay"],
+                path = repo["local"])
+        else:
+            # regular local
+            native.local_repository(
+                name = key,
+                path = repo["local"])
+
+    else:
+        _java_import_external(
+            name = key,
+            licenses = repo.get("licenses"),
+            jar_urls = repo["targets"],
+            jar_sha256 = repo.get("seal"),
+            deps = repo.get("deps", []),
+            extra_build_file_content = repo.get("inject"),
+        )
 
 
 def _process_github_dep(key, repo):

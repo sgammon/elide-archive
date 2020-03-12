@@ -29,3 +29,7 @@
 [submodule "bazel_common"]
 	path = vendor/bazel/common
 	url = git@github.com:sgammon/bazel-common.git
+[submodule "micronaut-views"]
+	path = vendor/micronaut/views
+	url = git@github.com:bloombox/micronaut-views.git
+	branch = soy/async-chunked-v2

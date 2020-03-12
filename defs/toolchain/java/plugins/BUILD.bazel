@@ -56,6 +56,16 @@ java_plugin(
 )
 
 java_plugin(
+    name = "picocli-generator",
+    generates_api = True,
+    processor_class = "picocli.codegen.aot.graalvm.processor.NativeImageConfigGeneratorProcessor",
+    deps = [
+        maven("info.picocli:picocli"),
+        maven("info.picocli:picocli-codegen"),
+    ]
+)
+
+java_plugin(
     name = "micronaut-types",
     generates_api = True,
     processor_class = "io.micronaut.annotation.processing.TypeElementVisitorProcessor",
@@ -80,5 +90,15 @@ java_library(
         ":micronaut-beans",
         ":micronaut-types",
         ":micronaut-config",
+    ],
+)
+
+java_library(
+    name = "picocli",
+    exports = [
+        maven("info.picocli:picocli"),
+    ],
+    exported_plugins = [
+        ":picocli-generator",
     ],
 )

@@ -15,6 +15,8 @@ package server
 import gust.backend.AppController
 import gust.backend.PageContextManager
 import gust.backend.PageRender
+import gust.backend.annotations.Js
+import gust.backend.annotations.Style
 import io.micronaut.http.MediaType
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Get
@@ -42,15 +44,6 @@ class HomeController @Inject constructor (ctx: PageContextManager): AppControlle
 
     // Default name to show.
     private const val defaultName = "World"
-
-    // CDN at which to access MDC.
-    private const val materialCDN = "https://unpkg.com/material-components-web@latest/dist"
-
-    // Material JS.
-    private const val materialJS = "$materialCDN/material-components-web.min.js"
-
-    // Material CSS.
-    private const val materialCSS = "$materialCDN/material-components-web.min.css"
   }
 
   /**
@@ -66,8 +59,9 @@ class HomeController @Inject constructor (ctx: PageContextManager): AppControlle
    * client-side app, so we don't need to worry about it here. Similarly, if the user hits the homepage without being
    * logged in, and then logs in, that flow is also handled by the re-hydrated CSR frontend.
    */
-  @Get("/", produces = [MediaType.TEXT_HTML])
+  @Js("todolist.main")
   @View("todolist.home.page")
+  @Get("/", produces = ["text/html;charset=UTF-8"])
   fun home(@QueryValue("name", defaultValue = defaultName) name: String): PageRender {
     if (name != defaultName)
       logging.info("Greeting user with name '$name'...")
@@ -76,13 +70,8 @@ class HomeController @Inject constructor (ctx: PageContextManager): AppControlle
     return this.context
       .title("Todolist - Homepage - Manage personal todo-lists across devices")
       .put("name", name)
-
-      .script(JavaScript.newBuilder()
-        .setDefer(true)
-        .setUri(this.trustedResource(URI.create(materialJS))))
-
-      .stylesheet(Stylesheet.newBuilder()
-        .setMedia("screen")
-        .setUri(this.trustedResource(URI.create(materialCSS))))
+      .stylesheet("todolist.mdl")
+      .stylesheet("todolist.styles")
+      .script("todolist.main")
   }
 }

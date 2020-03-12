@@ -12,34 +12,47 @@
  */
 package gust.backend;
 
+import gust.backend.runtime.AssetManager;
+import gust.backend.runtime.AssetManager.ManagedAsset;
 import gust.backend.runtime.Logging;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.context.ServerRequestContext;
 import io.micronaut.runtime.http.scope.RequestScope;
 import io.micronaut.views.soy.SoyNamingMapProvider;
 import org.slf4j.Logger;
+import tools.elide.assets.AssetBundle.StyleBundle.StyleAsset;
+import tools.elide.assets.AssetBundle.ScriptBundle.ScriptAsset;
 import tools.elide.page.Context;
+import tools.elide.page.Context.Styles.Stylesheet;
+import tools.elide.page.Context.Scripts.JavaScript;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.Closeable;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import static java.lang.String.format;
 
 
 /**
  * Manages the process of filling out {@link PageContext} objects before they are sealed, and delivered to Closure/Soy
  * to be reduced and rendered into content.
  *
- * <p>This object may be used from controllers via dependency injection, or used via the base controller classes provided
- * as part of the framework.</p>
+ * <p>This object may be used from controllers via dependency injection, or used via the base controller classes
+ * provided as part of the framework.</p>
  */
 @RequestScope
 @SuppressWarnings("unused")
 public class PageContextManager implements Closeable, AutoCloseable, PageRender {
-  private static final Logger LOG = Logging.logger(PageContextManager.class);
+  private static final Logger logging = Logging.logger(PageContextManager.class);
+
+  /** Access to the asset manager. */
+  private final @Nonnull AssetManager assetManager;
 
   /** Page context builder. */
   private final @Nonnull Context.Builder context;
@@ -60,16 +73,17 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
   private @Nullable PageContext builtContext = null;
 
   /** Whether we have closed context building or not. */
-  private boolean closed = false;
+  private AtomicBoolean closed = new AtomicBoolean(false);
 
   /**
    * Constructor for page context.
    *
-   * @param namingMapProvider Style renaming map provider.
+   * @param assetManager Manager for static embedded application assets.
+   * @param namingMapProvider Style renaming map provider, if applicable.
    * @throws IllegalStateException If an attempt is made to construct context outside of a server-side HTTP flow.
    */
-  PageContextManager(@Nonnull Optional<SoyNamingMapProvider> namingMapProvider) {
-    if (LOG.isDebugEnabled()) LOG.debug("Initializing `PageContextManager`.");
+  PageContextManager(@Nonnull AssetManager assetManager, @Nonnull Optional<SoyNamingMapProvider> namingMapProvider) {
+    if (logging.isDebugEnabled()) logging.debug("Initializing `PageContextManager`.");
     //noinspection SimplifyOptionalCallChains
     if (!ServerRequestContext.currentRequest().isPresent())
       throw new IllegalStateException("Cannot construct `PageContext` outside of a server-side HTTP flow.");
@@ -78,28 +92,29 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
     this.props = new ConcurrentSkipListMap<>();
     this.injected = new ConcurrentSkipListMap<>();
     this.namingMapProvider = namingMapProvider;
+    this.assetManager = assetManager;
   }
 
   /** @return The current page context builder. */
-  @Nonnull public Context.Builder getContext() {
-    if (this.closed)
+  public @Nonnull Context.Builder getContext() {
+    if (this.closed.get())
       throw new IllegalStateException("Cannot access mutable context after closing page manager state.");
     return context;
   }
 
   /** @return Built context. After calling this method the first time, context may no longer be mutated. */
-  @Nonnull public PageContext render() {
-    if (this.closed) {
+  public @Nonnull PageContext render() {
+    if (this.closed.get()) {
       assert this.builtContext != null;
     } else {
-      this.closed = true;
+      this.closed.compareAndSet(false, true);
       this.builtContext = PageContext.fromProto(
         this.context.build(),
         this.props,
         this.injected,
         this.namingMapProvider.orElse(null));
-      if (LOG.isDebugEnabled()) {
-        LOG.debug(String.format("Exported page context with: %s props, %s injecteds, and proto follows \n%s",
+      if (logging.isDebugEnabled()) {
+        logging.debug(format("Exported page context with: %s props, %s injecteds, and proto follows \n%s",
           this.props.size(),
           this.injected.size(),
           this.builtContext.getPageContext()));
@@ -108,7 +123,7 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
     return this.builtContext;
   }
 
-  // -- Page-level Interface (Context) -- //
+  // -- Builder Interface (Context) -- //
 
   /**
    * Set the page title for the current render flow. If the app makes use of the framework's built-in page frame, the
@@ -126,22 +141,190 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
   }
 
   /**
+   * Include the specified JavaScript resource in the rendered page, according to the specified settings. The module is
+   * expected to exist and be included in the application's asset bundle.
+   *
+   * @param name Name of the script module to load into the page.
+   * @return Current page context manager (for call chain-ability).
+   * @throws IllegalArgumentException If `null` is passed for the module name, or it cannot be located, or is invalid.
+   */
+  public @Nonnull PageContextManager script(@Nonnull String name) {
+    // sensible defaults for script embedding
+    return this.script(
+      name, null, true, false, false, false, false, false);
+  }
+
+  /**
+   * Include the specified JavaScript resource in the rendered page, according to the specified settings. The module is
+   * expected to exist and be included in the application's asset bundle. This variant allows specification of the most
+   * frequent attributes used with scripts.
+   *
+   * @param name Name of the script module to load into the page.
+   * @param defer Whether to add the {@code defer} attribute to the script tag.
+   * @param async Whether to add the {@code async} attribute to the script tag.
+   * @return Current page context manager (for call chain-ability).
+   * @throws IllegalArgumentException If `null` is passed for the module name, or it cannot be located, or is invalid.
+   */
+  public @Nonnull PageContextManager script(@Nonnull String name, @Nonnull Boolean defer, @Nonnull Boolean async) {
+    return this.script(
+      name, null, defer, async, false, false, false, false);
+  }
+
+  /**
+   * Include the specified JavaScript resource in the rendered page, according to the specified settings. The module is
+   * expected to exist and be included in the application's asset bundle.
+   *
+   * <p><b>Behavior:</b> Script assets included in this manner are always loaded in the document head, so be judicious
+   * with {@code defer} if you are loading a significant amount of JavaScript. There are no default script assets.
+   * Scripts are emitted in the order in which they are attached to the page context (i.e. via this method).</p>
+   *
+   * <p><b>Optimization:</b> Activating the {@code preload} flag causes the script asset to be mentioned in a
+   * {@code Link} header, which makes supporting browsers aware of it before loading the DOM. For more aggressive
+   * circumstances, the {@code push} flag proactively pushes the asset to the browser (where supported), unless the
+   * framework knows the client has seen the asset already. Where HTTP/2 is not supported, special triggering
+   * {@code Link} headers may be used.</p>
+   *
+   * @param name Name of the script module to load into the page.
+   * @param id ID to assign the script block in the DOM, so it may be located dynamically.
+   * @param defer Whether to add the {@code defer} attribute to the script tag.
+   * @param async Whether to add the {@code async} attribute to the script tag.
+   * @param module Whether to add the {@code module} attribute to the script tag.
+   * @param nomodule Whether to add the {@code nomodule} attribute to the script tag.
+   * @param preload Whether to link/hint about the asset in response headers.
+   * @param push Whether to pro-actively push the asset, if we think the client doesn't have it.
+   * @return Current page context manager (for call chain-ability).
+   * @throws IllegalArgumentException If `null` is passed for the module name, or it cannot be located, or is invalid.
+   */
+  public @Nonnull PageContextManager script(@Nonnull String name,
+                                            @Nullable String id,
+                                            @Nonnull Boolean defer,
+                                            @Nonnull Boolean async,
+                                            @Nonnull Boolean module,
+                                            @Nonnull Boolean nomodule,
+                                            @Nonnull Boolean preload,
+                                            @Nonnull Boolean push) {
+    Optional<ManagedAsset<ScriptAsset>> maybeAsset = (
+      this.assetManager.assetMetadataByModule(Objects.requireNonNull(name)));
+
+    // fail if not present
+    if (!maybeAsset.isPresent())
+      throw new IllegalArgumentException(format("Failed to locate script module '%s'.", name));
+    var asset = maybeAsset.get();
+
+    if (!asset.getType().equals(AssetManager.ModuleType.JS))
+      throw new IllegalArgumentException(format("Cannot include asset '%s' as %s, it is of type JS.",
+        name,
+        asset.getType().name()));
+
+    // resolve constituent scripts
+    for (ScriptAsset script : asset.getAssets()) {
+      // pre-filled URI js record
+      JavaScript.Builder js = JavaScript.newBuilder(script.getScript())
+        .setDefer(defer)
+        .setAsync(async)
+        .setModule(module)
+        .setNoModule(nomodule)
+        .setPreload(preload)
+        .setPush(push);
+
+      if (id != null) js.setId(id);
+      this.script(js);
+    }
+    return this;
+  }
+
+  /**
    * Include the specified JavaScript resource in the rendered page, according to enclosed settings (i.e. respecting
-   * <pre>defer</pre>, <pre>async</pre>, and other attributes). If the script asset has an ID, it will <b>not</b> be
+   * {@code defer}, {@code async}, and other attributes). If the script asset has an ID, it will <b>not</b> be
    * passed through ID rewriting before being rendered.
    *
    * <p><b>Behavior:</b> Script assets included in this manner are always loaded in the document head, so be judicious
-   * with <pre>defer</pre> if you are loading a significant amount of JavaScript. There are no default script assets.
+   * with {@code defer} if you are loading a significant amount of JavaScript. There are no default script assets.
    * Scripts are emitted in the order in which they are attached to the page context (i.e. via this method).</p>
    *
    * @param script Script asset to load in the rendered page output. Do not pass `null`.
    * @return Current page context manager (for call chain-ability).
-   * @throws IllegalArgumentException If `null` is passed for the script.
+   * @throws IllegalArgumentException If `null` is passed for the module name, or it cannot be located, or is invalid.
    */
   public @Nonnull PageContextManager script(@Nonnull Context.Scripts.JavaScript.Builder script) {
     //noinspection ConstantConditions
     if (script == null) throw new IllegalArgumentException("Cannot pass `null` for script.");
     this.context.getScriptsBuilder().addLink(script);
+    return this;
+  }
+
+  /**
+   * Include the specified CSS stylesheet in the rendered page with default settings. The module is expected to exist
+   * and be included in the application's asset bundle.
+   *
+   * @param name Name of the module to load.
+   * @return Current page context manager (for call chain-ability).
+   * @throws IllegalArgumentException If `null` is passed for the module name, or it cannot be located, or is invalid.
+   */
+  public @Nonnull PageContextManager stylesheet(@Nonnull String name) {
+    return stylesheet(name, null);
+  }
+
+  /**
+   * Include the specified CSS stylesheet in the rendered page, along with the specified media setting. The module is
+   * expected to exist and be included in the application's asset bundle.
+   *
+   * @param name Name of the module to load.
+   * @param media Media assignment for the stylesheet.
+   * @return Current page context manager (for call chain-ability).
+   * @throws IllegalArgumentException If `null` is passed for the module name, or the module cannot be located.
+   */
+  public @Nonnull PageContextManager stylesheet(@Nonnull String name, @Nullable String media) {
+    return stylesheet(name, null, null, false, false);
+  }
+
+  /**
+   * Include the specified CSS stylesheet in the rendered page, according to the specified settings. The module is
+   * expected to exist and be included in the application's asset bundle.
+   *
+   * <p><b>Optimization:</b> Activating the {@code preload} flag causes the style asset to be mentioned in a
+   * {@code Link} header, which makes supporting browsers aware of it before loading the DOM. For more aggressive
+   * circumstances, the {@code push} flag proactively pushes the asset to the browser (where supported), unless the
+   * framework knows the client has seen the asset already. Where HTTP/2 is not supported, special triggering
+   * {@code Link} headers may be used.</p>
+   *
+   * @param name Name of the module to load.
+   * @param id ID to assign the link tag in the DOM.
+   * @param media Media assignment for the stylesheet.
+   * @param preload Whether to link/hint about the asset in response headers.
+   * @param push Whether to pro-actively push the asset, if we think the client doesn't have it.
+   * @return Current page context manager (for call chain-ability).
+   * @throws IllegalArgumentException If `null` is passed for the module name, or it cannot be located, or is invalid.
+   */
+  public @Nonnull PageContextManager stylesheet(@Nonnull String name,
+                                                @Nullable String id,
+                                                @Nullable String media,
+                                                @Nonnull Boolean preload,
+                                                @Nonnull Boolean push) {
+    Optional<ManagedAsset<StyleAsset>> maybeAsset = (
+      this.assetManager.assetMetadataByModule(Objects.requireNonNull(name)));
+
+    // fail if not present
+    if (!maybeAsset.isPresent())
+      throw new IllegalArgumentException(format("Failed to locate style module '%s'.", name));
+    var asset = maybeAsset.get();
+
+    if (!asset.getType().equals(AssetManager.ModuleType.CSS))
+      throw new IllegalArgumentException(format("Cannot include asset '%s' as %s, it is of type CSS.",
+        name,
+        asset.getType().name()));
+
+    // resolve constituent scripts
+    for (StyleAsset styleBundle : asset.getAssets()) {
+      // pre-filled URI js record
+      Stylesheet.Builder styles = Stylesheet.newBuilder(styleBundle.getStylesheet())
+        .setPush(push)
+        .setPreload(preload);
+
+      if (id != null) styles.setId(id);
+      if (media != null) styles.setMedia(media);
+      this.stylesheet(styles);
+    }
     return this;
   }
 
@@ -273,7 +456,7 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
    */
   @Override
   public void close() {
-    if (!this.closed) {
+    if (!this.closed.get()) {
       this.render();
     }
   }
@@ -309,14 +492,15 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
   /**
    * Retrieve properties and values that should be made available via `@inject`.
    *
+   * @param framework Framework-injected properties.
    * @return Map of injected properties and their values.
    */
   @Nonnull
   @Override
-  public Map<String, Object> getInjectedProperties() {
+  public Map<String, Object> getInjectedProperties(@Nonnull Map<String, Object> framework) {
     this.close();
     if (this.builtContext == null) throw new IllegalStateException("Unable to read page context.");
-    return this.builtContext.getInjectedProperties();
+    return this.builtContext.getInjectedProperties(framework);
   }
 
   /**

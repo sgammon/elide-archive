@@ -14,3 +14,8 @@
 package(
     default_visibility = ["//visibility:public"],
 )
+
+alias(
+    name = "todolist",
+    actual = "//samples/todolist/src:TodolistServer",
+)

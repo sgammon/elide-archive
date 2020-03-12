@@ -23,14 +23,29 @@ load(
 )
 
 load(
+    "@build_stack_rules_proto//swift:swift_proto_library.bzl",
+    _swift_proto_library = "swift_proto_library",
+)
+
+load(
+    "@build_stack_rules_proto//python:deps.bzl",
+    _python_proto_library = "python_proto_library",
+)
+
+load(
     "@io_grpc_java//:java_grpc_library.bzl",
     _java_grpc_library = "java_grpc_library"
 )
 
+PYPROTO_POSTFIX_ = "py_proto"
 JAVAPROTO_POSTFIX_ = "java_proto"
+SWIFTPROTO_POSTFIX_ = "swift_proto"
 CLOSUREPROTO_POSTFIX_ = "closure_proto"
 GRPCJAVA_POSTFIX_ = "grpc_java"
 _PROTO_ROOT = "/proto"
+
+ENABLE_SWIFT = False
+ENABLE_PYTHON = False
 
 _native_proto = _proto_library
 _native_cc_proto = native.cc_proto_library
@@ -47,7 +62,12 @@ INJECTED_SERVICE_DEPS = [
 ]
 
 
-def __declare_lang_protos(name, internal, service, kwargs):
+def __declare_lang_protos(name,
+                          internal,
+                          service,
+                          kwargs,
+                          enable_swift = ENABLE_SWIFT,
+                          enable_python = ENABLE_PYTHON):
 
     """ Declare Java and CC proto libraries. """
 
@@ -57,6 +77,18 @@ def __declare_lang_protos(name, internal, service, kwargs):
     _native_java_proto(
         **ckwargs
     )
+
+    if enable_python:
+        ckwargs["name"] = "%s-%s" % (name, PYPROTO_POSTFIX_)
+        _python_proto_library(
+            **ckwargs
+        )
+
+    if enable_swift:
+        ckwargs["name"] = "%s-%s" % (name, SWIFTPROTO_POSTFIX_)
+        _swift_proto_library(
+            **ckwargs
+        )
 
 
 def __declare_native(name, internal, service, kwargs):

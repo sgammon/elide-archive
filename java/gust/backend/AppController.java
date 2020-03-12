@@ -15,11 +15,14 @@ package gust.backend;
 import com.google.common.html.types.TrustedResourceUrlProto;
 import com.google.template.soy.data.SanitizedContent;
 import com.google.template.soy.data.UnsafeSanitizedContentOrdainer;
+import io.micronaut.http.MediaType;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import java.net.URI;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 
 
 /**
@@ -38,6 +41,15 @@ import java.net.URL;
  */
 @SuppressWarnings("unused")
 public abstract class AppController extends BaseController {
+  /** Pre-ordained HTML object which ensures the character encoding is set to UTF-8. */
+  protected final static @Nonnull MediaType HTML;
+
+  static {
+    // initialize HTML page type
+    HTML = new MediaType(MediaType.TEXT_HTML_TYPE.getName(), MediaType.TEXT_HTML_TYPE.getExtension(),
+      Collections.singletonMap("charset", StandardCharsets.UTF_8.displayName()));
+  }
+
   /**
    * Private constructor, which accepts injected manager objects. Some or all of these are passed up to
    * {@link BaseController}.

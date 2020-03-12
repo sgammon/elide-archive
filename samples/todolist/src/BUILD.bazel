@@ -67,6 +67,11 @@ service(
     ]
 )
 
+alias(
+    name = "frontend",
+    actual = "//samples/todolist/src/frontend:frontend",
+)
+
 ssr_library(
     name = "home_soy",
     srcs = ["home.soy"],
@@ -108,7 +113,10 @@ micronaut_controller(
     srcs = ["server/HomeController.kt"],
     templates = [":home_soy"],
     proto_deps = [":todolist_proto"],
-    deps = [":TodolistLogic"],
+    deps = [
+        ":TodolistLogic",
+        "//java/gust/backend/annotations:annotations",
+    ],
 )
 
 micronaut_application(
@@ -127,6 +135,15 @@ micronaut_application(
         ":TasksService",
         ":ReflectionService",
     ],
+
+    js_modules = {
+        "todolist.main": "//samples/todolist/src/frontend:app",
+    },
+
+    css_modules = {
+        "todolist.mdl": "//samples/todolist/src/frontend:mdl",
+        "todolist.styles": "//samples/todolist/src/frontend:styles",
+    },
 
     # -- Publishing / Images -- #
     native = False,

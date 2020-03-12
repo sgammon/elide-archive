@@ -36,6 +36,9 @@ public final class Core {
   /** Holds the current `debug` flag status. */
   static final Boolean debugMode = Boolean.parseBoolean(System.getProperty("gust.debug", "false"));
 
+  /** Holds the static prefix for dynamically routed assets. */
+  static final String dynamicAssetPrefix = "/_/assets";
+
   private Core() { /* Disallow instantiation. */ }
 
   /**
@@ -92,5 +95,19 @@ public final class Core {
    */
   public static Boolean isProductionMode() {
     return !debugMode && !devMode;
+  }
+
+  /**
+   * The <i>dynamic asset prefix</i> is a URL prefix under which frontend application assets are served, using a managed
+   * file and token scheme, with a generated binary asset manifest living at the root of the JAR. Using this feature,
+   * the server auto-detects managed assets and includes them in the page when directed.
+   *
+   * <p>All assets, stylesheets and scripts included, are served under this URL if they are "managed assets," meaning
+   * they are defined in the asset manifest and enclosed in the JAR.</p>
+   *
+   * @return Dynamic frontend asset serving prefix.
+   */
+  public static String getDynamicAssetPrefix() {
+    return dynamicAssetPrefix;
   }
 }

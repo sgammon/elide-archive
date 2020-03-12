@@ -80,7 +80,7 @@ micronaut:
       enabled: true
       generateNonce: true
       reportOnly: true
-      policyDirectives: "default-src 'self' data: 'nonce-{#nonceValue}';"
+      policyDirectives: "default-src 'self' data: https://unpkg.com 'nonce-{#nonceValue}';"
 
   executors:
     io:

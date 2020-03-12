@@ -34,6 +34,8 @@ option go_package = "github.com/elide-tools/elide/page";
 
 import "webutil/html/types/html.proto";
 
+import "gust/core/datamodel.proto";
+
 import "gust/base/language.proto";
 import "gust/page/semantic.proto";
 
@@ -54,6 +56,8 @@ import "gust/page/semantic.proto";
 // - *Styles*: Stylesheets and inline head-injected styles ("lifted styles").
 // - *Scripts*: Scripts to include, and inline head-injected logic ("lifted JS").
 message Context {
+  option (core.role) = WIRE;
+
   // Defines the structure of well-known page-level metadata, including the page title, description,
   // keywords, and so on.
   message Metadata {
@@ -286,8 +290,17 @@ message Context {
       // URI to a given stylesheet asset.
       webutil.html.types.TrustedResourceUrlProto uri = 1;
 
+      // ID at which to attach the script tag in the DOM.
+      string id = 2;
+
       // Media setting to apply to the style sheet.
-      string media = 2;
+      string media = 3;
+
+      // Whether to pre-load this asset, as applicable.
+      bool preload = 4;
+
+      // Whether to proactively push this asset, as applicable.
+      bool push = 5;
     }
 
     // CSS code that should be emitted early in the <head>.
@@ -376,8 +389,8 @@ message Context {
       // URI to a given script asset.
       webutil.html.types.TrustedResourceUrlProto uri = 1;
 
-      // Whether to add the `module` flag to a script.
-      bool module = 2;
+      // ID at which to attach the script tag in the DOM.
+      string id = 2;
 
       // Whether to add the `defer` flag to a script.
       bool defer = 3;
@@ -385,8 +398,17 @@ message Context {
       // Whether to add the `async` flag to a script.
       bool async = 4;
 
-      // ID at which to attach the script tag.
-      string id = 5;
+      // Whether to add the `module` flag to a script.
+      bool module = 5;
+
+      // Whether to add the `nomodule` flag to a script.
+      bool no_module = 6;
+
+      // Whether to pre-load this asset, as applicable.
+      bool preload = 7;
+
+      // Whether to proactively push this asset, as applicable.
+      bool push = 8;
     }
 
     // JavaScript code that should be emitted early in the <head>.

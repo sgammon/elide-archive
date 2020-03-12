@@ -29,12 +29,14 @@ load(
 load(
     "//defs/toolchain:deps.bzl",
     "maven",
+    "javaproto",
 )
 
 
 filegroup(
     name = "sources",
     srcs = glob(["*.java"]) + [
+        "//java/gust/backend/annotations:sources",
         "//java/gust/backend/driver:sources",
         "//java/gust/backend/model:sources",
         "//java/gust/backend/runtime:sources",
@@ -94,6 +96,8 @@ micronaut_library(
     deps = [
         ":PageContext",
         ":PageRender",
+        javaproto("//gust/assets:bundle_proto"),
+        "//java/gust/backend/runtime:runtime",
     ],
 )
 
@@ -115,11 +119,35 @@ jdk_library(
     ],
 )
 
+micronaut_library(
+    name = "AssetConfiguration",
+    srcs = ["AssetConfiguration.java"],
+    deps = [
+        javaproto("//gust/core:data"),
+    ],
+)
+
+micronaut_library(
+    name = "AssetController",
+    srcs = ["AssetController.java"],
+    deps = [
+        ":AssetConfiguration",
+        ":BaseController",
+        "//java/gust/backend:PageContext",
+        "//java/gust/backend:PageContextManager",
+        "//java/gust/backend/runtime:AssetManager",
+        "//java/gust/util:Hex",
+        javaproto("//gust/core:data"),
+        maven("org.reactivestreams:reactive-streams"),
+    ],
+)
+
 jdk_library(
     name = "Application",
     srcs = ["Application.java"],
     deps = [
         ":ApplicationBoot",
+        "//java/gust/backend/runtime:AssetManager",
         "@com_google_code_findbugs_jsr305",
         maven("io.micronaut:micronaut-runtime"),
     ],
@@ -131,10 +159,12 @@ jdk_library(
 jdk_library(
     name = "backend",
     runtime_deps = [
-        ":BaseController",
-        ":TemplateProvider",
         ":ApplicationBoot",
         ":Application",
+        ":AssetConfiguration",
+        ":AssetController",
+        ":BaseController",
+        ":TemplateProvider",
     ],
     exports = [
         # Base Package
@@ -143,6 +173,9 @@ jdk_library(
         ":TemplateProvider",
         ":ApplicationBoot",
         ":Application",
+
+        # Annotations
+        "//java/gust/backend/annotations:annotations",
 
         # Model Tooling
         "//java/gust/backend/model:model",

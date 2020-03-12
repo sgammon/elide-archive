@@ -15,8 +15,33 @@ package(
     default_visibility = ["//visibility:public"],
 )
 
+load(
+    "//defs/toolchain/python:rules.bzl",
+    "py_binary",
+    "py_library",
+)
+
 
 alias(
     name = "grpc-cli",
     actual = "@com_github_grpc_grpc//test/cpp/util:grpc_cli",
+)
+
+
+exports_files([
+    "logback.xml",
+])
+
+alias(
+    name = "AssetBundler",
+    actual = "//tools/bundler:AssetBundler",
+)
+
+py_binary(
+    name = "generate_asset_manifest",
+    main = "generate_asset_manifest.py",
+    srcs = ["generate_asset_manifest.py"],
+    deps = [
+        "@com_google_protobuf//:protobuf_python",
+    ],
 )

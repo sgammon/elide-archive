@@ -13,14 +13,18 @@
 
 package(default_visibility = ["//visibility:public"])
 
-load("@io_bazel_rules_sass//:defs.bzl",
+load(
+    "@io_bazel_rules_sass//:defs.bzl",
     "sass_library",
-    "sass_binary")
+    "sass_binary",
+)
 
-load("@io_bloombox_labs_NEURON//defs:closure.bzl",
+load(
+    "@io_bazel_rules_closure//closure:defs.bzl",
     "closure_js_library",
     "closure_css_library",
-    "web_library")
+    "web_library",
+)
 
 sass_library(
     name = "mdl",

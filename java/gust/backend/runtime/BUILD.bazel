@@ -17,17 +17,37 @@ package(
 
 load(
     "//defs/toolchain/java:rules.bzl",
+    "micronaut_library",
     java_library = "jdk_library",
 )
 
 load(
     "//defs/toolchain:deps.bzl",
     "maven",
+    "javaproto",
 )
 
 _COMMON_DEPS = [
     # No common runtime deps yet.
 ]
+
+
+micronaut_library(
+    name = "AssetManager",
+    srcs = ["AssetManager.java"],
+    deps = [
+        "//java/gust/util:Pair",
+        "//java/gust/util:Hex",
+        javaproto("//gust/core:data"),
+        javaproto("//gust/assets:bundle_proto"),
+        javaproto("//gust/page:page_proto"),
+        maven("com.google.guava:guava"),
+        maven("com.google.protobuf:protobuf-java"),
+        maven("org.reactivestreams:reactive-streams"),
+        maven("io.reactivex.rxjava2:rxjava"),
+        maven("org.slf4j:slf4j-api"),
+    ] + _COMMON_DEPS,
+)
 
 
 java_library(
@@ -72,6 +92,7 @@ java_library(
     exports = [
         ":logging",
         ":reactive",
+        ":AssetManager",
     ]
 )
 

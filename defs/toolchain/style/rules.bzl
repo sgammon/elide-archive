@@ -38,20 +38,20 @@ BASE_GSS_DEFS = [
 
 
 def _style_library(name,
-                   srcs,
+                   srcs = [],
                    deps = []):
 
     """ Wrap a style source in SASS/SCSS processing rules (if needed). Affix any dependencies that
         should be injected globally. """
 
-    if srcs[0].endswith(".sass") or srcs[0].endswith(".scss"):
+    if srcs and (srcs[0].endswith(".sass") or srcs[0].endswith(".scss")):
         # structure as a SASS library regardless of dialect
         _sass_library(
             name = name,
             srcs = srcs,
             deps = deps,
         )
-    elif srcs[0].endswith(".gss") or srcs[0].endswith(".css"):
+    else:
         # structure as a CSS/GSS library regardless of dialect
         _closure_css_library(
             name = name,
@@ -122,7 +122,7 @@ def _style_binary(name,
         )
 
         _closure_css_binary(
-            name = "%s-gss" % name,
+            name = "%s-bin" % name,
             deps = [":%s-lib" % name],
             defs = BASE_GSS_DEFS + defs,
             renaming = renaming_state,
@@ -132,7 +132,7 @@ def _style_binary(name,
     elif src == None or (src.endswith(".gss") or src.endswith(".css")):
         # process as normal CSS/GSS
         _closure_css_binary(
-            name = "%s-gss" % name,
+            name = "%s-bin" % name,
             deps = deps,
             defs = BASE_GSS_DEFS + defs,
             renaming = renaming_state,
@@ -143,10 +143,15 @@ def _style_binary(name,
 
     _style_opt(
         name = name,
-        src = "%s-gss.css" % name,
+        src = "%s-bin.css" % name,
         plugins = plugins,
         sourcemap = sourcemap,
         config = config,
+    )
+
+    native.alias(
+        name = "%s.css.json" % name,
+        actual = ":%s-bin.css.js" % name,
     )
 
 

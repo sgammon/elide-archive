@@ -10,7 +10,52 @@
  * by trade secret and copyright law. Dissemination of this information, or reproduction of this material, in any form,
  * is strictly forbidden except in adherence with assigned license requirements.
  */
-{namespace todolist.home}
+{namespace todolist.home requirecss="todolist.styles,todolist.mdl"}
+
+
+/**
+ * Render the layout shared by all Todolist pages. This adds the page navigation, the header, and the main app footer.
+ * Most of the interaction here is static.
+ */
+{template .layout visibility="private"}
+  {@param content: html} /** Content to inject for this individual page. */
+
+  {let $title kind="text"}
+      {msg desc='Homepage title.'}Todolist{/msg}
+  {/let}
+
+  {call gust.page.wrap}
+    {param bodyClass: css('todolist') /}
+    {param content kind="html"}
+        <div id="{xid('link')}" class="{css('mdl-layout')} {css('mdl-js-layout')}">
+          <header class="{css('mdl-layout__header')} {css('mdl-layout__header--transparent')}">
+            <div class="{css('mdl-layout__header-row')}">
+              <span class="{css('mdl-layout-title')}">{$title}</span>
+              <div class="{css('mdl-layout-spacer')}"></div>
+              <nav class="{css('mdl-navigation')}">
+                <a class="{css('mdl-navigation__link')}" href="#{xid('link')}">Link</a>
+                <a class="{css('mdl-navigation__link')}" href="#{xid('link')}">Link</a>
+                <a class="{css('mdl-navigation__link')}" href="#{xid('link')}">Link</a>
+                <a class="{css('mdl-navigation__link')}" href="#{xid('link')}">Link</a>
+              </nav>
+            </div>
+          </header>
+          <div class="{css('mdl-layout__drawer')}">
+            <span class="{css('mdl-layout-title')}">{$title}</span>
+            <nav class="{css('mdl-navigation')}">
+              <a class="{css('mdl-navigation__link')}" href="#{xid('link')}">Link</a>
+              <a class="{css('mdl-navigation__link')}" href="#{xid('link')}">Link</a>
+              <a class="{css('mdl-navigation__link')}" href="#{xid('link')}">Link</a>
+              <a class="{css('mdl-navigation__link')}" href="#{xid('link')}">Link</a>
+            </nav>
+          </div>
+          <main class="{css('mdl-layout__content')}">
+              {$content}
+          </main>
+        </div>
+    {/param}
+  {/call}
+{/template}
 
 
 /**
@@ -23,9 +68,9 @@
 {template .page}
     {@param? name: string}  /** Name to say hello to for our simple salutation. Defaults to 'World'. */
 
-    {call gust.page.wrap}
+    {call .layout}
         {param content kind="html"}
-            <b>Hello, {$name ?: "World"}!</b>
+            <b>Hello, <span id="name">{$name ?: 'World'}</span>!</b>
         {/param}
     {/call}
 {/template}

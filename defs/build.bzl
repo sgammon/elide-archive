@@ -254,12 +254,12 @@ DEPS = {
         "seal": "53933ba214ab20b501a4ed1f08796ef716a5f1ccb8e0f9977a27f802cb09bcda"},
 
     # Material Design Lite
-    "com_google_mdl": {
+    "mdl": {
         "type": "github",
-        "repo": "bloombox/material-design-lite",
-        "target": "7e10595660b9c56ab67203f8ba966cb4883e1547",
+        "repo": "sgammon/material-design-lite",
         "overlay": "mdl.bzl",
-        "seal": "f65b744aa0865bce2f9727b1b116fadf10639b63f4b511165a2ab65afa6d1046"},
+        "target": "a963d185479d06c495bcf9c44966036d089813bf",
+        "seal": "7abe53c1f56f3f2317386e8d1aaf2dce853238e03bcdc3a985b17bf089fbe56c"},
 
     # Common Protocol Buffers
     "proto_common": {
@@ -291,6 +291,13 @@ DEPS = {
         "target": "47d545ad70dbf33b3f00052c1b519394ba52e222",
         "seal": "5685ed4875fae4a5d11e31c4431bffa7672ce5451c598ebe1c2e0bd1d96c0286"},
 
+    # Compression: Brotli
+    "org_brotli": {
+        "type": "github",
+        "repo": "sgammon/brotli",
+        "target": "21378a50ab56ffe1989a7f119399d2616df519db",
+        "seal": "2b1383b73512a9179e4333a03ef8bf3096fc06c2ac47afc4593f3b8ea02cbf65"},
+
     # Security/TLS: BoringSSL
     "boringssl": {
         "type": "github",
@@ -304,6 +311,38 @@ DEPS = {
         "repo": "kubernetes/repo-infra",
         "target": "dccb5aa645ea455a1c8c4c97a2a72b640036efc9",
         "seal": "f4a99337b43b742d35f8592055af72aeb5ea0cdfa1acadd99d9e972d9aedd2b1"},
+
+    # Firebase: JS SDK
+    "com_google_firebase": {
+        "type": "github",
+        "repo": "firebase/firebase-js-sdk",
+        "overlay": "firebase.bzl",
+        "target": "9d593bc72fcc6f695ed3666525d0638dfdf50b62",
+        "seal": "f298860e52321aef52d62d4e6df6c8f55b522f25eac1fc3e73b89632966b4f83"},
+
+    # Firebase: Java SDK
+    "com_google_firebase_java": {
+        "type": "github",
+        "repo": "firebase/firebase-admin-java",
+        "target": "c40a69d04c73e158a0ea1e75b1ea7400c3544c92",
+        "seal": "ece3fe87e25c2e09b1d58a6314ae12e52d48a51e4944ff0623f07e6c5f2ceffa"},
+
+    # Firebase: UI (Web)
+    "com_google_firebase_ui_web": {
+        "type": "github",
+        "repo": "bloombox/firebaseui-web",
+        "overlay": "firebase-ui-web.bzl",
+        "target": "4e01abe6793f83ee3ce46f721586bd77c7670eef",
+        "seal": "96a159c26600fc520dfd5ffee1d3137099a28290a71b29516f42be11db107af8"},
+
+    # Google: Incremental DOM
+    "com_google_javascript_incremental_dom": {
+        "type": "github",
+        "repo": "bloombox/incremental-dom",
+        "overlay": "idom.bzl",
+        "target": "8866a9e57a216eaa6f3dac94240f437a573842ab",
+        "local": "/workspace/Bloombox/Frontend/IncrementalDOM",
+        "seal": "82c041a1a81368b6cac5ebab3cde4da212364674b2d74d4cb0931f7068f7636e"},
 
     # Google: Closure Stylesheets
     "com_google_closure_stylesheets": {
@@ -342,8 +381,8 @@ DEPS = {
     "com_google_template_soy": {
         "type": "java",
         "licenses": ["notice"],
-        "targets": ["https://storage.googleapis.com/bloom-software/frontend/soy/soy-lib-b28.jar"],
-        "seal": "4c95ff7fc4947273fab84958266098bebe4d991ea7e0c289211d81603d6a4ff6",
+        "targets": ["https://storage.googleapis.com/bloom-software/frontend/soy/soy-lib-b29.jar"],
+        "seal": "f2d8a4c079caa18135cddd05c379e5fa210a439986f960a871f3881ddd8455cc",
         "deps": [
             "@args4j",
             "@com_google_code_findbugs_jsr305",
@@ -384,16 +423,19 @@ DEPS = {
     "com_google_template_soy_jssrc": {
         "type": "archive",
         "format": "zip",
-        "overlay": "@io_bazel_rules_closure//closure/templates:soy_jssrc.BUILD",
-        "targets": ["https://storage.googleapis.com/bloom-software/frontend/soy/soy-jssrc-b28.jar"],
-        "seal": "0e0506261139b7d008cad47c721d55210785f33fbd4beedd3cb36e6752d85320"},
+        "overlay": "@gust//external:soy_jssrc.BUILD",
+        "targets": ["https://storage.googleapis.com/bloom-software/frontend/soy/soy-jssrc-b29.jar"],
+        "seal": "32a1b96d30a3ec72d00a20ad9329046ce8960b473c2b94f1325dd969034fc81d"},
 
     # Micronaut: Views (Core)
     "io_micronaut_micronaut_views": {
         "type": "java",
         "licenses": ["notice"],
-        "targets": ["https://storage.googleapis.com/bloom-software/micronaut/b1/views-core-1.3.2.BUILD-SNAPSHOT.jar"],
-        "seal": "fbebc71ff66cc18513f45dcc200fc79bda23fabcba3a5c57db435a1985dc2e84",
+        "forceLocal": True,
+        "overlay": "micronaut-views-core.bzl",
+        "local": "/workspace/GUST/vendor/micronaut/views/views-core",
+        "targets": ["https://storage.googleapis.com/bloom-software/micronaut/b3/views-core-1.3.4.BUILD-SNAPSHOT.jar"],
+        "seal": "d002cba69e3bbc220f360ca85d0966b70a58ee1055d5566fa5f1cd20515d9d93",
         "deps": [
             maven("io.micronaut:micronaut-runtime"),
             maven("io.micronaut:micronaut-http-client"),
@@ -406,8 +448,11 @@ DEPS = {
     "io_micronaut_micronaut_views_soy": {
         "type": "java",
         "licenses": ["notice"],
-        "targets": ["https://storage.googleapis.com/bloom-software/micronaut/b1/views-soy-1.3.2.BUILD-SNAPSHOT.jar"],
-        "seal": "88b3e8f3eae9aef80377a0a98f9057acf716e8c65a9810c335423151949ba29e",
+        "forceLocal": True,
+        "overlay": "micronaut-views-soy.bzl",
+        "local": "/workspace/GUST/vendor/micronaut/views/views-soy",
+        "targets": ["https://storage.googleapis.com/bloom-software/micronaut/b3/views-soy-1.3.4.BUILD-SNAPSHOT.jar"],
+        "seal": "28ad7f031cf389b3571c8e459054046372f3d0ae7d5540354179fee468330cb8",
         "deps": [
             "@com_google_template_soy",
             "@com_google_common_html_types",
