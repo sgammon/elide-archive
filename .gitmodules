@@ -33,3 +33,6 @@
 	path = vendor/micronaut/views
 	url = git@github.com:bloombox/micronaut-views.git
 	branch = soy/async-chunked-v2
+[submodule "micronaut-core"]
+	path = vendor/micronaut/core
+	url = git@github.com:sgammon/micronaut-core.git
