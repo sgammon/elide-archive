@@ -36,3 +36,6 @@
 [submodule "micronaut-core"]
 	path = vendor/micronaut/core
 	url = git@github.com:sgammon/micronaut-core.git
+[submodule "grpc-web"]
+	path = vendor/grpc/web
+	url = git@github.com:sgammon/grpc-web.git
