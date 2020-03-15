@@ -70,9 +70,9 @@ DEPS = {
     "io_bazel_rules_closure": {
         "type": "github",
         "repo": "sgammon/rules_closure",
-        "target": "25ab3fd2ea18b932ce892dbdddc931eec6586a6f",
+        "target": "560258c5c4d59bc5c402b856db884e3a2d9d6ee6",
         "local": "/workspace/GUST/vendor/bazel/rules_closure",
-        "seal": "0dec33ed4cdf979d1ac5f574eb1671b70bbdc317b13c38dd3ed0774f05d59ba8"},
+        "seal": "3460d5d78addeab68ddee1399f5f4881c11ebb6a9748e1d233b94f6937aeacd9"},
 
     # Rules: Protobuf
     "rules_proto": {
