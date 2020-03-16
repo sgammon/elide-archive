@@ -12,7 +12,30 @@
 ##
 
 micronaut:
+  application:
+    name: GUST
+
   views:
     soy:
       enabled: true
       engine: sauce
+
+  http:
+    client:
+      pool:
+        enabled: true
+
+  server:
+    server-header: GUSTv1
+    netty:
+      compression-level: 4
+      compression-threshold: 1024
+      use-native-transport: yes
+
+  endpoints:
+    health:
+      disk-space: false
+      details-visible: false
+
+  validator:
+    enabled: true

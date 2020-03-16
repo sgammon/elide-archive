@@ -16,17 +16,20 @@ micronaut:
     name: Todolist
 
   server:
+    server-header: K9v5
     maxRequestSize: 10MB
     host: 0.0.0.0
-    port: 8081
+    port: 8080
+
     cors:
       enabled: false
+
     netty:
       maxHeaderSize: 500KB
       chunked-supported: true
       use-native-transport: true
-      compression-level: 2
-      compression-threshold: 2048
+      compression-level: 4
+      compression-threshold: 1024
       parent:
         threads: 4
       worker:
@@ -37,6 +40,9 @@ micronaut:
           tcpQuickack: true
       childOptions:
         soKeepalive: true
+
+  validator:
+    enabled: true
 
   session:
     enabled: true
@@ -80,7 +86,7 @@ micronaut:
       enabled: true
       generateNonce: true
       reportOnly: true
-      policyDirectives: "default-src 'self' data: https://unpkg.com 'nonce-{#nonceValue}';"
+      policyDirectives: "default-src 'self' https:; font-src data: https://fonts.gstatic.com; script-src 'self' 'nonce-{#nonceValue}' 'strict-dynamic';"
 
   executors:
     io:
@@ -92,7 +98,7 @@ micronaut:
 
 grpc:
   server:
-    port: 8082
+    port: 8083
     keep-alive-time: 1h
 
   client:
@@ -101,11 +107,11 @@ grpc:
 
 graphql:
   enabled: true
-  path: /v1/graph
+  path: /_/graph
   graphiql:
     enabled: false
     version: 0.13.2
-    path: /_/graphiql
+    path: /_/admin/graphiql
     page-title: "Dashboard - GraphiQL"
 
 kubernetes:
