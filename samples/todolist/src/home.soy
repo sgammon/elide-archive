@@ -18,7 +18,7 @@
  * Most of the interaction here is static.
  */
 {template .layout visibility="private"}
-  {@param content: html} /** Content to inject for this individual page. */
+  {@param page: html} /** Content to inject for this individual page. */
 
   {let $title kind="text"}
       {msg desc='Homepage title.'}Todolist{/msg}
@@ -27,7 +27,7 @@
   {call gust.page.wrap}
     {param bodyClass: css('todolist') /}
     {param content kind="html"}
-        <div id="{xid('link')}" class="{css('mdl-layout')} {css('mdl-js-layout')}">
+        <div id="{xid('wrap')}" class="{css('mdl-layout')} {css('mdl-js-layout')}">
           <header class="{css('mdl-layout__header')} {css('mdl-layout__header--transparent')}">
             <div class="{css('mdl-layout__header-row')}">
               <span class="{css('mdl-layout-title')}">{$title}</span>
@@ -50,7 +50,7 @@
             </nav>
           </div>
           <main class="{css('mdl-layout__content')}">
-              {$content}
+              {$page}
           </main>
         </div>
     {/param}
@@ -69,7 +69,7 @@
     {@param? name: string}  /** Name to say hello to for our simple salutation. Defaults to 'World'. */
 
     {call .layout}
-        {param content kind="html"}
+        {param page kind="html"}
             <b>Hello, <span id="name">{$name ?: 'World'}</span>!</b>
         {/param}
     {/call}
