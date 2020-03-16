@@ -67,6 +67,7 @@ service(
     ]
 )
 
+
 alias(
     name = "frontend",
     actual = "//samples/todolist/src/frontend:frontend",
