@@ -22,9 +22,8 @@ load(
 
 
 bzl_library(
-    name = "web-toolchain",
+    name = "proto-toolchain",
     srcs = [
-        "frontend.bzl",
-        "grpc.bzl",
+        "closure_proto_library.bzl",
     ],
 )

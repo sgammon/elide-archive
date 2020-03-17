@@ -12,7 +12,7 @@
 ##
 
 load(
-    "@io_bazel_rules_closure//closure/private/rules:soy_library.bzl",
+    "//defs/toolchain/soy:soy_library.bzl",
     _soy_library = "soy_library",
 )
 
@@ -73,7 +73,8 @@ def _template_library(name,
         _closure_js_template_library(
             name = "%s-js" % name,
             srcs = srcs,
-            deps = js_deps + [("%s-%s" % (dep, CLOSUREPROTO_POSTFIX_)) for dep in proto_deps] + style_deps,
+            deps = js_deps + style_deps,
+            proto_deps = proto_deps,
         )
 
     if python:
@@ -81,7 +82,7 @@ def _template_library(name,
             name = "%s-py" % name,
             srcs = srcs,
             deps = soy_deps + style_deps,
-            proto_deps = [("%s-%s" % (p, CLOSUREPROTO_POSTFIX_)) for p in proto_deps],
+            proto_deps = proto_deps,
         )
 
     if java:
@@ -92,7 +93,7 @@ def _template_library(name,
             java_deps = (
               [("%s-%s" % (p, JAVAPROTO_POSTFIX_)) for p in proto_deps] +
               [("%s-java_jcompiled" % p) for p in soy_deps]),
-            proto_deps = [("%s-%s" % (p, CLOSUREPROTO_POSTFIX_)) for p in proto_deps],
+            proto_deps = proto_deps,
             precompile = precompile,
             java_package = java_package,
         )
