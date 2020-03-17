@@ -292,6 +292,15 @@ DEPS = {
         "target": "47d545ad70dbf33b3f00052c1b519394ba52e222",
         "seal": "5685ed4875fae4a5d11e31c4431bffa7672ce5451c598ebe1c2e0bd1d96c0286"},
 
+    # gRPC: Web
+    "com_github_grpc_grpc_web": {
+        "type": "github",
+        "repo": "sgammon/grpc-web",
+        "forceLocal": False,
+        "local": "/workspace/GUST/vendor/grpc/web",
+        "target": "6aa18295f2f6dd6e9a608e2362f5ddcbe6e69ee1",
+        "seal": "42460855313b61b1b4f9bfef0723e6735cd3735234e03d74f5199e8b88ec10ed"},
+
     # Compression: Brotli
     "org_brotli": {
         "type": "github",
