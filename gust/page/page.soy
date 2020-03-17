@@ -59,6 +59,8 @@
   {@param? additionalHead: html}  /** Additional HTML to apply to the head block. */
   {@param? ogTags: html}  /** OpenGraph tags to include at the bottom of the head block. */
   {@param? jsonLD: js}  /** JSON-LD (JSON Linked Data) description for the page, if any. */
+  {@inject? live_reload_enabled: bool}  /** Whether live-reload mode is enabled. */
+  {@inject? live_reload_url: trusted_resource_uri}  /** Live-reload JS target to inject, if enabled. */
   {@inject? contentSecurity: [header: string, policy: string]}  /** Injected CSP to apply via meta tags. */
 
   {let $languageSpec kind="text"}
@@ -108,6 +110,9 @@
       {/if}
       {if isNonnull($page) and isNonnull($page.meta) and $page.meta.manifest}
         <link rel="manifest" href="{$page.meta.manifest}">
+      {/if}
+      {if isNonnull($live_reload_enabled) and $live_reload_enabled and isNonnull($live_reload_url)}
+        <script type="text/javascript" src="{$live_reload_url}"></script>
       {/if}
       {if isNonnull($liftedJS)}
         <script type="text/javascript">

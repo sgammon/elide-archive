@@ -12,7 +12,7 @@
 ##
 
 load(
-    "//defs/toolchain/soy:soy_library.bzl",
+    "@io_bazel_rules_closure//closure/private/rules:soy_library.bzl",
     _soy_library = "soy_library",
 )
 

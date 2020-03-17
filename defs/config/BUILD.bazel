@@ -16,16 +16,6 @@ package(
 )
 
 
-## Condition: `LOCAL`
-## ------------------------
-## Activates when we are running against local dependencies.
-config_setting(
-    name = "local",
-    define_values = {"dependencies": "local"},
-    visibility = ["//visibility:public"],
-)
-
-
 ## Condition: `DEBUG`
 ## ------------------------
 ## Activates when we are running in debug mode.
@@ -34,7 +24,6 @@ config_setting(
     values = {"compilation_mode": "dbg"},
     visibility = ["//visibility:public"],
 )
-
 
 ## Condition: `RELEASE`
 ## ------------------------
@@ -45,7 +34,6 @@ config_setting(
     visibility = ["//visibility:public"],
 )
 
-
 ## Condition: `DEV`
 ## ------------------------
 ## Activates when we are running in production build mode.
@@ -53,5 +41,18 @@ config_setting(
     name = "dev",
     values = {"compilation_mode": "dbg"},
     define_values = {"dev": "enabled"},
+    visibility = ["//visibility:public"],
+)
+
+## Condition: `live_reload`
+## ------------------------
+## Activates when running locally, in development mode, via `ibazel`.
+config_setting(
+    name = "live_reload",
+    values = {"compilation_mode": "dbg"},
+    define_values = {
+        "dev": "enabled",
+        "LIVE_RELOAD": "enabled",
+    },
     visibility = ["//visibility:public"],
 )

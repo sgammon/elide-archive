@@ -59,7 +59,6 @@ class HomeController @Inject constructor (ctx: PageContextManager): AppControlle
    * client-side app, so we don't need to worry about it here. Similarly, if the user hits the homepage without being
    * logged in, and then logs in, that flow is also handled by the re-hydrated CSR frontend.
    */
-  @Js("todolist.main")
   @View("todolist.home.page")
   @Get("/", produces = ["text/html;charset=UTF-8"])
   fun home(@QueryValue("name", defaultValue = defaultName) name: String): PageRender {

@@ -12,6 +12,9 @@
  */
 package gust.backend;
 
+import com.google.common.html.types.TrustedResourceUrlProto;
+import com.google.template.soy.data.SanitizedContent;
+import com.google.template.soy.data.UnsafeSanitizedContentOrdainer;
 import gust.backend.runtime.AssetManager;
 import gust.backend.runtime.AssetManager.ManagedAsset;
 import gust.backend.runtime.Logging;
@@ -29,6 +32,8 @@ import tools.elide.page.Context.Scripts.JavaScript;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.Closeable;
+import java.net.URI;
+import java.net.URL;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -51,6 +56,10 @@ import static java.lang.String.format;
 public class PageContextManager implements Closeable, AutoCloseable, PageRender {
   private static final Logger logging = Logging.logger(PageContextManager.class);
 
+  private static final String LIVE_RELOAD_TARGET_PROP = "live_reload_url";
+  private static final String LIVE_RELOAD_SWITCH_PROP = "live_reload_enabled";
+  private static final String LIVE_RELOAD_JS = "http://localhost:35729/livereload.js";
+
   /** Access to the asset manager. */
   private final @Nonnull AssetManager assetManager;
 
@@ -71,6 +80,9 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
 
   /** Built context: assembled when we "close" the page context manager. */
   private @Nullable PageContext builtContext = null;
+
+  /** Whether to enable live-reload mode or not. */
+  private final boolean liveReload;
 
   /** Whether we have closed context building or not. */
   private AtomicBoolean closed = new AtomicBoolean(false);
@@ -93,6 +105,17 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
     this.injected = new ConcurrentSkipListMap<>();
     this.namingMapProvider = namingMapProvider;
     this.assetManager = assetManager;
+
+    // inject live-reload state
+    this.liveReload = "enabled".equals(System.getProperty("LIVE_RELOAD"));
+    this.injected.put(LIVE_RELOAD_SWITCH_PROP, this.liveReload);
+    if (this.liveReload) {
+      logging.info("Live-reload is currently ENABLED.");
+      this.injected.put(LIVE_RELOAD_TARGET_PROP, UnsafeSanitizedContentOrdainer.ordainAsSafe(
+        LIVE_RELOAD_JS,
+        SanitizedContent.ContentKind.TRUSTED_RESOURCE_URI)
+        .toTrustedResourceUrlProto());
+    }
   }
 
   /** @return The current page context builder. */
@@ -433,6 +456,36 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
     return this;
   }
 
+  // -- API: Trusted Resources -- //
+
+  /**
+   * Generate a trusted resource URL for the provided Java URL.
+   *
+   * @param url Pre-ordained trusted resource URL.
+   * @return Trusted resource URL specification proto.
+   */
+  @SuppressWarnings("WeakerAccess")
+  public @Nonnull TrustedResourceUrlProto trustedResource(@Nonnull URL url) {
+    return UnsafeSanitizedContentOrdainer.ordainAsSafe(
+      url.toString(),
+      SanitizedContent.ContentKind.TRUSTED_RESOURCE_URI)
+      .toTrustedResourceUrlProto();
+  }
+
+  /**
+   * Generate a trusted resource URL for the provided Java URI.
+   *
+   * @param uri Pre-ordained trusted resource URI.
+   * @return Trusted resource URL specification proto.
+   */
+  @SuppressWarnings("WeakerAccess")
+  public @Nonnull TrustedResourceUrlProto trustedResource(@Nonnull URI uri) {
+    return UnsafeSanitizedContentOrdainer.ordainAsSafe(
+      uri.toString(),
+      SanitizedContent.ContentKind.TRUSTED_RESOURCE_URI)
+      .toTrustedResourceUrlProto();
+  }
+
   // -- Interface: HTTP Request -- //
 
   /**
@@ -515,5 +568,16 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
     this.close();
     if (this.builtContext == null) throw new IllegalStateException("Unable to read page context.");
     return this.builtContext.overrideNamingMap();
+  }
+
+  /**
+   * Indicate whether live-reload mode is enabled or not, which is governed by the built toolchain (i.e. a Bazel
+   * condition, activated by the Makefile, which injects a JDK system property). Live-reload features additionally
+   * require dev mode to be active.
+   *
+   * @return Whether live-reload is enabled.
+   */
+  public boolean isLiveReload() {
+    return liveReload;
   }
 }

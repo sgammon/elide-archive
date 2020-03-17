@@ -152,7 +152,7 @@ run:  ## Run the specified target.
 	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) run $(TAG) $(BASE_ARGS) $(BUILD_ARGS) -- $(APP) $(ARGS)
 
 dev:  ## Develop against the specified target.
-	$(_RULE)$(IBAZEL) run $(TAG) $(APP)
+	$(_RULE)$(IBAZEL) run $(TAG) --define=LIVE_RELOAD=enabled --define=dev=enabled $(APP)
 
 clean: clean-docs clean-reports  ## Clean ephemeral targets.
 	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) clean

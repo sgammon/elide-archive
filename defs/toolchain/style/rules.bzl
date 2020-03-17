@@ -36,6 +36,8 @@ BASE_SASS_DEPS = [
 BASE_GSS_DEFS = [
 ]
 
+OPTIMIZE_STYLES = False
+
 
 def _style_library(name,
                    srcs = [],
@@ -88,6 +90,7 @@ def _style_binary(name,
                   output_name = None,
                   output_style = "expanded",  ## leave this be: helps with GSS compilation
                   plugins = _DEFAULT_POSTCSS_PLUGINS,
+                  optimize = OPTIMIZE_STYLES,
                   defs = []):
 
     """ Wrap a style target in SASS/SCSS output rules (if needed). Gather and process the target
@@ -141,13 +144,23 @@ def _style_binary(name,
     else:
         fail("Unrecognized style_binary src file.")
 
-    _style_opt(
-        name = name,
-        src = "%s-bin.css" % name,
-        plugins = plugins,
-        sourcemap = sourcemap,
-        config = config,
-    )
+    if optimize:
+        _style_opt(
+            name = name,
+            src = "%s-bin.css" % name,
+            plugins = plugins,
+            sourcemap = sourcemap,
+            config = config,
+        )
+    else:
+        native.alias(
+            name = name,
+            actual = "%s-bin.css" % name,
+        )
+        native.alias(
+            name = "%s.css" % name,
+            actual = "%s-bin.css" % name,
+        )
 
     native.alias(
         name = "%s.css.json" % name,

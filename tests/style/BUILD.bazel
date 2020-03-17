@@ -47,6 +47,7 @@ style_library(
 style_binary(
     name = "basic",
     src = "basic.scss",
+    optimize = True,
     deps = [
         ":example1",
         ":example2",
@@ -68,6 +69,7 @@ sass_binary(
 style_binary(
     name = "vendor",
     src = "vendor.scss",
+    optimize = True,
     plugins = ["autoprefixer"],
     deps = [
         ":example1",
@@ -88,6 +90,7 @@ style_library(
 style_binary(
     name = "gss_example",
     plugins = ["autoprefixer"],
+    optimize = True,
     deps = [
         ":mod1",
         ":mod2",
@@ -97,6 +100,7 @@ style_binary(
 style_binary(
     name = "gss_opt_default_example",
     plugins = ["autoprefixer", "cssnano"],
+    optimize = True,
     deps = [
         ":mod1",
         ":mod2",
@@ -106,6 +110,7 @@ style_binary(
 style_binary(
     name = "gss_opt_advanced_example",
     config = "postcss_advanced.json",
+    optimize = True,
     plugins = [
         "autoprefixer",
         "cssnano",

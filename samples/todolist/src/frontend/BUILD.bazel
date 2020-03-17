@@ -18,6 +18,7 @@ package(
 load(
     "//defs/toolchain:deps.bzl",
     "closure",
+    "js_service",
 )
 
 load(
@@ -80,11 +81,19 @@ style_binary(
 ## Frontend: JS
 
 js_module(
+    name = "api",
+    srcs = ["api.js"],
+    deps = [
+        js_service("//samples/todolist/src:todolist_proto"),
+    ],
+)
+
+js_module(
     name = "main",
     srcs = ["main.js"],
     deps = [
-        # None yet.
-    ]
+        ":api",
+    ],
 )
 
 js_app(
@@ -92,5 +101,5 @@ js_app(
     entry_points = ["todolist.main"],
     deps = [
         ":main",
-    ]
+    ],
 )

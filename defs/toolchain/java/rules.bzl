@@ -237,7 +237,13 @@ def _jdk_binary(name,
             deps = _dedupe_deps(deps),
             data = data + INJECTED_LIBRARIES,
             resource_jars = resource_jars + INJECTED_RESOURCE_JARS,
-            jvm_flags = jvm_flags + INJECTED_JVM_FLAGS,
+            jvm_flags = select({
+               "//defs/config:live_reload": ["-DLIVE_RELOAD=enabled"] + INJECTED_JVM_FLAGS + jvm_flags,
+               "//conditions:default": INJECTED_JVM_FLAGS + jvm_flags,
+            }) + select({
+               "//defs/config:release": _JVM_APP_RELEASE_FLAGS,
+               "//defs/config:debug": _JVM_APP_DEBUG_FLAGS,
+            }),
             tags = [
                 "ibazel_live_reload",
                 "iblaze_notify_changes",
@@ -254,7 +260,13 @@ def _jdk_binary(name,
             deps = _dedupe_deps(deps),
             data = data + INJECTED_LIBRARIES,
             resource_jars = resource_jars + INJECTED_RESOURCE_JARS,
-            jvm_flags = jvm_flags + INJECTED_JVM_FLAGS,
+            jvm_flags = select({
+               "//defs/config:live_reload": ["-DLIVE_RELOAD=enabled"] + INJECTED_JVM_FLAGS + jvm_flags,
+               "//conditions:default": INJECTED_JVM_FLAGS + jvm_flags,
+            }) + select({
+               "//defs/config:release": _JVM_APP_RELEASE_FLAGS,
+               "//defs/config:debug": _JVM_APP_DEBUG_FLAGS,
+            }),
             tags = [
                 "ibazel_live_reload",
                 "iblaze_notify_changes",
@@ -491,8 +503,8 @@ def _micronaut_application(name,
         cmd = join_cmd([
           "./$(location //tools:AssetBundler)", " ",
           "--", select({
-              "@//defs/conditions:debug": "dbg",
-              "@//defs/conditions:release": "opt",
+              "@//defs/config:debug": "dbg",
+              "@//defs/config:release": "opt",
               "//conditions:default": "dbg",
           }),
           " ",
@@ -658,13 +670,8 @@ def _micronaut_application(name,
         resources = resources,
         classpath_resources = [config, logging_config],
         main_class = main_class or "gust.backend.Application",
-        jvm_flags = computed_jvm_flags + select({
-            "//defs/conditions:release": _JVM_APP_RELEASE_FLAGS,
-            "//defs/conditions:debug": _JVM_APP_DEBUG_FLAGS,
-        }),
-        tags = (tags or []) + [
-          "ibazel_live_reload",
-        ],
+        jvm_flags = computed_jvm_flags,
+        tags = (tags or []),
         **kwargs
     )
 

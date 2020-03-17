@@ -13,8 +13,6 @@
 package gust.backend;
 
 import com.google.common.html.types.TrustedResourceUrlProto;
-import com.google.template.soy.data.SanitizedContent;
-import com.google.template.soy.data.UnsafeSanitizedContentOrdainer;
 import io.micronaut.http.MediaType;
 
 import javax.annotation.Nonnull;
@@ -60,7 +58,7 @@ public abstract class AppController extends BaseController {
     super(pageContextManager);
   }
 
-  // -- API: Trusted Resources -- //
+  // -- API: Trusted Resources (Delegated to Context) -- //
 
   /**
    * Generate a trusted resource URL for the provided Java URL.
@@ -68,11 +66,8 @@ public abstract class AppController extends BaseController {
    * @param url Pre-ordained trusted resource URL.
    * @return Trusted resource URL specification proto.
    */
-  public TrustedResourceUrlProto trustedResource(@Nonnull URL url) {
-    return UnsafeSanitizedContentOrdainer.ordainAsSafe(
-      url.toString(),
-      SanitizedContent.ContentKind.TRUSTED_RESOURCE_URI)
-      .toTrustedResourceUrlProto();
+  public @Nonnull TrustedResourceUrlProto trustedResource(@Nonnull URL url) {
+    return context.trustedResource(url);
   }
 
   /**
@@ -81,10 +76,7 @@ public abstract class AppController extends BaseController {
    * @param uri Pre-ordained trusted resource URI.
    * @return Trusted resource URL specification proto.
    */
-  public TrustedResourceUrlProto trustedResource(@Nonnull URI uri) {
-    return UnsafeSanitizedContentOrdainer.ordainAsSafe(
-      uri.toString(),
-      SanitizedContent.ContentKind.TRUSTED_RESOURCE_URI)
-      .toTrustedResourceUrlProto();
+  public @Nonnull TrustedResourceUrlProto trustedResource(@Nonnull URI uri) {
+    return context.trustedResource(uri);
   }
 }

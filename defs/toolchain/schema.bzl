@@ -12,9 +12,13 @@
 ##
 
 load(
-    "@io_bazel_rules_closure//closure:defs.bzl",
-     _closure_proto_library = "closure_proto_library",
-    _closure_js_proto_library = "closure_js_proto_library",
+    "//defs/toolchain/proto:closure_proto_library.bzl",
+    _closure_proto_library = "closure_proto_library",
+)
+
+load(
+    "//defs/toolchain/web:grpc.bzl",
+    _closure_grpc_library = "closure_grpc_web_library",
 )
 
 load(
@@ -37,6 +41,7 @@ load(
     _java_grpc_library = "java_grpc_library"
 )
 
+GRPCJS_PREFIX_ = "grpc_js"
 PYPROTO_POSTFIX_ = "py_proto"
 JAVAPROTO_POSTFIX_ = "java_proto"
 SWIFTPROTO_POSTFIX_ = "swift_proto"
@@ -44,7 +49,7 @@ CLOSUREPROTO_POSTFIX_ = "closure_proto"
 GRPCJAVA_POSTFIX_ = "grpc_java"
 _PROTO_ROOT = "/proto"
 
-ENABLE_SWIFT = False
+ENABLE_SWIFT = True
 ENABLE_PYTHON = False
 
 _native_proto = _proto_library
@@ -57,8 +62,12 @@ INJECTED_PROTO_DEPS = [
 ]
 
 INJECTED_SERVICE_DEPS = [
-    str(Label("@gust//gust/api:services")),
     str(Label("@safe_html_types//:proto")),
+]
+
+INJECTED_CLOSURE_SERVICE_DEPS = [
+    "external/com_google_protobuf/src",
+    "external/safe_html_types/proto/src/main/protobuf",
 ]
 
 
@@ -174,6 +183,18 @@ def _service(name,
         srcs = [":%s" % name],
         deps = [":%s-%s" % (name, JAVAPROTO_POSTFIX_)],
         flavor = flavor,
+    )
+
+    _closure_grpc_library(
+        name = "%s-%s-binary" % (name, GRPCJS_PREFIX_),
+        deps = [":%s" % (name)],
+        mode = "grpcweb",
+    )
+
+    _closure_grpc_library(
+        name = "%s-%s-text" % (name, GRPCJS_PREFIX_),
+        deps = [":%s" % (name)],
+        mode = "grpcwebtext",
     )
 
 
