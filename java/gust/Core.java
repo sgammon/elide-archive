@@ -31,10 +31,10 @@ public final class Core {
   static final String frameworkVersion = System.getProperty("gust.version", "alpha");
 
   /** Holds the current `dev` flag status. */
-  static final Boolean devMode = Boolean.parseBoolean(System.getProperty("gust.dev", "false"));
+  static final Boolean devMode = Boolean.parseBoolean(System.getProperty("gust.dev", "true"));
 
   /** Holds the current `debug` flag status. */
-  static final Boolean debugMode = Boolean.parseBoolean(System.getProperty("gust.debug", "false"));
+  static final Boolean debugMode = Boolean.parseBoolean(System.getProperty("gust.debug", "true"));
 
   /** Holds the static prefix for dynamically routed assets. */
   static final String dynamicAssetPrefix = "/_/assets";

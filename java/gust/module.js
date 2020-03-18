@@ -28,7 +28,7 @@ goog.provide('gust');
  * @public
  * @define {!boolean} gust.dev
  */
-gust.dev = goog.define('gust.dev', false);
+gust.dev = goog.define('gust.dev', true);
 
 
 /**
@@ -48,7 +48,7 @@ gust.engine = goog.define('gust.engine', 'browser');
  * @public
  * @define {!boolean} gust.debug
  */
-gust.debug = goog.define('gust.debug', false);
+gust.debug = goog.define('gust.debug', true);
 
 
 /**
