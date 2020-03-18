@@ -32,8 +32,12 @@ option java_package = "tools.elide.page";
 option csharp_namespace = "Elide.Page";
 option go_package = "github.com/elide-tools/elide/page";
 
+import "google/protobuf/duration.proto";
+import "google/protobuf/timestamp.proto";
+
 import "webutil/html/types/html.proto";
 
+import "gust/core/data.proto";
 import "gust/core/datamodel.proto";
 
 import "gust/base/language.proto";
@@ -418,6 +422,91 @@ message Context {
     repeated JavaScript link = 2;
   }
 
+  // Defines the notion of a dynamically-served-page `ETag`, which is calculated either from weak parameters (the date/
+  // time it was served and a simple hash of the request) or strong parameters (full hash of the response).
+  message DynamicETag {
+    // Whether to enable dynamic `ETag`s.
+    bool enabled = 1;
+
+    // Flipped to `true` if the `ETag` was generated from a full response pre-image.
+    bool strong = 2;
+
+    // Raw `ETag` component describing the request/operation pre-image.
+    data.DataFingerprint preimage = 3;
+
+    // Raw `ETag` component describing the response. Leave unset to calculate dynamically.
+    data.DataFingerprint response = 4;
+  }
+
+  // Specifies settings related to browser-side caching of dynamically-rendered content. This is a rather dangerous
+  // endeavor in general, so please be careful with these settings (i.e. conservative settings should always win).
+  message BrowserCaching {
+
+  }
+
+  // HTTP cookies to set on the response, including the content of each cookie, name, and any flags.
+  message Cookie {
+    // Enumerates options for same-site cookie policies.
+    enum SameSitePolicy {
+      // No policy.
+      NO_SAME_SITE_POLICY = 0;
+
+      // `Lax` policy for `SameSite`.
+      LAX = 1;
+
+      // `Strict` policy for `SameSite`.
+      STRICT = 2;
+    }
+
+    // Name of the cookie to set.
+    string name = 1;
+
+    // Value of the cookie to set. Optional. If left empty, the specified cookie will be cleared.
+    string value = 2;
+
+    // Domain value of the cookie to set. Optional.
+    string domain = 3;
+
+    // Path value of the cookie to set. Optional.
+    string path = 4;
+
+    // Specifies the strategy to employ for cookie expiration.
+    oneof expiration_strategy {
+      // Immediately expire the cookie.
+      bool immediate_expire = 5;
+
+      // Sets an absolute time-point value for cookie expiration.
+      google.protobuf.Timestamp absolute_expire = 6;
+
+      // Sets a relative time-period value for cookie expiration.
+      google.protobuf.Duration relative_expire = 7;
+
+      // Set a far-future expiration.
+      bool no_expire = 8;
+    }
+
+    // `HttpOnly` flag for the cookie.
+    bool http_only = 9;
+
+    // `Secure` flag for the cookie.
+    bool secure = 10;
+
+    // `SameSite` policy flag for the cookie.
+    SameSitePolicy same_site = 11;
+  }
+
+  // Specifies custom response headers to affix to the request.
+  message ResponseHeader {
+    // Custom header name when operating on HTTP/1.x. Leave unset to omit.
+    string header_http1 = 1;
+
+    // Custom header name when operating on HTTP/2. Leave unset to omit.
+    string header_http2 = 2;
+
+    // Custom header value.
+    string value = 3;
+  }
+
   // Metadata definitions for this web page render context.
   Metadata meta = 1;
 
@@ -431,5 +520,17 @@ message Context {
   Scripts scripts = 4;
 
   // Application manifest for a given page or web app.
-  AppManifest manifest = 7;
+  AppManifest manifest = 5;
+
+  // `ETag` information to enclose with this page, when rendered.
+  DynamicETag etag = 6;
+
+  // Caching settings to apply to the response associated with this context.
+  BrowserCaching caching = 7;
+
+  // Specifies HTTP cookies to affix to the response associated with this context.
+  repeated Cookie cookie = 8;
+
+  // Custom headers to affix to the response associated with this context.
+  repeated ResponseHeader header = 9;
 }

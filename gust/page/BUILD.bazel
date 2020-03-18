@@ -43,8 +43,11 @@ model(
     srcs = ["page.proto"],
     deps = [
         ":semantic_proto",
+        "//gust/core:data",
         "//gust/base:language_proto",
         "@safe_html_types//:proto",
+        "@com_google_protobuf//:duration_proto",
+        "@com_google_protobuf//:timestamp_proto",
     ]
 )
 
