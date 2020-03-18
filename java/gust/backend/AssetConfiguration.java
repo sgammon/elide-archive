@@ -13,14 +13,12 @@
 package gust.backend;
 
 
+import com.google.common.collect.ImmutableSortedSet;
 import io.micronaut.context.annotation.ConfigurationProperties;
 import io.micronaut.core.bind.annotation.Bindable;
 import tools.elide.core.data.CompressionMode;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.SortedSet;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 
@@ -55,6 +53,11 @@ public interface AssetConfiguration {
     return ContentDistributionConfiguration.DEFAULTS;
   }
 
+  /** Specifies settings for {@code Vary} headers. */
+  @Bindable("vary") default AssetVarianceConfiguration variance() {
+    return AssetVarianceConfiguration.DEFAULTS;
+  }
+
   /** Specifies settings for HTTP compression. */
   @Bindable("compression") default AssetCompressionConfiguration compression() {
     return AssetCompressionConfiguration.DEFAULTS;
@@ -77,8 +80,45 @@ public interface AssetConfiguration {
     }
 
     /** Whether to enable serving of pre-compressed assets. */
-    @Bindable("modes") default List<CompressionMode> compressionModes() {
-      return Collections.singletonList(CompressionMode.GZIP);
+    @Bindable("modes") default SortedSet<CompressionMode> compressionModes() {
+      return ImmutableSortedSet.of(CompressionMode.GZIP, CompressionMode.BROTLI);
+    }
+
+    /** Whether to enable the `Vary` header with regard to compression. */
+    @Bindable("vary") default Boolean enableVary() {
+      return true;
+    }
+  }
+
+  /** Describes settings that control the {@code Vary} header affixed to assets. */
+  @ConfigurationProperties("gust.assets.vary")
+  interface AssetVarianceConfiguration {
+    /** Sensible defaults for vary headers. */
+    AssetVarianceConfiguration DEFAULTS = new AssetVarianceConfiguration() {};
+
+    /** Whether to enable {@code Vary} headers at all. */
+    @Bindable("enabled") default Boolean enabled() {
+      return true;
+    }
+
+    /** Whether to vary based on {@code Accept}. */
+    @Bindable("accept") default Boolean accept() {
+      return true;
+    }
+
+    /** Whether to vary based on {@code Accept-Language}. */
+    @Bindable("language") default Boolean language() {
+      return false;
+    }
+
+    /** Whether to vary based on {@code Accept-Charset}. */
+    @Bindable("charset") default Boolean charset() {
+      return false;
+    }
+
+    /** Whether to vary based on the value of {@code Origin}. */
+    @Bindable("origin") default Boolean origin() {
+      return false;
     }
   }
 

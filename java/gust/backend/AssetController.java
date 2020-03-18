@@ -266,6 +266,53 @@ public class AssetController extends BaseController {
       logging.trace(format("Indicating `Content-Encoding`: '%s'.", contentEncoding));
     }
 
+    // next up is `Vary`
+    if (config.variance().enabled()) {
+      List<String> segments = new ArrayList<>();
+
+      // if the asset is a CSS or JS bundle, we must examine configuration to decide whether to specify `Accept` as a
+      // `Vary` header entry, which is generally done to enable differential serving of photos (as WebP, for instance).
+      if (type.getName().equals("css") || type.getName().equals("javascript") && config.variance().accept())
+        segments.add(HttpHeaders.ACCEPT);
+      else if (logging.isDebugEnabled())
+        logging.debug(format("Asset type '%s' did not qualify for `Accept` variance.", type));
+
+      // if the application is internationalized, we can indicate asset variance based on the provided request value of
+      // the `Accept-Language` header, so apply that if it is configured.
+      if (config.variance().language()) segments.add(HttpHeaders.ACCEPT_LANGUAGE);
+      else if (logging.isDebugEnabled()) logging.debug("Asset variance by language is disabled in asset config.");
+
+      // if the application is internationalized to the point of using custom/special charsets, we can indicate asset
+      // variance based on the browser's accepted character sets. this is generally a bad idea, but is needed for some
+      // corner cases, so we apply it here.
+      if (config.variance().charset()) segments.add(HttpHeaders.ACCEPT_CHARSET);
+      else if (logging.isDebugEnabled()) logging.debug("Asset variance by charset is disabled in asset config.");
+
+      // if the application hosts dynamically originated content (i.e. in a multi-tenant posture), config can opt-in to
+      // varying by browser origin.
+      if (config.variance().origin()) segments.add(HttpHeaders.ORIGIN);
+      else if (logging.isDebugEnabled()) logging.debug("Asset variance by variance is disabled in asset config.");
+
+      // if we have more than one representation of the asset, and compression is enabled, and `Vary` is not disabled,
+      // we must affix the `Vary` tag. generally for CSS and JS this might include `Accept`, so we look for that in the
+      // asset configuration, too.
+      if (config.compression().enabled() && config.compression().enableVary()
+          && asset.getContent().getVariantList().size() > 1)
+        segments.add(HttpHeaders.ACCEPT_ENCODING);
+      else if (logging.isDebugEnabled())
+        logging.debug("No need for compression variance: too few representations, or disabled by config.");
+
+      if (!segments.isEmpty()) {
+        String varyHeader = Joiner.on(", ").join(segments);
+        if (logging.isDebugEnabled())
+          logging.debug(format("Calculated `Vary` header value: '%s'.", varyHeader));
+        response.header(HttpHeaders.VARY, varyHeader);
+
+      } else if (logging.isDebugEnabled()) {
+        logging.debug("No segments to apply to the `Vary` header value. Skipping.");
+      }
+    }
+
     // next up is etags and last-modified
     if (config.enableETags()) {
       if (logging.isDebugEnabled())
@@ -406,7 +453,9 @@ public class AssetController extends BaseController {
     EnumSet<CompressionMode> supportedCompressions = supportedCompressionModes(request);
     EnumSet<CompressionMode> supportedVariants = asset.getCompressionOptions();
     ImmutableSet<CompressionMode> compressionOptions = Sets.immutableEnumSet(
-      Sets.intersection(supportedCompressions, supportedVariants));
+      Sets.intersection(
+        Sets.intersection(supportedCompressions, supportedVariants),
+        config.compression().compressionModes()));
 
     if (logging.isTraceEnabled()) {
       // describe the conditions that led to our compression decisions
@@ -419,6 +468,8 @@ public class AssetController extends BaseController {
     final Optional<CompressedData> resolvedData;
 
     if (/* if we can't use compression... */ supportedCompressions.size() == 0 ||
+        /* or compression is disabled entirely... */ (!config.compression().enabled()) ||
+        /* or no compression algorithms are enabled... */ (config.compression().compressionModes().isEmpty()) ||
         /* or the optimal compression is none... */ (asset.getOptimalCompression() == CompressionMode.IDENTITY &&
         /* and we aren't forcing compression where available... */ !FORCE_COMPRESSION_IF_SUPPORTED) ||
         /* or the variant has no compressed options... */ asset.getVariantCount() < 2) {
