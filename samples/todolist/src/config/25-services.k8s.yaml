@@ -68,12 +68,12 @@ metadata:
     role: gateway
     environment: production
   annotations:
-    cloud.google.com/neg: '{"exposed_ports": {"8443": {}, "8085": {}}}'
-    cloud.google.com/app-protocols: '{"tls-gateway": "HTTP2"}'
-    cloud.google.com/backend-config: '{"ports": {"443":"todolist-server", "80": "todolist-redirect"}}'
+    cloud.google.com/neg: '{"exposed_ports": {"8443": {}}}'
+    cloud.google.com/app-protocols: '{"tls-proxy": "HTTP2"}'
+    cloud.google.com/backend-config: '{"ports": {"8443":"todolist-server"}}'
 spec:
   ports:
-    - name: tls-gateway
+    - name: tls-proxy
       port: 8443
       protocol: TCP
       targetPort: 8443
