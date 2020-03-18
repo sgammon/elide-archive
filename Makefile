@@ -18,6 +18,7 @@
 CI ?= no
 CACHE ?= yes
 REMOTE ?= no
+DEBUG ?= no
 VERBOSE ?= no
 QUIET ?= yes
 STRICT ?= no
@@ -126,6 +127,13 @@ TAG += --config=dev
 IBAZEL ?= $(shell which ibazel)
 BAZELISK ?= $(shell which bazelisk)
 GENHTML ?= $(shell which genhtml)
+endif
+
+# Flag: `DEBUG`
+ifeq ($(DEBUG),yes)
+VERBOSE = yes
+QUIET = no
+BASE_ARGS += --sandbox_debug
 endif
 
 # Flag: `VERBOSE`
