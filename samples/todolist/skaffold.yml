@@ -1,0 +1,37 @@
+apiVersion: skaffold/v2alpha3
+kind: Config
+
+metadata:
+  name: todolist
+
+build:
+  artifacts:
+  - image: us.gcr.io/elide-tools/sample/todolist/jvm
+    bazel:
+      target: //samples/todolist/src:TodolistServer-image.tar
+      args:
+        - --config=dev
+        - --define=dev=enabled
+        - --define=LIVE_RELOAD=enabled
+        - --compilation_mode=dbg
+
+  - image: us.gcr.io/elide-tools/sample/todolist/gateway
+    bazel:
+      target: //samples/todolist/src/config/gateway:gateway.tar
+      args:
+        - --config=dev
+        - --define=dev=enabled
+        - --define=LIVE_RELOAD=enabled
+        - --compilation_mode=dbg
+
+deploy:
+  kubeContext: docker-desktop
+  kubectl:
+    manifests:
+      - samples/todolist/src/config/00-namespace.k8s.yaml
+      - samples/todolist/src/config/05-networking.k8s.yaml
+      - samples/todolist/src/config/05-permissions.k8s.yaml
+      - samples/todolist/src/config/25-services.k8s.yaml
+      - samples/todolist/src/config/45-redis.k8s.yaml
+      - samples/todolist/src/config/50-envoy.local.k8s.yaml
+      - samples/todolist/src/config/99-todolist.local.k8s.yaml
