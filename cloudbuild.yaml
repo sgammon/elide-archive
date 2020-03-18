@@ -20,6 +20,7 @@ steps:
   - --bazelrc=.bazelrc
   - build
   - --config=ci
+  - --config=release
   - --
   - //gust/...
 
@@ -30,6 +31,7 @@ steps:
     - --bazelrc=.bazelrc
     - run
     - --config=ci
+    - --config=release
     - --define=todolist_release_tag=$SHORT_SHA
     - --
     - //samples/todolist/src:TodolistServer-image-push
