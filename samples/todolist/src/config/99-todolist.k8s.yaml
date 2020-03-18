@@ -124,9 +124,9 @@ spec:
               mountPath: /etc/ssl/todolist
           ports:
             - name: app
-              containerPort: 8081
+              containerPort: 8080
             - name: api
-              containerPort: 8082
+              containerPort: 8083
           env:
             - name: GUST_NAMESPACE
               valueFrom:
@@ -141,14 +141,14 @@ spec:
             periodSeconds: 5
             httpGet:
               path: /health
-              port: 8081
+              port: 8080
           livenessProbe:
             initialDelaySeconds: 30
             periodSeconds: 5
             timeoutSeconds: 1
             httpGet:
               path: /health
-              port: 8081
+              port: 8080
       volumes:
         - name: tls
           secret:

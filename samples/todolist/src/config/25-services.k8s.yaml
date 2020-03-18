@@ -44,13 +44,13 @@ metadata:
 spec:
   ports:
     - name: tls-app
-      port: 8081
+      port: 8080
       protocol: TCP
-      targetPort: 8081
+      targetPort: 8080
     - name: tls-rpc
-      port: 8082
+      port: 8083
       protocol: TCP
-      targetPort: 8082
+      targetPort: 8083
   selector:
     app: todolist
     role: server
@@ -73,13 +73,13 @@ metadata:
 spec:
   ports:
     - name: tls-app
-      port: 8081
+      port: 8080
       protocol: TCP
-      targetPort: 8081
+      targetPort: 8080
     - name: tls-rpc
-      port: 8082
+      port: 8083
       protocol: TCP
-      targetPort: 8082
+      targetPort: 8083
   selector:
     app: todolist
     role: server
