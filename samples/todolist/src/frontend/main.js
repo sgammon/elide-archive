@@ -15,6 +15,7 @@
 
 goog.module('todolist.main');
 
+const logging = goog.require('gust.logging');
 const {TasksAPI} = goog.require('todolist.api');
 
 
@@ -23,8 +24,21 @@ goog.scope(function() {
    * Bootstrap function, starts the Todolist app.
    */
   function main() {
-    console.log('Hello, world!', {'api': TasksAPI.acquire()});
     document.getElementById('name').innerText = 'Gust';
+
+    // affix test function
+    window['test'] = function() {
+      logging.info('Starting test...');
+      const api = TasksAPI.acquire();
+      const op = api.ping();
+      op.then(() => {
+        logging.info('Test complete.');
+      }, (err) => {
+        console.error('Test failed.', {'err': err});
+      });
+    };
+
+    logging.log('Call `test()` to run the test.', {'api': TasksAPI.acquire()});
   }
 
   // mount up our main function
