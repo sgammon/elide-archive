@@ -70,7 +70,7 @@ def _generate_closure_js(target, ctx):
     # Add include paths for all proto files,
     # to avoid copying/linking the files for every target.
     protos = target[ProtoInfo].transitive_imports
-    args = [("-I%s" % p) for p in _proto_include_paths(protos).to_list() + INJECTED_PROTO_ROOTS]
+    args = [("-I%s" % p) for p in target[ProtoInfo].transitive_proto_path.to_list()]
 
     out_options = ",".join(js_out_options)
     out_path = "/".join(js.path.split("/")[:-1])

@@ -18,7 +18,6 @@
 
 load(
     "//defs/toolchain/proto:closure_proto_library.bzl",
-    "INJECTED_PROTO_ROOTS",
     "closure_proto_aspect",
 )
 load(
@@ -45,7 +44,7 @@ def _generate_closure_grpc_web_srcs(
         transitive_sources,
         source_roots):
     all_sources = [src for src in sources] + [src for src in transitive_sources.to_list()]
-    proto_include_paths = [("-I%s" % (p)) for p in source_roots] + INJECTED_PROTO_ROOTS
+    proto_include_paths = [("-I%s" % (p)) for p in source_roots]
 
     grpc_web_out_common_options = ",".join([
         "import_style={}".format(import_style),
