@@ -32,10 +32,10 @@ let TasksAPIClient;
  * Describes the RPC endpoint to use.
  *
  * @const
- * @type {string}
+ * @type {!string}
  * @private
  */
-const endpoint_ = goog.define('todolist.api', 'https://todo.elide.dev');
+const endpoint_ = `https://${window.location.hostname}`;
 
 
 /**
@@ -47,8 +47,8 @@ const endpoint_ = goog.define('todolist.api', 'https://todo.elide.dev');
  */
 const client_ = new TasksClient(
     window.location.hostname.indexOf(':8443') !== -1 ?
-    endpoint_ :
-    'https://todo.elide.dev:8443', null, {});
+    `https://${window.location.hostname}:8443` :
+    endpoint_, null, {});
 
 
 /**

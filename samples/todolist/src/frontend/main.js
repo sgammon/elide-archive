@@ -24,21 +24,22 @@ goog.scope(function() {
    * Bootstrap function, starts the Todolist app.
    */
   function main() {
-    document.getElementById('name').innerText = 'Gust';
-
     // affix test function
     window['test'] = function() {
       logging.info('Starting test...');
       const api = TasksAPI.acquire();
       const op = api.ping();
-      op.then(() => {
+      op.then((latency) => {
         logging.info('Test complete.');
+        document.getElementById('result').innerText = `Ping completed in ${latency}ms.`;
       }, (err) => {
         console.error('Test failed.', {'err': err});
       });
     };
 
-    logging.log('Call `test()` to run the test.', {'api': TasksAPI.acquire()});
+    setTimeout(() => {
+      window['test']();
+    }, 1000);
   }
 
   // mount up our main function

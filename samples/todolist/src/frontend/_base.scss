@@ -20,6 +20,7 @@ body.todolist {
 
   .mdl-layout__header {
     color: $app-color-text;
+    user-select: none;
   }
 
   .mdl-layout__header-row .mdl-navigation__link {
