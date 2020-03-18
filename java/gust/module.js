@@ -10,6 +10,13 @@
  * by trade secret and copyright law. Dissemination of this information, or reproduction of this material, in any form,
  * is strictly forbidden except in adherence with assigned license requirements.
  */
+
+/**
+ * Gust: Core module.
+ *
+ * @fileoverview Provides core declarations, used across platforms and modules.
+ */
+
 /*global goog,gust*/
 goog.provide('gust');
 

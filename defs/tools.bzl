@@ -79,7 +79,8 @@ def _process_java_dep(key, repo):
             # regular local
             native.local_repository(
                 name = key,
-                path = repo["local"])
+                path = repo["local"],
+            )
 
     else:
         _java_import_external(

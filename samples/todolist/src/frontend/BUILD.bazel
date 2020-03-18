@@ -18,6 +18,7 @@ package(
 load(
     "//defs/toolchain:deps.bzl",
     "closure",
+    "js_proto",
     "js_service",
 )
 
@@ -84,7 +85,10 @@ js_module(
     name = "api",
     srcs = ["api.js"],
     deps = [
+        "//js/gust:logging",
+        "//java/gust:Core-j2cl",
         js_service("//samples/todolist/src:todolist_proto"),
+        js_proto("//js:empty_proto"),
     ],
 )
 
@@ -93,6 +97,7 @@ js_module(
     srcs = ["main.js"],
     deps = [
         ":api",
+        "//js/gust:logging",
     ],
 )
 
