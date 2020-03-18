@@ -156,7 +156,7 @@ _JVM_APP_RELEASE_FLAGS = [
 ]
 
 INJECTED_LIBRARIES = [
-    "@org_brotli//java:brotli_jni.dll",
+    # None yet.
 ]
 
 INJECTED_RESOURCE_JARS = [
@@ -164,7 +164,7 @@ INJECTED_RESOURCE_JARS = [
 ]
 
 INJECTED_JVM_FLAGS = [
-    "-DBROTLI_JNI_LIBRARY=$(execpath @org_brotli//java:brotli_jni.dll)",
+    # None yet.
 ]
 
 ASSET_DIGEST_CHARS = 8

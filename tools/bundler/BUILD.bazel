@@ -53,6 +53,12 @@ jdk_binary(
         "@com_google_template_soy",
         "@org_brotli//java/org/brotli/wrapper/enc:enc",
     ] + _COMMON_DEPS,
+    data = [
+        "@org_brotli//java/org/brotli/wrapper/enc:brotli_jni",
+    ],
+    jvm_flags = [
+        "-DBROTLI_JNI_LIBRARY=$$JAVA_RUNFILES/org_brotli/java/brotli_jni.dll",
+    ],
     runtime_deps = [
         "@com_google_template_soy",
         maven("ch.qos.logback:logback-classic"),

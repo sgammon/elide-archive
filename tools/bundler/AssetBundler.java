@@ -105,7 +105,12 @@ public class AssetBundler implements Callable<Integer> {
   static {
     String jniLibrary = System.getProperty("BROTLI_JNI_LIBRARY");
     if (jniLibrary != null) {
-      System.load(new File(jniLibrary).getAbsolutePath());
+      try {
+        System.load(new File(jniLibrary).getPath());
+      } catch (UnsatisfiedLinkError err) {
+        logger.error(format("Failed to load Brotli JNI library (path given: '%s').", jniLibrary));
+        System.exit(2);
+      }
     }
   }
 
