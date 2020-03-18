@@ -15,14 +15,17 @@ build:
         - --define=LIVE_RELOAD=enabled
         - --compilation_mode=dbg
 
-  - image: us.gcr.io/elide-tools/sample/todolist/gateway
-    bazel:
-      target: //samples/todolist/src/config/gateway:gateway.tar
-      args:
-        - --config=dev
-        - --define=dev=enabled
-        - --define=LIVE_RELOAD=enabled
-        - --compilation_mode=dbg
+portForward:
+-  resourceType: Deployment
+   resourceName: envoy
+   namespace: todolist
+   port: 8443
+   localPort: 8443
+-  resourceType: Deployment
+   resourceName: envoy
+   namespace: todolist
+   port: 8090
+   localPort: 8090
 
 deploy:
   kubeContext: docker-desktop
@@ -33,5 +36,5 @@ deploy:
       - samples/todolist/src/config/05-permissions.k8s.yaml
       - samples/todolist/src/config/25-services.k8s.yaml
       - samples/todolist/src/config/45-redis.k8s.yaml
-      - samples/todolist/src/config/50-envoy.local.k8s.yaml
-      - samples/todolist/src/config/99-todolist.local.k8s.yaml
+      - samples/todolist/src/config/50-envoy.k8s.local.yaml
+      - samples/todolist/src/config/99-todolist.k8s.local.yaml

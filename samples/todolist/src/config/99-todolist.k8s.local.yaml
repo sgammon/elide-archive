@@ -138,15 +138,15 @@ spec:
           readinessProbe:
             initialDelaySeconds: 10
             successThreshold: 1
-            timeoutSeconds: 2
-            periodSeconds: 5
+            timeoutSeconds: 20
+            periodSeconds: 10
             httpGet:
               path: /health
               port: 8080
           livenessProbe:
-            initialDelaySeconds: 30
-            periodSeconds: 5
-            timeoutSeconds: 1
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 10
             httpGet:
               path: /health
               port: 8080

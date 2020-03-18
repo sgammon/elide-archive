@@ -29,13 +29,23 @@ let TasksAPIClient;
 
 
 /**
+ * Describes the RPC endpoint to use.
+ *
+ * @const
+ * @type {string}
+ * @private
+ */
+const endpoint_ = 'https://todo.elide.dev:8443';
+
+
+/**
  * Singleton client instance for the Tasks API.
  *
- * @private
  * @const
  * @type {!TasksAPIClient}
+ * @private
  */
-const client_ = new TasksClient('http://localhost:8083', null, {});
+const client_ = new TasksClient(endpoint_, null, {});
 
 
 /**

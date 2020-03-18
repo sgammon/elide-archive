@@ -61,35 +61,6 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: todolist-usw2
-  namespace: todolist
-  labels:
-    app: todolist
-    role: server
-    environment: production
-  annotations:
-    cloud.google.com/load-balancer-type: "Internal"
-    networking.gke.io/internal-load-balancer-allow-global-access: "true"
-spec:
-  ports:
-    - name: tls-app
-      port: 8080
-      protocol: TCP
-      targetPort: 8080
-    - name: tls-rpc
-      port: 8083
-      protocol: TCP
-      targetPort: 8083
-  selector:
-    app: todolist
-    role: server
-    environment: production
-  type: LoadBalancer
-  publishNotReadyAddresses: yes
----
-apiVersion: v1
-kind: Service
-metadata:
   name: gateway
   namespace: todolist
   labels:
@@ -97,19 +68,15 @@ metadata:
     role: gateway
     environment: production
   annotations:
-    cloud.google.com/neg: '{"exposed_ports": {"443": {}, "80": {}}}'
+    cloud.google.com/neg: '{"exposed_ports": {"8443": {}, "8085": {}}}'
     cloud.google.com/app-protocols: '{"tls-gateway": "HTTP2"}'
     cloud.google.com/backend-config: '{"ports": {"443":"todolist-server", "80": "todolist-redirect"}}'
 spec:
   ports:
-    - name: http-gateway
-      port: 80
-      protocol: TCP
-      targetPort: 80
     - name: tls-gateway
-      port: 443
+      port: 8443
       protocol: TCP
-      targetPort: 443
+      targetPort: 8443
   selector:
     app: todolist
     role: gateway
