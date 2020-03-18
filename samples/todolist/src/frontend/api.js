@@ -35,7 +35,7 @@ let TasksAPIClient;
  * @type {string}
  * @private
  */
-const endpoint_ = 'https://todo.elide.dev:8443';
+const endpoint_ = goog.define('todolist.api', 'https://todo.elide.dev');
 
 
 /**
@@ -45,7 +45,10 @@ const endpoint_ = 'https://todo.elide.dev:8443';
  * @type {!TasksAPIClient}
  * @private
  */
-const client_ = new TasksClient(endpoint_, null, {});
+const client_ = new TasksClient(
+    window.location.hostname.indexOf(':8443') !== -1 ?
+    endpoint_ :
+    'https://todo.elide.dev:8443', null, {});
 
 
 /**
