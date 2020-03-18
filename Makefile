@@ -230,7 +230,7 @@ serve-coverage:  ## Serve the current coverage report (must generate first).
 report-tests: ## Report test results to Report.CI.
 	@echo "Scanning for test results..."
 	$(_RULE)pip install -r tools/requirements.txt
-	$(_RULE)find dist/out/$(OUTPUT_BASE) -name test.xml | xargs python tools/merge_test_results.py reports/tests.xml
+	$(_RULE)find dist/out/$(OUTPUT_BASE) -name test.xml | xargs python3 tools/merge_test_results.py reports/tests.xml
 	@echo "Generating HTML test report..."
 	$(_RULE)cd reports && python3 -m junit2htmlreport tests.xml
 ifeq ($(ENABLE_REPORTCI),yes)
