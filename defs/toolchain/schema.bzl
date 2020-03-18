@@ -171,6 +171,7 @@ def _service(name,
     additional dependencies and prepares targets related to RPC services.
 
     :param name: Name of the target.
+    :param flavor: Java gRPC generation flavor.
     :param kwargs: Keyword arguments to pass along.
     """
 
@@ -196,6 +197,30 @@ def _service(name,
         deps = [":%s" % (name)],
         mode = "grpcwebtext",
     )
+
+
+def well_known_(name,
+                actual,
+                **kwargs):
+
+    """
+    Import a well-known Protocol Buffer definition, wrapping it in the appropriate language-specific rules supported by
+    the framework.
+
+    :param name: Name of the well-known proto target.
+    :param actual: Well-known protobuf library target.
+    :param kwargs: Keyword arguments to pass along.
+    """
+
+    # setup an alias to the native proto lib
+    native.alias(
+        name = name,
+        actual = actual,
+    )
+
+    kwargs["name"] = name
+    __declare_closure_proto(name, True, False, kwargs)
+    __declare_lang_protos(name, True, False, kwargs)
 
 
 model = _proto
