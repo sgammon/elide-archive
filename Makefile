@@ -232,7 +232,7 @@ report-tests: ## Report test results to Report.CI.
 	$(_RULE)pip install -r tools/requirements.txt
 	$(_RULE)find dist/out/$(OUTPUT_BASE) -name test.xml | xargs python tools/merge_test_results.py reports/tests.xml
 	@echo "Generating HTML test report..."
-	$(_RULE)cd reports && python -m junit2htmlreport tests.xml
+	$(_RULE)cd reports && python3 -m junit2htmlreport tests.xml
 ifeq ($(ENABLE_REPORTCI),yes)
 	@echo "Reporting test results..."
 	$(_RULE)-TRAVIS=true \
