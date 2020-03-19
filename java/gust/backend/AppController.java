@@ -20,7 +20,6 @@ import io.micronaut.http.HttpResponse;
 import io.micronaut.http.MediaType;
 import io.micronaut.http.MutableHttpResponse;
 import org.slf4j.Logger;
-import tools.elide.page.Context;
 import tools.elide.page.Context.ClientHint;
 
 import javax.annotation.Nonnull;
@@ -30,7 +29,6 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.function.BiConsumer;
-import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 
@@ -133,7 +131,11 @@ public abstract class AppController extends BaseController {
       if (!hints.isEmpty()) {
         if (logging.isDebugEnabled())
           logging.debug(format("Client hints are ENABLED. Applying hints: '%s'.", Joiner.on(", ").join(hints)));
-        this.context.clientHints(Optional.of(hints));
+        this.context.supportedClientHints(
+          Optional.of(hints),
+          config.clientHints().ttl().isPresent() ?
+            Optional.of(config.clientHints().ttlUnit().toSeconds(config.clientHints().ttl().get())) :
+            Optional.empty());
 
       } else if (logging.isTraceEnabled()) {
         logging.trace("No client hints are enabled.");

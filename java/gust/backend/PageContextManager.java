@@ -12,6 +12,7 @@
  */
 package gust.backend;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import com.google.common.html.types.TrustedResourceUrlProto;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
@@ -33,6 +34,8 @@ import tools.elide.assets.AssetBundle.StyleBundle.StyleAsset;
 import tools.elide.assets.AssetBundle.ScriptBundle.ScriptAsset;
 import tools.elide.page.Context;
 import tools.elide.page.Context.ClientHint;
+import tools.elide.page.Context.ClientHints;
+import tools.elide.page.Context.ConnectionHint;
 import tools.elide.page.Context.Styles.Stylesheet;
 import tools.elide.page.Context.Scripts.JavaScript;
 
@@ -47,6 +50,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
@@ -65,7 +69,17 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
   private static final Logger logging = Logging.logger(PageContextManager.class);
 
   private static final int ETAG_LENGTH = 6;
+
+  private static final String DPR_HEADER = "DPR";
+  private static final String ECT_HEADER = "ECT";
+  private static final String RTT_HEADER = "RTT";
+  private static final String MEMORY_HEADER = "Device-Memory";
+  private static final String DOWNLINK_HEADER = "Downlink";
+  private static final String VIEWPORT_WIDTH_HEADER = "Viewport-Width";
   private static final String ACCEPT_CH_HEADER = "Accept-CH";
+  private static final String ACCEPT_CH_LIFETIME_HEADER = "Accept-CH-Lifetime";
+  private static final ConnectionHint DEFAULT_ECT = ConnectionHint.FAST;
+
   private static final String LIVE_RELOAD_TARGET_PROP = "live_reload_url";
   private static final String LIVE_RELOAD_SWITCH_PROP = "live_reload_enabled";
   private static final String LIVE_RELOAD_JS = "http://localhost:35729/livereload.js";
@@ -78,6 +92,9 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
 
   /** HTTP request bound to this flow. */
   private final @Nonnull HttpRequest request;
+
+  /** Set of interpreted/immutable client hints. */
+  private final @Nonnull ClientHints hints;
 
   /** Main properties to apply during Soy render. */
   private final @Nonnull ConcurrentMap<String, Object> props;
@@ -114,7 +131,8 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
     if (!ServerRequestContext.currentRequest().isPresent())
       throw new IllegalStateException("Cannot construct `PageContext` outside of a server-side HTTP flow.");
     this.request = ServerRequestContext.currentRequest().get();
-    this.context = Context.newBuilder();
+    this.context = interpretRequest(request);
+    this.hints = this.context.getHintsBuilder().build();
     this.props = new ConcurrentSkipListMap<>();
     this.injected = new ConcurrentSkipListMap<>();
     this.varySegments = new ConcurrentSkipListSet<>();
@@ -134,12 +152,100 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
   }
 
   /**
+   * Interpret the provided HTTP request, reading any properties and hints that are specified. For instance, this is
+   * where we can load/interpret <i>Client Hints</i> provided by the browser, as applicable.
+   *
+   * @param request HTTP request to interpret/read.
+   * @return Context builder to use, factoring in the provided request.
+   */
+  @VisibleForTesting
+  @SuppressWarnings("WeakerAccess")
+  static @Nonnull Context.Builder interpretRequest(@Nonnull HttpRequest request) {
+    Context.Builder builder = Context.newBuilder();
+    interpretHints(request, builder);
+    return builder;
+  }
+
+  /**
+   * Interpret <i>Client Hints</i> headers from the provided HTTP request, and apply them to the provided context.
+   *
+   * @param request HTTP request to interpret hints from.
+   * @param builder Builder to apply the hints to, if found.
+   */
+  @VisibleForTesting
+  @SuppressWarnings("WeakerAccess")
+  static void interpretHints(@Nonnull HttpRequest request, @Nonnull Context.Builder builder) {
+    HttpHeaders headers = request.getHeaders();
+    Context.ClientHints.Builder hints = builder.getHintsBuilder();
+
+    checkHint(ClientHint.DPR, headers, hints, (value) -> hints.setDevicePixelRatio(Integer.parseUnsignedInt(value)));
+    checkHint(ClientHint.ECT, headers, hints, (value) ->
+      hints.setEffectiveConnectionType(connectionHintForECT(value).orElse(DEFAULT_ECT)));
+    checkHint(ClientHint.RTT, headers, hints, (value) -> hints.setRoundTripTime(Integer.parseUnsignedInt(value)));
+    checkHint(ClientHint.DOWNLINK, headers, hints, (value) -> hints.setDownlink(Float.parseFloat(value)));
+    checkHint(ClientHint.DEVICE_MEMORY, headers, hints, (value) -> hints.setDeviceMemory(Float.parseFloat(value)));
+    checkHint(ClientHint.SAVE_DATA, headers, hints, (value) -> hints.setSaveData(true));
+    checkHint(ClientHint.WIDTH, headers, hints, (value) -> hints.setWidth(Integer.parseUnsignedInt(value)));
+    checkHint(ClientHint.VIEWPORT_WIDTH, headers, hints,
+      (value) -> hints.setViewportWidth(Integer.parseUnsignedInt(value)));
+  }
+
+  /**
+   * Check the provided set of HTTP headers for the specified client hint. If a value is found, dispatch the provided
+   * function with the hint, and the discovered header value.
+   *
+   * @param hint Client hint to check for in the specified headers.
+   * @param headers HTTP request headers to check.
+   * @param callable Callable to dispatch if the header is found.
+   */
+  @VisibleForTesting
+  @SuppressWarnings("WeakerAccess")
+  static void checkHint(@Nonnull ClientHint hint,
+                        @Nonnull HttpHeaders headers,
+                        @Nonnull ClientHints.Builder hints,
+                        Consumer<String> callable) {
+    String headerName = clientHintForEnum(hint);
+    if (headers.contains(headerName)) {
+      String headerValue = headers.get(headerName);
+      if (headerValue != null && !headerValue.isEmpty()) {
+        try {
+          hints.addIndicated(hint);
+          callable.accept(headerValue);
+        } catch (IllegalArgumentException iae) {
+          logging.warn(format("Failed to parse client hint '%s': %s.", hint.name(), iae.getMessage()));
+        }
+      }
+    }
+  }
+
+  /**
+   * Resolve an enumerated connection hint for the provided connection hint name, which was presumably found in a
+   * <i>Client Hints</i> Effective Connection Type header value.
+   *
+   * @param value Value to interpret.
+   * @return Connection hint type, resolved.
+   */
+  @VisibleForTesting
+  @SuppressWarnings("WeakerAccess")
+  static @Nonnull Optional<ConnectionHint> connectionHintForECT(@Nonnull String value) {
+    switch (value.toLowerCase().trim()) {
+      case "slow_2g": return Optional.of(ConnectionHint.SLOW_TWO);
+      case "2g": return Optional.of(ConnectionHint.SLOW);
+      case "3g": return Optional.of(ConnectionHint.TYPICAL);
+      case "4g": return Optional.of(ConnectionHint.FAST);
+      default: return Optional.empty();
+    }
+  }
+
+  /**
    * Produce a string token for the provided client hint.
    *
    * @param hint Enumerated hint type.
    * @return String token matching the hint.
    */
-  private static @Nonnull String clientHintForEnum(@Nonnull ClientHint hint) {
+  @VisibleForTesting
+  @SuppressWarnings("WeakerAccess")
+  static @Nonnull String clientHintForEnum(@Nonnull ClientHint hint) {
     switch (hint) {
       case DPR: return "DPR";
       case ECT: return "ECT";
@@ -207,8 +313,8 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
       }
 
       // `Accept-CH`
-      if (ctx.hasHints() && ctx.getHints().getIndicatedCount() > 0) {
-        SortedSet<String> tokens = ctx.getHints().getIndicatedList().stream()
+      if (ctx.hasHints() && ctx.getHints().getSupportedCount() > 0) {
+        SortedSet<String> tokens = ctx.getHints().getSupportedList().stream()
           .map(PageContextManager::clientHintForEnum)
           .collect(Collectors.toCollection(TreeSet::new));
 
@@ -216,6 +322,12 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
         if (logging.isDebugEnabled())
           logging.debug(format("Indicating `Accept-CH`: '%s'.", renderedHints));
         response.getHeaders().add(ACCEPT_CH_HEADER, renderedHints);
+
+        // since we've appended `Accept-CH`, check for a lifetime
+        long lifetime = ctx.getHints().getLifetime();
+        if (lifetime > 0) {
+          response.getHeaders().add(ACCEPT_CH_LIFETIME_HEADER, String.valueOf(lifetime));
+        }
       } else if (logging.isTraceEnabled()) {
         logging.trace("`Accept-CH` not configured for response.");
       }
@@ -660,10 +772,13 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
    */
   @CanIgnoreReturnValue
   @SuppressWarnings("WeakerAccess")
-  public @Nonnull PageContextManager clientHints(Optional<Iterable<ClientHint>> hints) {
+  public @Nonnull PageContextManager supportedClientHints(Optional<Iterable<ClientHint>> hints,
+                                                          @Nonnull Optional<Long> ttl) {
     if (hints.isPresent()) {
       // add hints to indicated set
-      this.context.getHintsBuilder().addAllIndicated(hints.get());
+      this.context.getHintsBuilder().addAllSupported(hints.get());
+      if (ttl.isPresent())
+        this.context.getHintsBuilder().setLifetime(ttl.get());
     } else {
       // if an empty optional is passed, clear the current set
       this.context.getHintsBuilder().clearIndicated();
@@ -679,8 +794,8 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
    * @return Current page context manager (for call chain-ability).
    */
   @CanIgnoreReturnValue
-  public @Nonnull PageContextManager clientHints(ClientHint... hints) {
-    return clientHints(Optional.of(Arrays.asList(hints)));
+  public @Nonnull PageContextManager supportedClientHints(ClientHint... hints) {
+    return supportedClientHints(Optional.of(Arrays.asList(hints)), Optional.empty());
   }
 
   /**
@@ -771,6 +886,45 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
       .toTrustedResourceUrlProto();
   }
 
+  // -- Interface: Client Hints -- //
+
+  /**
+   * Attempt to retrieve an interpreted <i>Client Hints</i> client-indicated value from the current HTTP request. If no
+   * value can be found, or no valid value can be decoded for the hint type specified, {@link Optional#empty()} is
+   * returned.
+   *
+   * @param hint Hint type to look for on the current request.
+   * @param <V> Value type to return for this hint. If incorrect, a warning is logged and an empty value returned.
+   * @return Optional-wrapped found value, or {@link Optional#empty()} if no value could be located.
+   */
+  @SuppressWarnings("unchecked")
+  public @Nonnull <V> Optional<V> hint(@Nonnull ClientHint hint) {
+    if (this.hints.getIndicatedCount() > 0 && this.hints.getIndicatedList().contains(hint)) {
+      // we found the hint - try to decode the value
+      try {
+        final V value;
+        switch (hint) {
+          case DPR: value = (V)(Integer.valueOf(this.hints.getDevicePixelRatio())); break;
+          case ECT: value = (V)(this.hints.getEffectiveConnectionType()); break;
+          case RTT: value = (V)(Integer.valueOf(this.hints.getRoundTripTime())); break;
+          case DOWNLINK: value = (V)(Float.valueOf(this.hints.getDownlink())); break;
+          case DEVICE_MEMORY: value = (V)(Float.valueOf(this.hints.getDevicePixelRatio())); break;
+          case SAVE_DATA: value = (V)(Boolean.valueOf(this.hints.getSaveData())); break;
+          case WIDTH: value = (V)(Integer.valueOf(this.hints.getWidth())); break;
+          case VIEWPORT_WIDTH: value = (V)(Integer.valueOf(this.hints.getViewportWidth())); break;
+          default:
+            logging.warn(format("Unrecognized client hint: '%s'.", hint.name()));
+            return Optional.empty();
+        }
+        return Optional.of(value);
+
+      } catch (ClassCastException cce) {
+        logging.warn(format("Failed to cast client hint value '%s'.", hint.name()));
+      }
+    }
+    return Optional.empty();
+  }
+
   // -- Interface: HTTP Request -- //
 
   /**
@@ -780,6 +934,15 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
    */
   public @Nonnull HttpRequest getRequest() {
     return this.request;
+  }
+
+  /**
+   * Return the set of interpreted <i>Client Hints</i> headers for the current request.
+   *
+   * @return Client hints configuration.
+   */
+  public @Nonnull ClientHints getHints() {
+    return this.hints;
   }
 
   // -- Interface: HTTP `ETag`s -- //

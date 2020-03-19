@@ -19,6 +19,7 @@ import io.micronaut.core.bind.annotation.Bindable;
 import tools.elide.page.Context.ClientHint;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 
 /** Supplies configuration structure for dynamically-served app pages through Gust. */
@@ -83,6 +84,16 @@ public interface DynamicServingConfiguration {
     /** Return the set of hints supported by the server. */
     @Bindable("hints") default ImmutableSet<ClientHint> hints() {
       return Sets.immutableEnumSet(ClientHint.ECT, ClientHint.RTT, ClientHint.DPR);
+    }
+
+    /** Client Hints configuration time-to-live value. */
+    @Bindable("ttl") default Optional<Long> ttl() {
+      return Optional.of(7L);
+    }
+
+    /** Client Hints configuration time-to-live unit. Defaults to {@code DAYS}. */
+    @Bindable("ttlUnit") default TimeUnit ttlUnit() {
+      return TimeUnit.DAYS;
     }
   }
 
