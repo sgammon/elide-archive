@@ -109,6 +109,7 @@ micronaut_library(
         ":PageRender",
         javaproto("//gust/assets:bundle_proto"),
         "//java/gust/backend/runtime:runtime",
+        "//java/gust/util:Hex",
     ],
 )
 
@@ -144,8 +145,8 @@ micronaut_library(
     deps = [
         ":AssetConfiguration",
         ":BaseController",
-        "//java/gust/backend:PageContext",
-        "//java/gust/backend:PageContextManager",
+        ":PageContext",
+        ":PageContextManager",
         "//java/gust/backend/runtime:AssetManager",
         "//java/gust/util:Hex",
         javaproto("//gust/core:data"),

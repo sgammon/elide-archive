@@ -20,6 +20,7 @@ import com.google.template.soy.data.UnsafeSanitizedContentOrdainer;
 import gust.backend.runtime.AssetManager;
 import gust.backend.runtime.AssetManager.ManagedAsset;
 import gust.backend.runtime.Logging;
+import gust.util.Hex;
 import io.micronaut.http.HttpHeaders;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.MutableHttpResponse;
@@ -38,6 +39,7 @@ import javax.annotation.Nullable;
 import java.io.Closeable;
 import java.net.URI;
 import java.net.URL;
+import java.security.MessageDigest;
 import java.util.*;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentSkipListMap;
@@ -59,6 +61,7 @@ import static java.lang.String.format;
 public class PageContextManager implements Closeable, AutoCloseable, PageRender {
   private static final Logger logging = Logging.logger(PageContextManager.class);
 
+  private static final int ETAG_LENGTH = 6;
   private static final String LIVE_RELOAD_TARGET_PROP = "live_reload_url";
   private static final String LIVE_RELOAD_SWITCH_PROP = "live_reload_enabled";
   private static final String LIVE_RELOAD_JS = "http://localhost:35729/livereload.js";
@@ -135,7 +138,8 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
   /** {@inheritDoc} */
   @Override
   public @Nonnull <T> MutableHttpResponse<T> finalizeResponse(@Nonnull MutableHttpResponse<T> response,
-                                                              @Nonnull T body) {
+                                                              @Nonnull T body,
+                                                              @Nullable MessageDigest digester) {
     Optional<Context> pageContext = response.getAttribute("context", Context.class);
     if (pageContext.isPresent()) {
       if (logging.isDebugEnabled())
@@ -151,6 +155,18 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
         response.getHeaders().add(
           HttpHeaders.VARY,
           Joiner.on(", ").join(new TreeSet<>(ctx.getVaryList())));
+
+      // `ETag`
+      if (digester != null) {
+        if (ctx.getEtag().hasPreimage()) {
+          digester.update(ctx.getEtag().getPreimage().getFingerprint().asReadOnlyByteBuffer().array());
+        }
+        String contentDigest = Hex.bytesToHex(digester.digest(), ETAG_LENGTH);
+        if (!Objects.requireNonNull(contentDigest).isEmpty()) {
+          String prefix = ctx.getEtag().getEnabled() && ctx.getEtag().getStrong() ? "" : "W/";
+          response.getHeaders().add(HttpHeaders.ETAG, prefix + contentDigest);
+        }
+      }
 
       // additional headers
       if (ctx.getHeaderCount() > 0)
