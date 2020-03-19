@@ -175,7 +175,7 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
               return response;
             }
           }
-          response.getHeaders().add(HttpHeaders.ETAG, prefix + contentDigest);
+          response.getHeaders().add(HttpHeaders.ETAG, prefix + "\"" + contentDigest + "\"");
         }
       }
 

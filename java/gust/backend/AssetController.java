@@ -315,7 +315,7 @@ public class AssetController {
     if (config.enableETags()) {
       if (logging.isDebugEnabled())
         logging.debug(format("Indicating `ETag`: '%s'.", asset.getETag()));
-      response.header(HttpHeaders.ETAG, asset.getETag());
+      response.header(HttpHeaders.ETAG, "\"" + asset.getETag() + "\"");
     } else if (logging.isDebugEnabled()) {
       logging.debug("`ETag`s are disabled.");
     }
