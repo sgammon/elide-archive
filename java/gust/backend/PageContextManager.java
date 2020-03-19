@@ -32,6 +32,7 @@ import org.slf4j.Logger;
 import tools.elide.assets.AssetBundle.StyleBundle.StyleAsset;
 import tools.elide.assets.AssetBundle.ScriptBundle.ScriptAsset;
 import tools.elide.page.Context;
+import tools.elide.page.Context.ClientHint;
 import tools.elide.page.Context.Styles.Stylesheet;
 import tools.elide.page.Context.Scripts.JavaScript;
 
@@ -46,6 +47,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 
@@ -63,6 +65,7 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
   private static final Logger logging = Logging.logger(PageContextManager.class);
 
   private static final int ETAG_LENGTH = 6;
+  private static final String ACCEPT_CH_HEADER = "Accept-CH";
   private static final String LIVE_RELOAD_TARGET_PROP = "live_reload_url";
   private static final String LIVE_RELOAD_SWITCH_PROP = "live_reload_enabled";
   private static final String LIVE_RELOAD_JS = "http://localhost:35729/livereload.js";
@@ -130,6 +133,27 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
     }
   }
 
+  /**
+   * Produce a string token for the provided client hint.
+   *
+   * @param hint Enumerated hint type.
+   * @return String token matching the hint.
+   */
+  private static @Nonnull String clientHintForEnum(@Nonnull ClientHint hint) {
+    switch (hint) {
+      case DPR: return "DPR";
+      case ECT: return "ECT";
+      case RTT: return "RTT";
+      case DOWNLINK: return "Downlink";
+      case DEVICE_MEMORY: return "Device-Memory";
+      case SAVE_DATA: return "Save-Data";
+      case WIDTH: return "Width";
+      case VIEWPORT_WIDTH: return "Viewport-Width";
+      default:
+        throw new IllegalStateException(format("Unrecognized client hint type: '%s'.", hint.name()));
+    }
+  }
+
   /** @return The current page context builder. */
   public @Nonnull Context.Builder getContext() {
     if (this.closed.get())
@@ -178,22 +202,44 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
           }
           response.getHeaders().add(HttpHeaders.ETAG, prefix + "\"" + contentDigest + "\"");
         }
+      } else if (logging.isTraceEnabled()) {
+        logging.trace("Dynamic ETags are disabled.");
+      }
+
+      // `Accept-CH`
+      if (ctx.hasHints() && ctx.getHints().getIndicatedCount() > 0) {
+        SortedSet<String> tokens = ctx.getHints().getIndicatedList().stream()
+          .map(PageContextManager::clientHintForEnum)
+          .collect(Collectors.toCollection(TreeSet::new));
+
+        String renderedHints = Joiner.on(", ").join(tokens);
+        if (logging.isDebugEnabled())
+          logging.debug(format("Indicating `Accept-CH`: '%s'.", renderedHints));
+        response.getHeaders().add(ACCEPT_CH_HEADER, renderedHints);
+      } else if (logging.isTraceEnabled()) {
+        logging.trace("`Accept-CH` not configured for response.");
       }
 
       // `Content-Language`
       if (ctx.getLanguage() != null && !ctx.getLanguage().isEmpty())
         response.getHeaders().add(HttpHeaders.CONTENT_LANGUAGE, ctx.getLanguage());
+      else if (logging.isTraceEnabled())
+        logging.trace("`Content-Language` not configured for response.");
 
       // `Vary`
       if (ctx.getVaryCount() > 0)
         response.getHeaders().add(
           HttpHeaders.VARY,
           Joiner.on(", ").join(new TreeSet<>(ctx.getVaryList())));
+      else if (logging.isTraceEnabled())
+        logging.trace("`Vary` not configured for response.");
 
       // additional headers
       if (ctx.getHeaderCount() > 0)
         ctx.getHeaderList().forEach(
           (header) -> response.getHeaders().add(header.getName(), header.getValue()));
+      else if (logging.isTraceEnabled())
+        logging.trace("No additional headers to apply.");
     } else {
       logging.warn("Failed to find HTTP cycle context: cannot finalize headers.");
     }
@@ -577,6 +623,8 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
       throw new IllegalArgumentException("Please use `vary()` instead of setting a `Vary` header.");
     if (HttpHeaders.ETAG.equals(name))
       throw new IllegalArgumentException("Please use `enableETags()` instead of setting an `ETag` header.");
+    if ("Accept-CH".equals(name))
+      throw new IllegalArgumentException("Please use `clientHints()` instead of setting an `Accept-CH` header.");
     this.context.addHeader(Context.ResponseHeader.newBuilder()
       .setName(name)
       .setValue(value)
@@ -600,6 +648,39 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
       .setEnabled(enableETags)
       .setStrong(strong));
     return this;
+  }
+
+  /**
+   * Enable the provided set of server-indicated client hint types. If the client supports any of the indicated types,
+   * it will enclose matching client-hints accordingly, on subsequent requests for resources. If an empty optional
+   * ({@link Optional#empty()}) is passed, the current set of client hints are cleared. This method is additive.
+   *
+   * @param hints Client hints to indicate as supported by the server.
+   * @return Current page context manager (for call chain-ability).
+   */
+  @CanIgnoreReturnValue
+  @SuppressWarnings("WeakerAccess")
+  public @Nonnull PageContextManager clientHints(Optional<Iterable<ClientHint>> hints) {
+    if (hints.isPresent()) {
+      // add hints to indicated set
+      this.context.getHintsBuilder().addAllIndicated(hints.get());
+    } else {
+      // if an empty optional is passed, clear the current set
+      this.context.getHintsBuilder().clearIndicated();
+    }
+    return this;
+  }
+
+  /**
+   * Enable the provided set of server-indicated client hint types. This method is additive. If the client supports any
+   * of the indicated types, it will enclose matching client-hints accordingly, on subsequent requests for resources.
+   *
+   * @param hints Client hints to indicate as supported by the server.
+   * @return Current page context manager (for call chain-ability).
+   */
+  @CanIgnoreReturnValue
+  public @Nonnull PageContextManager clientHints(ClientHint... hints) {
+    return clientHints(Optional.of(Arrays.asList(hints)));
   }
 
   /**

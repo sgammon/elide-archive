@@ -12,12 +12,13 @@
  */
 package gust.backend;
 
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 import io.micronaut.context.annotation.ConfigurationProperties;
 import io.micronaut.core.bind.annotation.Bindable;
+import tools.elide.page.Context.ClientHint;
 
-import java.util.Collections;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 
 /** Supplies configuration structure for dynamically-served app pages through Gust. */
@@ -41,6 +42,11 @@ public interface DynamicServingConfiguration {
     return DynamicVarianceConfiguration.DEFAULTS;
   }
 
+  /** Settings related to support for Client Hints. */
+  @Bindable("clientHints") default ClientHintsConfiguration clientHints() {
+    return ClientHintsConfiguration.DEFAULTS;
+  }
+
   /** Arbitrary headers to add to all responses. */
   @Bindable("additionalHeaders") default Map<String, String> additionalHeaders() {
     return Collections.emptyMap();
@@ -60,6 +66,23 @@ public interface DynamicServingConfiguration {
     /** Whether to enable strong {@code ETag}s (usually recommended). */
     @Bindable("strong") default Boolean strong() {
       return true;
+    }
+  }
+
+  /** Describes settings related to Client Hints support. */
+  @ConfigurationProperties("gust.serving.clientHints")
+  interface ClientHintsConfiguration {
+    /** Sensible defaults for client hints. */
+    ClientHintsConfiguration DEFAULTS = new ClientHintsConfiguration() {};
+
+    /** Whether to enable support for client hints. */
+    @Bindable("enabled") default Boolean enabled() {
+      return true;
+    }
+
+    /** Return the set of hints supported by the server. */
+    @Bindable("hints") default ImmutableSet<ClientHint> hints() {
+      return Sets.immutableEnumSet(ClientHint.ECT, ClientHint.RTT, ClientHint.DPR);
     }
   }
 

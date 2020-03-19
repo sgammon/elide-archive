@@ -20,6 +20,8 @@ import io.micronaut.http.HttpResponse;
 import io.micronaut.http.MediaType;
 import io.micronaut.http.MutableHttpResponse;
 import org.slf4j.Logger;
+import tools.elide.page.Context;
+import tools.elide.page.Context.ClientHint;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
@@ -28,6 +30,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 
@@ -120,8 +123,23 @@ public abstract class AppController extends BaseController {
       if (logging.isTraceEnabled())
         logging.trace("Dynamic `ETag` values are enabled.");
       this.context.enableETags(true, config.etags().strong());
-    } else {
+    } else if (logging.isTraceEnabled()) {
       logging.trace("Dynamic `ETag` values are disabled.");
+    }
+
+    // next up: client hints
+    if (config.clientHints().enabled()) {
+      Set<ClientHint> hints = config.clientHints().hints();
+      if (!hints.isEmpty()) {
+        if (logging.isDebugEnabled())
+          logging.debug(format("Client hints are ENABLED. Applying hints: '%s'.", Joiner.on(", ").join(hints)));
+        this.context.clientHints(Optional.of(hints));
+
+      } else if (logging.isTraceEnabled()) {
+        logging.trace("No client hints are enabled.");
+      }
+    } else if (logging.isTraceEnabled()) {
+      logging.trace("Client hints are DISABLED.");
     }
 
     // next up: vary

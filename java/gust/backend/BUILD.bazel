@@ -84,7 +84,8 @@ micronaut_library(
     name = "DynamicServingConfiguration",
     srcs = ["DynamicServingConfiguration.java"],
     deps = [
-        # None yet.
+        javaproto("//gust/assets:bundle_proto"),
+        javaproto("//gust/page:page_proto"),
     ],
 )
 

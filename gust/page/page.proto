@@ -495,6 +495,84 @@ message Context {
     SameSitePolicy same_site = 11;
   }
 
+  // Specifies supported client hints.
+  enum ClientHint {
+    // An unknown client hint type.
+    UNKNOWN_CLIENT_HINT = 0;
+
+    // Device Pixel Ratio.
+    DPR = 1;
+
+    // Effective Connection Type.
+    ECT = 2;
+
+    // Round Trip Time.
+    RTT = 3;
+
+    // Down-link speed estimate.
+    DOWNLINK = 4;
+
+    // `Device-Memory` rating/estimate.
+    DEVICE_MEMORY = 5;
+
+    // `Save-Data` flag/feature.
+    SAVE_DATA = 6;
+
+    // Describes the width of a requested resource.
+    WIDTH = 7;
+
+    // Describes the width of the browser viewport.
+    VIEWPORT_WIDTH = 8;
+  }
+
+  // Specifies estimated connection speed levels.
+  enum ConnectionHint {
+    // An unknown or unrecognized connection hint type.
+    UNKNOWN_CONNECTION_HINT = 0;
+
+    // Slow connections, like 2G.
+    SLOW_TWO = 1;
+
+    // Connections approximating 2G.
+    SLOW = 2;
+
+    // Connections approximating 3G.
+    TYPICAL = 3;
+
+    // Connections approximating 4G.
+    FAST = 4;
+  }
+
+  // Specifies client hints context information.
+  message ClientHints {
+    // Client hints supported by the server for this HTTP cycle.
+    repeated ClientHint support = 1;
+
+    // Client hints indicated by the client for this HTTP cycle.
+    repeated ClientHint indicated = 2;
+
+    // Viewport width reported by the client.
+    uint32 viewport_width = 3;
+
+    // Pixel ratio value reported by the client.
+    uint32 device_pixel_ratio = 4;
+
+    // Latency reported by the client. Includes server latency.
+    uint32 round_trip_time = 5;
+
+    // Estimated/reported down-link speed for the client.
+    float downlink = 6;
+
+    // Reported effective-connection-type for the client.
+    ConnectionHint effective_connection_type = 7;
+
+    // Flag indicating whether the `Save-Data` token was passed by the client.
+    bool save_data = 8;
+
+    // Memory estimate rating assigned to the device.
+    float device_memory = 9;
+  }
+
   // Specifies custom response headers to affix to the request.
   message ResponseHeader {
     // Custom header name.
@@ -539,4 +617,7 @@ message Context {
 
   // Language to send in the `Content-Language` header.
   string language = 11;
+
+  // Information provided by client-indicated hints.
+  ClientHints hints = 12;
 }
