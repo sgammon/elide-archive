@@ -54,17 +54,12 @@ public interface DynamicServingConfiguration {
 
     /** Whether to enable {@code ETag} headers for dynamically-served content. */
     @Bindable("enabled") default Boolean enabled() {
-      return false;
+      return true;
     }
 
     /** Whether to enable strong {@code ETag}s (usually recommended). */
     @Bindable("strong") default Boolean strong() {
-      return false;
-    }
-
-    /** Whether to enable {@code If-None-Match} processing. */
-    @Bindable("strong") default Boolean match() {
-      return false;
+      return true;
     }
   }
 

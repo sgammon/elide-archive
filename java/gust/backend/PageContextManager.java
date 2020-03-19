@@ -23,6 +23,7 @@ import gust.backend.runtime.Logging;
 import gust.util.Hex;
 import io.micronaut.http.HttpHeaders;
 import io.micronaut.http.HttpRequest;
+import io.micronaut.http.HttpStatus;
 import io.micronaut.http.MutableHttpResponse;
 import io.micronaut.http.context.ServerRequestContext;
 import io.micronaut.runtime.http.scope.RequestScope;
@@ -137,14 +138,46 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
 
   /** {@inheritDoc} */
   @Override
-  public @Nonnull <T> MutableHttpResponse<T> finalizeResponse(@Nonnull MutableHttpResponse<T> response,
+  public @Nonnull <T> MutableHttpResponse<T> finalizeResponse(@Nonnull HttpRequest<?> request,
+                                                              @Nonnull MutableHttpResponse<T> soyResponse,
                                                               @Nonnull T body,
                                                               @Nullable MessageDigest digester) {
+    MutableHttpResponse<T> response = soyResponse.body(body);
     Optional<Context> pageContext = response.getAttribute("context", Context.class);
     if (pageContext.isPresent()) {
       if (logging.isDebugEnabled())
         logging.debug("Found request context, finalizing headers.");
       @Nonnull Context ctx = pageContext.get();
+
+      // process `ETag` first, because if `If-None-Match` processing is enabled, this may kick is out of this response
+      // flow entirely.
+      if (digester != null) {
+        if (ctx.getEtag().hasPreimage()) {
+          digester.update(ctx.getEtag().getPreimage().getFingerprint().asReadOnlyByteBuffer().array());
+        }
+        String contentDigest = Hex.bytesToHex(digester.digest(), ETAG_LENGTH);
+        if (!Objects.requireNonNull(contentDigest).isEmpty()) {
+          String prefix = ctx.getEtag().getEnabled() && ctx.getEtag().getStrong() ? "" : "W/";
+
+          if (request.getHeaders().contains(HttpHeaders.IF_NONE_MATCH)) {
+            // we have a potential conditional match
+            if ((prefix + contentDigest).equals(request.getHeaders().get(HttpHeaders.IF_NONE_MATCH))) {
+              if (logging.isDebugEnabled()) {
+                logging.debug(format(
+                  "Response matched `If-None-Match` etag value '%s'. Sending 304.", (prefix + contentDigest)));
+              }
+
+              // drop the body - explicitly truncate so we don't get caught by chunked TE - and reset the status to
+              // indicate a conditional request match
+              response.body(null);
+              response.contentLength(0);
+              response.status(HttpStatus.NOT_MODIFIED.getCode());
+              return response;
+            }
+          }
+          response.getHeaders().add(HttpHeaders.ETAG, prefix + contentDigest);
+        }
+      }
 
       // `Content-Language`
       if (ctx.getLanguage() != null && !ctx.getLanguage().isEmpty())
@@ -156,18 +189,6 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
           HttpHeaders.VARY,
           Joiner.on(", ").join(new TreeSet<>(ctx.getVaryList())));
 
-      // `ETag`
-      if (digester != null) {
-        if (ctx.getEtag().hasPreimage()) {
-          digester.update(ctx.getEtag().getPreimage().getFingerprint().asReadOnlyByteBuffer().array());
-        }
-        String contentDigest = Hex.bytesToHex(digester.digest(), ETAG_LENGTH);
-        if (!Objects.requireNonNull(contentDigest).isEmpty()) {
-          String prefix = ctx.getEtag().getEnabled() && ctx.getEtag().getStrong() ? "" : "W/";
-          response.getHeaders().add(HttpHeaders.ETAG, prefix + contentDigest);
-        }
-      }
-
       // additional headers
       if (ctx.getHeaderCount() > 0)
         ctx.getHeaderList().forEach(
@@ -175,7 +196,7 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
     } else {
       logging.warn("Failed to find HTTP cycle context: cannot finalize headers.");
     }
-    return response.body(body);
+    return response;
   }
 
   /** @return Built context. After calling this method the first time, context may no longer be mutated. */
@@ -677,6 +698,24 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
    */
   public @Nonnull HttpRequest getRequest() {
     return this.request;
+  }
+
+  // -- Interface: HTTP `ETag`s -- //
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean enableETags() {
+    return this.builtContext != null ?
+      this.builtContext.getPageContext().getEtag().getEnabled() :
+      this.context.getEtag().getEnabled();
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean strongETags() {
+    return this.builtContext != null ?
+      this.builtContext.getPageContext().getEtag().getStrong() :
+      this.context.getEtag().getStrong();
   }
 
   // -- Interface: Closeable -- //
