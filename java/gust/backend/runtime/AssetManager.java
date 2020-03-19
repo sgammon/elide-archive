@@ -154,7 +154,7 @@ public final class AssetManager {
      * @param algorithm Algorithm to use for etags.
      * @return Checked content info object.
      */
-    static @Nonnull ContentInfo fromProto(AssetBundle.AssetContent content, String algorithm) {
+    static @Nonnull ContentInfo fromProto(@Nonnull AssetBundle.AssetContent content, @Nonnull String algorithm) {
       try {
         MessageDigest digester = MessageDigest.getInstance(algorithm);
         digester.update(content.getModule().getBytes(StandardCharsets.UTF_8));
@@ -245,7 +245,7 @@ public final class AssetManager {
      * @param content Asset content protocol object.
      * @return Checked module info object.
      */
-    static @Nonnull ModuleMetadata<StyleAsset> fromStyleProto(AssetBundle.StyleBundle content) {
+    static @Nonnull ModuleMetadata<StyleAsset> fromStyleProto(@Nonnull AssetBundle.StyleBundle content) {
       return new ModuleMetadata<>(
         ModuleType.CSS,
         content.getModule(),
@@ -258,7 +258,7 @@ public final class AssetManager {
      * @param content Asset content protocol object.
      * @return Checked module info object.
      */
-    static @Nonnull ModuleMetadata<ScriptAsset> fromScriptProto(AssetBundle.ScriptBundle content) {
+    static @Nonnull ModuleMetadata<ScriptAsset> fromScriptProto(@Nonnull AssetBundle.ScriptBundle content) {
       return new ModuleMetadata<>(
         ModuleType.JS,
         content.getModule(),
@@ -333,6 +333,7 @@ public final class AssetManager {
     }
 
     /** @return Compressed size of the asset (optimal). */
+    @SuppressWarnings("WeakerAccess")
     public @Nonnull Long getCompressedSize() {
       return content.compressedSize;
     }
@@ -483,13 +484,14 @@ public final class AssetManager {
           if (bundle.isInitialized()) {
             loadedBundle = bundle;
             index();
-            logging.info(format("Asset bundle loaded with %s %s (%s %s, %s %s).",
+            logging.info(format("Asset bundle loaded with %s %s (%s %s, %s %s%s).",
               bundle.getAssetCount(),
               plural.apply(bundle.getAssetCount()) ? "assets" : "asset",
               bundle.getScriptsCount(),
               plural.apply(bundle.getScriptsCount()) ? "scripts" : "script",
               bundle.getStylesCount(),
-              plural.apply(bundle.getScriptsCount()) ? "stylesheets" : "stylesheet"));
+              plural.apply(bundle.getStylesCount()) ? "stylesheets" : "stylesheet",
+              bundle.getRewrite() ? ", with rewriting ACTIVE" : ", with no style rewriting"));
           }
         }
       }

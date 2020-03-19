@@ -104,7 +104,8 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
    * @param namingMapProvider Style renaming map provider, if applicable.
    * @throws IllegalStateException If an attempt is made to construct context outside of a server-side HTTP flow.
    */
-  PageContextManager(@Nonnull AssetManager assetManager, @Nonnull Optional<SoyNamingMapProvider> namingMapProvider) {
+  PageContextManager(@Nonnull AssetManager assetManager,
+                     @Nonnull Optional<SoyNamingMapProvider> namingMapProvider) {
     if (logging.isDebugEnabled()) logging.debug("Initializing `PageContextManager`.");
     //noinspection SimplifyOptionalCallChains
     if (!ServerRequestContext.currentRequest().isPresent())

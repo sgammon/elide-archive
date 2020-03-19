@@ -99,6 +99,9 @@ message AssetBundle {
 
       // URL and DOM settings for this asset.
       page.Context.Styles.Stylesheet stylesheet = 3;
+
+      // Whether a renaming map is available for this stylesheet.
+      bool renaming = 4;
     }
 
     // Style module name/path.
@@ -179,4 +182,8 @@ message AssetBundle {
   // Timestamp indicating when this asset manifest was generated. This may be used when calculating `ETags` or when
   // checking for updates to the asset bundle itself.
   google.protobuf.Timestamp generated = 6;
+
+  // Whether style-rewriting is enabled or not, which should indicate the presence of generated style symbol maps, that
+  // must be loaded by the server for SSR.
+  bool rewrite = 7;
 }

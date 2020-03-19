@@ -470,7 +470,7 @@ def _micronaut_application(name,
             # should we reference the rewrite maps?
             if _RENAMING:
                 bundle_inputs.append("--css=\"%s:$(locations %s) $(locations %s.css.json)\""
-                                    % (module, css_modules[module]))
+                                    % (module, css_modules[module], css_modules[module]))
             else:
                 bundle_inputs.append("--css=\"%s:$(locations %s)\""
                                      % (module, css_modules[module]))

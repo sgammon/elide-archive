@@ -1113,6 +1113,7 @@ public class AssetBundler implements Callable<Integer> {
         // prep the bundle builder
         final AssetBundle.Builder builder = AssetBundle.newBuilder()
           .setVersion(version)
+          .setRewrite(rewriteMaps)
           .setGenerated(Timestamp.newBuilder()
             .setSeconds(System.currentTimeMillis() / 1000))
           .setDigest(DigestSettings.newBuilder()
