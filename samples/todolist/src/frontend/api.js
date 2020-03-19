@@ -46,7 +46,7 @@ const endpoint_ = `https://${window.location.hostname}`;
  * @private
  */
 const client_ = new TasksClient(
-    window.location.hostname.indexOf(':8443') !== -1 ?
+    window.location.origin.indexOf(':8443') !== -1 ?
     `https://${window.location.hostname}:8443` :
     endpoint_, null, {});
 

@@ -444,8 +444,8 @@ DEPS = {
         "forceLocal": False,
         "overlay": "micronaut-views-core.bzl",
         "local": "/workspace/GUST/vendor/micronaut/views/views-core",
-        "targets": ["https://storage.googleapis.com/bloom-software/micronaut/b4/views-core-1.3.4.BUILD-SNAPSHOT.jar"],
-        "seal": "b0050048059f5d76ba9be2c7c7587d1f93ccca26cda7f57fff65a6a9cdc64d79",
+        "targets": ["https://storage.googleapis.com/bloom-software/micronaut/b6/views-core-1.3.4.BUILD-SNAPSHOT.jar"],
+        "seal": "763e71883dca050ef2ed0e3dd7b15cced2429467ebac295eb5cb4e0fa82b7bff",
         "deps": [
             maven("io.micronaut:micronaut-runtime"),
             maven("io.micronaut:micronaut-http-client"),
@@ -461,8 +461,8 @@ DEPS = {
         "forceLocal": False,
         "overlay": "micronaut-views-soy.bzl",
         "local": "/workspace/GUST/vendor/micronaut/views/views-soy",
-        "targets": ["https://storage.googleapis.com/bloom-software/micronaut/b4/views-soy-1.3.4.BUILD-SNAPSHOT.jar"],
-        "seal": "219b7f6fd84d1d5ed2dcc2d53dd5dd6a90f26dee0b7e5ed4b09d9422194a1f1e",
+        "targets": ["https://storage.googleapis.com/bloom-software/micronaut/b6/views-soy-1.3.4.BUILD-SNAPSHOT.jar"],
+        "seal": "793a0feba65e7efa1265b8094c8c8cfde1ae9aa8adc74ed4fb8860ed3d613e65",
         "deps": [
             "@com_google_template_soy",
             "@com_google_common_html_types",

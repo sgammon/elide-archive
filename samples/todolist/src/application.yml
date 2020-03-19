@@ -11,6 +11,58 @@
 # is strictly forbidden except in adherence with assigned license requirements.
 ##
 
+gust:
+  serving:
+    language: en-US
+
+    etags:
+      enabled: yes
+      strong: on
+      match: on
+
+    vary:
+      enabled: yes
+      accept: on
+      charset: off
+      encoding: on
+      language: off
+      origin: off
+
+    additionalHeaders:
+      X-Content-Type-Options: nosniff
+
+  assets:
+    etags: on
+    lastModified: on
+    noSniff: on
+
+    cdn:
+      enabled: no
+      hostnames:
+        - 1.cdn.todo.elide.deliver
+        - 2.cdn.todo.elide.deliver
+
+    vary:
+      enabled: yes
+      accept: yes
+      language: no
+      charset: no
+      origin: no
+
+    compression:
+      enabled: yes
+      vary: on
+      modes:
+        - GZIP
+        - BROTLI
+
+    caching:
+      enabled: no
+      mode: public
+      shared: true
+      additionalDirectives:
+        - immutable
+
 micronaut:
   application:
     name: Todolist
@@ -28,7 +80,7 @@ micronaut:
       maxHeaderSize: 500KB
       chunked-supported: true
       use-native-transport: true
-      compression-level: 4
+      compression-level: 2
       compression-threshold: 1024
       parent:
         threads: 4
@@ -85,13 +137,13 @@ micronaut:
     csp:
       enabled: true
       generateNonce: true
-      reportOnly: true
+      reportOnly: false
       policyDirectives: "default-src 'self' https:; font-src data: https://fonts.gstatic.com; script-src 'self' 'nonce-{#nonceValue}' 'strict-dynamic';"
 
   executors:
     io:
       type: fixed
-      nThreads: 12
+      nThreads: 4
 
   config-client:
     enabled: true

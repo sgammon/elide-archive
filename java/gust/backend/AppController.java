@@ -12,15 +12,24 @@
  */
 package gust.backend;
 
+import com.google.common.base.Joiner;
 import com.google.common.html.types.TrustedResourceUrlProto;
+import gust.backend.runtime.Logging;
+import io.micronaut.http.HttpHeaders;
+import io.micronaut.http.HttpResponse;
 import io.micronaut.http.MediaType;
+import io.micronaut.http.MutableHttpResponse;
+import org.slf4j.Logger;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
+import java.util.*;
+import java.util.function.BiConsumer;
+
+import static java.lang.String.format;
 
 
 /**
@@ -28,19 +37,25 @@ import java.util.Collections;
  * application logic. Alternatively, if the invoking developer wishes to use their own base class, they can acquire most
  * or all of the enclosed functionality via injection.
  *
- * <p>Various <pre>protected</pre> properties are made available which allow easy access to stuff:</p>
+ * <p>Various properties are made available to sub-classes which allow easy access to stuff like:</p>
  * <ul>
- *   <li><b><pre>context</pre>:</b> This property exposes a builder for the current flow's page context. This can be
+ *   <li><b>{@code context}:</b> This property exposes a builder for the current flow's page context. This can be
  *       manipulated to provide/inject properties, and then subsequently used in Soy.</li>
  * </ul>
  *
- * <p>To make use of this controller, simply inherit from it in your own <pre>@Controller</pre>-annotated class. When a
+ * <p>To make use of this controller, simply inherit from it in your own {@code @Controller}-annotated class. When a
  * request method is invoked, the logic provided by this object will have been initialized and will be ready to use.</p>
  */
 @SuppressWarnings("unused")
 public abstract class AppController extends BaseController {
+  /** Private logging pipe for {@code AppController}. */
+  private final Logger logging = Logging.logger(AppController.class);
+
   /** Pre-ordained HTML object which ensures the character encoding is set to UTF-8. */
   protected final static @Nonnull MediaType HTML;
+
+  /** Configuration for dynamic serving. */
+  private @Inject DynamicServingConfiguration servingConfiguration;
 
   static {
     // initialize HTML page type
@@ -49,13 +64,12 @@ public abstract class AppController extends BaseController {
   }
 
   /**
-   * Private constructor, which accepts injected manager objects. Some or all of these are passed up to
-   * {@link BaseController}.
+   * Initialize a new application controller.
    *
-   * @param pageContextManager Page context manager.
+   * @param context Injected page context manager.
    */
-  @Inject public AppController(@Nonnull PageContextManager pageContextManager) {
-    super(pageContextManager);
+  protected AppController(@Nonnull PageContextManager context) {
+    super(context);
   }
 
   // -- API: Trusted Resources (Delegated to Context) -- //
@@ -78,5 +92,104 @@ public abstract class AppController extends BaseController {
    */
   public @Nonnull TrustedResourceUrlProto trustedResource(@Nonnull URI uri) {
     return context.trustedResource(uri);
+  }
+
+  // -- API: Configurable Serving -- //
+
+  /**
+   * Affix headers to the provided response, according to the provided app {@code config} for dynamic serving. The
+   * resulting response is kept mutable for further changes.
+   *
+   * @param response HTTP response to affix headers to.
+   * @return HTTP response, with headers affixed.
+   */
+  @SuppressWarnings({"WeakerAccess", "SameParameterValue"})
+  protected @Nonnull <T> MutableHttpResponse<T> affixHeaders(@Nonnull MutableHttpResponse<T> response,
+                                                             @Nonnull DynamicServingConfiguration config) {
+    // first up: content language
+    if (config.language().isPresent()) {
+      logging.debug(format("Affixing `Content-Language` header from config: '%s'.", config.language().get()));
+      response.setAttribute("language", config.language().get());
+      this.context.language(config.language());
+    } else if (logging.isTraceEnabled()) {
+      logging.trace("No `Content-Language` header value to set.");
+    }
+
+    // next up: etags
+    if (config.etags().enabled()) {
+      if (logging.isTraceEnabled())
+        logging.trace("Dynamic `ETag` values are enabled.");
+      this.context.enableETags(true, config.etags().strong());
+    } else {
+      logging.trace("Dynamic `ETag` values are disabled.");
+    }
+
+    // next up: vary
+    if (config.variance().enabled()) {
+      Set<String> varySet = new TreeSet<>();
+      response.setAttribute("vary", varySet);
+      DynamicServingConfiguration.DynamicVarianceConfiguration varyConfig = config.variance();
+
+      BiConsumer<Boolean, String> affixVarySegment = (condition, header) -> {
+        if (condition) {
+          varySet.add(header);
+          if (logging.isDebugEnabled()) {
+            logging.debug(format("Indicating dynamic response variance by `%s` (due to config).", header));
+          }
+        } else if (logging.isTraceEnabled()) {
+          logging.trace(format("Dynamic response variance by `%s` is DISABLED (due to config).", header));
+        }
+      };
+
+      affixVarySegment.accept(varyConfig.accept(), HttpHeaders.ACCEPT);  // `Accept`
+      affixVarySegment.accept(varyConfig.charset(), HttpHeaders.ACCEPT_CHARSET);  // `Accept-Charset`
+      affixVarySegment.accept(varyConfig.encoding(), HttpHeaders.ACCEPT_ENCODING);  // `Accept-Encoding`
+      affixVarySegment.accept(varyConfig.language(), HttpHeaders.ACCEPT_LANGUAGE);  // `Accept-Language`
+      affixVarySegment.accept(varyConfig.origin(), HttpHeaders.ORIGIN);  // `Origin`
+      if (!varySet.isEmpty()) {
+        if (logging.isDebugEnabled())
+          logging.debug(format("Indicating configured variance for response: '%s'.", Joiner.on(", ").join(varySet)));
+        this.context.vary(varySet);
+      } else if (logging.isTraceEnabled()) {
+        logging.trace("No variance configured for response.");
+      }
+    }
+
+    // next up: arbitrary headers
+    if (!config.additionalHeaders().isEmpty()) {
+      config.additionalHeaders().forEach(this.context::header);
+    }
+    return response;
+  }
+
+  /**
+   * Affix headers to the provided response, according to current app configuration for dynamic serving. The resulting
+   * response is kept mutable for further changes.
+   *
+   * @param response HTTP response to affix headers to.
+   * @return HTTP response, with headers affixed.
+   */
+  protected @Nonnull <T> MutableHttpResponse<T> affixHeaders(@Nonnull MutableHttpResponse<T> response) {
+    return affixHeaders(response, DynamicServingConfiguration.DEFAULTS);
+  }
+
+  /**
+   * Serve the provided rendered-page response, while applying any app configuration related to dynamic page headers.
+   * This may include headers like {@code Vary}, {@code ETag}, and so on, which may be calculated based on the response
+   * intended to be provided to the client.
+   *
+   * @param render Page render to perform before responding.
+   * @return Prepped and rendered HTTP response.
+   */
+  protected @Nonnull MutableHttpResponse<PageRender> serve(@Nonnull PageContextManager render) {
+    // order matters here. `affixHeaders` must be called before `render`, which produces the `ctx` that is set on the
+    // response, so it may be picked up in `PageContextManager#finalizeResponse`.
+    MutableHttpResponse<PageRender> response = this.affixHeaders(
+      HttpResponse.ok(render),
+      this.servingConfiguration != null ? this.servingConfiguration : DynamicServingConfiguration.DEFAULTS);
+
+    PageContext ctx = render.render();
+    response.setAttribute("context", ctx.getPageContext());
+    return response;
   }
 }

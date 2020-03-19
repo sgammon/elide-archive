@@ -64,7 +64,10 @@ micronaut_library(
     srcs = ["AppController.java"],
     deps = [
         ":BaseController",
+        ":DynamicServingConfiguration",
+        "//java/gust/backend:PageContext",
         "//java/gust/backend:PageContextManager",
+        "//java/gust/backend:PageRender",
     ],
 )
 
@@ -75,6 +78,14 @@ micronaut_library(
         "//java/gust/backend:PageContext",
         "//java/gust/backend:PageContextManager",
     ]
+)
+
+micronaut_library(
+    name = "DynamicServingConfiguration",
+    srcs = ["DynamicServingConfiguration.java"],
+    deps = [
+        # None yet.
+    ],
 )
 
 micronaut_library(

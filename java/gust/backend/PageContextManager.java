@@ -12,13 +12,17 @@
  */
 package gust.backend;
 
+import com.google.common.base.Joiner;
 import com.google.common.html.types.TrustedResourceUrlProto;
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.template.soy.data.SanitizedContent;
 import com.google.template.soy.data.UnsafeSanitizedContentOrdainer;
 import gust.backend.runtime.AssetManager;
 import gust.backend.runtime.AssetManager.ManagedAsset;
 import gust.backend.runtime.Logging;
+import io.micronaut.http.HttpHeaders;
 import io.micronaut.http.HttpRequest;
+import io.micronaut.http.MutableHttpResponse;
 import io.micronaut.http.context.ServerRequestContext;
 import io.micronaut.runtime.http.scope.RequestScope;
 import io.micronaut.views.soy.SoyNamingMapProvider;
@@ -34,11 +38,10 @@ import javax.annotation.Nullable;
 import java.io.Closeable;
 import java.net.URI;
 import java.net.URL;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.lang.String.format;
@@ -75,6 +78,9 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
   /** Additional injected values to apply during Soy render. */
   private final @Nonnull ConcurrentMap<String, Object> injected;
 
+  /** Set of headers that cause this response flow to vary. */
+  private final @Nonnull SortedSet<String> varySegments;
+
   /** Naming map provider to apply during the Soy render flow. */
   private @Nonnull Optional<SoyNamingMapProvider> namingMapProvider;
 
@@ -103,6 +109,7 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
     this.context = Context.newBuilder();
     this.props = new ConcurrentSkipListMap<>();
     this.injected = new ConcurrentSkipListMap<>();
+    this.varySegments = new ConcurrentSkipListSet<>();
     this.namingMapProvider = namingMapProvider;
     this.assetManager = assetManager;
 
@@ -123,6 +130,36 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
     if (this.closed.get())
       throw new IllegalStateException("Cannot access mutable context after closing page manager state.");
     return context;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public @Nonnull <T> MutableHttpResponse<T> finalizeResponse(@Nonnull MutableHttpResponse<T> response,
+                                                              @Nonnull T body) {
+    Optional<Context> pageContext = response.getAttribute("context", Context.class);
+    if (pageContext.isPresent()) {
+      if (logging.isDebugEnabled())
+        logging.debug("Found request context, finalizing headers.");
+      @Nonnull Context ctx = pageContext.get();
+
+      // `Content-Language`
+      if (ctx.getLanguage() != null && !ctx.getLanguage().isEmpty())
+        response.getHeaders().add(HttpHeaders.CONTENT_LANGUAGE, ctx.getLanguage());
+
+      // `Vary`
+      if (ctx.getVaryCount() > 0)
+        response.getHeaders().add(
+          HttpHeaders.VARY,
+          Joiner.on(", ").join(new TreeSet<>(ctx.getVaryList())));
+
+      // additional headers
+      if (ctx.getHeaderCount() > 0)
+        ctx.getHeaderList().forEach(
+          (header) -> response.getHeaders().add(header.getName(), header.getValue()));
+    } else {
+      logging.warn("Failed to find HTTP cycle context: cannot finalize headers.");
+    }
+    return response.body(body);
   }
 
   /** @return Built context. After calling this method the first time, context may no longer be mutated. */
@@ -156,6 +193,7 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
    * @return Current page context manager (for call chain-ability).
    * @throws IllegalArgumentException If `null` is passed for the title.
    */
+  @CanIgnoreReturnValue
   public @Nonnull PageContextManager title(@Nonnull String title) {
     //noinspection ConstantConditions
     if (title == null) throw new IllegalArgumentException("Cannot pass `null` for page title.");
@@ -171,6 +209,7 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
    * @return Current page context manager (for call chain-ability).
    * @throws IllegalArgumentException If `null` is passed for the module name, or it cannot be located, or is invalid.
    */
+  @CanIgnoreReturnValue
   public @Nonnull PageContextManager script(@Nonnull String name) {
     // sensible defaults for script embedding
     return this.script(
@@ -188,6 +227,7 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
    * @return Current page context manager (for call chain-ability).
    * @throws IllegalArgumentException If `null` is passed for the module name, or it cannot be located, or is invalid.
    */
+  @CanIgnoreReturnValue
   public @Nonnull PageContextManager script(@Nonnull String name, @Nonnull Boolean defer, @Nonnull Boolean async) {
     return this.script(
       name, null, defer, async, false, false, false, false);
@@ -218,6 +258,7 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
    * @return Current page context manager (for call chain-ability).
    * @throws IllegalArgumentException If `null` is passed for the module name, or it cannot be located, or is invalid.
    */
+  @CanIgnoreReturnValue
   public @Nonnull PageContextManager script(@Nonnull String name,
                                             @Nullable String id,
                                             @Nonnull Boolean defer,
@@ -269,6 +310,7 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
    * @return Current page context manager (for call chain-ability).
    * @throws IllegalArgumentException If `null` is passed for the module name, or it cannot be located, or is invalid.
    */
+  @CanIgnoreReturnValue
   public @Nonnull PageContextManager script(@Nonnull Context.Scripts.JavaScript.Builder script) {
     //noinspection ConstantConditions
     if (script == null) throw new IllegalArgumentException("Cannot pass `null` for script.");
@@ -284,6 +326,7 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
    * @return Current page context manager (for call chain-ability).
    * @throws IllegalArgumentException If `null` is passed for the module name, or it cannot be located, or is invalid.
    */
+  @CanIgnoreReturnValue
   public @Nonnull PageContextManager stylesheet(@Nonnull String name) {
     return stylesheet(name, null);
   }
@@ -297,6 +340,7 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
    * @return Current page context manager (for call chain-ability).
    * @throws IllegalArgumentException If `null` is passed for the module name, or the module cannot be located.
    */
+  @CanIgnoreReturnValue
   public @Nonnull PageContextManager stylesheet(@Nonnull String name, @Nullable String media) {
     return stylesheet(name, null, null, false, false);
   }
@@ -319,6 +363,7 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
    * @return Current page context manager (for call chain-ability).
    * @throws IllegalArgumentException If `null` is passed for the module name, or it cannot be located, or is invalid.
    */
+  @CanIgnoreReturnValue
   public @Nonnull PageContextManager stylesheet(@Nonnull String name,
                                                 @Nullable String id,
                                                 @Nullable String media,
@@ -364,6 +409,7 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
    * @return Current page context manager (for call chain-ability).
    * @throws IllegalArgumentException If `null` is passed for the stylesheet.
    */
+  @CanIgnoreReturnValue
   public @Nonnull PageContextManager stylesheet(@Nonnull Context.Styles.Stylesheet.Builder stylesheet) {
     //noinspection ConstantConditions
     if (stylesheet == null) throw new IllegalArgumentException("Cannot pass `null` for stylesheet.");
@@ -383,6 +429,7 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
    * @throws IllegalArgumentException If the provided <pre>key</pre> is <pre>null</pre>, or a disallowed value, like
    *         <pre>context</pre> (which cannot be overridden).
    */
+  @CanIgnoreReturnValue
   public @Nonnull PageContextManager put(@Nonnull String key, @Nonnull Object value) {
     //noinspection ConstantConditions
     if (key == null)
@@ -429,6 +476,7 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
    * @throws IllegalArgumentException If the provided <pre>key</pre> is <pre>null</pre>, or a disallowed value, like
    *         <pre>context</pre> (which cannot be overridden).
    */
+  @CanIgnoreReturnValue
   public @Nonnull PageContextManager inject(@Nonnull String key, @Nonnull Object value) {
     //noinspection ConstantConditions
     if (key == null)
@@ -451,8 +499,126 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
    *                          overriding renaming map provider.
    * @return Current page context manager (for call chain-ability).
    */
+  @CanIgnoreReturnValue
   public @Nonnull PageContextManager rewrite(@Nonnull Optional<SoyNamingMapProvider> namingMapProvider) {
     this.namingMapProvider = namingMapProvider;
+    return this;
+  }
+
+  // -- Builder Interface (Response) -- //
+
+  /**
+   * Affix an arbitrary HTTP header to the response eventually produced by this page context, assuming no errors occur.
+   * If an error occurs while rendering, an error page is served <b>without</b> the additional header (unless
+   * {@code force} is passed via the companion method to this one).
+   *
+   * @param name Name of the header value to affix to the response.
+   * @param value Value of the header to affix to the response, at {@code name}.
+   * @return Current page context manager (for call chain-ability).
+   */
+  @CanIgnoreReturnValue
+  public @Nonnull PageContextManager header(@Nonnull String name, @Nonnull String value) {
+    return this.header(name, value, false);
+  }
+
+  /**
+   * Affix an arbitrary HTTP header to the response eventually produced by this page context, assuming no errors occur.
+   * If an error occurs while rendering, an error page is served <b>without</b> the additional header (unless
+   * {@code force} is passed via the companion method to this one).
+   *
+   * @param name Name of the header value to affix to the response.
+   * @param value Value of the header to affix to the response, at {@code name}.
+   * @param force Whether to force the header to be applied, even when an error occurs.
+   * @return Current page context manager (for call chain-ability).
+   */
+  @CanIgnoreReturnValue
+  public @Nonnull PageContextManager header(@Nonnull String name, @Nonnull String value, @Nonnull Boolean force) {
+    if (HttpHeaders.CONTENT_LANGUAGE.equals(name))
+      throw new IllegalArgumentException("Please use `language()` instead of setting a `Content-Language` header.");
+    if (HttpHeaders.VARY.equals(name))
+      throw new IllegalArgumentException("Please use `vary()` instead of setting a `Vary` header.");
+    if (HttpHeaders.ETAG.equals(name))
+      throw new IllegalArgumentException("Please use `enableETags()` instead of setting an `ETag` header.");
+    this.context.addHeader(Context.ResponseHeader.newBuilder()
+      .setName(name)
+      .setValue(value)
+      .setForce(force));
+    return this;
+  }
+
+  /**
+   * Enable a dynamic {@code ETag} header value, which is computed from the rendered content produced by this page
+   * context record.
+   *
+   * @param enableETags Whether to enable the {@code ETag} header.
+   * @param strong Whether to compute a "strong" {@code ETag} (based on rendered content produced), or a "weak"
+   *        {@code ETag} (based on the request and render context).
+   * @return Current page context manager (for call chain-ability).
+   */
+  @CanIgnoreReturnValue
+  @SuppressWarnings("WeakerAccess")
+  public @Nonnull PageContextManager enableETags(@Nonnull Boolean enableETags, @Nonnull Boolean strong) {
+    this.context.setEtag(Context.DynamicETag.newBuilder()
+      .setEnabled(enableETags)
+      .setStrong(strong));
+    return this;
+  }
+
+  /**
+   * Set the value to send back in this response's {@code Content-Language} header. If an {@link Optional#empty()}
+   * instance is passed, no header is sent.
+   *
+   * @param language Language, or empty value, to send.
+   * @return Current page context manager (for call chain-ability).
+   */
+  @CanIgnoreReturnValue
+  public @Nonnull PageContextManager language(@Nonnull Optional<String> language) {
+    if (language.isPresent()) {
+      this.context.setLanguage(language.get());
+    } else {
+      this.context.clearLanguage();
+    }
+    return this;
+  }
+
+  /**
+   * Append an HTTP request header considered as part of the {@code Vary} header in the response. These values are de-
+   * duplicated before joining and affixing.
+   *
+   * @param variance HTTP request header which causes the associated response to vary.
+   * @return Current page context manager (for call chain-ability).
+   */
+  @CanIgnoreReturnValue
+  public @Nonnull PageContextManager vary(@Nonnull String variance) {
+    return this.vary(Collections.singleton(variance));
+  }
+
+  /**
+   * Append an HTTP request header considered as part of the {@code Vary} header in the response. These values are de-
+   * duplicated before joining and affixing.
+   *
+   * @param variance HTTP request header which causes the associated response to vary.
+   * @return Current page context manager (for call chain-ability).
+   */
+  @CanIgnoreReturnValue
+  public @Nonnull PageContextManager vary(@Nonnull String... variance) {
+    return this.vary(Arrays.asList(variance));
+  }
+
+  /**
+   * Append an HTTP request header considered as part of the {@code Vary} header in the response. These values are de-
+   * duplicated before joining and affixing.
+   *
+   * @param variance HTTP request header which causes the associated response to vary.
+   * @return Current page context manager (for call chain-ability).
+   */
+  @CanIgnoreReturnValue
+  @SuppressWarnings("WeakerAccess")
+  public @Nonnull PageContextManager vary(@Nonnull Iterable<String> variance) {
+    variance.forEach((segment) -> {
+      if (this.varySegments.add(segment))
+        this.context.addVary(segment);
+    });
     return this;
   }
 

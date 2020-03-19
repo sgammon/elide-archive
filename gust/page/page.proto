@@ -497,14 +497,14 @@ message Context {
 
   // Specifies custom response headers to affix to the request.
   message ResponseHeader {
-    // Custom header name when operating on HTTP/1.x. Leave unset to omit.
-    string header_http1 = 1;
-
-    // Custom header name when operating on HTTP/2. Leave unset to omit.
-    string header_http2 = 2;
+    // Custom header name.
+    string name = 1;
 
     // Custom header value.
     string value = 3;
+
+    // Force-apply the header, even if an error page is served, or duplicates exist.
+    bool force = 4;
   }
 
   // Metadata definitions for this web page render context.
@@ -533,4 +533,10 @@ message Context {
 
   // Custom headers to affix to the response associated with this context.
   repeated ResponseHeader header = 9;
+
+  // Set of HTTP request headers which cause this response to vary.
+  repeated string vary = 10;
+
+  // Language to send in the `Content-Language` header.
+  string language = 11;
 }

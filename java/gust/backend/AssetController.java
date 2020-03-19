@@ -61,7 +61,7 @@ import static java.lang.String.format;
  */
 @Controller("/_/assets")
 @Secured("isAnonymous()")
-public class AssetController extends BaseController {
+public class AssetController {
   /** Private logging pipe. */
   private static final @Nonnull Logger logging = Logging.logger(AssetController.class);
 
@@ -143,9 +143,7 @@ public class AssetController extends BaseController {
 
   /** Construct a new asset controller from scratch. Usually invoked from DI. */
   @Inject AssetController(@Nonnull AssetConfiguration config,
-                          @Nonnull AssetManager assetManager,
-                          @Nonnull PageContextManager pageContextManager) {
-    super(pageContextManager);
+                          @Nonnull AssetManager assetManager) {
     this.config = config;
     this.assetManager = assetManager;
   }
@@ -268,7 +266,7 @@ public class AssetController extends BaseController {
 
     // next up is `Vary`
     if (config.variance().enabled()) {
-      List<String> segments = new ArrayList<>();
+      Set<String> segments = new TreeSet<>();
 
       // if the asset is a CSS or JS bundle, we must examine configuration to decide whether to specify `Accept` as a
       // `Vary` header entry, which is generally done to enable differential serving of photos (as WebP, for instance).
