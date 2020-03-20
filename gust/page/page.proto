@@ -594,6 +594,18 @@ message Context {
     CROSS_ORIGIN = 3;
   }
 
+  // Specifies a policy to apply via the `X-Frame-Options` header.
+  enum FramingPolicy {
+    // Unknown, or default, framing policy.
+    DEFAULT_FRAMING_POLICY = 0;
+
+    // Allow frames from the same origin.
+    SAMEORIGIN = 1;
+
+    // Deny all frames.
+    DENY = 2;
+  }
+
   // Specifies custom response headers to affix to the request.
   message ResponseHeader {
     // Custom header name.
@@ -647,4 +659,10 @@ message Context {
 
   // Specifies the cross-origin resource policy for this HTTP cycle.
   CrossOriginResourcePolicy cross_origin_resource_policy = 14;
+
+  // Specifies options when a page is referenced as a frame.
+  FramingPolicy framing_policy = 15;
+
+  // Specifies that the `nosniff` flag should be included in a `X-Content-Type-Options` header.
+  bool content_type_nosniff = 16;
 }

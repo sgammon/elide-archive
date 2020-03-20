@@ -14,7 +14,6 @@ package gust.backend;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Sets;
 import com.google.common.html.types.TrustedResourceUrlProto;
@@ -37,6 +36,7 @@ import tools.elide.assets.AssetBundle.StyleBundle.StyleAsset;
 import tools.elide.assets.AssetBundle.ScriptBundle.ScriptAsset;
 import tools.elide.page.Context;
 import tools.elide.page.Context.ClientHint;
+import tools.elide.page.Context.FramingPolicy;
 import tools.elide.page.Context.ClientHints;
 import tools.elide.page.Context.CrossOriginResourcePolicy;
 import tools.elide.page.Context.ConnectionHint;
@@ -84,6 +84,8 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
   private static final String ACCEPT_CH_LIFETIME_HEADER = "Accept-CH-Lifetime";
   private static final String FEATURE_POLICY_HEADER = "Feature-Policy";
   private static final String CROSS_ORIGIN_RESOURCE_POLICY_HEADER = "Cross-Origin-Resource-Policy";
+  private static final String X_FRAME_OPTIONS_HEADER = "X-Frame-Options";
+  private static final String X_CONTENT_TYPE_OPTIONS_HEADER = "X-Content-Type-Options";
   private static final ConnectionHint DEFAULT_ECT = ConnectionHint.FAST;
 
   private static final String LIVE_RELOAD_TARGET_PROP = "live_reload_url";
@@ -283,6 +285,22 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
     }
   }
 
+  /**
+   * Produce a token for the specified {@code X-Frame-Options} policy.
+   *
+   * @param policy Policy to produce a token for.
+   * @return String token.
+   */
+  @VisibleForTesting
+  @SuppressWarnings("WeakerAccess")
+  static @Nonnull Optional<String> tokenForFramingPolicy(@Nonnull FramingPolicy policy) {
+    switch (policy) {
+      case SAMEORIGIN: return Optional.of("SAMEORIGIN");
+      case DENY: return Optional.of("DENY");
+      default: return Optional.empty();
+    }
+  }
+
   /** @return The current page context builder. */
   public @Nonnull Context.Builder getContext() {
     if (this.closed.get())
@@ -381,9 +399,9 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
           String renderedPolicy = Joiner.on(" ").join(segments);
           response.getHeaders().add(FEATURE_POLICY_HEADER, renderedPolicy);
         }
-
-      } else if (logging.isTraceEnabled())
+      } else if (logging.isTraceEnabled()) {
         logging.trace("`Feature-Policy` not configured for response.");
+      }
 
       // `Cross-Origin-Resource-Policy`
       Optional<String> policyToken = tokenForCrossOriginResourcePolicy(ctx.getCrossOriginResourcePolicy());
@@ -395,6 +413,30 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
           policyToken.get());
       } else if (logging.isTraceEnabled()) {
         logging.trace("No `Cross-Origin-Resource-Policy` applied: policy token was not present.");
+      }
+
+      // `X-Frame-Options`
+      Optional<String> framingToken = tokenForFramingPolicy(ctx.getFramingPolicy());
+      if (framingToken.isPresent()) {
+        if (logging.isDebugEnabled())
+          logging.debug(format("Indicating `X-Frame-Options`: '%s'.", ctx.getFramingPolicy().name()));
+        response.getHeaders().add(
+          X_FRAME_OPTIONS_HEADER,
+          framingToken.get());
+
+      } else if (logging.isTraceEnabled()) {
+        logging.trace("No `X-Frame-Options` configured for this response.");
+      }
+
+      // `X-Content-Type-Options`
+      if (ctx.getContentTypeNosniff()) {
+        if (logging.isDebugEnabled())
+          logging.debug("Indicating `X-Content-Type-Options`: 'nosniff'.");
+        response.getHeaders().add(
+          X_CONTENT_TYPE_OPTIONS_HEADER,
+          "nosniff");
+      } else if (logging.isTraceEnabled()) {
+        logging.trace("No `X-Content-Type-Options` configured for this response.");
       }
 
       // additional headers
@@ -803,6 +845,7 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
    * @return Current page context manager (for call chain-ability).
    */
   @CanIgnoreReturnValue
+  @SuppressWarnings("WeakerAccess")
   public @Nonnull PageContextManager enableETags(@Nonnull Boolean enableETags) {
     this.context.setEtag(Context.DynamicETag.newBuilder()
       .setEnabled(enableETags)

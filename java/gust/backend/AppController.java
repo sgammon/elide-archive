@@ -21,6 +21,7 @@ import io.micronaut.http.MediaType;
 import io.micronaut.http.MutableHttpResponse;
 import org.slf4j.Logger;
 import tools.elide.page.Context.ClientHint;
+import tools.elide.page.Context.FramingPolicy;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
@@ -200,7 +201,22 @@ public abstract class AppController extends BaseController {
       logging.debug("`Cross-Origin-Resource-Policy` is disabled via config.");
     }
 
-    // next up: arbitrary headers
+    // next up: framing policy
+    if (config.framingPolicy() != FramingPolicy.DEFAULT_FRAMING_POLICY) {
+      this.context.getContext().setFramingPolicy(config.framingPolicy());
+    } else if (logging.isDebugEnabled()) {
+      logging.debug("`X-Frame-Options` disabled via config.");
+    }
+
+    // next up: `nosniff`
+    if (config.noSniff()) {
+      if (logging.isDebugEnabled())
+        logging.debug("Indicating `nosniff` for `X-Content-Type-Options`.");
+      this.context.getContext().setContentTypeNosniff(true);
+    } else if (logging.isDebugEnabled())
+      logging.debug("`X-Content-Type-Options` disabled via config.");
+
+    // finally: arbitrary headers
     if (!config.additionalHeaders().isEmpty()) {
       config.additionalHeaders().forEach(this.context::header);
     }

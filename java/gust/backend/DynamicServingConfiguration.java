@@ -18,6 +18,7 @@ import com.google.common.collect.Sets;
 import io.micronaut.context.annotation.ConfigurationProperties;
 import io.micronaut.core.bind.annotation.Bindable;
 import tools.elide.page.Context.ClientHint;
+import tools.elide.page.Context.FramingPolicy;
 import tools.elide.page.Context.CrossOriginResourcePolicy;
 
 import java.util.*;
@@ -43,6 +44,16 @@ public interface DynamicServingConfiguration {
   /** {@code Vary} configuration for dynamic content. */
   @Bindable("vary") default DynamicVarianceConfiguration variance() {
     return DynamicVarianceConfiguration.DEFAULTS;
+  }
+
+  /** {@code X-Frame-Options} configuration for dynamic content. */
+  @Bindable("framingPolicy") default FramingPolicy framingPolicy() {
+    return FramingPolicy.DENY;
+  }
+
+  /** Whether to apply {@code nosniff} to {@code X-Content-Type-Options} for dynamic content. */
+  @Bindable("noSniff") default Boolean noSniff() {
+    return true;
   }
 
   /** {@code Cross-Origin-Resource-Policy} configuration for dynamic content. */
