@@ -300,11 +300,14 @@ message Context {
       // Media setting to apply to the style sheet.
       string media = 3;
 
+      // Whether to pre-fetch this asset, as applicable.
+      bool prefetch = 7;
+
       // Whether to pre-load this asset, as applicable.
-      bool preload = 4;
+      bool preload = 8;
 
       // Whether to proactively push this asset, as applicable.
-      bool push = 5;
+      bool push = 9;
     }
 
     // CSS code that should be emitted early in the <head>.
@@ -369,6 +372,15 @@ message Context {
 
       // URI reference to this font asset.
       webutil.html.types.TrustedResourceUrlProto uri = 6;
+
+      // Whether to pre-fetch this asset, as applicable.
+      bool prefetch = 7;
+
+      // Whether to pre-load this asset, as applicable.
+      bool preload = 8;
+
+      // Whether to proactively push this asset, as applicable.
+      bool push = 9;
     }
 
     // Specifies a package of fonts included for reference in a given web page.
@@ -408,11 +420,14 @@ message Context {
       // Whether to add the `nomodule` flag to a script.
       bool no_module = 6;
 
+      // Whether to pre-fetch this asset, as applicable.
+      bool prefetch = 7;
+
       // Whether to pre-load this asset, as applicable.
-      bool preload = 7;
+      bool preload = 8;
 
       // Whether to proactively push this asset, as applicable.
-      bool push = 8;
+      bool push = 9;
     }
 
     // JavaScript code that should be emitted early in the <head>.
