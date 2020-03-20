@@ -9,10 +9,10 @@
     <root level="info">
         <appender-ref ref="STDOUT" />
     </root>
-    <logger name="io.micronaut.views.soy.SoySauceViewsRenderer" level="TRACE" />
+<!--    <logger name="io.micronaut.views.soy.SoySauceViewsRenderer" level="TRACE" />-->
 <!--    <logger name="io.micronaut.views.soy.SoyRender" level="TRACE" />-->
 <!--    <logger name="io.micronaut.views.soy.SoyResponseBuffer" level="TRACE" />-->
-    <logger name="gust.backend.PageContextManager" level="TRACE" />
+<!--    <logger name="gust.backend.PageContextManager" level="TRACE" />-->
     <logger name="gust.backend.model.ModelAdapter" level="TRACE" />
     <logger name="gust.backend.model.PersistenceDriver" level="TRACE" />
     <logger name="gust.backend.model.ProtoModelCodec" level="TRACE" />
@@ -24,9 +24,9 @@
     <logger name="gust.backend.driver.firestore.FirestoreDriver" level="TRACE" />
     <logger name="gust.backend.driver.firestore.FirestoreManager" level="TRACE" />
     <logger name="gust.backend.transport.GoogleTransportManager" level="TRACE" />
-    <logger name="gust.backend.runtime.AssetManager" level="TRACE" />
-    <logger name="gust.backend.BaseController" level="TRACE" />
-    <logger name="gust.backend.AppController" level="TRACE" />
-    <logger name="gust.backend.AssetController" level="TRACE" />
-    <logger name="server.HomeController" level="DEBUG" />
+<!--    <logger name="gust.backend.runtime.AssetManager" level="TRACE" />-->
+<!--    <logger name="gust.backend.BaseController" level="TRACE" />-->
+<!--    <logger name="gust.backend.AppController" level="TRACE" />-->
+<!--    <logger name="gust.backend.AssetController" level="TRACE" />-->
+<!--    <logger name="server.HomeController" level="DEBUG" />-->
 </configuration>
