@@ -70,6 +70,11 @@ public interface DynamicServingConfiguration {
     return FeaturePolicyConfiguration.DEFAULTS;
   }
 
+  /** {@code X-XSS-Protection} configuration for dynamic content. */
+  @Bindable("xssProtection") default XSSProtectionConfiguration xssProtection() {
+    return XSSProtectionConfiguration.DEFAULTS;
+  }
+
   /** Settings related to support for Client Hints. */
   @Bindable("clientHints") default ClientHintsConfiguration clientHints() {
     return ClientHintsConfiguration.DEFAULTS;
@@ -176,6 +181,28 @@ public interface DynamicServingConfiguration {
     /** Whether to indicate response variance by {@code Origin}. */
     @Bindable("origin") default Boolean origin() {
       return false;
+    }
+  }
+
+  /** Describes settings regarding {@code X-XSS-Protection} headers for dynamic content. */
+  @ConfigurationProperties("gust.serving.xssProtection")
+  interface XSSProtectionConfiguration {
+    /** Sensible defaults for cross-site scripting protection. */
+    XSSProtectionConfiguration DEFAULTS = new XSSProtectionConfiguration() {};
+
+    /** Whether to enable old-style XSS protection. */
+    @Bindable("enabled") default Boolean enabled() {
+      return true;
+    }
+
+    /** Whether to specify XSS protection as active. */
+    @Bindable("filter") default Boolean filter() {
+      return true;
+    }
+
+    /** Whether to add the {@code block} flag. */
+    @Bindable("block") default Boolean block() {
+      return true;
     }
   }
 }

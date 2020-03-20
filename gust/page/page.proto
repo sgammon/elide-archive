@@ -662,4 +662,7 @@ message Context {
 
   // Specifies hostnames to pre-connect to.
   repeated string preconnect = 19;
+
+  // Old-style Cross-Site Scripting vulnerability protection policy.
+  string xss_protection = 20;
 }

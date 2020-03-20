@@ -85,6 +85,7 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
   private static final String FEATURE_POLICY_HEADER = "Feature-Policy";
   private static final String X_FRAME_OPTIONS_HEADER = "X-Frame-Options";
   private static final String X_CONTENT_TYPE_OPTIONS_HEADER = "X-Content-Type-Options";
+  private static final String X_XSS_PROTECTION_HEADER = "X-XSS-Protection";
   private static final String LINK_DNS_PREFETCH_TOKEN = "dns-prefetch";
   private static final String LINK_PRECONNECT_TOKEN = "preconnect";
   private static final ConnectionHint DEFAULT_ECT = ConnectionHint.FAST;
@@ -460,6 +461,15 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
         }
       } else if (logging.isTraceEnabled()) {
         logging.trace("No domains to apply to DNS prefetch hints.");
+      }
+
+      // `X-XSS-Protection`
+      if (ctx.getXssProtection() != null && !ctx.getXssProtection().isEmpty()) {
+        if (logging.isDebugEnabled())
+          logging.debug(format("Applying `X-XSS-Protection` policy: '%s'.", ctx.getXssProtection()));
+        response.getHeaders().add(X_XSS_PROTECTION_HEADER, ctx.getXssProtection());
+      } else if (logging.isTraceEnabled()) {
+        logging.trace("No `X-XSS-Protection` policy configured for this response cycle.");
       }
 
       // additional headers

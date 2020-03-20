@@ -233,6 +233,18 @@ public abstract class AppController extends BaseController {
     } else if (logging.isDebugEnabled())
       logging.debug("`X-Content-Type-Options` disabled via config.");
 
+    // next up: `X-XSS-Protection`
+    if (config.xssProtection().enabled()) {
+      String xssProtectToken = config.xssProtection().filter() ? "1" : "0";
+      String modeToken = config.xssProtection().block() ? "; mode=block" : "";
+      String composedHeader = xssProtectToken + modeToken;
+
+      if (logging.isDebugEnabled())
+        logging.debug(format("Old-style `X-XSS-Protection` is enabled. Affixing header: '%s'.", composedHeader));
+      this.context.getContext().setXssProtection(composedHeader);
+    } else if (logging.isDebugEnabled())
+      logging.debug(format("Old-style `X-XSS-Protection` is disabled by configuration."));
+
     // finally: arbitrary headers
     if (!config.additionalHeaders().isEmpty()) {
       config.additionalHeaders().forEach(this.context::header);
