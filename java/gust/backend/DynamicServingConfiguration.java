@@ -121,7 +121,9 @@ public interface DynamicServingConfiguration {
         "legacy-image-formats 'none';",
         "oversized-images 'none';",
         "sync-xhr 'none';",
-        "unoptimized-images 'none';"
+        "unoptimized-images 'none';",
+        "ch-dpr 'self';",
+        "cd-width 'self';"
       );
     }
   }
