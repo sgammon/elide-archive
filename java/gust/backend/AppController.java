@@ -175,6 +175,31 @@ public abstract class AppController extends BaseController {
       }
     }
 
+    // next up: feature policy
+    if (config.featurePolicy().enabled()) {
+      SortedSet<String> featurePolicies = config.featurePolicy().policy();
+      if (logging.isDebugEnabled())
+        logging.debug(format("Indicating `Feature-Policy` for response: '%s'.", Joiner.on(", ").join(featurePolicies)));
+      featurePolicies.forEach((policy) ->
+        this.context.getContext().addFeaturePolicy(policy));
+    } else if (logging.isDebugEnabled()) {
+      logging.debug("`Feature-Policy` disabled via config.");
+    }
+
+    // next up: cross-origin resource policy
+    if (config.crossOriginResources().enabled()) {
+      if (logging.isDebugEnabled())
+        logging.debug(format("Applying `Cross-Origin-Resource-Policy`: '%s'.",
+          config.crossOriginResources().policy().name()));
+
+      this.context
+        .getContext()
+        .setCrossOriginResourcePolicy(config.crossOriginResources().policy());
+
+    } else if (logging.isDebugEnabled()) {
+      logging.debug("`Cross-Origin-Resource-Policy` is disabled via config.");
+    }
+
     // next up: arbitrary headers
     if (!config.additionalHeaders().isEmpty()) {
       config.additionalHeaders().forEach(this.context::header);

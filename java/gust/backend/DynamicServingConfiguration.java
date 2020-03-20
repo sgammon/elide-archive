@@ -13,10 +13,12 @@
 package gust.backend;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Sets;
 import io.micronaut.context.annotation.ConfigurationProperties;
 import io.micronaut.core.bind.annotation.Bindable;
 import tools.elide.page.Context.ClientHint;
+import tools.elide.page.Context.CrossOriginResourcePolicy;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -43,6 +45,16 @@ public interface DynamicServingConfiguration {
     return DynamicVarianceConfiguration.DEFAULTS;
   }
 
+  /** {@code Cross-Origin-Resource-Policy} configuration for dynamic content. */
+  @Bindable("resourcePolicy") default CrossOriginResourceConfiguration crossOriginResources() {
+    return CrossOriginResourceConfiguration.DEFAULTS;
+  }
+
+  /** {@code Feature-Policy} configuration for dynamic content. */
+  @Bindable("featurePolicy") default FeaturePolicyConfiguration featurePolicy() {
+    return FeaturePolicyConfiguration.DEFAULTS;
+  }
+
   /** Settings related to support for Client Hints. */
   @Bindable("clientHints") default ClientHintsConfiguration clientHints() {
     return ClientHintsConfiguration.DEFAULTS;
@@ -67,6 +79,46 @@ public interface DynamicServingConfiguration {
     /** Whether to enable strong {@code ETag}s (usually recommended). */
     @Bindable("strong") default Boolean strong() {
       return true;
+    }
+  }
+
+  /** Describes settings regarding {@code Feature-Policy} headers for dynamic content. */
+  @ConfigurationProperties("gust.serving.featurePolicy")
+  interface FeaturePolicyConfiguration {
+    /** Sensible defaults for {@code Feature-Policy}. */
+    FeaturePolicyConfiguration DEFAULTS = new FeaturePolicyConfiguration() {};
+
+    /** Whether to enable {@code Feature-Policy} headers for dynamically-served content. */
+    @Bindable("enabled") default Boolean enabled() {
+      return true;
+    }
+
+    /** Specifies the default {@code Feature-Policy} to apply to dynamically-served content. */
+    @Bindable("policy") default SortedSet<String> policy() {
+      return ImmutableSortedSet.of(
+        "document-domain 'none';",
+        "legacy-image-formats 'none';",
+        "oversized-images 'none';",
+        "sync-xhr 'none';",
+        "unoptimized-images 'none';"
+      );
+    }
+  }
+
+  /** Describes settings regarding {@code Cross-Origin-Resource-Policy} headers for dynamic content. */
+  @ConfigurationProperties("gust.serving.resourcePolicy")
+  interface CrossOriginResourceConfiguration {
+    /** Sensible defaults for cross-origin resource policy. */
+    CrossOriginResourceConfiguration DEFAULTS = new CrossOriginResourceConfiguration() {};
+
+    /** Whether to enable {@code Cross-Origin-Resource-Policy} headers for dynamically-served content. */
+    @Bindable("enabled") default Boolean enabled() {
+      return true;
+    }
+
+    /** Specifies the default policy to employ for {@code Cross-Origin-Resource-Policy} for dynamic content. */
+    @Bindable("policy") default CrossOriginResourcePolicy policy() {
+      return CrossOriginResourcePolicy.SAME_SITE;
     }
   }
 

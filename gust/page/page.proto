@@ -579,6 +579,21 @@ message Context {
     float device_memory = 11;
   }
 
+  // Enumerates `Cross-Origin-Resource-Policy` settings.
+  enum CrossOriginResourcePolicy {
+    // Unknown or unrecognized cross-origin resource policy.
+    DEFAULT_CROSS_ORIGIN_RESOURCE_POLICY = 0;
+
+    // `same-site` resource policy.
+    SAME_SITE = 1;
+
+    // `same-origin` resource policy.
+    SAME_ORIGIN = 2;
+
+    // `cross-origin` resource policy.
+    CROSS_ORIGIN = 3;
+  }
+
   // Specifies custom response headers to affix to the request.
   message ResponseHeader {
     // Custom header name.
@@ -626,4 +641,10 @@ message Context {
 
   // Information provided by client-indicated hints.
   ClientHints hints = 12;
+
+  // Specifies feature policies for this HTTP cycle.
+  repeated string feature_policy = 13;
+
+  // Specifies the cross-origin resource policy for this HTTP cycle.
+  CrossOriginResourcePolicy cross_origin_resource_policy = 14;
 }

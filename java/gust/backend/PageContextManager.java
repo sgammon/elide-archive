@@ -35,6 +35,7 @@ import tools.elide.assets.AssetBundle.ScriptBundle.ScriptAsset;
 import tools.elide.page.Context;
 import tools.elide.page.Context.ClientHint;
 import tools.elide.page.Context.ClientHints;
+import tools.elide.page.Context.CrossOriginResourcePolicy;
 import tools.elide.page.Context.ConnectionHint;
 import tools.elide.page.Context.Styles.Stylesheet;
 import tools.elide.page.Context.Scripts.JavaScript;
@@ -78,6 +79,8 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
   private static final String VIEWPORT_WIDTH_HEADER = "Viewport-Width";
   private static final String ACCEPT_CH_HEADER = "Accept-CH";
   private static final String ACCEPT_CH_LIFETIME_HEADER = "Accept-CH-Lifetime";
+  private static final String FEATURE_POLICY_HEADER = "Feature-Policy";
+  private static final String CROSS_ORIGIN_RESOURCE_POLICY_HEADER = "Cross-Origin-Resource-Policy";
   private static final ConnectionHint DEFAULT_ECT = ConnectionHint.FAST;
 
   private static final String LIVE_RELOAD_TARGET_PROP = "live_reload_url";
@@ -260,6 +263,23 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
     }
   }
 
+  /**
+   * Produce a token for the specified {@code Cross-Origin-Resource-Policy}.
+   *
+   * @param policy Policy to produce a token for.
+   * @return String token.
+   */
+  @VisibleForTesting
+  @SuppressWarnings("WeakerAccess")
+  static @Nonnull Optional<String> tokenForCrossOriginResourcePolicy(@Nonnull CrossOriginResourcePolicy policy) {
+    switch (policy) {
+      case SAME_SITE: return Optional.of("same-site");
+      case SAME_ORIGIN: return Optional.of("same-origin");
+      case CROSS_ORIGIN: return Optional.of("cross-origin");
+      default: return Optional.empty();
+    }
+  }
+
   /** @return The current page context builder. */
   public @Nonnull Context.Builder getContext() {
     if (this.closed.get())
@@ -345,6 +365,30 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
           Joiner.on(", ").join(new TreeSet<>(ctx.getVaryList())));
       else if (logging.isTraceEnabled())
         logging.trace("`Vary` not configured for response.");
+
+      // `Feature-Policy`
+      if (ctx.getFeaturePolicyCount() > 0) {
+        // gather policies
+        SortedSet<String> segments = new TreeSet<>(ctx.getFeaturePolicyList());
+        if (!segments.isEmpty()) {
+          String renderedPolicy = Joiner.on(" ").join(segments);
+          response.getHeaders().add(FEATURE_POLICY_HEADER, renderedPolicy);
+        }
+
+      } else if (logging.isTraceEnabled())
+        logging.trace("`Feature-Policy` not configured for response.");
+
+      // `Cross-Origin-Resource-Policy`
+      Optional<String> policyToken = tokenForCrossOriginResourcePolicy(ctx.getCrossOriginResourcePolicy());
+      if (policyToken.isPresent()) {
+        if (logging.isDebugEnabled())
+          logging.debug(format("Applying `Cross-Origin-Resource-Policy` '%s'.", policyToken.get()));
+        response.getHeaders().add(
+          CROSS_ORIGIN_RESOURCE_POLICY_HEADER,
+          policyToken.get());
+      } else if (logging.isTraceEnabled()) {
+        logging.trace("No `Cross-Origin-Resource-Policy` applied: policy token was not present.");
+      }
 
       // additional headers
       if (ctx.getHeaderCount() > 0)
