@@ -49,7 +49,7 @@ CLOSUREPROTO_POSTFIX_ = "closure_proto"
 GRPCJAVA_POSTFIX_ = "grpc_java"
 _PROTO_ROOT = "/proto"
 
-ENABLE_SWIFT = True
+ENABLE_SWIFT = False
 ENABLE_PYTHON = False
 
 _native_proto = _proto_library
