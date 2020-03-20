@@ -281,7 +281,7 @@ public abstract class AppController extends BaseController {
         List<String> hostnames = servingConfig.cdn().hostnames();
         if (hostnames.isEmpty() && logging.isDebugEnabled()) {
           logging.debug("No CDN prefixes available.");
-        } else {
+        } else if (!hostnames.isEmpty()) {
           final String hostname;
           if (hostnames.size() == 1) {
             hostname = hostnames.get(0);
