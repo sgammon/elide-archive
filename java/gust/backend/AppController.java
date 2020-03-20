@@ -243,7 +243,7 @@ public abstract class AppController extends BaseController {
         logging.debug(format("Old-style `X-XSS-Protection` is enabled. Affixing header: '%s'.", composedHeader));
       this.context.getContext().setXssProtection(composedHeader);
     } else if (logging.isDebugEnabled())
-      logging.debug(format("Old-style `X-XSS-Protection` is disabled by configuration."));
+      logging.debug("Old-style `X-XSS-Protection` is disabled by configuration.");
 
     // finally: arbitrary headers
     if (!config.additionalHeaders().isEmpty()) {
