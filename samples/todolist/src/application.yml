@@ -138,7 +138,7 @@ micronaut:
       enabled: true
       generateNonce: true
       reportOnly: false
-      policyDirectives: "default-src 'self' https:; font-src data: https://fonts.gstatic.com; script-src 'self' 'nonce-{#nonceValue}' 'strict-dynamic';"
+      policyDirectives: "default-src 'self' https:; font-src data: https://fonts.gstatic.com; script-src-elem 'self' https://static.cloudflareinsights.com 'nonce-{#nonceValue}' 'strict-dynamic';"
 
   executors:
     io:
