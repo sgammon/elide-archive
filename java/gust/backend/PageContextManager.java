@@ -38,7 +38,6 @@ import tools.elide.page.Context;
 import tools.elide.page.Context.ClientHint;
 import tools.elide.page.Context.FramingPolicy;
 import tools.elide.page.Context.ClientHints;
-import tools.elide.page.Context.CrossOriginResourcePolicy;
 import tools.elide.page.Context.ConnectionHint;
 import tools.elide.page.Context.Styles.Stylesheet;
 import tools.elide.page.Context.Scripts.JavaScript;
@@ -77,16 +76,20 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
   private static final String DPR_HEADER = "DPR";
   private static final String ECT_HEADER = "ECT";
   private static final String RTT_HEADER = "RTT";
+  private static final String LINK_HEADER = "Link";
   private static final String MEMORY_HEADER = "Device-Memory";
   private static final String DOWNLINK_HEADER = "Downlink";
   private static final String VIEWPORT_WIDTH_HEADER = "Viewport-Width";
   private static final String ACCEPT_CH_HEADER = "Accept-CH";
   private static final String ACCEPT_CH_LIFETIME_HEADER = "Accept-CH-Lifetime";
   private static final String FEATURE_POLICY_HEADER = "Feature-Policy";
-  private static final String CROSS_ORIGIN_RESOURCE_POLICY_HEADER = "Cross-Origin-Resource-Policy";
   private static final String X_FRAME_OPTIONS_HEADER = "X-Frame-Options";
   private static final String X_CONTENT_TYPE_OPTIONS_HEADER = "X-Content-Type-Options";
+  private static final String LINK_DNS_PREFETCH_TOKEN = "dns-prefetch";
+  private static final String LINK_PRECONNECT_TOKEN = "preconnect";
   private static final ConnectionHint DEFAULT_ECT = ConnectionHint.FAST;
+
+  private static final String CDN_PREFIX_IJ_PROP = "cdn_prefix";
 
   private static final String LIVE_RELOAD_TARGET_PROP = "live_reload_url";
   private static final String LIVE_RELOAD_SWITCH_PROP = "live_reload_enabled";
@@ -123,7 +126,10 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
   private final boolean liveReload;
 
   /** Whether we have closed context building or not. */
-  private AtomicBoolean closed = new AtomicBoolean(false);
+  private @Nonnull final AtomicBoolean closed = new AtomicBoolean(false);
+
+  /** CDN prefix to apply to this HTTP cycle. */
+  private @Nonnull volatile Optional<String> cdnPrefix = Optional.empty();
 
   /**
    * Constructor for page context.
@@ -269,23 +275,6 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
   }
 
   /**
-   * Produce a token for the specified {@code Cross-Origin-Resource-Policy}.
-   *
-   * @param policy Policy to produce a token for.
-   * @return String token.
-   */
-  @VisibleForTesting
-  @SuppressWarnings("WeakerAccess")
-  static @Nonnull Optional<String> tokenForCrossOriginResourcePolicy(@Nonnull CrossOriginResourcePolicy policy) {
-    switch (policy) {
-      case SAME_SITE: return Optional.of("same-site");
-      case SAME_ORIGIN: return Optional.of("same-origin");
-      case CROSS_ORIGIN: return Optional.of("cross-origin");
-      default: return Optional.empty();
-    }
-  }
-
-  /**
    * Produce a token for the specified {@code X-Frame-Options} policy.
    *
    * @param policy Policy to produce a token for.
@@ -299,6 +288,19 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
       case DENY: return Optional.of("DENY");
       default: return Optional.empty();
     }
+  }
+
+  /**
+   * Format a hostname for DNS pre-fetching by the browser.
+   *
+   * @param hostname Hostname to pre-fetch.
+   * @param relevance Indicates the type of link being specified.
+   * @return Formatted {@code Link} header value.
+   */
+  @VisibleForTesting
+  @SuppressWarnings("WeakerAccess")
+  static @Nonnull String formatLinkHeader(@Nonnull String hostname, @Nonnull String relevance) {
+    return "<" + hostname + ">; rel=" + relevance;
   }
 
   /** @return The current page context builder. */
@@ -331,7 +333,8 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
         if (!Objects.requireNonNull(contentDigest).isEmpty()) {
           if (request.getHeaders().contains(HttpHeaders.IF_NONE_MATCH)) {
             // we have a potential conditional match
-            if (("W/" + contentDigest).equals(request.getHeaders().get(HttpHeaders.IF_NONE_MATCH))) {
+            if (contentDigest.equals(request.getHeaders()
+                  .get(HttpHeaders.IF_NONE_MATCH).replace("\"", "").replace("W/", ""))) {
               if (logging.isDebugEnabled()) {
                 logging.debug(format(
                   "Response matched `If-None-Match` etag value '%s'. Sending 304.", ("W/" + contentDigest)));
@@ -403,18 +406,6 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
         logging.trace("`Feature-Policy` not configured for response.");
       }
 
-      // `Cross-Origin-Resource-Policy`
-      Optional<String> policyToken = tokenForCrossOriginResourcePolicy(ctx.getCrossOriginResourcePolicy());
-      if (policyToken.isPresent()) {
-        if (logging.isDebugEnabled())
-          logging.debug(format("Applying `Cross-Origin-Resource-Policy` '%s'.", policyToken.get()));
-        response.getHeaders().add(
-          CROSS_ORIGIN_RESOURCE_POLICY_HEADER,
-          policyToken.get());
-      } else if (logging.isTraceEnabled()) {
-        logging.trace("No `Cross-Origin-Resource-Policy` applied: policy token was not present.");
-      }
-
       // `X-Frame-Options`
       Optional<String> framingToken = tokenForFramingPolicy(ctx.getFramingPolicy());
       if (framingToken.isPresent()) {
@@ -437,6 +428,38 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
           "nosniff");
       } else if (logging.isTraceEnabled()) {
         logging.trace("No `X-Content-Type-Options` configured for this response.");
+      }
+
+      // `Link` (domain pre-connection)
+      if (ctx.getPreconnectCount() > 0) {
+        SortedSet<String> preconnectList = new TreeSet<>(ctx.getPreconnectList());
+        preconnectList.forEach((preconnect) ->
+          response.getHeaders().add(LINK_HEADER, formatLinkHeader(preconnect, LINK_PRECONNECT_TOKEN)));
+
+        if (logging.isDebugEnabled()) {
+          logging.debug(format("Indicated (via `Link`) %s domains for pre-connection.", ctx.getPreconnectCount()));
+        }
+        if (logging.isTraceEnabled()) {
+          logging.trace(format("Domains for pre-connection: %s.", Joiner.on(", ").join(preconnectList)));
+        }
+      } else if (logging.isTraceEnabled()) {
+        logging.trace("No domains to apply to pre-connect hints.");
+      }
+
+      // `Link` (DNS pre-fetching)
+      if (ctx.getDnsPrefetchCount() > 0) {
+        SortedSet<String> dnsPrefetches = new TreeSet<>(ctx.getDnsPrefetchList());
+        dnsPrefetches.forEach((prefetch) ->
+          response.getHeaders().add(LINK_HEADER, formatLinkHeader(prefetch, LINK_DNS_PREFETCH_TOKEN)));
+
+        if (logging.isDebugEnabled()) {
+          logging.debug(format("Indicated (via `Link`) %s domains for DNS prefetching.", ctx.getDnsPrefetchCount()));
+        }
+        if (logging.isTraceEnabled()) {
+          logging.trace(format("DNS domains prefetched: %s.", Joiner.on(", ").join(dnsPrefetches)));
+        }
+      } else if (logging.isTraceEnabled()) {
+        logging.trace("No domains to apply to DNS prefetch hints.");
       }
 
       // additional headers
@@ -671,7 +694,7 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
         name,
         asset.getType().name()));
 
-    // resolve constituent scripts
+    // resolve constituent stylesheets
     for (StyleAsset styleBundle : asset.getAssets()) {
       // pre-filled URI js record
       Stylesheet.Builder styles = Stylesheet.newBuilder(styleBundle.getStylesheet())
@@ -945,6 +968,94 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
         this.context.addVary(segment);
     });
     return this;
+  }
+
+  /**
+   * Set the specified {@code prefix} as the Content Distribution Network hostname prefix to use when rendering asset
+   * links for this HTTP cycle. <b>Do not use a user-provided value for this.</b> If no prefix is set, or one is cleared
+   * by passing {@link Optional#empty()}, configuration will be read and used instead.
+   *
+   * @param prefix Prefix to apply as a CDN hostname for static assets.
+   * @return Current page context manager (for call chain-ability).
+   */
+  @CanIgnoreReturnValue
+  @SuppressWarnings("WeakerAccess")
+  public @Nonnull PageContextManager cdnPrefix(@Nonnull Optional<String> prefix) {
+    this.cdnPrefix = prefix;
+    if (prefix.isPresent()) {
+      var proto = this.trustedResource(URI.create(prefix.get()));
+      this.context.setCdnPrefix(proto);
+      this.injected.put(CDN_PREFIX_IJ_PROP, proto);
+    } else {
+      this.context.clearCdnPrefix();
+      this.injected.remove(CDN_PREFIX_IJ_PROP);
+    }
+    return this;
+  }
+
+  /**
+   * Retrieve the currently-configured CDN prefix value, if one exists. If none can be located, return an empty optional
+   * via {@link Optional#empty()}.
+   *
+   * @return Current CDN prefix value.
+   */
+  @SuppressWarnings("WeakerAccess")
+  public @Nonnull Optional<String> getCdnPrefix() {
+    return this.cdnPrefix;
+  }
+
+  /**
+   * Inject the specified list of hosts as DNS records to prefetch from the browser. There is no guarantee made by the
+   * browser that the records will be fetched, it's just a performance hint.
+   *
+   * @param hosts Hosts to add to the DNS prefetch list.
+   * @return Current page context manager (for call chain-ability).
+   */
+  @CanIgnoreReturnValue
+  @SuppressWarnings("WeakerAccess")
+  public @Nonnull PageContextManager dnsPrefetch(Iterable<String> hosts) {
+    hosts.forEach(this.context::addDnsPrefetch);
+    return this;
+  }
+
+  /**
+   * Inject the specified DNS hostname(s) as records to prefetch from the browser. There is no guarantee made by the
+   * browser that the records will be fetched, it's just a performance hint.
+   *
+   * @param hosts Hosts to add to the DNS prefetch list.
+   * @return Current page context manager (for call chain-ability).
+   */
+  @CanIgnoreReturnValue
+  @SuppressWarnings("WeakerAccess")
+  public @Nonnull PageContextManager dnsPrefetch(String... hosts) {
+    return dnsPrefetch(Arrays.asList(hosts));
+  }
+
+  /**
+   * Inject the specified list of hosts as pre-connect hints for the browser. There is no guarantee made by the browser
+   * that the connections will be established, it's just a performance hint.
+   *
+   * @param hosts Hosts to add to the server pre-connection list.
+   * @return Current page context manager (for call chain-ability).
+   */
+  @CanIgnoreReturnValue
+  @SuppressWarnings("WeakerAccess")
+  public @Nonnull PageContextManager preconnect(Iterable<String> hosts) {
+    hosts.forEach(this.context::addPreconnect);
+    return this;
+  }
+
+  /**
+   * Inject the specified list of hosts as pre-connect hints for the browser. There is no guarantee made by the browser
+   * that the connections will be established, it's just a performance hint.
+   *
+   * @param hosts Hosts to add to the server pre-connection list.
+   * @return Current page context manager (for call chain-ability).
+   */
+  @CanIgnoreReturnValue
+  @SuppressWarnings("WeakerAccess")
+  public @Nonnull PageContextManager preconnect(String... hosts) {
+    return preconnect(Arrays.asList(hosts));
   }
 
   // -- API: Trusted Resources -- //

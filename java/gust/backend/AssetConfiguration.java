@@ -17,6 +17,7 @@ import com.google.common.collect.ImmutableSortedSet;
 import io.micronaut.context.annotation.ConfigurationProperties;
 import io.micronaut.core.bind.annotation.Bindable;
 import tools.elide.core.data.CompressionMode;
+import tools.elide.page.Context.CrossOriginResourcePolicy;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -66,6 +67,28 @@ public interface AssetConfiguration {
   /** Specifies settings for HTTP caching. */
   @Bindable("httpCaching") default AssetCachingConfiguration httpCaching() {
     return AssetCachingConfiguration.DEFAULTS;
+  }
+
+  /** {@code Cross-Origin-Resource-Policy} configuration for dynamic content. */
+  @Bindable("resourcePolicy") default CrossOriginResourceConfiguration crossOriginResources() {
+    return CrossOriginResourceConfiguration.DEFAULTS;
+  }
+
+  /** Describes settings regarding {@code Cross-Origin-Resource-Policy} headers for dynamic content. */
+  @ConfigurationProperties("gust.serving.resourcePolicy")
+  interface CrossOriginResourceConfiguration {
+    /** Sensible defaults for cross-origin resource policy. */
+    CrossOriginResourceConfiguration DEFAULTS = new CrossOriginResourceConfiguration() {};
+
+    /** Whether to enable {@code Cross-Origin-Resource-Policy} headers for dynamically-served content. */
+    @Bindable("enabled") default Boolean enabled() {
+      return true;
+    }
+
+    /** Specifies the default policy to employ for {@code Cross-Origin-Resource-Policy} for dynamic content. */
+    @Bindable("policy") default CrossOriginResourcePolicy policy() {
+      return CrossOriginResourcePolicy.SAME_SITE;
+    }
   }
 
   /** Describes settings regarding compressed asset serving. */
@@ -177,12 +200,12 @@ public interface AssetConfiguration {
 
     /** Whether to enable CDN features. */
     @Bindable("enabled") default Boolean enabled() {
-      return false;
+      return true;
     }
 
-    /** CDN host names to use for assets. When running over HTTP/2, only the first hostname is employed. */
-    @Bindable("hostnames") default SortedSet<String> hostnames() {
-      return Collections.emptySortedSet();
+    /** CDN host names to use for assets. A random selection is made from this list for each page render. */
+    @Bindable("hostnames") default List<String> hostnames() {
+      return Collections.emptyList();
     }
   }
 }

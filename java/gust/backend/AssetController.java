@@ -13,6 +13,7 @@
 package gust.backend;
 
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
@@ -35,6 +36,7 @@ import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import tools.elide.core.data.CompressedData;
 import tools.elide.core.data.CompressionMode;
+import tools.elide.page.Context.CrossOriginResourcePolicy;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -76,6 +78,9 @@ public class AssetController {
 
   /** Static {@code Content-Encoding} value for Brotli-compressed content. */
   private static final @Nonnull String BROTLI_CONTENT_ENCODING = "br";
+
+  /** Static {@code Cross-Origin-Resource-Policy} header name. */
+  private static final @Nonnull String CROSS_ORIGIN_RESOURCE_POLICY_HEADER = "Cross-Origin-Resource-Policy";
 
   /** Date/time tool for HTTP-formatted timestamps. */
   private static final @Nonnull SimpleDateFormat isoDateTimeFormat = (
@@ -146,6 +151,23 @@ public class AssetController {
                           @Nonnull AssetManager assetManager) {
     this.config = config;
     this.assetManager = assetManager;
+  }
+
+  /**
+   * Produce a token for the specified {@code Cross-Origin-Resource-Policy}.
+   *
+   * @param policy Policy to produce a token for.
+   * @return String token.
+   */
+  @VisibleForTesting
+  @SuppressWarnings("WeakerAccess")
+  static @Nonnull Optional<String> tokenForCrossOriginResourcePolicy(@Nonnull CrossOriginResourcePolicy policy) {
+    switch (policy) {
+      case SAME_SITE: return Optional.of("same-site");
+      case SAME_ORIGIN: return Optional.of("same-origin");
+      case CROSS_ORIGIN: return Optional.of("cross-origin");
+      default: return Optional.empty();
+    }
   }
 
   /** Resolve a {@code Content-Encoding} value for the supplied {@code compressionMode}. */
@@ -339,6 +361,21 @@ public class AssetController {
     if (Core.isDebugMode()) {
       logging.debug(format("Serving managed asset '%s'.", asset.getFilename()));
       response.header(HttpHeaders.CONTENT_DISPOSITION, format("inline; filename=\"%s\"", asset.getFilename()));
+    }
+
+    // `Cross-Origin-Resource-Policy`
+    if (config.crossOriginResources().enabled()) {
+      Optional<String> policyToken = tokenForCrossOriginResourcePolicy(
+        config.crossOriginResources().policy());
+      if (policyToken.isPresent()) {
+        if (logging.isDebugEnabled())
+          logging.debug(format("Applying `Cross-Origin-Resource-Policy` '%s'.", policyToken.get()));
+        response.getHeaders().add(
+          CROSS_ORIGIN_RESOURCE_POLICY_HEADER,
+          policyToken.get());
+      }
+    } else if (logging.isTraceEnabled()) {
+      logging.trace("No `Cross-Origin-Resource-Policy` applied: policy token was not present.");
     }
 
     // apply HTTP caching, if enabled

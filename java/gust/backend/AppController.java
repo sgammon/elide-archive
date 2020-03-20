@@ -59,6 +59,9 @@ public abstract class AppController extends BaseController {
   /** Configuration for dynamic serving. */
   private @Inject DynamicServingConfiguration servingConfiguration;
 
+  /** Configuration for dynamic serving. */
+  private @Inject AssetConfiguration assetConfiguration;
+
   static {
     // initialize HTML page type
     HTML = new MediaType(MediaType.TEXT_HTML_TYPE.getName(), MediaType.TEXT_HTML_TYPE.getExtension(),
@@ -187,25 +190,39 @@ public abstract class AppController extends BaseController {
       logging.debug("`Feature-Policy` disabled via config.");
     }
 
-    // next up: cross-origin resource policy
-    if (config.crossOriginResources().enabled()) {
-      if (logging.isDebugEnabled())
-        logging.debug(format("Applying `Cross-Origin-Resource-Policy`: '%s'.",
-          config.crossOriginResources().policy().name()));
-
-      this.context
-        .getContext()
-        .setCrossOriginResourcePolicy(config.crossOriginResources().policy());
-
-    } else if (logging.isDebugEnabled()) {
-      logging.debug("`Cross-Origin-Resource-Policy` is disabled via config.");
-    }
-
     // next up: framing policy
     if (config.framingPolicy() != FramingPolicy.DEFAULT_FRAMING_POLICY) {
       this.context.getContext().setFramingPolicy(config.framingPolicy());
+      if (logging.isDebugEnabled())
+        logging.debug(format("Applying `X-Frame-Options` policy: '%s'.", config.framingPolicy().name()));
     } else if (logging.isDebugEnabled()) {
       logging.debug("`X-Frame-Options` disabled via config.");
+    }
+
+    // next up: DNS domain prefetch
+    if (!config.dnsPrefetch().isEmpty()) {
+      if (logging.isDebugEnabled())
+        logging.debug(format("Pre-fetching %s domains via browser DNS: '%s'.",
+          config.dnsPrefetch().size(),
+          Joiner.on(", ").join(config.dnsPrefetch())));
+
+      this.context.dnsPrefetch(config.dnsPrefetch());
+
+    } else if (logging.isDebugEnabled()) {
+      logging.debug("No domains to prefetch via DNS.");
+    }
+
+    // next up: domain pre-connect
+    if (!config.preconnect().isEmpty()) {
+      if (logging.isDebugEnabled())
+        logging.debug(format("Pre-connecting to %s domains via browser: '%s'.",
+          config.dnsPrefetch().size(),
+          Joiner.on(", ").join(config.preconnect())));
+
+      this.context.preconnect(config.preconnect());
+
+    } else if (logging.isDebugEnabled()) {
+      logging.debug("No domains to pre-connect to.");
     }
 
     // next up: `nosniff`
@@ -235,6 +252,50 @@ public abstract class AppController extends BaseController {
   }
 
   /**
+   * Select the set of CDN prefixes to use in this HTTP cycle, from the configured set. Once this action completes, the
+   * set of CDN prefixes is considered "frozen" for this cycle.
+   *
+   * @param render Page context manager, after the handler has completed.
+   * @param response Response object, on which we should set the CDN prefix property.
+   * @param servingConfig Serving configuration from which to calculate the active set of CDN prefixes.
+   */
+  @SuppressWarnings("WeakerAccess")
+  protected void selectCdnPrefixes(@Nonnull PageContextManager render,
+                                   @Nonnull MutableHttpResponse response,
+                                   @Nonnull AssetConfiguration servingConfig) {
+    if (!render.getCdnPrefix().isPresent()) {
+      // resolve CDN prefix to use for this run
+      if (servingConfig.cdn().enabled()) {
+        List<String> hostnames = servingConfig.cdn().hostnames();
+        if (hostnames.isEmpty() && logging.isDebugEnabled()) {
+          logging.debug("No CDN prefixes available.");
+        } else {
+          final String hostname;
+          if (hostnames.size() == 1) {
+            hostname = hostnames.get(0);
+          } else {
+            // select one
+            hostname = hostnames.get(new Random().nextInt(hostnames.size()));
+          }
+          if (logging.isDebugEnabled())
+            logging.debug(format("Selected CDN prefix for HTTP cycle: '%s'.", hostname));
+          response.setAttribute("cdn_prefix", hostname);
+          render.cdnPrefix(Optional.of(hostname));
+
+          // add to pre-connect list and DNS prefetch list
+          render.dnsPrefetch(hostname);
+          render.preconnect(hostname);
+        }
+
+      } else if (logging.isDebugEnabled()) {
+        logging.debug("CDN prefix skipped (DISABLED via config).");
+      }
+    } else if (logging.isDebugEnabled()) {
+      logging.debug("Deferring to developer-specified CDN prefix.");
+    }
+  }
+
+  /**
    * Serve the provided rendered-page response, while applying any app configuration related to dynamic page headers.
    * This may include headers like {@code Vary}, {@code ETag}, and so on, which may be calculated based on the response
    * intended to be provided to the client.
@@ -243,14 +304,18 @@ public abstract class AppController extends BaseController {
    * @return Prepped and rendered HTTP response.
    */
   protected @Nonnull MutableHttpResponse<PageRender> serve(@Nonnull PageContextManager render) {
-    // order matters here. `affixHeaders` must be called before `render`, which produces the `ctx` that is set on the
-    // response, so it may be picked up in `PageContextManager#finalizeResponse`.
-    MutableHttpResponse<PageRender> response = this.affixHeaders(
-      HttpResponse.ok(render),
+    DynamicServingConfiguration servingConfig = (
       this.servingConfiguration != null ? this.servingConfiguration : DynamicServingConfiguration.DEFAULTS);
+    AssetConfiguration assetConfig = (
+      this.assetConfiguration != null ? this.assetConfiguration : AssetConfiguration.DEFAULTS);
 
-    PageContext ctx = render.render();
-    response.setAttribute("context", ctx.getPageContext());
+    // order matters here. `selectCdnPrefix` must be called first, to load any CDN prefix before link pre-loads go out.
+    // next, `affixHeaders` must be called before `render`, which produces the `ctx` that is set on the response (so it
+    // so it may be picked up in `PageContextManager#finalizeResponse`).
+    MutableHttpResponse<PageRender> response = HttpResponse.ok(render);
+    selectCdnPrefixes(render, response, assetConfig);
+    this.affixHeaders(response, servingConfig);
+    response.setAttribute("context", render.render().getPageContext());
     return response;
   }
 }

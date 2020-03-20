@@ -63,6 +63,7 @@ micronaut_library(
     name = "AppController",
     srcs = ["AppController.java"],
     deps = [
+        ":AssetConfiguration",
         ":BaseController",
         ":DynamicServingConfiguration",
         "//java/gust/backend:PageContext",
@@ -137,6 +138,7 @@ micronaut_library(
     srcs = ["AssetConfiguration.java"],
     deps = [
         javaproto("//gust/core:data"),
+        javaproto("//gust/page:page_proto"),
     ],
 )
 

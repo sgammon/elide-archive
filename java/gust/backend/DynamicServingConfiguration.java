@@ -19,7 +19,6 @@ import io.micronaut.context.annotation.ConfigurationProperties;
 import io.micronaut.core.bind.annotation.Bindable;
 import tools.elide.page.Context.ClientHint;
 import tools.elide.page.Context.FramingPolicy;
-import tools.elide.page.Context.CrossOriginResourcePolicy;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -51,14 +50,19 @@ public interface DynamicServingConfiguration {
     return FramingPolicy.DENY;
   }
 
+  /** Hostnames to pre-connect to from the browser. */
+  @Bindable("preconnect") default List<String> preconnect() {
+    return Collections.emptyList();
+  }
+
+  /** Hostnames to pre-load into the browser's DNS. */
+  @Bindable("dnsPrefetch") default List<String> dnsPrefetch() {
+    return Collections.emptyList();
+  }
+
   /** Whether to apply {@code nosniff} to {@code X-Content-Type-Options} for dynamic content. */
   @Bindable("noSniff") default Boolean noSniff() {
     return true;
-  }
-
-  /** {@code Cross-Origin-Resource-Policy} configuration for dynamic content. */
-  @Bindable("resourcePolicy") default CrossOriginResourceConfiguration crossOriginResources() {
-    return CrossOriginResourceConfiguration.DEFAULTS;
   }
 
   /** {@code Feature-Policy} configuration for dynamic content. */
@@ -108,23 +112,6 @@ public interface DynamicServingConfiguration {
         "sync-xhr 'none';",
         "unoptimized-images 'none';"
       );
-    }
-  }
-
-  /** Describes settings regarding {@code Cross-Origin-Resource-Policy} headers for dynamic content. */
-  @ConfigurationProperties("gust.serving.resourcePolicy")
-  interface CrossOriginResourceConfiguration {
-    /** Sensible defaults for cross-origin resource policy. */
-    CrossOriginResourceConfiguration DEFAULTS = new CrossOriginResourceConfiguration() {};
-
-    /** Whether to enable {@code Cross-Origin-Resource-Policy} headers for dynamically-served content. */
-    @Bindable("enabled") default Boolean enabled() {
-      return true;
-    }
-
-    /** Specifies the default policy to employ for {@code Cross-Origin-Resource-Policy} for dynamic content. */
-    @Bindable("policy") default CrossOriginResourcePolicy policy() {
-      return CrossOriginResourcePolicy.SAME_SITE;
     }
   }
 
