@@ -120,7 +120,7 @@ public abstract class AppController extends BaseController {
     if (config.etags().enabled()) {
       if (logging.isTraceEnabled())
         logging.trace("Dynamic `ETag` values are enabled.");
-      this.context.enableETags(true, config.etags().strong());
+      this.context.enableETags(true);
     } else if (logging.isTraceEnabled()) {
       logging.trace("Dynamic `ETag` values are disabled.");
     }

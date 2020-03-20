@@ -75,11 +75,6 @@ public interface DynamicServingConfiguration {
     @Bindable("enabled") default Boolean enabled() {
       return true;
     }
-
-    /** Whether to enable strong {@code ETag}s (usually recommended). */
-    @Bindable("strong") default Boolean strong() {
-      return true;
-    }
   }
 
   /** Describes settings regarding {@code Feature-Policy} headers for dynamic content. */

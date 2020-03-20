@@ -14,6 +14,9 @@ package gust.backend;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Sets;
 import com.google.common.html.types.TrustedResourceUrlProto;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.template.soy.data.SanitizedContent;
@@ -308,14 +311,12 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
         }
         String contentDigest = Hex.bytesToHex(digester.digest(), ETAG_LENGTH);
         if (!Objects.requireNonNull(contentDigest).isEmpty()) {
-          String prefix = ctx.getEtag().getEnabled() && ctx.getEtag().getStrong() ? "" : "W/";
-
           if (request.getHeaders().contains(HttpHeaders.IF_NONE_MATCH)) {
             // we have a potential conditional match
-            if ((prefix + contentDigest).equals(request.getHeaders().get(HttpHeaders.IF_NONE_MATCH))) {
+            if (("W/" + contentDigest).equals(request.getHeaders().get(HttpHeaders.IF_NONE_MATCH))) {
               if (logging.isDebugEnabled()) {
                 logging.debug(format(
-                  "Response matched `If-None-Match` etag value '%s'. Sending 304.", (prefix + contentDigest)));
+                  "Response matched `If-None-Match` etag value '%s'. Sending 304.", ("W/" + contentDigest)));
               }
 
               // drop the body - explicitly truncate so we don't get caught by chunked TE - and reset the status to
@@ -326,14 +327,20 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
               return response;
             }
           }
-          response.getHeaders().add(HttpHeaders.ETAG, prefix + "\"" + contentDigest + "\"");
+          response.getHeaders().add(HttpHeaders.ETAG, "W/" + "\"" + contentDigest + "\"");
         }
       } else if (logging.isTraceEnabled()) {
         logging.trace("Dynamic ETags are disabled.");
       }
 
       // `Accept-CH`
-      if (ctx.hasHints() && ctx.getHints().getSupportedCount() > 0) {
+      if (ctx.hasHints() &&  // we must support hints to emit this header
+          ctx.getHints().getSupportedCount() > 0 &&  // there must be hint types to send
+          (ctx.getHints().getIndicatedCount() == 0 ||  // we should only send if there are no hints from the client, or
+          !Sets.difference(  // the provided set of hints from the client doesn't match with the supported set
+             ImmutableSortedSet.copyOf(ctx.getHints().getIndicatedList()),
+             ImmutableSortedSet.copyOf(ctx.getHints().getSupportedList()))
+            .isEmpty())) {
         SortedSet<String> tokens = ctx.getHints().getSupportedList().stream()
           .map(PageContextManager::clientHintForEnum)
           .collect(Collectors.toCollection(TreeSet::new));
@@ -779,7 +786,7 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
       throw new IllegalArgumentException("Please use `vary()` instead of setting a `Vary` header.");
     if (HttpHeaders.ETAG.equals(name))
       throw new IllegalArgumentException("Please use `enableETags()` instead of setting an `ETag` header.");
-    if ("Accept-CH".equals(name))
+    if (ACCEPT_CH_HEADER.equals(name))
       throw new IllegalArgumentException("Please use `clientHints()` instead of setting an `Accept-CH` header.");
     this.context.addHeader(Context.ResponseHeader.newBuilder()
       .setName(name)
@@ -793,16 +800,13 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
    * context record.
    *
    * @param enableETags Whether to enable the {@code ETag} header.
-   * @param strong Whether to compute a "strong" {@code ETag} (based on rendered content produced), or a "weak"
-   *        {@code ETag} (based on the request and render context).
    * @return Current page context manager (for call chain-ability).
    */
   @CanIgnoreReturnValue
-  @SuppressWarnings("WeakerAccess")
-  public @Nonnull PageContextManager enableETags(@Nonnull Boolean enableETags, @Nonnull Boolean strong) {
+  public @Nonnull PageContextManager enableETags(@Nonnull Boolean enableETags) {
     this.context.setEtag(Context.DynamicETag.newBuilder()
       .setEnabled(enableETags)
-      .setStrong(strong));
+      .setStrong(true));
     return this;
   }
 
