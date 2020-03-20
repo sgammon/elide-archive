@@ -600,6 +600,43 @@ message Context {
     DENY = 2;
   }
 
+  // Specifies a policy to apply via the `Referrer-Policy` header. All policy docs come from MDN.
+  enum ReferrerPolicy {
+    // Default referrer policy - i.e. empty.
+    DEFAULT_REFERRER_POLICY = 0;
+
+    // The Referer header will be omitted entirely. No referrer information is sent along with requests.
+    NO_REFERRER = 1;
+
+    // This is the default behavior if no policy is specified, or if the provided value is invalid. The origin, path,
+    // and querystring of the URL are sent as a referrer when the protocol security level stays the same (HTTP→HTTP,
+    // HTTPS→HTTPS) or improves (HTTP→HTTPS), but isn't sent to less secure destinations (HTTPS→HTTP).
+    NO_REFERRER_WHEN_DOWNGRADE = 2;
+
+    // Only send the origin of the document as the referrer. For example, a document at https://example.com/page.html
+    // will send the referrer https://example.com/.
+    ORIGIN = 3;
+
+    // Send the origin, path, and query string when performing a same-origin request, but only send the origin of the
+    // document for other cases.
+    ORIGIN_WHEN_CROSS_ORIGIN = 4;
+
+    // A referrer will be sent for same-site origins, but cross-origin requests will send no referrer information.
+    SAME = 5;
+
+    // Only send the origin of the document as the referrer when the protocol security level stays the same
+    // (HTTPS→HTTPS), but don't send it to a less secure destination (HTTPS→HTTP).
+    STRICT_ORIGIN = 7;
+
+    // Send the origin, path, and querystring when performing a same-origin request, only send the origin when the
+    // protocol security level stays the same while performing a cross-origin request (HTTPS→HTTPS), and send no header
+    // to any less-secure destinations (HTTPS→HTTP).
+    STRICT_ORIGIN_WHEN_CROSS_ORIGIN = 8;
+
+    // Send the origin, path, and query string when performing any request, regardless of security.
+    UNSAFE_URL = 9;
+  }
+
   // Specifies custom response headers to affix to the request.
   message ResponseHeader {
     // Custom header name.
@@ -665,4 +702,7 @@ message Context {
 
   // Old-style Cross-Site Scripting vulnerability protection policy.
   string xss_protection = 20;
+
+  // Specifies the `Referrer-Policy` to apply to this HTTP cycle, as applicable.
+  ReferrerPolicy referrer_policy = 21;
 }

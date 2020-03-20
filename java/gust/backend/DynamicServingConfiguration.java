@@ -19,6 +19,7 @@ import io.micronaut.context.annotation.ConfigurationProperties;
 import io.micronaut.core.bind.annotation.Bindable;
 import tools.elide.page.Context.ClientHint;
 import tools.elide.page.Context.FramingPolicy;
+import tools.elide.page.Context.ReferrerPolicy;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -68,6 +69,11 @@ public interface DynamicServingConfiguration {
   /** {@code Feature-Policy} configuration for dynamic content. */
   @Bindable("featurePolicy") default FeaturePolicyConfiguration featurePolicy() {
     return FeaturePolicyConfiguration.DEFAULTS;
+  }
+
+  /** {@code Referrer-Policy} configuration for dynamic content. */
+  @Bindable("referrerPolicy") default ReferrerPolicy referrerPolicy() {
+    return ReferrerPolicy.STRICT_ORIGIN;
   }
 
   /** {@code X-XSS-Protection} configuration for dynamic content. */

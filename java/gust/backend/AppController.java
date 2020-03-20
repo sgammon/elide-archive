@@ -22,6 +22,7 @@ import io.micronaut.http.MutableHttpResponse;
 import org.slf4j.Logger;
 import tools.elide.page.Context.ClientHint;
 import tools.elide.page.Context.FramingPolicy;
+import tools.elide.page.Context.ReferrerPolicy;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
@@ -190,11 +191,20 @@ public abstract class AppController extends BaseController {
       logging.debug("`Feature-Policy` disabled via config.");
     }
 
+    // next up: referrer policy
+    if (config.referrerPolicy() != ReferrerPolicy.DEFAULT_REFERRER_POLICY) {
+      if (logging.isDebugEnabled())
+        logging.debug(format("Applying `Referrer-Policy`: '%s'.", config.referrerPolicy().name()));
+      this.context.getContext().setReferrerPolicy(config.referrerPolicy());
+    } else if (logging.isDebugEnabled()) {
+      logging.debug("`Referrer-Policy` disabled via config.");
+    }
+
     // next up: framing policy
     if (config.framingPolicy() != FramingPolicy.DEFAULT_FRAMING_POLICY) {
-      this.context.getContext().setFramingPolicy(config.framingPolicy());
       if (logging.isDebugEnabled())
         logging.debug(format("Applying `X-Frame-Options` policy: '%s'.", config.framingPolicy().name()));
+      this.context.getContext().setFramingPolicy(config.framingPolicy());
     } else if (logging.isDebugEnabled()) {
       logging.debug("`X-Frame-Options` disabled via config.");
     }

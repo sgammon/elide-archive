@@ -39,6 +39,7 @@ import tools.elide.page.Context.ClientHint;
 import tools.elide.page.Context.FramingPolicy;
 import tools.elide.page.Context.ClientHints;
 import tools.elide.page.Context.ConnectionHint;
+import tools.elide.page.Context.ReferrerPolicy;
 import tools.elide.page.Context.Styles.Stylesheet;
 import tools.elide.page.Context.Scripts.JavaScript;
 
@@ -88,6 +89,7 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
   private static final String X_XSS_PROTECTION_HEADER = "X-XSS-Protection";
   private static final String LINK_DNS_PREFETCH_TOKEN = "dns-prefetch";
   private static final String LINK_PRECONNECT_TOKEN = "preconnect";
+  private static final String REFERRER_POLICY_HEADER = "Referrer-Policy";
   private static final ConnectionHint DEFAULT_ECT = ConnectionHint.FAST;
 
   private static final String CDN_PREFIX_IJ_PROP = "cdn_prefix";
@@ -276,6 +278,28 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
   }
 
   /**
+   * Produce a token for the specified {@code Referrer-Policy} selection.
+   *
+   * @param policy Policy to produce a token for.
+   * @return String token.
+   */
+  @VisibleForTesting
+  @SuppressWarnings("WeakerAccess")
+  static @Nonnull Optional<String> tokenForReferrerPolicy(@Nonnull ReferrerPolicy policy) {
+    switch (policy) {
+      case NO_REFERRER: return Optional.of("no-referrer");
+      case NO_REFERRER_WHEN_DOWNGRADE: return Optional.of("no-referrer-when-downgrade");
+      case ORIGIN: return Optional.of("origin");
+      case ORIGIN_WHEN_CROSS_ORIGIN: return Optional.of("origin-when-cross-origin");
+      case SAME: return Optional.of("same-origin");
+      case STRICT_ORIGIN: return Optional.of("strict-origin");
+      case STRICT_ORIGIN_WHEN_CROSS_ORIGIN: return Optional.of("strict-origin-when-cross-origin");
+      case UNSAFE_URL: return Optional.of("unsafe-url");
+      default: return Optional.empty();
+    }
+  }
+
+  /**
    * Produce a token for the specified {@code X-Frame-Options} policy.
    *
    * @param policy Policy to produce a token for.
@@ -334,8 +358,10 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
         if (!Objects.requireNonNull(contentDigest).isEmpty()) {
           if (request.getHeaders().contains(HttpHeaders.IF_NONE_MATCH)) {
             // we have a potential conditional match
-            if (contentDigest.equals(request.getHeaders()
-                  .get(HttpHeaders.IF_NONE_MATCH).replace("\"", "").replace("W/", ""))) {
+            if (contentDigest.equals(Objects.requireNonNull(request.getHeaders()
+                  .get(HttpHeaders.IF_NONE_MATCH))
+                .replace("\"", "")
+                .replace("W/", ""))) {
               if (logging.isDebugEnabled()) {
                 logging.debug(format(
                   "Response matched `If-None-Match` etag value '%s'. Sending 304.", ("W/" + contentDigest)));
@@ -405,6 +431,18 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
         }
       } else if (logging.isTraceEnabled()) {
         logging.trace("`Feature-Policy` not configured for response.");
+      }
+
+      // `Referrer-Policy`
+      Optional<String> referrerPolicyToken = tokenForReferrerPolicy(ctx.getReferrerPolicy());
+      if (referrerPolicyToken.isPresent()) {
+        if (logging.isDebugEnabled())
+          logging.debug(format("Indicating `Referrer-Policy`: '%s'.", referrerPolicyToken.get()));
+        response.getHeaders().add(
+          REFERRER_POLICY_HEADER,
+          referrerPolicyToken.get());
+      } else if (logging.isTraceEnabled()) {
+        logging.trace("`Referrer-Policy` not configured for response.");
       }
 
       // `X-Frame-Options`
