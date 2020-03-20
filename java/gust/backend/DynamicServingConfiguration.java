@@ -139,7 +139,7 @@ public interface DynamicServingConfiguration {
 
     /** Return the set of hints supported by the server. */
     @Bindable("hints") default ImmutableSet<ClientHint> hints() {
-      return Sets.immutableEnumSet(ClientHint.ECT, ClientHint.RTT, ClientHint.DPR);
+      return Sets.immutableEnumSet(ClientHint.ECT, ClientHint.RTT, ClientHint.DPR, ClientHint.WIDTH);
     }
 
     /** Client Hints configuration time-to-live value. */
