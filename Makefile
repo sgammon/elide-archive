@@ -16,7 +16,7 @@
 ##
 
 CI ?= no
-CACHE ?= yes
+CACHE ?= no
 REMOTE ?= no
 DEBUG ?= no
 VERBOSE ?= no
