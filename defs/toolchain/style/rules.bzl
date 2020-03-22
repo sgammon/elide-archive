@@ -30,7 +30,7 @@ load(
 )
 
 BASE_SASS_DEPS = [
-    "//style:_vars.sass",
+    "@gust//style:_vars.sass",
 ]
 
 BASE_GSS_DEFS = [
@@ -97,14 +97,14 @@ def _style_binary(name,
        with GSS after compilation, and then any applicable. post-processors. """
 
     renaming_state = select({
-        "//defs/config:release": True,
-        "//defs/config:debug": False,
+        "@gust//defs/config:release": True,
+        "@gust//defs/config:debug": False,
         "//conditions:default": False
     })
 
     debug_state = select({
-        "//defs/config:release": False,
-        "//defs/config:debug": True,
+        "@gust//defs/config:release": False,
+        "@gust//defs/config:debug": True,
         "//conditions:default": True
     })
 

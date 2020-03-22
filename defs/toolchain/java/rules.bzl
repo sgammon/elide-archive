@@ -136,14 +136,14 @@ INJECTED_MICRONAUT_RUNTIME_DEPS = [
 ]
 
 INJECTED_CONTROLLERS = [
-    "//java/gust/backend:AssetController",
+    "@gust//java/gust/backend:AssetController",
 ]
 
 INJECTED_CONTROLLER_DEPS = [
-    "//java/gust/backend:PageContext",
-    "//java/gust/backend:PageContextManager",
-    "//java/gust/backend:BaseController",
-    "//java/gust/backend:AppController",
+    "@gust//java/gust/backend:PageContext",
+    "@gust//java/gust/backend:PageContextManager",
+    "@gust//java/gust/backend:BaseController",
+    "@gust//java/gust/backend:AppController",
 ]
 
 
@@ -238,11 +238,11 @@ def _jdk_binary(name,
             data = data + INJECTED_LIBRARIES,
             resource_jars = resource_jars + INJECTED_RESOURCE_JARS,
             jvm_flags = select({
-               "//defs/config:live_reload": ["-DLIVE_RELOAD=enabled"] + INJECTED_JVM_FLAGS + jvm_flags,
+               "@gust//defs/config:live_reload": ["-DLIVE_RELOAD=enabled"] + INJECTED_JVM_FLAGS + jvm_flags,
                "//conditions:default": INJECTED_JVM_FLAGS + jvm_flags,
             }) + select({
-               "//defs/config:release": _JVM_APP_RELEASE_FLAGS,
-               "//defs/config:debug": _JVM_APP_DEBUG_FLAGS,
+               "@gust//defs/config:release": _JVM_APP_RELEASE_FLAGS,
+               "@gust//defs/config:debug": _JVM_APP_DEBUG_FLAGS,
             }),
             tags = [
                 "ibazel_live_reload",
@@ -261,11 +261,11 @@ def _jdk_binary(name,
             data = data + INJECTED_LIBRARIES,
             resource_jars = resource_jars + INJECTED_RESOURCE_JARS,
             jvm_flags = select({
-               "//defs/config:live_reload": ["-DLIVE_RELOAD=enabled"] + INJECTED_JVM_FLAGS + jvm_flags,
+               "@gust//defs/config:live_reload": ["-DLIVE_RELOAD=enabled"] + INJECTED_JVM_FLAGS + jvm_flags,
                "//conditions:default": INJECTED_JVM_FLAGS + jvm_flags,
             }) + select({
-               "//defs/config:release": _JVM_APP_RELEASE_FLAGS,
-               "//defs/config:debug": _JVM_APP_DEBUG_FLAGS,
+               "@gust//defs/config:release": _JVM_APP_RELEASE_FLAGS,
+               "@gust//defs/config:debug": _JVM_APP_DEBUG_FLAGS,
             }),
             tags = [
                 "ibazel_live_reload",
@@ -501,10 +501,10 @@ def _micronaut_application(name,
         ],
         # ends up as `./asset_bundler.sh --output='-' (...) --css="module.here:some/file.css some/file.css" --`
         cmd = join_cmd([
-          "./$(location //tools:AssetBundler)", " ",
+          "./$(location @gust//tools:AssetBundler)", " ",
           "--", select({
-              "@//defs/config:debug": "dbg",
-              "@//defs/config:release": "opt",
+              "@gust//defs/config:debug": "dbg",
+              "@gust//defs/config:release": "opt",
               "//conditions:default": "dbg",
           }),
           " ",
@@ -512,7 +512,7 @@ def _micronaut_application(name,
         ]),
         message = "Generating asset manifest",
         output_to_bindir = True,
-        tools = ["//tools:AssetBundler"],
+        tools = ["@gust//tools:AssetBundler"],
     )
 
     _java_library(
@@ -530,7 +530,7 @@ def _micronaut_application(name,
         computed_runtime_deps = [template_loader]
 
         if inject_main:
-            computed_deps.append("//java/gust/backend:backend")
+            computed_deps.append("@gust//java/gust/backend:backend")
     else:
         computed_deps = None
         computed_image_deps = []
@@ -551,7 +551,7 @@ def _micronaut_application(name,
             ])
 
         if inject_main:
-            computed_runtime_deps.append("//java/gust/backend:backend")
+            computed_runtime_deps.append("@gust//java/gust/backend:backend")
 
     _java_image(
         name = "%s-image" % name,

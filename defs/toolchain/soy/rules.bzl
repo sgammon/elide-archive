@@ -37,11 +37,11 @@ load(
 )
 
 INJECTED_SSR_SOY_DEPS = [
-    "//gust/page:page_soy",
+    "@gust//gust/page:page_soy",
 ]
 
 INJECTED_SSR_PROTO_DEPS = [
-    "//gust/page:page_proto",
+    "@gust//gust/page:page_proto",
 ]
 
 
