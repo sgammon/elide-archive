@@ -32,16 +32,16 @@ load(
 )
 
 
-def _process_install_deps(deps):
+def _process_install_deps(deps, local):
 
     """ Process dependencies and install them. """
 
     for key in deps.keys():
         repo = deps[key]
         if repo["type"] == "github":
-            _process_github_dep(key, repo)
+            _process_github_dep(key, repo, local)
         elif repo["type"] == "java":
-            _process_java_dep(key, repo)
+            _process_java_dep(key, repo, local)
         elif repo["type"] == "archive":
             _process_archive_dep(key, repo)
         else:
@@ -63,11 +63,11 @@ def _process_archive_dep(key, repo):
     )
 
 
-def _process_java_dep(key, repo):
+def _process_java_dep(key, repo, force_local):
 
     """ Process an external Java dependency. """
 
-    if (_LOCAL == True or repo.get("forceLocal") == True) and repo.get("local") != None:
+    if (_LOCAL or repo.get("forceLocal") == True or force_local) and repo.get("local") != None:
         # local override
         if repo.get("overlay") != None:
             # local new
@@ -93,14 +93,14 @@ def _process_java_dep(key, repo):
         )
 
 
-def _process_github_dep(key, repo):
+def _process_github_dep(key, repo, force_local):
 
     """ Process a dependency declaration from Github. """
 
     org = repo["repo"].split("/")[0]
     repoName = repo["repo"].split("/")[1]
 
-    if (_LOCAL == True or repo.get("forceLocal") == True) and repo.get("local") != None:
+    if (_LOCAL or repo.get("forceLocal") or force_local) and repo.get("local") != None:
         # local override
         if repo.get("overlay") != None:
             # local new

@@ -475,10 +475,10 @@ DEPS = {
 }
 
 
-def _install_dependencies():
+def _install_dependencies(local = False):
 
     """ Install all dependencies into the current WORKSPACE. """
 
-    dependencies(DEPS)
+    dependencies(DEPS, local)
 
 install_dependencies = _install_dependencies
