@@ -460,8 +460,7 @@ def _micronaut_application(name,
     if len(js_modules) > 0:
         for module in js_modules:
             injected_resources.append(js_modules[module])
-            # @TODO source maps support
-#            injected_resources.append("%s.map" % js_modules[module])
+            injected_resources.append("%s.map" % js_modules[module])
             bundle_inputs.append("--js=\"%s:$(locations %s)\"" % (module, js_modules[module]))
     if len(js_modules) > 0:
         for module in css_modules:
