@@ -29,7 +29,7 @@ DEV = True
 ## Framework version tag.
 ## ------------------------------------
 ## Displayed in certain areas of the app, mostly when `DEV` is active.
-VERSION = "1.0.0-alpha2"
+VERSION = "1.0.0-alpha3"
 
 ## `Renaming` mode.
 ## ------------------------------------
