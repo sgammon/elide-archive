@@ -53,7 +53,7 @@
   {@param? bodyClass: string}  /** Class name(s) to apply to the body element. */
   {@param? mobile: bool}  /** Flag indicating that a mobile browser was detected. */
   {@param? liftedCSS: css}  /** Lifted CSS to apply, if any. */
-  {@param? liftedJS: js}  /** Lifted JavaScrs)ipt to apply, if any. */
+  {@param? liftedJS: js}  /** Lifted JavaScript to apply, if any. */
   {@param? content: html}  /** Injected body content to apply. */
   {@param? preconnect: list<[domain: uri, crossorigin: bool]>}  /** Pre-connect domains. */
   {@param? additionalHead: html}  /** Additional HTML to apply to the head block. */
@@ -115,7 +115,7 @@
         <script type="text/javascript" src="{$live_reload_url}"></script>
       {/if}
       {if isNonnull($liftedJS)}
-        <script type="text/javascript">
+        <script id="{xid('page-data')}" type="text/javascript">
                 {if isNonnull($liftedJS)}
                     {$liftedJS}
                 {/if}
