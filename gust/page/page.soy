@@ -115,7 +115,7 @@
         <script type="text/javascript" src="{$live_reload_url}"></script>
       {/if}
       {if isNonnull($liftedJS)}
-        <script id="{xid('page-data')}" type="text/javascript">
+        <script id="{xid('page-data')}" type="application/json">
                 {if isNonnull($liftedJS)}
                     {$liftedJS}
                 {/if}
