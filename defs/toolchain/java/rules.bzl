@@ -449,6 +449,7 @@ def _micronaut_application(name,
                            reflection_configuration = None,
                            js_modules = {},
                            css_modules = {},
+                           classpath_resources = [],
                            **kwargs):
 
     """ Wraps a regular JDK application with injected Micronaut dependencies and plugins. """
@@ -565,7 +566,7 @@ def _micronaut_application(name,
         resource_jars = resource_jars + [
             ":%s-assets" % name
         ],
-        classpath_resources = [
+        classpath_resources = classpath_resources + [
             config,
             logging_config,
         ],
@@ -668,7 +669,7 @@ def _micronaut_application(name,
         resource_jars = [":%s-assets" % name],
         data = data,
         resources = resources,
-        classpath_resources = [config, logging_config],
+        classpath_resources = classpath_resources + [config, logging_config],
         main_class = main_class or "gust.backend.Application",
         jvm_flags = computed_jvm_flags,
         tags = (tags or []),

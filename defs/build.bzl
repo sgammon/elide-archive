@@ -358,7 +358,7 @@ DEPS = {
     "com_google_closure_stylesheets": {
         "type": "java",
         "licenses": ["notice"],
-        "targets": ["https://storage.googleapis.com/bloom-software/closure-stylesheets-1.6.0-b4.jar",],
+        "targets": ["https://storage.googleapis.com/bloom-software/closure-stylesheets-1.6.0-b4.jar"],
         "seal": "364f10a71163e56e86ee5233d9080d42fd45706345dafa3ffdeb333c1ba44e2c",
         "deps": [
             "@args4j",
