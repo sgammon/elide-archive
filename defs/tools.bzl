@@ -72,8 +72,7 @@ def _process_file_dep(key, repo):
 
     _http_file(
         name = key,
-        url = repo.get("target"),
-        urls = repo.get("targets"),
+        urls = repo.get("targets", [repo.get("target")]),
         auth_patterns = repo.get("auth"),
         sha256 = repo.get("seal"),
     )
