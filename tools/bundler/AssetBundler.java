@@ -741,7 +741,9 @@ public class AssetBundler implements Callable<Integer> {
    */
   private @Nonnull BundleSources prepareInputs() {
     this.verbose("Validating and preparing inputs...");
+    if (this.jsModules == null) this.jsModules = Collections.emptyList();
     Objects.requireNonNull(this.jsModules, "JS modules cannot be `null`");
+    if (this.cssModules == null) this.cssModules = Collections.emptyList();
     Objects.requireNonNull(this.cssModules, "CSS modules cannot be `null`");
 
     if (this.debug) {
