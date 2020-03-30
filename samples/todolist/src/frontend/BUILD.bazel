@@ -88,7 +88,7 @@ js_module(
         "//js/gust:logging",
         "//java/gust:Core-j2cl",
         js_service("//samples/todolist/src:todolist_proto"),
-        js_proto("//js:empty_proto"),
+        js_proto("//core:empty_proto"),
     ],
 )
 

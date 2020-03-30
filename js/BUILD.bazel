@@ -20,17 +20,6 @@ load(
     _closure_js_library = "closure_js_library",
 )
 
-load(
-    "//defs/toolchain:schema.bzl",
-    _well_known = "well_known_",
-)
-
-
-_well_known(
-    name = "empty_proto",
-    actual = "@com_google_protobuf//:empty_proto",
-)
-
 _closure_js_library(
     name = "ij",
     srcs = ["ij.js"],

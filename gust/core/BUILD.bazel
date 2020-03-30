@@ -21,6 +21,202 @@ load(
     "model_package",
 )
 
+load(
+    "//defs/toolchain:schema.bzl",
+    _well_known = "well_known_",
+)
+
+
+##
+# Builtin protos
+##
+
+alias(
+    name = "any",
+    actual = "any_proto",
+)
+
+_well_known(
+    name = "any_proto",
+    actual = "@com_google_protobuf//:any_proto",
+)
+
+alias(
+    name = "duration",
+    actual = "duration_proto",
+)
+
+_well_known(
+    name = "duration_proto",
+    actual = "@com_google_protobuf//:duration_proto",
+)
+
+alias(
+    name = "empty",
+    actual = "empty_proto",
+)
+
+_well_known(
+    name = "empty_proto",
+    actual = "@com_google_protobuf//:empty_proto",
+)
+
+alias(
+    name = "field_mask",
+    actual = "field_mask_proto",
+)
+
+_well_known(
+    name = "field_mask_proto",
+    actual = "@com_google_protobuf//:field_mask_proto",
+)
+
+alias(
+    name = "struct",
+    actual = "struct_proto",
+)
+
+_well_known(
+    name = "struct_proto",
+    actual = "@com_google_protobuf//:struct_proto",
+)
+
+alias(
+    name = "timestamp",
+    actual = "timestamp_proto",
+)
+
+_well_known(
+    name = "timestamp_proto",
+    actual = "@com_google_protobuf//:timestamp_proto",
+)
+
+alias(
+    name = "wrappers",
+    actual = "wrappers_proto",
+)
+
+_well_known(
+    name = "wrappers_proto",
+    actual = "@com_google_protobuf//:wrappers_proto",
+)
+
+
+##
+# Common protos
+##
+
+alias(
+    name = "timeofday",
+    actual = "timeofday_proto",
+)
+
+_well_known(
+    name = "timeofday_proto",
+    actual = "@proto_common//:type_timeofday",
+)
+
+alias(
+    name = "quaternion",
+    actual = "quaternion_proto",
+)
+
+_well_known(
+    name = "quaternion_proto",
+    actual = "@proto_common//:type_quaternion",
+)
+
+alias(
+    name = "postal_address",
+    actual = "postal_address_proto",
+)
+
+_well_known(
+    name = "postal_address_proto",
+    actual = "@proto_common//:type_postal_address",
+)
+
+alias(
+    name = "month",
+    actual = "month_proto",
+)
+
+_well_known(
+    name = "month_proto",
+    actual = "@proto_common//:type_month",
+)
+
+alias(
+    name = "latlng",
+    actual = "latlng_proto",
+)
+
+_well_known(
+    name = "latlng_proto",
+    actual = "@proto_common//:type_latlng",
+)
+
+alias(
+    name = "fraction",
+    actual = "fraction_proto",
+)
+
+_well_known(
+    name = "fraction_proto",
+    actual = "@proto_common//:type_fraction",
+)
+
+alias(
+    name = "expr",
+    actual = "expr_proto",
+)
+
+_well_known(
+    name = "expr_proto",
+    actual = "@proto_common//:type_expr",
+)
+
+alias(
+    name = "dayofweek",
+    actual = "dayofweek_proto",
+)
+
+_well_known(
+    name = "dayofweek_proto",
+    actual = "@proto_common//:type_dayofweek",
+)
+
+alias(
+    name = "date",
+    actual = "date_proto",
+)
+
+_well_known(
+    name = "date_proto",
+    actual = "@proto_common//:type_date",
+)
+
+alias(
+    name = "color",
+    actual = "color_proto",
+)
+
+_well_known(
+    name = "color_proto",
+    actual = "@proto_common//:type_color",
+)
+
+alias(
+    name = "calendar_period",
+    actual = "calendar_period_proto",
+)
+
+_well_known(
+    name = "calendar_period_proto",
+    actual = "@proto_common//:type_calendar_period",
+)
+
+
 ## Core
 model(
     name = "crypto",

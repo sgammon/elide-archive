@@ -32,6 +32,7 @@ proto_library(
 proto_library(
     name = "type_color",
     srcs = ["google/type/color.proto"],
+    deps = ["@com_google_protobuf//:wrappers_proto"],
 )
 
 proto_library(
