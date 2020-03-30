@@ -77,12 +77,12 @@ INJECTED_TEST_DEPS = [
     "@junit_junit",
     "@org_seleniumhq_selenium_selenium_api",
     "@io_bazel_rules_webtesting//java/com/google/testing/web",
-    "//defs/toolchain/java/plugins:micronaut",
+    "@gust//defs/toolchain/java/plugins:micronaut",
 ]
 
 INJECTED_KOTLIN_TEST_DEPS = [
     "@com_github_jetbrains_kotlin//:kotlin-test",
-    "//defs/toolchain/java/plugins:micronaut",
+    "@gust//defs/toolchain/java/plugins:micronaut",
 ]
 
 INJECTED_MICRONAUT_TEST_DEPS = [
@@ -234,7 +234,7 @@ def _java_junit5_test(name,
             maven("ch.qos.logback:logback-classic"),
         ]),
         classpath_resources = (classpath_resources or [
-            "//javatests:logback.xml",
+            "@gust//javatests:logback.xml",
         ]),
         **kwargs
     )
