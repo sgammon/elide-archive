@@ -164,6 +164,7 @@ def _module(name,
 
 def _service(name,
              flavor = "normal",
+             web_flavor = "binary",
              **kwargs):
 
     """
@@ -172,6 +173,7 @@ def _service(name,
 
     :param name: Name of the target.
     :param flavor: Java gRPC generation flavor.
+    "param web_flavor: One of `binary` or `text` for gRPC web.
     :param kwargs: Keyword arguments to pass along.
     """
 
@@ -186,17 +188,20 @@ def _service(name,
         flavor = flavor,
     )
 
-    _closure_grpc_library(
-        name = "%s-%s-binary" % (name, GRPCJS_PREFIX_),
-        deps = [":%s" % (name)],
-        mode = "grpcweb",
-    )
-
-    _closure_grpc_library(
-        name = "%s-%s-text" % (name, GRPCJS_PREFIX_),
-        deps = [":%s" % (name)],
-        mode = "grpcwebtext",
-    )
+    if web_flavor == "binary":
+        _closure_grpc_library(
+            name = "%s-%s-binary" % (name, GRPCJS_PREFIX_),
+            deps = [":%s" % (name)],
+            mode = "grpcweb",
+        )
+    elif web_flavor == "text":
+        _closure_grpc_library(
+            name = "%s-%s-text" % (name, GRPCJS_PREFIX_),
+            deps = [":%s" % (name)],
+            mode = "grpcwebtext",
+        )
+    else:
+        fail("Unrecognized gRPC web type: '%s'" % web_flavor)
 
 
 def well_known_(name,
