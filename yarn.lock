@@ -131,9 +131,9 @@
   integrity sha512-dyx62Uo5kogrxFmqFNpGvbavfr8yjmuQlOyZczOuA60piULwlUsO7Oh3/1OUWKDSXaMMqHhFQfpdl+z0HjI6TQ==
 
 "@bazel/jasmine@^1.2.4":
-  version "1.4.1"
-  resolved "https://registry.yarnpkg.com/@bazel/jasmine/-/jasmine-1.4.1.tgz#eb70ad8099eb82505ee5841981fe4f3b7c8c47d0"
-  integrity sha512-fslF86VzSoQ5ir2aQScKbROqlVdoS0A4zeSslngIwbfhgrXZVbErXtuS43O5FgGCF+1zEfeTgXAgtwtjNdjs6Q==
+  version "1.6.1"
+  resolved "https://registry.yarnpkg.com/@bazel/jasmine/-/jasmine-1.6.1.tgz#fd7d10fe4cbf180f8be9db54b5da5c587d392d95"
+  integrity sha512-uG/d2CbU8Pa7Fh0Khkv9BLhMQgMzb5xGhd9/HbvhvTk45akI4HuP/hXcAUU01Cg09C0N04SAjy7hmrZHBuPpeg==
   dependencies:
     jasmine "~3.5.0"
     jasmine-core "~3.5.0"
