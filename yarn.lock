@@ -141,9 +141,9 @@
     v8-coverage "1.0.9"
 
 "@bazel/karma@^1.2.4":
-  version "1.4.1"
-  resolved "https://registry.yarnpkg.com/@bazel/karma/-/karma-1.4.1.tgz#12106dfd50ffd8ce98a35a0000badcb9d730c5c4"
-  integrity sha512-6VecxKGyMam1kA4mGX1GHPgustw8hdyR6v9LTvPWJQ7P5drZbvXUTMz+MLEzbElWdB2KDMljkJRlspbCXuTWew==
+  version "1.7.0"
+  resolved "https://registry.yarnpkg.com/@bazel/karma/-/karma-1.7.0.tgz#ec7e97a2629f5af0b2abe9a99ae30363a34af97d"
+  integrity sha512-mGYVD9DldB3v/DjxJpS39X1vUD6M32Al96DMoilwW3TSAazcRWwUAC6HY9z5Wtyeqwxyk8BY1Mg1/berWpoTxg==
   dependencies:
     tmp "0.1.0"
 
