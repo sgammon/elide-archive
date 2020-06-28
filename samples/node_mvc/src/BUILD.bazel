@@ -25,5 +25,5 @@ load(
 feathers_app(
     name = "FeatherMVCApp",
     entry_point = ":app.ts",
-    repository = "elide-tools/sample/node-mvc/runtime",
+    repository = "elide-ai/sample/node-mvc/runtime",
 )

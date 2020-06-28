@@ -29,7 +29,7 @@ spec:
     spec:
       containers:
         - name: haveged
-          image: us.gcr.io/bloom-sandbox/lowlevel/haveged:latest
+          image: us.gcr.io/elide-ai/lowlevel/haveged:latest
           securityContext:
             privileged: true
 ---

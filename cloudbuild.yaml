@@ -14,7 +14,7 @@
 steps:
 
 # Build: Gust Framework
-- name: 'us.gcr.io/elide-tools/tools/gcb'
+- name: 'us.gcr.io/elide-ai/tools/gcb'
   id: build
   args:
   - --bazelrc=.bazelrc
@@ -25,7 +25,7 @@ steps:
   - //gust/...
 
 # Image build: Todolist App
-- name: 'us.gcr.io/elide-tools/tools/gcb'
+- name: 'us.gcr.io/elide-ai/tools/gcb'
   id: todolist
   args:
     - --bazelrc=.bazelrc
@@ -39,17 +39,17 @@ steps:
 # Image pull: Built App
 - name: 'gcr.io/cloud-builders/docker'
   id: pull
-  args: ['pull', "us.gcr.io/elide-tools/sample/todolist/jvm:$SHORT_SHA"]
+  args: ['pull', "us.gcr.io/elide-ai/sample/todolist/jvm:$SHORT_SHA"]
 
 # Image tag: Latest
 - name: 'gcr.io/cloud-builders/docker'
   id: tag
-  args: ['tag', 'us.gcr.io/elide-tools/sample/todolist/jvm:$SHORT_SHA', 'us.gcr.io/elide-tools/sample/todolist/jvm:latest']
+  args: ['tag', 'us.gcr.io/elide-ai/sample/todolist/jvm:$SHORT_SHA', 'us.gcr.io/elide-ai/sample/todolist/jvm:latest']
 
 # Image push: Latest
 - name: 'gcr.io/cloud-builders/docker'
   id: push
-  args: ['push', 'us.gcr.io/elide-tools/sample/todolist/jvm:latest']
+  args: ['push', 'us.gcr.io/elide-ai/sample/todolist/jvm:latest']
 
 # Credentials: K8S
 - name: 'gcr.io/cloud-builders/gcloud'
@@ -62,11 +62,11 @@ steps:
     '--zone',
     'us-west2-c',
     '--project',
-    'bloom-sandbox'
+    'elide-ai'
   ]
 
 # Deploy: K8S (Envoy)
-- name: 'us.gcr.io/elide-tools/tools/gcb'
+- name: 'us.gcr.io/elide-ai/tools/gcb'
   id: deploy-envoy
   args:
     - --bazelrc=.bazelrc
@@ -76,7 +76,7 @@ steps:
     - //samples/todolist/src/config:envoy.replace
 
 # Deploy: K8S (Todolist)
-- name: 'us.gcr.io/elide-tools/tools/gcb'
+- name: 'us.gcr.io/elide-ai/tools/gcb'
   id: deploy-todolist
   args:
     - --bazelrc=.bazelrc
@@ -86,8 +86,8 @@ steps:
     - //samples/todolist/src/config:todolist.replace
 
 images:
-  - us.gcr.io/elide-tools/sample/todolist/jvm:$SHORT_SHA
-  - us.gcr.io/elide-tools/sample/todolist/jvm:latest
+  - us.gcr.io/elide-ai/sample/todolist/jvm:$SHORT_SHA
+  - us.gcr.io/elide-ai/sample/todolist/jvm:latest
 
 tags: ['framework', 'tools', 'gust']
 

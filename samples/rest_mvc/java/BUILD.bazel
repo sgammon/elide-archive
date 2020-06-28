@@ -31,8 +31,8 @@ micronaut_controller(
 micronaut_application(
     name = "MicronautMVCSample",
     native = True,
-    repository = "elide-tools/sample/basic/jvm",
-    native_repository = "elide-tools/sample/basic/native",
+    repository = "elide-ai/sample/basic/jvm",
+    native_repository = "elide-ai/sample/basic/native",
     controllers = [
         ":SampleJavaController",
         ":SampleKotlinController",

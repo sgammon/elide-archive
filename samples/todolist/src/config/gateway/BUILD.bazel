@@ -64,7 +64,7 @@ container_image(
     name = "gateway",
     base = "@envoy_base//image",
     image_format = "Docker",
-    repository = "elide-tools/sample/todolist/gateway",
+    repository = "elide-ai/sample/todolist/gateway",
     ports = ["8443", "8090", "9901"],
     tars = [
         ":tls-assets",

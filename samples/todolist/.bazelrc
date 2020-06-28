@@ -16,7 +16,7 @@
 ##
 
 build --embed_label=alpha
-build --define project=elide-tools
+build --define project=elide-ai
 build --define cluster=gke_bloom-sandbox_us-west2-c_k9-v4c
 
 common --experimental_allow_incremental_repository_updates

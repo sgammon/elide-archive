@@ -65,7 +65,7 @@ micronaut_application(
     name = "MicronautSSRSample",
     native = True,
     controllers = [":SSRKotlinController"],
-    repository = "elide-tools/sample/ssr/jvm",
-    native_repository = "elide-tools/sample/ssr/native",
+    repository = "elide-ai/sample/ssr/jvm",
+    native_repository = "elide-ai/sample/ssr/native",
     reflection_configuration = ":reflection-config",
 )

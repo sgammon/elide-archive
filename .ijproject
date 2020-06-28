@@ -1,0 +1,37 @@
+import .bazelproject
+
+build_flags:
+  --config=dev
+  --define=todolist_release_tag=latest
+  --define=project=elide-ai
+
+directories:
+  .
+  defs
+  external
+  js
+  java
+  gust
+  types
+  tests
+  jstests
+  javatests
+  tools
+  style
+  samples
+  .github
+  .develop
+  .buildkite
+  -node_modules
+  -dist
+  -build
+
+targets:
+  //tools/...
+  //gust/...
+  //java/...
+  //js/...
+  //style/...
+  //tests/...
+  //jstests/...
+  //javatests/...

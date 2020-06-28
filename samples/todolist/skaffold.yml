@@ -6,7 +6,7 @@ metadata:
 
 build:
   artifacts:
-  - image: us.gcr.io/elide-tools/sample/todolist/jvm
+  - image: us.gcr.io/elide-ai/sample/todolist/jvm
     bazel:
       target: //samples/todolist/src:TodolistServer-image.tar
       args:

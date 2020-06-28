@@ -195,6 +195,6 @@ tracing:
     sampler: probability=1.0
 
 gcp:
-  project-id: elide-tools
+  project-id: elide-ai
   tracing:
     enabled: true

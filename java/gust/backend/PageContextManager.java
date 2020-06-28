@@ -105,6 +105,7 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
   private final @Nonnull Context.Builder context;
 
   /** HTTP request bound to this flow. */
+  @SuppressWarnings("rawtypes")
   private final @Nonnull HttpRequest request;
 
   /** Set of interpreted/immutable client hints. */
@@ -176,7 +177,7 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
    * @return Context builder to use, factoring in the provided request.
    */
   @VisibleForTesting
-  @SuppressWarnings("WeakerAccess")
+  @SuppressWarnings({"WeakerAccess", "rawtypes"})
   static @Nonnull Context.Builder interpretRequest(@Nonnull HttpRequest request) {
     Context.Builder builder = Context.newBuilder();
     interpretHints(request, builder);
@@ -190,7 +191,7 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
    * @param builder Builder to apply the hints to, if found.
    */
   @VisibleForTesting
-  @SuppressWarnings("WeakerAccess")
+  @SuppressWarnings({"WeakerAccess", "rawtypes"})
   static void interpretHints(@Nonnull HttpRequest request, @Nonnull Context.Builder builder) {
     HttpHeaders headers = request.getHeaders();
     Context.ClientHints.Builder hints = builder.getHintsBuilder();
@@ -631,9 +632,9 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
       this.assetManager.assetMetadataByModule(Objects.requireNonNull(name)));
 
     // fail if not present
-    if (!maybeAsset.isPresent())
+    if (maybeAsset.isEmpty())
       throw new IllegalArgumentException(format("Failed to locate script module '%s'.", name));
-    var asset = maybeAsset.get();
+    ManagedAsset<ScriptAsset> asset = maybeAsset.get();
 
     if (!asset.getType().equals(AssetManager.ModuleType.JS))
       throw new IllegalArgumentException(format("Cannot include asset '%s' as %s, it is of type JS.",
@@ -733,9 +734,9 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
       this.assetManager.assetMetadataByModule(Objects.requireNonNull(name)));
 
     // fail if not present
-    if (!maybeAsset.isPresent())
+    if (maybeAsset.isEmpty())
       throw new IllegalArgumentException(format("Failed to locate style module '%s'.", name));
-    var asset = maybeAsset.get();
+    ManagedAsset<StyleAsset> asset = maybeAsset.get();
 
     if (!asset.getType().equals(AssetManager.ModuleType.CSS))
       throw new IllegalArgumentException(format("Cannot include asset '%s' as %s, it is of type CSS.",
@@ -939,8 +940,7 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
     if (hints.isPresent()) {
       // add hints to indicated set
       this.context.getHintsBuilder().addAllSupported(hints.get());
-      if (ttl.isPresent())
-        this.context.getHintsBuilder().setLifetime(ttl.get());
+      ttl.ifPresent(aLong -> this.context.getHintsBuilder().setLifetime(aLong));
     } else {
       // if an empty optional is passed, clear the current set
       this.context.getHintsBuilder().clearIndicated();
@@ -1031,7 +1031,7 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
   public @Nonnull PageContextManager cdnPrefix(@Nonnull Optional<String> prefix) {
     this.cdnPrefix = prefix;
     if (prefix.isPresent()) {
-      var proto = this.trustedResource(URI.create(prefix.get()));
+      TrustedResourceUrlProto proto = this.trustedResource(URI.create(prefix.get()));
       this.context.setCdnPrefix(proto);
       this.injected.put(CDN_PREFIX_IJ_PROP, proto);
     } else {
@@ -1182,6 +1182,7 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
    *
    * @return Active HTTP request object.
    */
+  @SuppressWarnings("rawtypes")
   public @Nonnull HttpRequest getRequest() {
     return this.request;
   }

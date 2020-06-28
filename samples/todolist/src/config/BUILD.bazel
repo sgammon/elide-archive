@@ -80,7 +80,7 @@ _k9(
     name = "todolist",
     template = ":99-todolist.k8s.yaml",
     images = {
-      "us.gcr.io/elide-tools/sample/todolist/jvm": "//samples/todolist/src:TodolistServer-image",
+      "us.gcr.io/elide-ai/sample/todolist/jvm": "//samples/todolist/src:TodolistServer-image",
     },
 )
 

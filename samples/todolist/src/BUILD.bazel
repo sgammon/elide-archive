@@ -146,7 +146,7 @@ micronaut_application(
     # -- Publishing / Images -- #
     native = False,
     tag = "$(todolist_release_tag)",
-    repository = "elide-tools/sample/todolist/jvm",
-    native_repository = "elide-tools/sample/todolist/native",
+    repository = "elide-ai/sample/todolist/jvm",
+    native_repository = "elide-ai/sample/todolist/native",
     reflection_configuration = ":reflection.json",
 )

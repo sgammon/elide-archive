@@ -37,7 +37,7 @@ option objc_class_prefix = "TDL";
 option ruby_package = "Elide::Samples::Todolist::Schema";
 option java_package = "tools.elide.samples.todolist.schema";
 option csharp_namespace = "Elide.Samples.Todolist.Schema";
-option go_package = "github.com/elide-tools/elide/samples/todolist/schema;todolist";
+option go_package = "github.com/elide-ai/elide/samples/todolist/schema;todolist";
 
 import "google/type/month.proto";
 import "google/type/latlng.proto";

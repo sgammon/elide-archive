@@ -358,7 +358,7 @@ DEPS = {
     "com_google_closure_stylesheets": {
         "type": "java",
         "licenses": ["notice"],
-        "targets": ["https://storage.googleapis.com/bloom-software/closure-stylesheets-1.6.0-b7.jar"],
+        "targets": ["https://storage.googleapis.com/elide-software/closure-stylesheets-1.6.0-b7.jar"],
         "seal": "1fe5acd3b7cb12ef6be6b8f0bb697c1577ca0095f9f94d431aa15b7a242e756b",
         "deps": [
             "@args4j",
@@ -391,7 +391,7 @@ DEPS = {
     "com_google_template_soy": {
         "type": "java",
         "licenses": ["notice"],
-        "targets": ["https://storage.googleapis.com/bloom-software/frontend/soy/soy-lib-b29.jar"],
+        "targets": ["https://storage.googleapis.com/elide-software/frontend/soy/soy-lib-b29.jar"],
         "seal": "f2d8a4c079caa18135cddd05c379e5fa210a439986f960a871f3881ddd8455cc",
         "deps": [
             "@args4j",
@@ -434,7 +434,7 @@ DEPS = {
         "type": "archive",
         "format": "zip",
         "overlay": "@gust//external:soy_jssrc.BUILD",
-        "targets": ["https://storage.googleapis.com/bloom-software/frontend/soy/soy-jssrc-b29.jar"],
+        "targets": ["https://storage.googleapis.com/elide-software/frontend/soy/soy-jssrc-b29.jar"],
         "seal": "32a1b96d30a3ec72d00a20ad9329046ce8960b473c2b94f1325dd969034fc81d"},
 
     # Micronaut: Views (Core)
@@ -444,8 +444,8 @@ DEPS = {
         "forceLocal": False,
         "overlay": "micronaut-views-core.bzl",
         "local": "/workspace/GUST/vendor/micronaut/views/views-core",
-        "targets": ["https://storage.googleapis.com/bloom-software/micronaut/b9/views-core-1.3.4.BUILD-SNAPSHOT.jar"],
-        "seal": "a648d1318182aa484acc933a071fe068d43ca0498f8d979faee7749b7cac9ded",
+        "targets": ["https://storage.googleapis.com/elide-software/micronaut/b10/views-core-1.3.4.BUILD-SNAPSHOT.jar"],
+        "seal": "6246723ab4b8eee8c4cc3038d1ac43038eac247b049fdffa227004d930a21cc1",
         "deps": [
             maven("io.micronaut:micronaut-runtime"),
             maven("io.micronaut:micronaut-http-client"),
@@ -461,8 +461,8 @@ DEPS = {
         "forceLocal": False,
         "overlay": "micronaut-views-soy.bzl",
         "local": "/workspace/GUST/vendor/micronaut/views/views-soy",
-        "targets": ["https://storage.googleapis.com/bloom-software/micronaut/b9/views-soy-1.3.4.BUILD-SNAPSHOT.jar"],
-        "seal": "cce1f1d7144d12728757094a26ab1dbe5cb7964f045ce6f513c551ef2d31677e",
+        "targets": ["https://storage.googleapis.com/elide-software/micronaut/b10/views-soy-1.3.4.BUILD-SNAPSHOT.jar"],
+        "seal": "16ddcf6cb18fec2e5e8799226e54dd85bd4a948d85ea34721a836b5d4aae6915",
         "deps": [
             "@com_google_template_soy",
             "@com_google_common_html_types",

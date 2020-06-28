@@ -261,15 +261,15 @@ container_pull(
 container_pull(
     name = "native_base",
     registry = "us.gcr.io",
-    repository = "elide-tools/base/alpine",
-    digest = "sha256:decbf1b8ba41c556941f2fbd82811822f7b9622cbd3a17d5d4041cb5438bae2d",
+    repository = "elide-ai/base/alpine",
+    digest = "sha256:ce4ee2c86f73fb0ed996c23a7ff60f33edd3ba760b1dc411a174240424524de4",
 )
 
 container_pull(
     name = "node_base",
     registry = "us.gcr.io",
-    repository = "elide-tools/base/node",
-    digest = "sha256:76b64868e73d27361e294fd346b72aa6c50ad4e669bd9c2684fbdda7e839ea39",
+    repository = "elide-ai/base/node",
+    digest = "sha256:de50770615dcf1112f3116166ec72bf6fcf4c163d90c1a060503d5f5c5b73dcd",
 )
 
 container_pull(
