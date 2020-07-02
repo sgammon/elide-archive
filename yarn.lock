@@ -161,9 +161,9 @@
     source-map "^0.6.0"
 
 "@bazel/terser@^1.2.4":
-  version "1.4.1"
-  resolved "https://registry.yarnpkg.com/@bazel/terser/-/terser-1.4.1.tgz#af4d63c768e72d57674a4514857fea5d9984378d"
-  integrity sha512-JGhv22d2IOGePE0VwmF6c88GOP3Ij621qtLoI7ZVLDRTElSRAknqj09qX6Zni2DkjT2c/+Ldm2qE8P6hOCXpEg==
+  version "1.7.0"
+  resolved "https://registry.yarnpkg.com/@bazel/terser/-/terser-1.7.0.tgz#c43e711e13b9a71c7abd3ade04fb4650d547ad01"
+  integrity sha512-u/UXk0WUinvkk1g5xxfqGieBz3r12Bj2y2m25lC5GjHBgCpGk7DyeGGi9H3QQNO1Wmpw51QSE9gaPzKzjUVGug==
 
 "@bazel/typescript@^1.2.4":
   version "1.4.1"
