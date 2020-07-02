@@ -154,6 +154,7 @@ micronaut_library(
         "//java/gust/util:Hex",
         javaproto("//gust/core:data"),
         maven("org.reactivestreams:reactive-streams"),
+        maven("io.micronaut:micronaut-security-annotations"),
     ],
 )
 

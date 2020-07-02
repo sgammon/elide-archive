@@ -71,12 +71,12 @@ GCLOUD_MONITORING_VERSION = "1.99.2"
 GRPC_JAVA_VERSION = "1.27.2"
 OPENTRACING_VERSION = "0.2.1"
 
-MICRONAUT_VERSION = "1.3.2"
-MICRONAUT_DATA_VERSION = "1.0.0"
-MICRONAUT_GRPC_VERSION = "1.1.1"
-MICRONAUT_TEST_VERSION = "1.1.5"
+MICRONAUT_VERSION = "2.0.0"
+MICRONAUT_DATA_VERSION = "1.1.1"
+MICRONAUT_GRPC_VERSION = "2.0.0"
+MICRONAUT_TEST_VERSION = "1.2.0"
 MICRONAUT_REDIS_VERSION = "1.2.0"
-MICRONAUT_SECURITY_VERSION = "1.3.1"
+MICRONAUT_SECURITY_VERSION = "2.0.0.M2"
 
 GRPC_EXCLUSIONS = [
       maven.exclusion(
@@ -220,6 +220,7 @@ MICRONAUT_COORDINATES = [
 MICRONAUT_EXTRAS = [
     ("io.netty:netty-buffer", NETTY_VERSION),
     ("io.micronaut:micronaut-security", MICRONAUT_SECURITY_VERSION),
+    ("io.micronaut:micronaut-security-annotations", MICRONAUT_SECURITY_VERSION),
     ("io.micronaut.data:micronaut-data-processor", MICRONAUT_DATA_VERSION),
     ("io.micronaut.grpc:micronaut-grpc-runtime", MICRONAUT_GRPC_VERSION),
     ("io.micronaut.grpc:micronaut-grpc-annotation", MICRONAUT_GRPC_VERSION),

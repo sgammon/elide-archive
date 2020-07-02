@@ -29,7 +29,7 @@ DEV = True
 ## Framework version tag.
 ## ------------------------------------
 ## Displayed in certain areas of the app, mostly when `DEV` is active.
-VERSION = "1.0.0-alpha3"
+VERSION = "1.0.0-alpha4"
 
 ## `Renaming` mode.
 ## ------------------------------------
@@ -89,7 +89,7 @@ BROWSERS_VERSION = "0.3.2"
 ## GraalVM version.
 ## ------------------------------------
 ## Assigned to the latest available CE VM.
-GRAALVM_VERSION = "20.0.0"
+GRAALVM_VERSION = "20.1.0"
 
 ## GraalVM JDK version.
 ## ------------------------------------
