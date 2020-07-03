@@ -94,6 +94,7 @@ INJECTED_MICRONAUT_DEPS = [
     maven("io.micronaut:micronaut-core"),
     maven("io.micronaut:micronaut-http"),
     maven("io.micronaut:micronaut-http-client"),
+    maven("io.micronaut:micronaut-security-annotations"),
     maven("io.micronaut:micronaut-inject"),
     maven("io.micronaut:micronaut-inject-java"),
     maven("io.micronaut:micronaut-validation"),

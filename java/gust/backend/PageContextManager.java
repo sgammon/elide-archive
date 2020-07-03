@@ -18,6 +18,7 @@ import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Sets;
 import com.google.common.html.types.TrustedResourceUrlProto;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
+import com.google.protobuf.ByteString;
 import com.google.template.soy.data.SanitizedContent;
 import com.google.template.soy.data.UnsafeSanitizedContentOrdainer;
 import gust.backend.runtime.AssetManager;
@@ -547,6 +548,17 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
   // -- Builder Interface (Context) -- //
 
   /**
+   * Retrieve the current value for the page title, set in the builder. If there is no value, {@link Optional#empty()}
+   * is supplied as the return value.
+   *
+   * @return Current page title, wrapped in an optional value.
+   */
+  public @Nonnull Optional<String> title() {
+    final String val = this.context.getMetaBuilder().getTitle();
+    return "".equals(val) ? Optional.empty() : Optional.of(val);
+  }
+
+  /**
    * Set the page title for the current render flow. If the app makes use of the framework's built-in page frame, the
    * title will automatically be used.
    *
@@ -559,6 +571,95 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
     //noinspection ConstantConditions
     if (title == null) throw new IllegalArgumentException("Cannot pass `null` for page title.");
     this.context.getMetaBuilder().setTitle(title);
+    return this;
+  }
+
+  /**
+   * Retrieve the current value for the page description, set in the builder. If there is no value set,
+   * {@link Optional#empty()} is supplied as the return value.
+   *
+   * @return Current page description, wrapped in an optional value.
+   */
+  public @Nonnull Optional<String> description() {
+    final String val = this.context.getMetaBuilder().getDescription();
+    return "".equals(val) ? Optional.empty() : Optional.of(val);
+  }
+
+  /**
+   * Set the page description for the current render flow. If the app makes use of the framework's built-in page frame,
+   * the value will automatically be used.
+   *
+   * @param description Description to set for the current page. Do not pass `null`.
+   * @return Current page context manager (for call chain-ability).
+   * @throws IllegalArgumentException If `null` is passed for the title.
+   */
+  @CanIgnoreReturnValue
+  public @Nonnull PageContextManager description(@Nonnull String description) {
+    //noinspection ConstantConditions
+    if (description == null) throw new IllegalArgumentException("Cannot pass `null` for page description.");
+    this.context.getMetaBuilder().setDescription(description);
+    return this;
+  }
+
+  /**
+   * Retrieve the current value for the page keywords, set in the builder. If there is no value set,
+   * {@link Optional#empty()} is supplied as the return value.
+   *
+   * @return Current page keywords, wrapped in an optional value.
+   */
+  public @Nonnull Optional<List<String>> keywords() {
+    final ArrayList<String> val = this.context.getMetaBuilder().getKeywordList().asByteStringList()
+            .stream()
+            .map(ByteString::toString)
+            .collect(Collectors.toCollection(() -> new ArrayList<>(this.context.getMetaBuilder().getKeywordCount())));
+    return val.isEmpty() ? Optional.empty() : Optional.of(val);
+  }
+
+  /**
+   * Add the provided page keywords for the current render flow. If the app makes use of the framework's built-in page
+   * frame, the value will automatically be used.
+   *
+   * @param keywords Keywords to set for the current page. Do not pass `null`.
+   * @return Current page context manager (for call chain-ability).
+   * @throws IllegalArgumentException If `null` is passed for the title.
+   */
+  @CanIgnoreReturnValue
+  public @Nonnull PageContextManager addKeyword(@Nonnull String... keywords) {
+    //noinspection ConstantConditions
+    if (keywords == null) throw new IllegalArgumentException("Cannot pass `null` for page title.");
+    for (String keyword : keywords) {
+      this.context.getMetaBuilder().addKeyword(keyword);
+    }
+    return this;
+  }
+
+  /**
+   * Clear the current set of page keywords for the current render flow. If the app makes use of the framework's
+   * built-in page frame, the value will automatically be used.
+   *
+   * @return Current page context manager (for call chain-ability).
+   * @throws IllegalArgumentException If `null` is passed for the title.
+   */
+  @CanIgnoreReturnValue
+  public @Nonnull PageContextManager clearKeywords() {
+    this.context.getMetaBuilder().clearKeyword();
+    return this;
+  }
+
+  /**
+   * Overwrite the current set of page keywords for the current render flow. If the app makes use of the framework's
+   * built-in page frame, the value will automatically be used.
+   *
+   * @param keywords Keywords to set for the current page. Do not pass `null`.
+   * @return Current page context manager (for call chain-ability).
+   * @throws IllegalArgumentException If `null` is passed for the title.
+   */
+  @CanIgnoreReturnValue
+  public @Nonnull PageContextManager setKeywords(@Nonnull Collection<String> keywords) {
+    //noinspection ConstantConditions
+    if (keywords == null) throw new IllegalArgumentException("Cannot pass `null` for page title.");
+    this.clearKeywords();
+    if (!keywords.isEmpty()) this.context.getMetaBuilder().addAllKeyword(keywords);
     return this;
   }
 

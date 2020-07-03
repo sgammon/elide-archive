@@ -73,6 +73,20 @@ java_plugin(
 )
 
 java_plugin(
+    name = "micronaut-package-config",
+    generates_api = True,
+    processor_class = "io.micronaut.annotation.processing.PackageConfigurationInjectProcessor",
+    deps = [":micronaut-inject"],
+)
+
+java_plugin(
+    name = "micronaut-service-description",
+    generates_api = True,
+    processor_class = "io.micronaut.annotation.processing.ServiceDescriptionProcessor",
+    deps = [":micronaut-inject"],
+)
+
+java_plugin(
     name = "micronaut-config",
     generates_api = True,
     processor_class = "io.micronaut.annotation.processing.PackageConfigurationInjectProcessor",
@@ -90,6 +104,8 @@ java_library(
         ":micronaut-beans",
         ":micronaut-types",
         ":micronaut-config",
+        "micronaut-package-config",
+        "micronaut-service-description",
     ],
 )
 
