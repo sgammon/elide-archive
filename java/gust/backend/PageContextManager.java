@@ -737,9 +737,65 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
    * @throws IllegalArgumentException If `null` is passed for the provided links.
    */
   @CanIgnoreReturnValue
+  @SuppressWarnings("ConstantConditions")
   public @Nonnull PageContextManager setLinks(@Nonnull Collection<Context.PageLink.Builder> links) {
+    if (links == null) throw new IllegalArgumentException("Cannot pass `null` for page links.");
     this.clearLinks();
     links.forEach(this::addLink);
+    return this;
+  }
+
+  /**
+   * Overwrite the value specified for the "robots" metadata key in the current render flow. If the app makes use of the
+   * framework's built-in page frame, the value will automatically be used.
+   *
+   * @param value Robots metadata value to use.
+   * @return Current page context manager (for call chain-ability).
+   * @throws IllegalArgumentException If `null` is passed for the provided links.
+   */
+  @CanIgnoreReturnValue
+  @SuppressWarnings("ConstantConditions")
+  public @Nonnull PageContextManager setRobots(@Nonnull String value) {
+    if (value == null) throw new IllegalArgumentException("Cannot pass `null` for robots value.");
+    this.context.getMetaBuilder().setRobots(value);
+    return this;
+  }
+
+  /**
+   * Overwrite the value specified for the "googlebot" metadata key in the current render flow. If the app makes use of
+   * the framework's built-in page frame, the value will automatically be used.
+   *
+   * @param value Googlebot metadata value to use.
+   * @return Current page context manager (for call chain-ability).
+   * @throws IllegalArgumentException If `null` is passed for the provided links.
+   */
+  @CanIgnoreReturnValue
+  @SuppressWarnings("ConstantConditions")
+  public @Nonnull PageContextManager setGooglebot(@Nonnull String value) {
+    if (value == null) throw new IllegalArgumentException("Cannot pass `null` for googlebot value.");
+    this.context.getMetaBuilder().setGooglebot(value);
+    return this;
+  }
+
+  /**
+   * Clear the current value, if any, set for <pre>robots</pre> in the current render flow metadata.
+   *
+   * @return Current page context manager (for call chain-ability).
+   */
+  @CanIgnoreReturnValue
+  public @Nonnull PageContextManager clearRobots() {
+    this.context.getMetaBuilder().clearRobots();
+    return this;
+  }
+
+  /**
+   * Clear the current value, if any, set for <pre>googlebot</pre> in the current render flow metadata.
+   *
+   * @return Current page context manager (for call chain-ability).
+   */
+  @CanIgnoreReturnValue
+  public @Nonnull PageContextManager clearGooglebot() {
+    this.context.getMetaBuilder().clearGooglebot();
     return this;
   }
 
