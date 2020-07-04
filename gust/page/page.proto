@@ -87,6 +87,12 @@ message Context {
 
       // Directs facebook to scrape another url instead of the url the page was served from.
       string url = 7;
+
+      // "Site" parameter used for Twitter cards.
+      string twitter_site = 8;
+
+      // "Creator" parameter used for Twitter cards.
+      string twitter_creator = 9;
     }
 
     // Tags for the Twitter Crawler.
@@ -163,6 +169,12 @@ message Context {
 
     // RDFa prefixes to add. If left unset, the default OpenGraph prefix will be used.
     repeated RDFPrefix prefix = 17;
+
+    // Googlebot-specific directives.
+    string googlebot = 18;
+
+    // Set the rating for this page (see: SafeSearch ratings).
+    string rating = 19;
   }
 
   // Specifies information about an asset or foreign page linked to this page. Stylesheets, favorite icons ("favicons"),

@@ -98,7 +98,6 @@
       {if isNonnull($base)}
         <base href="{$base}">
       {/if}
-
       {if isNonnull($preconnect)}
           {for $preconnectDirective in $preconnect}
             <link href="{$preconnectDirective.domain}"
@@ -204,11 +203,24 @@
           <meta property="og:type" content="{$page.meta.openGraph.type}">
           <meta name="twitter:card" content="summary">
         {/if}
-        <meta name="twitter:site" content="@bloomworksIO">
-        <meta name="twitter:creator" content="@beepbeepboop">
+        {if $page.meta.openGraph.twitterSite}
+          <meta name="twitter:site" content="{$page.meta.openGraph.twitterSite}">
+        {/if}
+        {if $page.meta.openGraph.twitterCreator}
+          <meta name="twitter:creator" content="{$page.meta.openGraph.twitterCreator}">
+        {/if}
       {/if}
       {if isNonnull($ogTags)}
           {$ogTags}
+      {/if}
+      {if $page.meta.robots}
+          <meta name="robots" content="{$page.meta.robots}">
+      {/if}
+      {if $page.meta.googlebot}
+          <meta name="googlebot" content="{$page.meta.googlebot}">
+      {/if}
+      {if $page.meta.rating}
+          <meta name="rating" content="{$page.meta.rating}">
       {/if}
   </head>
   <body{if isNonnull($bodyClass)} class="{$bodyClass}"{/if}>
