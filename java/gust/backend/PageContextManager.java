@@ -847,6 +847,39 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
   }
 
   /**
+   * Return the set of RDFa prefixes affixed to the current render flow, if any. If none are found,
+   * {@link Optional#empty()} is returned.
+   *
+   * @return Set of prefixes available on the current render flow, if any.
+   */
+  public @Nonnull Optional<List<Context.RDFPrefix>> prefixes() {
+    if (this.context.getMetaBuilder().getPrefixCount() > 0) {
+      return Optional.of(this.context.getMetaBuilder().getPrefixList());
+    }
+    return Optional.empty();
+  }
+
+  /**
+   * Overwrite the full set of RDFa prefixes for the current render flow. If the rendered page uses the framework's page
+   * template, the values will be serialized and rendered into the page head.
+   *
+   * @return Current page context manager (for call chain-ability).
+   */
+  public @Nonnull PageContextManager setPrefixes(@Nonnull Optional<List<Context.RDFPrefix>> prefixes) {
+    if (prefixes.isPresent()) {
+      List<Context.RDFPrefix> prefixList = prefixes.get();
+      prefixList.forEach((prefix) -> {
+        this.context.getMetaBuilder().addPrefix(Context.RDFPrefix.newBuilder()
+          .setPrefix(prefix.getPrefix())
+          .setTarget(prefix.getTarget()));
+      });
+      return this;
+    }
+    this.context.getMetaBuilder().clearPrefix();
+    return this;
+  }
+
+  /**
    * Include the specified JavaScript resource in the rendered page, according to the specified settings. The module is
    * expected to exist and be included in the application's asset bundle.
    *
