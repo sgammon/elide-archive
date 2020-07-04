@@ -141,7 +141,7 @@ message Context {
     string startup_image = 9;
 
     // Defines a favicon image link to apply to the browser tab.
-    webutil.html.types.TrustedResourceUrlProto favicon = 10;
+    repeated PageLink link = 10;
 
     // Defines the language we are rendering the page for.
     base.LanguageSpec language = 11;
@@ -160,6 +160,22 @@ message Context {
 
     // Directive for color scheme compatibility.
     string color_scheme = 16;
+
+    // RDFa prefixes to add. If left unset, the default OpenGraph prefix will be used.
+    repeated RDFPrefix prefix = 17;
+  }
+
+  // Specifies information about an asset or foreign page linked to this page. Stylesheets, favorite icons ("favicons"),
+  // HTTP preloading, and other features are implemented via HTML links.
+  message PageLink {
+    // Relevance of this link to the rest of the page.
+    string relevance = 1;
+
+    // Specifies the mime-type of this link, if applicable.
+    string type = 2;
+
+    // Specifies the URL target for this link.
+    webutil.html.types.TrustedResourceUrlProto href = 3;
   }
 
   // Specifies details about an application manifest, which should be or is linked to a given web
@@ -451,6 +467,15 @@ message Context {
 
     // Raw `ETag` component describing the response. Leave unset to calculate dynamically.
     data.DataFingerprint response = 4;
+  }
+
+  // Specifies an individual RDF prefix block to include in the HTML tag.
+  message RDFPrefix {
+    // Prefix value to apply.
+    string prefix = 1;
+
+    // Target value to apply.
+    string target = 2;
   }
 
   // HTTP cookies to set on the response, including the content of each cookie, name, and any flags.

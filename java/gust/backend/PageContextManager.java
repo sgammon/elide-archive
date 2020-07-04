@@ -664,6 +664,86 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
   }
 
   /**
+   * Retrieve the full set of regular HTML metadata links attached to the current render flow. If the app makes use of
+   * the framework's built-in age frame, these links will automatically be applied.
+   *
+   * @return Current set of links that will be listed in page metadata.
+   */
+  public @Nonnull Optional<List<Context.PageLink>> links() {
+    final List<Context.PageLink> links = this.context.getMetaBuilder().getLinkList();
+    return links.isEmpty() ? Optional.empty() : Optional.of(links);
+  }
+
+  /**
+   * Add a regular HTML metadata link to the current render flow, specified by a {@link Context.PageLink} proto record.
+   * Adding via this method is sufficient for the link to make it into the rendered page, so long as the framework's
+   * page frame is invoked.
+   *
+   * @param link HTML metadata link to add to the page.
+   * @return Current page context manager (for call chain-ability).
+   * @throws IllegalArgumentException If `null` is passed for the title.
+   */
+  @CanIgnoreReturnValue
+  public @Nonnull PageContextManager addLink(@Nonnull Context.PageLink.Builder link) {
+    //noinspection ConstantConditions
+    if (link == null) throw new IllegalArgumentException("Cannot pass `null` for page link spec.");
+    this.context.getMetaBuilder().addLink(link);
+    return this;
+  }
+
+  /**
+   * Add a regular HTML metadata link to the current render flow, specified by the provided method parameters. Each
+   * parameter maps to an attribute specified for the <pre>link</pre> HTML element.
+   *
+   * @param relevance HTML "rel" attribute.
+   * @param href HTML "href" attribute.
+   * @param type HTML "type" attribute. Wrapped in an optional.
+   * @return Current page context manager (for call chain-ability).
+   * @throws IllegalArgumentException If `null` is passed for any parameter.
+   */
+  @CanIgnoreReturnValue
+  @SuppressWarnings({"ConstantConditions", "OptionalAssignedToNull"})
+  public @Nonnull PageContextManager addLink(@Nonnull String relevance,
+                                             @Nonnull URI href,
+                                             @Nonnull Optional<String> type) {
+    if (relevance == null) throw new IllegalArgumentException("Cannot pass `null` for page link relevance.");
+    if (href == null) throw new IllegalArgumentException("Cannot pass `null` for page link href.");
+    if (type == null) throw new IllegalArgumentException("Cannot pass `null` for page link type.");
+    final Context.PageLink.Builder builder = Context.PageLink.newBuilder()
+      .setRelevance(relevance)
+      .setHref(this.trustedResource(href));
+    type.ifPresent(builder::setType);
+    this.context.getMetaBuilder().addLink(builder);
+    return this;
+  }
+
+  /**
+   * Clear the set of HTML metadata links assigned to the current render flow.
+   *
+   * @return Current page context manager (for call chain-ability).
+   */
+  @CanIgnoreReturnValue
+  public @Nonnull PageContextManager clearLinks() {
+    this.context.getMetaBuilder().clearLink();
+    return this;
+  }
+
+  /**
+   * Overwrite the set of page metadata links for the current render flow. If the app makes use of the framework's
+   * built-in page frame, the value will automatically be used.
+   *
+   * @param links Link directives to set for the current page. Do not pass `null`.
+   * @return Current page context manager (for call chain-ability).
+   * @throws IllegalArgumentException If `null` is passed for the provided links.
+   */
+  @CanIgnoreReturnValue
+  public @Nonnull PageContextManager setLinks(@Nonnull Collection<Context.PageLink.Builder> links) {
+    this.clearLinks();
+    links.forEach(this::addLink);
+    return this;
+  }
+
+  /**
    * Include the specified JavaScript resource in the rendered page, according to the specified settings. The module is
    * expected to exist and be included in the application's asset bundle.
    *

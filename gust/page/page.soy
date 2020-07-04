@@ -41,6 +41,23 @@
 
 
 /**
+ * Render HTML root prefix values. Generally this includes OpenGraph, and any additional prefixes used by the web app to
+ * declare structured content.
+ */
+{template .prefixes kind="text"}
+  {@param? prefixes: list<page.Context.RDFPrefix>}  /** Prefixes to render. */
+  {if isNonnull($prefixes)}
+    {for $prefix in $prefixes}
+      {if not isFirst($prefix)}{sp}{/if}
+      {$prefix.prefix}:{sp}{$prefix.target}
+    {/for}
+  {else}
+    og: http://ogp.me/ns#
+  {/if}
+{/template}
+
+
+/**
  * Generic wrapping template for an HTML web page. This is generally used enclosed from a page template, so that the
  * server may have a routine to render a page in full. Page frames are never rendered on the front-end, because the DOM
  * already exists when rendering occurs.
@@ -72,7 +89,9 @@
   {/let}
 
   <!doctype html>
-  <html class="no-js"{if isNonnull($languageSpec)} lang="{$languageSpec}"{/if} prefix="og: http://ogp.me/ns#">
+  <html
+     class="no-js"{if isNonnull($languageSpec)} lang="{$languageSpec}"{/if}
+     prefix="{call .prefixes}{param prefixes: $page.meta.prefixList /}{/call}">
   <head>
       <meta charset="utf-8">
 
@@ -100,13 +119,18 @@
               {/call}
           {/for}
       {/if}
+      {if isNonnull($page) and isNonnull($page.meta) and $page.meta.linkList}
+          {for $linkDirective in $page.meta.linkList}
+              <link rel="{$linkDirective.relevance}"
+                    href="{$linkDirective.href}"
+                    {if $linkDirective.type}type="{$linkDirective.type}"{/if}>
+
+          {/for}
+      {/if}
       {if isNonnull($page) and isNonnull($page.meta) and $page.meta.viewport}
         <meta name="viewport" content="{$page.meta.viewport}">
       {else}
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, viewport-fit=cover">
-      {/if}
-      {if isNonnull($page) and isNonnull($page.meta) and $page.meta.favicon}
-        <link rel="icon" href="{$page.meta.favicon}">
       {/if}
       {if isNonnull($page) and isNonnull($page.meta) and $page.meta.manifest}
         <link rel="manifest" href="{$page.meta.manifest}">
@@ -116,9 +140,9 @@
       {/if}
       {if isNonnull($liftedJS)}
         <script id="{xid('page-data')}" type="application/json">
-                {if isNonnull($liftedJS)}
-                    {$liftedJS}
-                {/if}
+          {if isNonnull($liftedJS)}
+                {$liftedJS}
+          {/if}
         </script>
       {/if}
       {if isNonnull($page) and isNonnull($page.scripts) and $page.scripts.linkList}
