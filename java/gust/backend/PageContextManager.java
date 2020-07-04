@@ -751,7 +751,7 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
    *
    * @param value Robots metadata value to use.
    * @return Current page context manager (for call chain-ability).
-   * @throws IllegalArgumentException If `null` is passed for the provided links.
+   * @throws IllegalArgumentException If `null` is passed for the provided value.
    */
   @CanIgnoreReturnValue
   @SuppressWarnings("ConstantConditions")
@@ -767,7 +767,7 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
    *
    * @param value Googlebot metadata value to use.
    * @return Current page context manager (for call chain-ability).
-   * @throws IllegalArgumentException If `null` is passed for the provided links.
+   * @throws IllegalArgumentException If `null` is passed for the provided value.
    */
   @CanIgnoreReturnValue
   @SuppressWarnings("ConstantConditions")
@@ -796,6 +796,53 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
   @CanIgnoreReturnValue
   public @Nonnull PageContextManager clearGooglebot() {
     this.context.getMetaBuilder().clearGooglebot();
+    return this;
+  }
+
+  /**
+   * Overwrite the OpenGraph metadata configuration for the current render flow, with the provided OpenGraph metadata
+   * configuration. If the rendered page uses the framework's page template, the values will be serialized and rendered
+   * into the page head.
+   *
+   * @param content OpenGraph content to render.
+   * @return Current page context manager (for call chain-ability).
+   * @throws IllegalArgumentException If `null` is passed for the provided content.
+   */
+  @CanIgnoreReturnValue
+  @SuppressWarnings("ConstantConditions")
+  public @Nonnull PageContextManager setOpenGraph(@Nonnull Context.Metadata.OpenGraph.Builder content) {
+    if (content == null) throw new IllegalArgumentException("Cannot pass `null` for OpenGraph content.");
+    this.clearOpenGraph();
+    this.context.getMetaBuilder().setOpenGraph(content);
+    return this;
+  }
+
+  /**
+   * Apply the provided OpenGraph metadata configuration to the <i>current</i> OpenGraph metadata configuration, if any.
+   * If no OpenGraph metadata configuration is set, this method effectively overwrites it.
+   *
+   * @param content OpenGraph content to merge and apply.
+   * @return Current page context manager (for call chain-ability).
+   * @throws IllegalArgumentException If `null` is passed for the provided content.
+   */
+  @CanIgnoreReturnValue
+  @SuppressWarnings("ConstantConditions")
+  public @Nonnull PageContextManager applyOpenGraph(@Nonnull Context.Metadata.OpenGraph.Builder content) {
+    if (content == null) throw new IllegalArgumentException("Cannot pass `null` for OpenGraph content.");
+    Context.Metadata.OpenGraph.Builder ogContent = this.context.getMetaBuilder().getOpenGraphBuilder();
+    this.setOpenGraph(ogContent.mergeFrom(content.build()));
+    return this;
+  }
+
+  /**
+   * Clear any OpenGraph metadata configuration attached to the current render flow. If there is no such configuration,
+   * this method is a no-op.
+   *
+   * @return Current page context manager (for call chain-ability).
+   */
+  @CanIgnoreReturnValue
+  public @Nonnull PageContextManager clearOpenGraph() {
+    this.context.getMetaBuilder().clearOpenGraph();
     return this;
   }
 
