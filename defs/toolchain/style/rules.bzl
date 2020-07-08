@@ -34,6 +34,10 @@ BASE_SASS_DEPS = [
 ]
 
 BASE_GSS_DEFS = [
+    "--allowed-at-rule=charset",
+    "--allowed-at-rule=supports",
+    "--allowed-at-rule=provides",
+    "--allowed-at-rule=requires",
 ]
 
 OPTIMIZE_STYLES = False

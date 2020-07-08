@@ -34,7 +34,7 @@ steps:
 
   - wait
 
-  - command: "docker pull us.gcr.io/elide-tools/base/alpine"
+  - command: "docker pull us.gcr.io/elide-ai/base/alpine"
     label: ":docker: Pull Bases"
 
   - command: "make build samples CI=yes"

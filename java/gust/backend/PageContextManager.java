@@ -25,10 +25,7 @@ import gust.backend.runtime.AssetManager;
 import gust.backend.runtime.AssetManager.ManagedAsset;
 import gust.backend.runtime.Logging;
 import gust.util.Hex;
-import io.micronaut.http.HttpHeaders;
-import io.micronaut.http.HttpRequest;
-import io.micronaut.http.HttpStatus;
-import io.micronaut.http.MutableHttpResponse;
+import io.micronaut.http.*;
 import io.micronaut.http.context.ServerRequestContext;
 import io.micronaut.runtime.http.scope.RequestScope;
 import io.micronaut.views.soy.SoyNamingMapProvider;
@@ -104,6 +101,9 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
 
   /** Page context builder. */
   private final @Nonnull Context.Builder context;
+
+  /** Content type to serve from this endpoint. */
+  private @Nonnull String contentTypeValue = MediaType.TEXT_HTML;
 
   /** HTTP request bound to this flow. */
   @SuppressWarnings("rawtypes")
@@ -350,6 +350,14 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
         logging.debug("Found request context, finalizing headers.");
       @Nonnull Context ctx = pageContext.get();
 
+      //noinspection ConstantConditions
+      if (this.contentTypeValue != null
+          && !this.contentTypeValue.isEmpty()
+          && !this.contentTypeValue.isBlank()) {
+        // set the content type
+        soyResponse.contentType(this.contentTypeValue);
+      }
+
       // process `ETag` first, because if `If-None-Match` processing is enabled, this may kick is out of this response
       // flow entirely.
       if (digester != null) {
@@ -546,6 +554,30 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
   }
 
   // -- Builder Interface (Context) -- //
+
+  /**
+   * Returns the currently-set content type for this response render flow. This value generally defaults to
+   * {@link MediaType#TEXT_HTML}.
+   *
+   * @return Content type set to serve for this render flow.
+   */
+  public @Nonnull String contentType() {
+    return this.contentTypeValue;
+  }
+
+  /**
+   * Sets the content type to return for the current render response flow. This value should typically be set from one
+   * of the options on {@link MediaType}, or as a raw {@code Content-Type} header value.
+   *
+   * @param type Content type to set.
+   * @return Current page context manager (for call chain-ability).
+   */
+  public @Nonnull PageContextManager contentType(@Nonnull String type) {
+    //noinspection ConstantConditions
+    if (type == null) throw new IllegalArgumentException("Cannot pass `null` for content type.");
+    this.contentTypeValue = type;
+    return this;
+  }
 
   /**
    * Retrieve the current value for the page title, set in the builder. If there is no value, {@link Optional#empty()}

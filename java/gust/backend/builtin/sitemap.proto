@@ -1,0 +1,81 @@
+/*
+ * Copyright © 2020, The Gust Framework Authors. All rights reserved.
+ *
+ * The Gust/Elide framework and tools, and all associated source or object computer code, except where otherwise noted,
+ * are licensed under the Zero Prosperity license, which is enclosed in this repository, in the file LICENSE.txt. Use of
+ * this code in object or source form requires and implies consent and agreement to that license in principle and
+ * practice. Source or object code not listing this header, or unless specified otherwise, remain the property of
+ * Elide LLC and its suppliers, if any. The intellectual and technical concepts contained herein are proprietary to
+ * Elide LLC and its suppliers and may be covered by U.S. and Foreign Patents, or patents in process, and are protected
+ * by trade secret and copyright law. Dissemination of this information, or reproduction of this material, in any form,
+ * is strictly forbidden except in adherence with assigned license requirements.
+ */
+
+/*
+ * Specifies metadata used to generate XML sitemaps.
+ */
+syntax = "proto3";
+package builtin.sitemap;
+
+option optimize_for = SPEED;
+option cc_enable_arenas = true;
+option java_multiple_files = true;
+option java_string_check_utf8 = true;
+option php_namespace = "Elide\\Backend\\Builtin";
+option php_class_prefix = "ELD";
+option swift_prefix = "Elide";
+option objc_class_prefix = "ELD";
+option ruby_package = "Elide::Backend::Builtin";
+option java_package = "tools.elide.backend.builtin";
+option csharp_namespace = "Elide.Backend.Builtin";
+option go_package = "github.com/elide-tools/elide/backend/builtin;struct";
+
+import "gust/core/datamodel.proto";
+
+
+// Specifies a structure that allows easy rendering of an XML site map from controller annotation metadata. This data
+// structure is essentially composed solely of `Sitemap.PageEntry` objects, each of which enumerate a URL to put in the
+// main site map.
+message Sitemap {
+  option (core.role) = WIRE;
+
+  // Specifies the options for the "change frequency" property. This is a hint to search engines like Google that
+  // indicates the frequency with which updates are applied to a given page. There is generally no guarantee that this
+  // will change indexing frequency, but it's a good hint to start with.
+  enum ChangeFrequency {
+    // Unspecified change frequency for a given page's content.
+    UNSPECIFIED_CHANGE_FREQUENCY = 0;
+
+    // Hint that a given page changes daily.
+    DAILY = 1;
+
+    // Hint that a given page changes weekly.
+    WEEKLY = 2;
+
+    // Hint that a given page changes monthly.
+    MONTHLY = 3;
+
+    // Hint that a given page changes yearly.
+    YEARLY = 4;
+  }
+
+  // Specifies an individual page entry in an app sitemap file. Each page entry should point to one URL which should be
+  // indexed as part of the official sitemap.
+  message PageEntry {
+    // URL location for the page in question, as a string.
+    string location = 1;
+
+    // Last-modified string for the page. Generally a date-only string that takes the form, "2020-06-07".
+    string last_modified = 2;
+
+    // Specifies the frequency at which this page is expected to change.
+    ChangeFrequency change_frequency = 3;
+
+    // Priority value to specify for this page.
+    string priority = 6;
+  }
+
+  // List of attached page entries for this sitemap. Each page entry specifies a URL that identifies the page, along
+  // with associated (optional) metadata.
+  repeated PageEntry page = 1;
+}

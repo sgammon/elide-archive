@@ -333,7 +333,7 @@ public abstract class AppController extends BaseController {
 
     // order matters here. `selectCdnPrefix` must be called first, to load any CDN prefix before link pre-loads go out.
     // next, `affixHeaders` must be called before `render`, which produces the `ctx` that is set on the response (so it
-    // so it may be picked up in `PageContextManager#finalizeResponse`).
+    // may be picked up in `PageContextManager#finalizeResponse`).
     MutableHttpResponse<PageRender> response = HttpResponse.ok(render);
     selectCdnPrefixes(render, response, assetConfig);
     this.affixHeaders(response, servingConfig);

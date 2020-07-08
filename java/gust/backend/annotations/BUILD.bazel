@@ -25,6 +25,11 @@ load(
     java_library = "jdk_library",
 )
 
+load(
+    "//defs/toolchain:deps.bzl",
+    "javaproto",
+)
+
 _COMMON_DEPS = [
     "@com_google_code_findbugs_jsr305",
     maven("io.micronaut:micronaut-aop"),
@@ -47,11 +52,20 @@ java_library(
     ] + _COMMON_DEPS,
 )
 
+java_library(
+    name = "Page",
+    srcs = ["Page.java"],
+    deps = [
+        javaproto("//java/gust/backend/builtin:sitemap_proto"),
+    ] + _COMMON_DEPS,
+)
+
 
 java_library(
     name = "annotations",
     exports = [
         ":Js",
+        ":Page",
         ":Style",
     ]
 )

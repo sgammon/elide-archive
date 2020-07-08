@@ -33,7 +33,7 @@ public abstract class BaseController {
    *
    * @param context Page context manager, injected.
    */
-  BaseController(@Nonnull PageContextManager context) {
+  public BaseController(@Nonnull PageContextManager context) {
     this.context = context;
   }
 }

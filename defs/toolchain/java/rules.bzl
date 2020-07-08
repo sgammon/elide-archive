@@ -54,6 +54,10 @@ load(
     _graal_binary = "graal_binary",
 )
 
+load(
+    "//defs/toolchain:deps.bzl",
+    "javaproto",
+)
 
 load(
     "//defs/toolchain:schema.bzl",
@@ -138,13 +142,17 @@ INJECTED_MICRONAUT_RUNTIME_DEPS = [
 
 INJECTED_CONTROLLERS = [
     "@gust//java/gust/backend:AssetController",
+    "@gust//java/gust/backend/builtin:BuiltinsController",
 ]
 
 INJECTED_CONTROLLER_DEPS = [
+    "@gust//java/gust/backend/annotations:annotations",
+    "@gust//java/gust/backend:PageRender",
     "@gust//java/gust/backend:PageContext",
     "@gust//java/gust/backend:PageContextManager",
     "@gust//java/gust/backend:BaseController",
     "@gust//java/gust/backend:AppController",
+    javaproto("@gust//java/gust/backend/builtin:sitemap_proto"),
 ]
 
 
@@ -267,6 +275,7 @@ def _jdk_binary(name,
             }) + select({
                "@gust//defs/config:release": _JVM_APP_RELEASE_FLAGS,
                "@gust//defs/config:debug": _JVM_APP_DEBUG_FLAGS,
+               "//conditions:default": _JVM_APP_DEBUG_FLAGS,
             }),
             tags = [
                 "ibazel_live_reload",
@@ -597,7 +606,7 @@ def _micronaut_application(name,
             configsets = [
                 ("%s-files" % c) for c in native_configsets
             ],
-            extra_args = [
+            graal_extra_args = [
                 # General build flags
                 "--no-fallback",
 
