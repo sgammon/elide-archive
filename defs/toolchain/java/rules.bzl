@@ -619,12 +619,13 @@ def _micronaut_application(name,
                 "-H:+ParseRuntimeOptions",
                 "-H:+TraceClassInitialization",
                 "-H:IncludeResources=application.yml|logback.xml|assets.pb",
+                "-H:-UseServiceLoaderFeature",
 
                 # Build-time init @TODO(sgammon): investigate why these are needed
                 "--initialize-at-build-time=com.google.template.soy.jbcsrc.api.RenderResult$Type",
                 "--initialize-at-build-time=org.conscrypt.OpenSSLProvider",
                 "--initialize-at-build-time=org.conscrypt.Conscrypt",
-                "--initialize-at-run-time=io.netty.buffer.PooledByteBufAllocator,io.netty.buffer.ByteBufUtil,io.netty.buffer.ByteBufAllocator",
+                "--initialize-at-run-time=io.netty.buffer.PooledByteBufAllocator,io.netty.buffer.ByteBufUtil,io.netty.buffer.ByteBufAllocator,com.sun.jndi.dns.DnsClient,io.netty.handler.ssl.ConscryptAlpnSslEngine,io.netty.handler.ssl.JettyNpnSslEngine,io.netty.handler.ssl.ReferenceCountedOpenSslEngine,io.netty.handler.ssl.JdkNpnApplicationProtocolNegotiator,io.netty.handler.ssl.ReferenceCountedOpenSslServerContext,io.netty.handler.ssl.ReferenceCountedOpenSslClientContext,io.netty.handler.ssl.util.BouncyCastleSelfSignedCertGenerator,io.netty.handler.ssl.ReferenceCountedOpenSslContext,io.micronaut.buffer.netty.NettyByteBufferFactory,io.netty.handler.ssl.JettyAlpnSslEngine$ClientEngine,io.netty.handler.ssl.JettyAlpnSslEngine$ServerEngine,io.netty.handler.codec.http2.Http2CodecUtil,io.netty.handler.codec.http2.CleartextHttp2ServerUpgradeHandler,io.netty.handler.codec.http2.Http2ServerUpgradeCodec,io.micronaut.http.netty.channel.converters.EpollChannelOptionFactory,io.micronaut.http.netty.channel.converters.KQueueChannelOptionFactory,io.micronaut.http.bind.binders.ContinuationArgumentBinder$Companion,io.micronaut.http.bind.binders.ContinuationArgumentBinder",
             ] + computed_jvm_flags + ["-Dgust.engine=native"],
             reflection_configuration = reflection_configuration,
         )
@@ -632,14 +633,14 @@ def _micronaut_application(name,
         _pkg_tar(
             name = "%s-native-pkg" % name,
             extension = "tar",
-            srcs = ["%s-native-bin" % name],
+            srcs = ["%s-native" % name],
         )
 
         _container_image(
             name = "%s-native-image" % name,
             base = native_base,
             directory = "/app",
-            files = ["%s-native-bin" % name],
+            files = ["%s-native" % name],
             workdir = "/app",
             ports = ports,
             cmd = None,
@@ -651,7 +652,7 @@ def _micronaut_application(name,
                 "/app/entrypoint",
             ] + computed_jvm_flags + ["-Dgust.engine=native"],
             symlinks = {
-                "/app/entrypoint": "/app/%s-native-bin" % name
+                "/app/entrypoint": "/app/%s-native" % name
             },
         )
 
