@@ -121,22 +121,22 @@ DEPS = {
     "build_bazel_rules_apple": {
         "type": "github",
         "repo": "bazelbuild/rules_apple",
-        "target": "3bbee3a593d1f6ddb3391ba3a99ffe3f09a4821b",
-        "seal": "389c9fb1829d96b9fd553c9203bddccee14f3b58a85eb4b0c70642a2d4289f77"},
+        "target": "19f031f09185e0fcd722c22e596d09bd6fff7944",
+        "seal": "95c4a23bf252dfdcf435488d7bcbeb9cb3511a0cefabd8b5c5145b339af8714b"},
 
     # Rules: Apple (Swift)
     "build_bazel_rules_swift": {
         "type": "github",
         "repo": "bazelbuild/rules_swift",
-        "target": "bbe187c4b1f55c0974a0da345e5e313eaed37c05",
-        "seal": "359d4dede116b3440cdc080220002cc8e78182ae6da7f9974bc838888d366db4"},
+        "target": "ebef63d4fd639785e995b9a2b20622ece100286a",
+        "seal": "ce30e25bed943a9edae90770a5121618a7239d09f8e05bdc1aaa5643f730ad7b"},
 
     # Deps: Apple Support
     "build_bazel_apple_support": {
         "type": "github",
         "repo": "bazelbuild/apple_support",
-        "target": "501b4afb27745c4813a88ffa28acd901408014e4",
-        "seal": "ad8ae80e93612b8151019367a3d1604d7a51c14480dae1254e10252007e8260c"},
+        "target": "8c585c66c29b9d528e5fcf78da8057a6f3a4f001",
+        "seal": "0a8831032b06cabae582b604e734e10f32742311de8975d5182933e586760c5f"},
 
     # Rules: Go
     "io_bazel_rules_go": {
