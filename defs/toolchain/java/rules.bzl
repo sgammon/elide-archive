@@ -624,6 +624,7 @@ def _micronaut_application(name,
                 "--initialize-at-build-time=com.google.template.soy.jbcsrc.api.RenderResult$Type",
                 "--initialize-at-build-time=org.conscrypt.OpenSSLProvider",
                 "--initialize-at-build-time=org.conscrypt.Conscrypt",
+                "--initialize-at-run-time=io.netty.buffer.PooledByteBufAllocator,io.netty.buffer.ByteBufUtil,io.netty.buffer.ByteBufAllocator",
             ] + computed_jvm_flags + ["-Dgust.engine=native"],
             reflection_configuration = reflection_configuration,
         )
