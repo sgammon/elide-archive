@@ -13,7 +13,7 @@
 package gust.backend.annotations;
 
 import io.micronaut.aop.Introduction;
-import tools.elide.backend.builtin.Sitemap;
+import static tools.elide.backend.builtin.Sitemap.ChangeFrequency;
 
 import javax.annotation.Nonnull;
 import java.lang.annotation.*;
@@ -109,7 +109,7 @@ public @interface Page {
      *
      * @return Change frequency value, or {@code null}.
      */
-    Sitemap.ChangeFrequency changeFrequency() default Sitemap.ChangeFrequency.UNSPECIFIED_CHANGE_FREQUENCY;
+    ChangeFrequency changeFrequency() default ChangeFrequency.UNSPECIFIED_CHANGE_FREQUENCY;
 
     /**
      * Priority value for the page.
