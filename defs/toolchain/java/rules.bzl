@@ -617,10 +617,13 @@ def _micronaut_application(name,
 
                 # Extra native-image flags
                 "-H:+ParseRuntimeOptions",
+                "-H:+TraceClassInitialization",
                 "-H:IncludeResources=application.yml|logback.xml|assets.pb",
 
-                # Build-time init
+                # Build-time init @TODO(sgammon): investigate why these are needed
                 "--initialize-at-build-time=com.google.template.soy.jbcsrc.api.RenderResult$Type",
+                "--initialize-at-build-time=org.conscrypt.OpenSSLProvider",
+                "--initialize-at-build-time=org.conscrypt.Conscrypt",
             ] + computed_jvm_flags + ["-Dgust.engine=native"],
             reflection_configuration = reflection_configuration,
         )
