@@ -602,7 +602,6 @@ def _micronaut_application(name,
             name = "%s-native" % name,
             deps = _dedupe_deps(["%s-lib" % name] + computed_runtime_deps),
             main_class = main_class,
-            c_compiler_path = "/usr/bin/clang",
             configsets = [
                 ("%s-files" % c) for c in native_configsets
             ],
