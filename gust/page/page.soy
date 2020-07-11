@@ -196,6 +196,12 @@
           <meta property="og:image" content="{$page.meta.openGraph.image}">
           <meta name="twitter:image:src" content="{$page.meta.openGraph.image}">
         {/if}
+        {if $page.meta.openGraph.imageHeight > 0}
+          <meta property="og:image:height" content="{$page.meta.openGraph.imageHeight}">
+        {/if}
+        {if $page.meta.openGraph.imageWidth > 0}
+            <meta property="og:image:width" content="{$page.meta.openGraph.imageWidth}">
+        {/if}
         {if $languageSpec}
           <meta property="og:locale" content="{$languageSpec}">
         {/if}

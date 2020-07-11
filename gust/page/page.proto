@@ -93,6 +93,12 @@ message Context {
 
       // "Creator" parameter used for Twitter cards.
       string twitter_creator = 9;
+
+      // Width of the sharing image, if known.
+      uint32 image_width = 10;
+
+      // Height of the sharing image, if known.
+      uint32 image_height = 11;
     }
 
     // Tags for the Twitter Crawler.
