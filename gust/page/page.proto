@@ -99,6 +99,12 @@ message Context {
 
       // Height of the sharing image, if known.
       uint32 image_height = 11;
+
+      // Canonical URL for this page.
+      string canonical = 12;
+
+      // FB application ID for this web application.
+      string fb_app = 13;
     }
 
     // Tags for the Twitter Crawler.

@@ -209,6 +209,12 @@
           <meta property="og:type" content="{$page.meta.openGraph.type}">
           <meta name="twitter:card" content="summary">
         {/if}
+        {if $page.meta.openGraph.canonical}
+            <meta property="og:url" content="{$page.meta.openGraph.canonical}">
+        {/if}
+        {if $page.meta.openGraph.fbApp}
+            <meta property="fb:app_id" content="{$page.meta.openGraph.fbApp}">
+        {/if}
         {if $page.meta.openGraph.twitterSite}
           <meta name="twitter:site" content="{$page.meta.openGraph.twitterSite}">
         {/if}
