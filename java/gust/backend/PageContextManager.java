@@ -832,6 +832,19 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
   }
 
   /**
+   * Retrieve OpenGraph settings specified in the current page context. This method always returns a builder, to avoid
+   * re-builds of protocol buffers during page context construction. If no OpenGraph settings are available, an empty
+   * {@link Optional} is returned instead.
+   *
+   * @return {@link Optional}-wrapped OpenGraph settings, or {@link Optional#empty()}.
+   */
+  public @Nonnull Optional<Context.Metadata.OpenGraph.Builder> getOpenGraph() {
+    return this.context.getMetaBuilder().hasOpenGraph() ?
+      Optional.of(this.context.getMetaBuilder().getOpenGraphBuilder()) :
+      Optional.empty();
+  }
+
+  /**
    * Overwrite the OpenGraph metadata configuration for the current render flow, with the provided OpenGraph metadata
    * configuration. If the rendered page uses the framework's page template, the values will be serialized and rendered
    * into the page head.
