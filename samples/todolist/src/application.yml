@@ -68,7 +68,7 @@ micronaut:
     name: Todolist
 
   server:
-    server-header: K9v5
+    server-header: K9v6
     maxRequestSize: 10MB
     host: 0.0.0.0
     port: 8080
