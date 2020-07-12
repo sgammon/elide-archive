@@ -12,7 +12,6 @@ import org.reactivestreams.Publisher;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Collection;
 
 
 @Filter({"/_/site/*.xml"})
