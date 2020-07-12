@@ -24,6 +24,7 @@ load(
     "//defs/toolchain/java:rules.bzl",
     "jdk_library",
     "micronaut_controller",
+    "micronaut_library",
 )
 
 load(
@@ -78,7 +79,7 @@ template_library(
     ],
 )
 
-micronaut_controller(
+micronaut_library(
     name = "SitemapHandler",
     srcs = ["SitemapHandler.java"],
     templates = [":sitemap_soy"],
@@ -86,6 +87,20 @@ micronaut_controller(
         ":InternalHandler",
         ":BuiltinHandler",
         "//java/gust/util:Pair",
+        "//java/gust/backend:PageContextManager",
+        "//java/gust/backend:PageRender",
+        "//java/gust/backend/annotations:Page",
+    ],
+    proto_deps = [
+        "//java/gust/backend/builtin:sitemap_proto",
+    ],
+)
+
+micronaut_library(
+    name = "XMLFilter",
+    srcs = ["XMLFilter.java"],
+    deps = [
+        # None yet.
     ],
 )
 
@@ -95,6 +110,7 @@ jdk_library(
         ":package-info",
         ":BuiltinsController",
         ":SitemapHandler",
+        ":XMLFilter",
     ]
 )
 

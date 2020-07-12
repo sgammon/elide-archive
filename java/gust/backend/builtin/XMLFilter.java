@@ -7,18 +7,17 @@ import io.micronaut.http.annotation.Filter;
 import io.micronaut.http.filter.HttpServerFilter;
 import io.micronaut.http.filter.ServerFilterChain;
 import io.micronaut.views.ViewsFilterOrderProvider;
-import io.micronaut.views.model.ViewModelProcessor;
 import io.reactivex.Flowable;
 import org.reactivestreams.Publisher;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collection;
 
 
-@Filter({"/_/site/**"})
+@Filter({"/_/site/*.xml"})
 public class XMLFilter implements HttpServerFilter {
-  public XMLFilter(@Nullable ViewsFilterOrderProvider orderProvider,
-                   Collection<ViewModelProcessor> modelProcessors) {
+  public XMLFilter(@Nullable ViewsFilterOrderProvider orderProvider) {
     /* no-op */
   }
 
@@ -26,12 +25,11 @@ public class XMLFilter implements HttpServerFilter {
     return 9999;
   }
 
-  public Publisher<MutableHttpResponse<?>> doFilter(HttpRequest<?> request, ServerFilterChain chain) {
+  public Publisher<MutableHttpResponse<?>> doFilter(@Nonnull HttpRequest<?> request,
+                                                    @Nonnull ServerFilterChain chain) {
     return Flowable.fromPublisher(chain.proceed(request))
         .doOnNext(response -> {
-          if (request.getUri().getPath().endsWith(".xml")) {
-            response.contentType(MediaType.APPLICATION_XML_TYPE);
-          }
+          response.contentType(MediaType.APPLICATION_XML_TYPE);
         });
   }
 }

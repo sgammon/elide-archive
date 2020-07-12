@@ -93,6 +93,7 @@ INJECTED_MICRONAUT_DEPS = [
     "@io_micronaut_micronaut_views_soy",
     "@org_brotli//java/org/brotli/wrapper/enc:enc",
     maven("org.slf4j:slf4j-api"),
+    maven("org.reactivestreams:reactive-streams"),
     maven("com.google.protobuf:protobuf-java"),
     maven("io.micronaut:micronaut-aop"),
     maven("io.micronaut:micronaut-core"),
