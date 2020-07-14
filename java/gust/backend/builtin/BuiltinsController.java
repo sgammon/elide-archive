@@ -7,12 +7,20 @@ import io.micronaut.context.BeanContext;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.MediaType;
+import io.micronaut.http.MutableHttpResponse;
 import io.micronaut.http.annotation.Controller;
+import io.micronaut.http.annotation.Filter;
 import io.micronaut.http.annotation.Get;
+import io.micronaut.http.filter.HttpServerFilter;
+import io.micronaut.http.filter.ServerFilterChain;
 import io.micronaut.validation.Validated;
 import io.micronaut.views.View;
+import io.micronaut.views.ViewsFilterOrderProvider;
+import io.reactivex.Flowable;
+import org.reactivestreams.Publisher;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 
 /**
@@ -21,6 +29,27 @@ import javax.annotation.Nonnull;
  */
 @Controller
 public class BuiltinsController extends BaseController {
+  @Filter({"/_/site/*.xml"})
+  public static class XMLFilter implements HttpServerFilter {
+    public XMLFilter(@Nullable ViewsFilterOrderProvider orderProvider) {
+      /* no-op */
+    }
+
+    public int getOrder() {
+      return -9999;
+    }
+
+    public Publisher<MutableHttpResponse<?>> doFilter(@Nonnull HttpRequest<?> request,
+                                                      @Nonnull ServerFilterChain chain) {
+      return Flowable.fromPublisher(chain.proceed(request))
+          .doOnNext(response -> {
+            response.contentType(MediaType.APPLICATION_XML_TYPE);
+            response.getHeaders().remove("Content-Security-Policy");
+            response.getHeaders().remove("Content-Security-Policy-Report-Only");
+          });
+    }
+  }
+
   /** Handler for site map renders. */
   private final @Nonnull SitemapHandler sitemapHandler;
 

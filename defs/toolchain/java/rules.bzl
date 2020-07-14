@@ -156,7 +156,6 @@ INJECTED_CONTROLLER_DEPS = [
     javaproto("@gust//java/gust/backend/builtin:sitemap_proto"),
 ]
 
-
 _JVM_APP_DEBUG_FLAGS = [
     "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:%s" % _JVM_DEBUG_PORT,
 ]

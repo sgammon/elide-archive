@@ -96,21 +96,12 @@ micronaut_library(
     ],
 )
 
-micronaut_library(
-    name = "XMLFilter",
-    srcs = ["XMLFilter.java"],
-    deps = [
-        # None yet.
-    ],
-)
-
 jdk_library(
     name = "Builtins",
     runtime_deps = [
         ":package-info",
         ":BuiltinsController",
         ":SitemapHandler",
-        ":XMLFilter",
     ]
 )
 
