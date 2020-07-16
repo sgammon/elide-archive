@@ -42,8 +42,8 @@ DEPS = {
     "rules_pkg": {
         "type": "github",
         "repo": "bazelbuild/rules_pkg",
-        "target": "3349f129a4f3c475ca32949c26dc90822ffebaac",
-        "seal": "9b2f6a6cf61b075ae9b6dbbe675d4e5432aab0d62da680d554baf114c1a42844"},
+        "target": "4b0b9f4679484f107f750a60190ff5ec6b164a5f",
+        "seal": "b9a5bdfe4f8ce0dedf9387eadd9f4844c383118b3f4cc27b586626b7998141c3"},
 
     # Bazel: Stardoc
     "io_bazel_stardoc": {
