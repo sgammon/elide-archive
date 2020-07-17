@@ -43,12 +43,12 @@ def _closure_proto(target):
     return "%s-%s" % (target, "closure_proto")
 
 
-def _maven(path):
+def _maven(path, root="maven"):
 
     """ Computes a Maven dependency path, based on the coordinates
         for the artifact. """
 
-    return ("@maven//:" + path
+    return ("@" + root + "//:" + path
             .replace(":", "_")
             .replace(".", "_")
             .replace("-", "_"))
