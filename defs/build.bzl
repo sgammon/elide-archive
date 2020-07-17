@@ -472,6 +472,27 @@ DEPS = {
             maven("io.micronaut:micronaut-buffer-netty"),
         ],
     },
+
+    # Tools: Android
+    "tools_android": {
+        "type": "github",
+        "repo": "bazelbuild/tools_android",
+        "target": "58d67fd54a3b7f5f1e6ddfa865442db23a60e1b6",
+        "seal": "a192553d52a42df306437a8166fc6b5ec043282ac4f72e96999ae845ece6812f"},
+
+    # Rules: Android
+    "rules_android": {
+        "type": "github",
+        "repo": "bazelbuild/rules_android",
+        "target": "e8fbc49f913101e846235b9c9a31b3aa9788364a",
+        "seal": "6a3cfb7b7e54cf704bf2ff169bde03666ae3b49a536c27a5f43d013388a7c38d"},
+
+    # Rules: C/C++
+    "rules_cc": {
+        "type": "github",
+        "repo": "bazelbuild/rules_cc",
+        "target": "5cbd3dfbd1613f71ef29bbb7b10310b81e272975",
+        "seal": "ce19fea12ee666a0d399e6e15b5a77264f6da2b70f2759adea767c9a7f79b17c"},
 }
 
 
