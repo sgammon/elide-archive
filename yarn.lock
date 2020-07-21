@@ -160,10 +160,10 @@
     buffer-from "^1.0.0"
     source-map "^0.6.0"
 
-"@bazel/terser@^1.2.4":
-  version "1.4.1"
-  resolved "https://registry.yarnpkg.com/@bazel/terser/-/terser-1.4.1.tgz#af4d63c768e72d57674a4514857fea5d9984378d"
-  integrity sha512-JGhv22d2IOGePE0VwmF6c88GOP3Ij621qtLoI7ZVLDRTElSRAknqj09qX6Zni2DkjT2c/+Ldm2qE8P6hOCXpEg==
+"@bazel/terser@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@bazel/terser/-/terser-2.0.0.tgz#a841db8aefd7c51c216b34a26bc02a6c93d5e56a"
+  integrity sha512-6mBYcfzP6pWxycYZ8r4Lz5kgiWZ7n08bVHZBIRExFeqs7Yy92dD92LPeA9FZIzFiX00IuR9Q1Lqy23xH5q7FeQ==
 
 "@bazel/typescript@^1.2.4":
   version "1.4.1"
