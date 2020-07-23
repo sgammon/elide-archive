@@ -315,6 +315,13 @@ DEPS = {
         "target": "0b710a305b42b67522003a314dea3e3868485665",
         "seal": "10a93b319f9f0a396d7c3d6c05b6195b2f002ae9002e492b5457298dac160993"},
 
+    # Envoy
+    "envoy": {
+        "type": "github",
+        "repo": "envoyproxy/envoy",
+        "target": "bb7ceff4c3c5bd4555dff28b6e56d27f2f8be0a7",
+        "seal": "95d365cea109f1f6b06f4c010602b5a2f8dc2e65d631b5e2c17e62aa114408d9"},
+
     # Kubernetes: Build Tools
     "io_kubernetes_build": {
         "type": "github",
