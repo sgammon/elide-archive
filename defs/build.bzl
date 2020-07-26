@@ -80,8 +80,8 @@ DEPS = {
     "rules_proto": {
         "type": "github",
         "repo": "bazelbuild/rules_proto",
-        "target": "218ffa7dfa5408492dc86c01ee637614f8695c45",
-        "seal": "2490dca4f249b8a9a3ab07bd1ba6eca085aaf8e45a734af92aad0c42d9dc7aaf"},
+        "target": "486aaf1808a15b87f1b6778be6d30a17a87e491a",
+        "seal": "dedb72afb9476b2f75da2f661a00d6ad27dfab5d97c0460cf3265894adfaf467"},
 
     # Rules: Python
     "rules_python": {
@@ -166,22 +166,22 @@ DEPS = {
     "io_bazel_rules_docker": {
         "type": "github",
         "repo": "bazelbuild/rules_docker",
-        "target": "9e5b065ed0699bd8491ba1f6bef6eb428f2d230c",
-        "seal": "5b5941ba81a8f92d6cf1af5176ccfd3b5f2f7e5672741c3fa64f4023c22bed01"},
+        "target": "204e77bf954269d5e40c2850dd76dad4adbf2edf",
+        "seal": "57e0bf27fa5606b39c5a6e30008968359c8d671cda2f0b65a23bf8e892b2d7a8"},
 
     # Rules: Kubernetes
     "io_bazel_rules_k8s": {
         "type": "github",
         "repo": "bazelbuild/rules_k8s",
-        "target": "3dcc327551590e7bdc16e40c9ead13a26b7c3c10",
-        "seal": "0f19a0a10a2e756959d4084c5f18e46b8ea3e2c62ee795340d7d8f32aff7f2cd"},
+        "target": "378e5cce3d1b16acf5733b16d74e0e4cdf32e233",
+        "seal": "b822fd6578384eff5797879f94e97a6f872c34d62e5b281aa468770b49a7e02c"},
 
     # Google: Protobuf
     "com_google_protobuf": {
         "type": "github",
         "repo": "google/protobuf",
-        "target": "d0bfd5221182da1a7cc280f3337b5e41a89539cf",
-        "seal": "2435b7fb83b8a608c24ca677907aa9a35e482a7f018e65ca69481b3c8c9f7caf"},
+        "target": "31ebe2ac71400344a5db91ffc13c4ddfb7589f92",
+        "seal": "0e8e32d44c9d4572975f43591b51cd3c77392661e4ded17fdfab81e8460344e8"},
 
     # Google: J2CL (Java-to-Closure)
     "com_google_j2cl": {
@@ -283,15 +283,15 @@ DEPS = {
     "com_github_grpc_grpc": {
         "type": "github",
         "repo": "grpc/grpc",
-        "target": "e73882dc0fcedab1ffe789e44ed6254819639ce3",
-        "seal": "8fe4e5aa436037a08634eb29bde99c02cd804df9f4da383ec738165fd6cdcadf"},
+        "target": "de6defa6fff08de20e36f9168f5b277e292daf46",
+        "seal": "2bc37c4e6bb10ba60731630847db9519c5df71055ec6caaa0d233c4a771c5477"},
 
     # gRPC: Java
     "io_grpc_java": {
         "type": "github",
         "repo": "grpc/grpc-java",
-        "target": "47d545ad70dbf33b3f00052c1b519394ba52e222",
-        "seal": "5685ed4875fae4a5d11e31c4431bffa7672ce5451c598ebe1c2e0bd1d96c0286"},
+        "target": "9071c1ad7c842f4e73b6ae95b71f11c517b177a4",
+        "seal": "46bf0400cb92c27be1a8c15715ea6107277c9e1b78df7bd06475d55014dfd28b"},
 
     # gRPC: Web
     "com_github_grpc_grpc_web": {
