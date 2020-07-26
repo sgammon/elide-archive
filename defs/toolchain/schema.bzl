@@ -204,6 +204,24 @@ def _service(name,
         fail("Unrecognized gRPC web type: '%s'" % web_flavor)
 
 
+def paths(files):
+
+    """ Gather a set of paths. """
+
+    return [f.path for f in files]
+
+def _descriptor_impl(ctx):
+
+    """ Build a full-source and all-imports descriptor. """
+
+    descriptors = ctx.attr.proto_library[ProtoInfo].transitive_descriptor_sets.to_list()
+    ctx.actions.run_shell(
+      inputs=descriptors,
+      outputs=[ctx.outputs.out],
+      command='cat %s > %s' % (
+          ' '.join(paths(descriptors)), ctx.outputs.out.path))
+
+
 def well_known_(name,
                 actual,
                 **kwargs):
@@ -227,6 +245,14 @@ def well_known_(name,
     __declare_closure_proto(name, True, False, kwargs)
     __declare_lang_protos(name, True, False, kwargs)
 
+
+descriptor = rule(
+  implementation=_descriptor_impl,
+  attrs = {
+    "proto_library": attr.label(),
+    "out": attr.output(mandatory=True),
+  }
+)
 
 model = _proto
 service = _service
