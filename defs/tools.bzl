@@ -141,9 +141,10 @@ def _process_github_dep(key, repo, force_local):
                 renderedTarget = "%s/%s" % (repo["target"], repo["directory"])
             else:
                 renderedTarget = repo["target"]
+            additionalStrip = repo.get("strip_prefix", "")
             _http_archive(
                 name = key,
-                strip_prefix = "%s-%s" % (repoName, renderedTarget),
+                strip_prefix = "%s-%s%s" % (repoName, renderedTarget, additionalStrip),
                 sha256 = repo.get("seal"),
                 build_file = repo.get("overlay"),
                 url = "https://github.com/%s/archive/%s.tar.gz" % (repo["repo"], repo["target"]))
