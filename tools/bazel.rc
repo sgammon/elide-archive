@@ -63,8 +63,8 @@ build:dev --strategy=Closure=worker
 build:dev --strategy=TypeScriptCompile=worker
 build:dev --experimental_persistent_javac
 build:dev --define=jdk=zulu
-build:dev --define=ABSOLUTE_JAVABASE=/Library/Java/JavaVirtualMachines/zulu-12.jdk/Contents/Home
-build:dev --define=ZULUBASE=/Library/Java/JavaVirtualMachines/zulu-12.jdk/Contents/Home
+build:dev --define=ABSOLUTE_JAVABASE=/Library/Java/JavaVirtualMachines/zulu-14.jdk/Contents/Home
+build:dev --define=ZULUBASE=/Library/Java/JavaVirtualMachines/zulu-14.jdk/Contents/Home
 build:dev --javabase=//defs/toolchain/java:java_runtime
 build:dev --disk_cache=~/.cache/bazel-disk-cache
 
