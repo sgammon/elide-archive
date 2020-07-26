@@ -12,7 +12,7 @@
 ##
 
 load(
-    "@rules_pkg//pkg:pkg.bzl",
+    "@rules_pkg//:pkg.bzl",
     _pkg_tar = "pkg_tar",
     _pkg_zip = "pkg_zip",
 )

@@ -18,7 +18,7 @@ load(
 )
 
 load(
-    "@rules_pkg//pkg:pkg.bzl",
+    "@rules_pkg//:pkg.bzl",
     _pkg_tar = "pkg_tar",
 )
 
@@ -92,9 +92,10 @@ INJECTED_MICRONAUT_DEPS = [
     "@io_micronaut_micronaut_views",
     "@io_micronaut_micronaut_views_soy",
     "@org_brotli//java/org/brotli/wrapper/enc:enc",
+    "@com_google_protobuf//:protobuf_java",
+    "@com_google_protobuf//:protobuf_javalite",
     maven("org.slf4j:slf4j-api"),
     maven("org.reactivestreams:reactive-streams"),
-    maven("com.google.protobuf:protobuf-java"),
     maven("io.micronaut:micronaut-aop"),
     maven("io.micronaut:micronaut-core"),
     maven("io.micronaut:micronaut-http"),
@@ -118,12 +119,13 @@ INJECTED_MICRONAUT_DEPS = [
 ]
 
 INJECTED_MICRONAUT_GRPC_DEPS = [
-    maven("io.grpc:grpc-core"),
-    maven("io.grpc:grpc-auth"),
-    maven("io.grpc:grpc-api"),
-    maven("io.grpc:grpc-stub"),
-    maven("io.grpc:grpc-context"),
-    maven("io.grpc:grpc-protobuf"),
+    "@io_grpc_java//core:core",
+    "@io_grpc_java//auth:auth",
+    "@io_grpc_java//api:api",
+    "@io_grpc_java//stub:stub",
+    "@io_grpc_java//context:context",
+    "@io_grpc_java//protobuf:protobuf",
+    "@io_grpc_java//netty:netty",
     maven("io.micronaut.grpc:micronaut-grpc-runtime"),
     maven("io.micronaut.grpc:micronaut-grpc-annotation"),
     maven("io.micronaut.grpc:micronaut-protobuff-support"),

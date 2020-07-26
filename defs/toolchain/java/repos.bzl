@@ -53,7 +53,7 @@ VALIDATION_VERSION = "2.0.0.Final"
 JUNIT_JUPITER_VERSION = "5.6.0"
 JUNIT_PLATFORM_VERSION = "1.6.0"
 
-GAX_VERSION = "1.54.0"
+GAX_VERSION = "1.57.1"
 NETTY_VERSION = "4.1.48.Final"
 RXJAVA_VERSION = "2.2.18"
 PICOCLI_VERSION = "4.2.0"
@@ -69,11 +69,12 @@ GCLOUD_FIRESTORE_VERSION = "1.32.5"
 GCLOUD_MONITORING_VERSION = "1.99.2"
 
 GRPC_JAVA_VERSION = "1.30.2"
+TOMCAT_ANNOTATIONS_VERSION = "6.0.53"
 OPENTRACING_VERSION = "0.2.1"
 
 MICRONAUT_VERSION = "2.0.0"
 MICRONAUT_DATA_VERSION = "1.1.1"
-MICRONAUT_GRPC_VERSION = "2.0.0"
+MICRONAUT_GRPC_VERSION = "2.0.1"
 MICRONAUT_TEST_VERSION = "1.2.0"
 MICRONAUT_REDIS_VERSION = "1.2.0"
 MICRONAUT_SECURITY_VERSION = "2.0.0.M2"
@@ -83,8 +84,20 @@ GRPC_EXCLUSIONS = [
          artifact = "grpc-api",
          group = "io.grpc",
      ),
+      maven.exclusion(
+         artifact = "grpc-auth",
+         group = "io.grpc",
+     ),
      maven.exclusion(
          artifact = "grpc-core",
+         group = "io.grpc",
+     ),
+     maven.exclusion(
+         artifact = "grpc-netty",
+         group = "io.grpc",
+     ),
+     maven.exclusion(
+         artifact = "grpc-okhttp",
          group = "io.grpc",
      ),
      maven.exclusion(
@@ -125,10 +138,6 @@ SOY_EXCLUSIONS = [
 ]
 
 GCLOUD_EXCLUSIONS = GRPC_EXCLUSIONS + SOY_EXCLUSIONS + [
-    maven.exclusion(
-       artifact = "protobuf-java",
-       group = "com.google.protobuf",
-   ),
    maven.exclusion(
       artifact = "guava",
       group = "com.google.guava",
@@ -147,6 +156,7 @@ BUILD_ARTIFACTS = [
     "org.ow2.asm:asm:%s" % ASM_VERSION,
     "org.slf4j:slf4j-api:%s" % SLF4J_VERSION,
     "javax.validation:validation-api:%s" % VALIDATION_VERSION,
+    "org.apache.tomcat:annotations-api:%s" % TOMCAT_ANNOTATIONS_VERSION,
 ]
 
 # These are not auto-injected.
@@ -163,6 +173,7 @@ GRPC_BUILD_ARTIFACTS = [
     "io.grpc:grpc-stub:%s" % GRPC_JAVA_VERSION,
     "io.grpc:grpc-context:%s" % GRPC_JAVA_VERSION,
     "io.grpc:grpc-protobuf:%s" % GRPC_JAVA_VERSION,
+    "io.grpc:grpc-netty:%s" % GRPC_JAVA_VERSION,
 ]
 
 JUNIT_JUPITER_GROUP_ID = "org.junit.jupiter"
@@ -357,7 +368,16 @@ def _gust_java_deps(micronaut = True, junit5 = True):
             "io.micronaut:micronaut-views-soy": "@io_micronaut_micronaut_views_soy",
             "com.google.guava:guava": "@com_google_guava",
             "com.google.protobuf:protobuf-java": "@com_google_protobuf//:protobuf_java",
+            "com.google.protobuf:protobuf-javalite": "@com_google_protobuf//:protobuf_javalite",
             "com.google.protobuf:protobuf-java-util": "@com_google_protobuf//:protobuf_java_util",
+            "com.google.grpc:grpc-auth": "@io_grpc_java//auth:auth",
+            "com.google.grpc:grpc-api": "@io_grpc_java//api:api",
+            "com.google.grpc:grpc-core": "@io_grpc_java//core:core",
+            "com.google.grpc:grpc-stub": "@io_grpc_java//stub:stub",
+            "com.google.grpc:grpc-protobuf": "@io_grpc_java//protobuf:protobuf",
+            "com.google.grpc:grpc-context": "@io_grpc_java//context:context",
+            "com.google.grpc:grpc-netty": "@io_grpc_java//netty:netty",
+            "com.google.grpc:grpc-netty-shaded": "@io_grpc_java//netty-shaded:netty-shaded",
             "com.google.template:soy": "@com_google_template_soy",
             "com.google.common.html.types:types": "@com_google_template_soy",
             "com.google.code:gson": "@com_google_code_gson",
@@ -374,6 +394,14 @@ OVERRIDE_DEPS = [
     "@io_micronaut_micronaut_views_soy",
     "@com_google_guava",
     "@com_google_protobuf//:protobuf_java",
+    "@com_google_protobuf//:protobuf_javalite",
+    "@io_grpc_java//auth:auth",
+    "@io_grpc_java//api:api",
+    "@io_grpc_java//core:core",
+    "@io_grpc_java//stub:stub",
+    "@io_grpc_java//protobuf:protobuf",
+    "@io_grpc_java//context:context",
+    "@io_grpc_java//netty:netty",
     "@com_google_template_soy",
     "@com_google_code_gson",
     "@com_google_code_findbugs_jsr305",
