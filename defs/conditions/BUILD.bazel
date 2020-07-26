@@ -16,6 +16,28 @@ package(
 )
 
 
+## Condition: `release`
+## ------------------------
+## Activates when optimizations are turned on.
+config_setting(
+    name = "release",
+    values = {
+        "compilation_mode": "opt",
+    },
+)
+
+
+## Condition: `dev`
+## ------------------------
+## Activates when optimizations are turned off and debug mode is turned on.
+config_setting(
+    name = "dev",
+    values = {
+        "compilation_mode": "dbg",
+    },
+)
+
+
 ## Condition: `zulu`
 ## ------------------------
 ## Activates when we are running in IntelliJ/locally.
