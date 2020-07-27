@@ -7,7 +7,7 @@ RUN apt-get update \
     && apt-get clean \
     && curl -sSL https://sdk.cloud.google.com > /tmp/gcl && bash /tmp/gcl --install-dir=/gcloud --disable-prompts \
     && mkdir -p /bazelisk/bin \
-    && curl -sSL https://github.com/bazelbuild/bazelisk/releases/download/v1.3.0/bazelisk-linux-amd64 > /bazelisk/bin/bazelisk \
+    && curl -sSL https://github.com/bazelbuild/bazelisk/releases/download/v1.5.0/bazelisk-linux-amd64 > /bazelisk/bin/bazelisk \
     && chmod +x /bazelisk/bin/bazelisk \
     && /gcloud/google-cloud-sdk/bin/gcloud components install \
         appctl kpt kubectl bq gsutil docker-credential-gcr alpha beta \
@@ -22,9 +22,15 @@ RUN apt-get update \
         pypandoc \
     && mkdir -p /builder/google-cloud-sdk \
     && ln -s /gcloud/google-cloud-sdk/bin /builder/google-cloud-sdk/bin \
-    && echo "Build image ready."
+    && echo "Build stage 1 complete.";
 
 ENV PATH $PATH:/gcloud/google-cloud-sdk/bin:/bazelisk/bin
+
+RUN mkdir -p /root/bazel-stub \
+    && cd /root/bazel-stub \
+    && echo "3.4.1" > .bazelversion \
+    && /bazelisk/bin/bazelisk version \
+    && echo "Build image ready."
 
 ENTRYPOINT ["/bin/bash"]
 
