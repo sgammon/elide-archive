@@ -2,7 +2,14 @@
 FROM gcr.io/cloud-marketplace/google/ubuntu1804@sha256:48c02d82c9c5a8e63b12fc064fd97a9cd75c5714cc1ff721d50dce200933b2bb
 RUN apt-get update \
     && apt-get install --no-install-recommends -y \
-        python python-pip python3 python3-pip build-essential default-jdk git golang unzip \
+        python python-pip python3 python3-pip build-essential default-jdk git golang unzip apt-transport-https ca-certificates \
+        curl gnupg-agent software-properties-common \
+    && curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add - \
+    && add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+        $(lsb_release -cs) \
+        stable" \
+    && apt-get update \
+    && apt-get install -y docker-ce docker-ce-cli containerd.io \
     && apt-get autoremove \
     && apt-get clean \
     && curl -sSL https://sdk.cloud.google.com > /tmp/gcl && bash /tmp/gcl --install-dir=/gcloud --disable-prompts \
