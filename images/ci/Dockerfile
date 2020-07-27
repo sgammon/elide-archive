@@ -1,5 +1,5 @@
 
-FROM gcr.io/cloud-marketplace/google/ubuntu1804@sha256:ca6f2441610b5eca910cb7e5d8494df11e539743d57e87abfc71f85f3d634d94
+FROM gcr.io/cloud-marketplace/google/ubuntu1804@sha256:48c02d82c9c5a8e63b12fc064fd97a9cd75c5714cc1ff721d50dce200933b2bb
 RUN apt-get update \
     && apt-get install --no-install-recommends -y \
         python python-pip python3 python3-pip build-essential default-jdk git golang unzip \
@@ -26,5 +26,5 @@ RUN apt-get update \
 
 ENV PATH $PATH:/gcloud/google-cloud-sdk/bin:/bazelisk/bin
 
-ENTRYPOINT ["/bazelisk/bin/bazelisk"]
+ENTRYPOINT ["/bin/bash"]
 
