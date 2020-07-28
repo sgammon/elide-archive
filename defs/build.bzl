@@ -283,8 +283,8 @@ DEPS = {
     "com_github_grpc_grpc": {
         "type": "github",
         "repo": "grpc/grpc",
-        "target": "de6defa6fff08de20e36f9168f5b277e292daf46",
-        "seal": "2bc37c4e6bb10ba60731630847db9519c5df71055ec6caaa0d233c4a771c5477"},
+        "target": "de893acb6aef88484a427e64b96727e4926fdcfd",
+        "seal": "61272ea6d541f60bdc3752ddef9fd4ca87ff5ab18dd21afc30270faad90c8a34"},
 
     # gRPC: Java
     "io_grpc_java": {
@@ -308,13 +308,6 @@ DEPS = {
         "repo": "sgammon/brotli",
         "target": "21378a50ab56ffe1989a7f119399d2616df519db",
         "seal": "2b1383b73512a9179e4333a03ef8bf3096fc06c2ac47afc4593f3b8ea02cbf65"},
-
-    # Security/TLS: BoringSSL
-    "boringssl": {
-        "type": "github",
-        "repo": "google/boringssl",
-        "target": "0b710a305b42b67522003a314dea3e3868485665",
-        "seal": "10a93b319f9f0a396d7c3d6c05b6195b2f002ae9002e492b5457298dac160993"},
 
     # Envoy
     "envoy": {
