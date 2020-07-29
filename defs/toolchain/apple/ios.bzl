@@ -51,12 +51,12 @@ def _apple_xcframework(name, path, exclude = None, **kwargs):
         name = name,
         framework_imports = select({
             # x86: simulator or target
-            "@gust//defs/conditions/arch:x86": native.glob([
+            "@gust//defs/conditions:dev": native.glob([
                  "%s/ios-i386_x86_64-simulator/**" % path,
             ], exclude = exclude or []),
 
             # ARM: prod or debug
-            "@gust//defs/conditions/arch:ARM": native.glob([
+            "@gust//defs/conditions:release": native.glob([
                  "%s/ios-armv7_arm64/**" % path,
             ], exclude = exclude or []),
         }),
