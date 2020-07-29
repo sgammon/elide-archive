@@ -173,8 +173,8 @@ DEPS = {
     "io_bazel_rules_k8s": {
         "type": "github",
         "repo": "bazelbuild/rules_k8s",
-        "target": "378e5cce3d1b16acf5733b16d74e0e4cdf32e233",
-        "seal": "b822fd6578384eff5797879f94e97a6f872c34d62e5b281aa468770b49a7e02c"},
+        "target": "6e58661104f1d962bc9b03757618f3db647d9b6f",
+        "seal": "7e4358fa276d5be0bf7e2ac5629f66dfe6eab4a779e7a5d189872dbb1209081b"},
 
     # Google: Protobuf
     "com_google_protobuf": {
