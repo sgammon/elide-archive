@@ -154,7 +154,15 @@ INJECTED_CONTROLLER_DEPS = [
     "@gust//java/gust/backend:PageContextManager",
     "@gust//java/gust/backend:BaseController",
     "@gust//java/gust/backend:AppController",
-    javaproto("@gust//java/gust/backend/builtin:sitemap_proto"),
+]
+
+INJECTED_CONTROLLER_PROTOS = [
+    "@gust//java/gust/backend/builtin:sitemap_proto",
+]
+
+INJECTED_CONTROLLER_EXPORTS = [
+    "@gust//java/gust/backend:BaseController",
+    "@gust//java/gust/backend:AppController",
 ]
 
 _JVM_APP_DEBUG_FLAGS = [
@@ -363,6 +371,7 @@ def _micronaut_controller(name,
                           templates = [],
                           runtime_deps = [],
                           data = [],
+                          exports = [],
                           **kwargs):
 
     """ Wraps a regular Micronaut JDK library which is intended to be used as a
@@ -371,11 +380,12 @@ def _micronaut_controller(name,
     _micronaut_library(
         name = name,
         srcs = srcs,
-        proto_deps = proto_deps,
+        proto_deps = _dedupe_deps((proto_deps or []) + INJECTED_CONTROLLER_PROTOS),
         templates = templates,
         deps = _dedupe_deps((deps or []) + INJECTED_CONTROLLER_DEPS),
         runtime_deps = runtime_deps,
         data = data,
+        exports = _dedupe_deps((exports or []) + INJECTED_CONTROLLER_EXPORTS),
         **kwargs
     )
 
