@@ -12,8 +12,6 @@
  */
 package gust.backend;
 
-import javax.annotation.Nonnull;
-
 
 /**
  * Supplies shared logic to all framework-provided controller base classes. Responsible for managing such things as the
@@ -26,14 +24,14 @@ import javax.annotation.Nonnull;
  */
 public abstract class BaseController {
   /** Holds request-bound page context as it is built. */
-  protected final @Nonnull PageContextManager context;
+  protected final PageContextManager context;
 
   /**
    * Initialize a base Gust controller from scratch.
    *
    * @param context Page context manager, injected.
    */
-  public BaseController(@Nonnull PageContextManager context) {
+  public BaseController(PageContextManager context) {
     this.context = context;
   }
 }
