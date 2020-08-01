@@ -12,13 +12,8 @@
 ##
 
 load(
-    "@bazel_tools//tools/build_defs/pkg:pkg.bzl",
+    "@rules_pkg//:pkg.bzl",
     _pkg_tar = "pkg_tar",
-)
-
-
-load(
-    "@rules_pkg//pkg:pkg.bzl",
     _pkg_zip = "pkg_zip",
 )
 
