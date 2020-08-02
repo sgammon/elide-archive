@@ -5,6 +5,7 @@ directories:
   javatests
   tools
   types
+  gust
   -vendor/
 
 workspace_type: java
