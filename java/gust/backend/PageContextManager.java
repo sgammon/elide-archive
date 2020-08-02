@@ -580,6 +580,53 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
   }
 
   /**
+   * Add a `Feature-Policy` entry for the current response render flow. This value will be appended to whatever current
+   * values are set for the `Feature-Policy` header.
+   *
+   * @param policies Policies to add for the current page. Do not pass `null`.
+   * @return Current page context manager (for call chain-ability).
+   * @throws IllegalArgumentException If `null` is passed for the provided policies.
+   */
+  @CanIgnoreReturnValue
+  public @Nonnull PageContextManager addFeaturePolicy(@Nonnull String... policies) {
+    //noinspection ConstantConditions
+    if (policies == null) throw new IllegalArgumentException("Cannot pass `null` for feature policies.");
+    for (String policy : policies) {
+      this.context.addFeaturePolicy(policy);
+    }
+    return this;
+  }
+
+  /**
+   * Clear the current set of `Feature-Policy` entries. If the app makes use of the framework's built-in page frame and
+   * response cycle, the value will automatically be used.
+   *
+   * @return Current page context manager (for call chain-ability).
+   */
+  @CanIgnoreReturnValue
+  public @Nonnull PageContextManager clearFeaturePolicy() {
+    this.context.clearFeaturePolicy();
+    return this;
+  }
+
+  /**
+   * Overwrite the set of `Feature-Policy` entries for the current render flow. If the app makes use of the framework's
+   * built-in page frame and response cycle, the value will automatically be used.
+   *
+   * @param policies Policies to set for the current page. Do not pass `null`.
+   * @return Current page context manager (for call chain-ability).
+   * @throws IllegalArgumentException If `null` is passed for the policy collection to apply.
+   */
+  @CanIgnoreReturnValue
+  public @Nonnull PageContextManager setFeaturePolicy(@Nonnull Collection<String> policies) {
+    //noinspection ConstantConditions
+    if (policies == null) throw new IllegalArgumentException("Cannot pass `null` for `Feature-Policy` set.");
+    this.clearFeaturePolicy();
+    if (!policies.isEmpty()) this.context.addAllFeaturePolicy(policies);
+    return this;
+  }
+
+  /**
    * Retrieve the current value for the page title, set in the builder. If there is no value, {@link Optional#empty()}
    * is supplied as the return value.
    *
@@ -623,7 +670,7 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
    *
    * @param description Description to set for the current page. Do not pass `null`.
    * @return Current page context manager (for call chain-ability).
-   * @throws IllegalArgumentException If `null` is passed for the title.
+   * @throws IllegalArgumentException If `null` is passed for the description.
    */
   @CanIgnoreReturnValue
   public @Nonnull PageContextManager description(@Nonnull String description) {
@@ -653,12 +700,12 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
    *
    * @param keywords Keywords to set for the current page. Do not pass `null`.
    * @return Current page context manager (for call chain-ability).
-   * @throws IllegalArgumentException If `null` is passed for the title.
+   * @throws IllegalArgumentException If `null` is passed for the keywords.
    */
   @CanIgnoreReturnValue
   public @Nonnull PageContextManager addKeyword(@Nonnull String... keywords) {
     //noinspection ConstantConditions
-    if (keywords == null) throw new IllegalArgumentException("Cannot pass `null` for page title.");
+    if (keywords == null) throw new IllegalArgumentException("Cannot pass `null` for page keywords.");
     for (String keyword : keywords) {
       this.context.getMetaBuilder().addKeyword(keyword);
     }
@@ -670,7 +717,6 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
    * built-in page frame, the value will automatically be used.
    *
    * @return Current page context manager (for call chain-ability).
-   * @throws IllegalArgumentException If `null` is passed for the title.
    */
   @CanIgnoreReturnValue
   public @Nonnull PageContextManager clearKeywords() {
@@ -684,12 +730,12 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
    *
    * @param keywords Keywords to set for the current page. Do not pass `null`.
    * @return Current page context manager (for call chain-ability).
-   * @throws IllegalArgumentException If `null` is passed for the title.
+   * @throws IllegalArgumentException If `null` is passed for the keywords.
    */
   @CanIgnoreReturnValue
   public @Nonnull PageContextManager setKeywords(@Nonnull Collection<String> keywords) {
     //noinspection ConstantConditions
-    if (keywords == null) throw new IllegalArgumentException("Cannot pass `null` for page title.");
+    if (keywords == null) throw new IllegalArgumentException("Cannot pass `null` for page keywords.");
     this.clearKeywords();
     if (!keywords.isEmpty()) this.context.getMetaBuilder().addAllKeyword(keywords);
     return this;
@@ -713,7 +759,7 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
    *
    * @param link HTML metadata link to add to the page.
    * @return Current page context manager (for call chain-ability).
-   * @throws IllegalArgumentException If `null` is passed for the title.
+   * @throws IllegalArgumentException If `null` is passed for the link.
    */
   @CanIgnoreReturnValue
   public @Nonnull PageContextManager addLink(@Nonnull Context.PageLink.Builder link) {
