@@ -395,10 +395,11 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
       if (ctx.hasHints() &&  // we must support hints to emit this header
           ctx.getHints().getSupportedCount() > 0 &&  // there must be hint types to send
           (ctx.getHints().getIndicatedCount() == 0 ||  // we should only send if there are no hints from the client, or
-          !Sets.difference(  // the provided set of hints from the client doesn't match with the supported set
+           ctx.getHints().getIndicatedList() != ctx.getHints().getSupportedList() ||  // the lists differ in length, or
+          !(Sets.difference(  // the provided set of hints from the client doesn't match with the supported set
              ImmutableSortedSet.copyOf(ctx.getHints().getIndicatedList()),
              ImmutableSortedSet.copyOf(ctx.getHints().getSupportedList()))
-            .isEmpty())) {
+            .isEmpty()))) {
         SortedSet<String> tokens = ctx.getHints().getSupportedList().stream()
           .map(PageContextManager::clientHintForEnum)
           .collect(Collectors.toCollection(TreeSet::new));
