@@ -131,7 +131,7 @@ def _style_binary(name,
 
         _closure_css_binary(
             name = "%s-bin" % name,
-            deps = [":%s-lib" % name] + (css_deps or []),
+            deps = (css_deps or []) + [":%s-lib" % name],
             defs = BASE_GSS_DEFS + defs,
             renaming = renaming_state,
             debug = debug_state,
