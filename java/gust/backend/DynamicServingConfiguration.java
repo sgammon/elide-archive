@@ -118,13 +118,7 @@ public interface DynamicServingConfiguration {
     @Bindable("policy") default SortedSet<String> policy() {
       return ImmutableSortedSet.of(
         "document-domain 'none';",
-        "sync-xhr 'none';",
-        "ch-dpr 'self';",
-        "ch-width 'self';",
-        "ch-viewport-width 'self';",
-        "ch-device-memory 'self';",
-        "ch-ect 'self';",
-        "ch-downlink 'self';"
+        "sync-xhr 'none';"
       );
     }
   }
