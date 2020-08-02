@@ -118,12 +118,13 @@ public interface DynamicServingConfiguration {
     @Bindable("policy") default SortedSet<String> policy() {
       return ImmutableSortedSet.of(
         "document-domain 'none';",
-        "legacy-image-formats 'none';",
-        "oversized-images 'none';",
         "sync-xhr 'none';",
-        "unoptimized-images 'none';",
         "ch-dpr 'self';",
-        "cd-width 'self';"
+        "ch-width 'self';",
+        "ch-viewport-width 'self';",
+        "ch-device-memory 'self';",
+        "ch-ect 'self';",
+        "ch-downlink 'self';"
       );
     }
   }
@@ -141,7 +142,13 @@ public interface DynamicServingConfiguration {
 
     /** Return the set of hints supported by the server. */
     @Bindable("hints") default ImmutableSet<ClientHint> hints() {
-      return Sets.immutableEnumSet(ClientHint.ECT, ClientHint.RTT, ClientHint.DPR, ClientHint.WIDTH);
+      return Sets.immutableEnumSet(
+          ClientHint.ECT,
+          ClientHint.RTT,
+          ClientHint.DPR,
+          ClientHint.WIDTH,
+          ClientHint.VIEWPORT_WIDTH,
+          ClientHint.DOWNLINK);
     }
 
     /** Client Hints configuration time-to-live value. */
