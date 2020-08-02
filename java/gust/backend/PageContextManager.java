@@ -406,8 +406,8 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
 
         String renderedHints = Joiner.on(", ").join(tokens);
         if (logging.isDebugEnabled())
-          logging.debug(format("Indicating `Accept-CH`: '%s'.", renderedHints));
-        response.getHeaders().add(ACCEPT_CH_HEADER, renderedHints);
+          logging.debug(format("Indicating `Accept-CH`: '%s'.", renderedHints.toLowerCase()));
+        response.getHeaders().add(ACCEPT_CH_HEADER, renderedHints.toLowerCase());
 
         // since we've appended `Accept-CH`, check for a lifetime
         long lifetime = ctx.getHints().getLifetime();
