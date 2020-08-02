@@ -99,7 +99,7 @@ public interface DynamicServingConfiguration {
 
     /** Whether to enable {@code ETag} headers for dynamically-served content. */
     @Bindable("enabled") default Boolean enabled() {
-      return true;
+      return false;
     }
   }
 
