@@ -49,11 +49,17 @@ def _js_app(name,
             deps = None,
             defs = {},
             flags = [],
+            css = None,
             **kwargs):
 
     """ Build a combined frontend application target. """
 
     overlay_defs = _annotate_defs_dict(defs)
+
+    if css != None:
+        css_target = "%s-bin" % css
+    else:
+        css_target = None
 
     _j2cl_application(
         name = name,
@@ -63,6 +69,7 @@ def _js_app(name,
         dependency_mode = "PRUNE",
         extra_flags = flags,
         closure_defines = overlay_defs,
+        css = css_target,
         **kwargs
     )
 
