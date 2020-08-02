@@ -246,6 +246,9 @@ message FieldPersistenceOptions {
   // fields on which it is applied. Depending on the visibility level active when data is deserialized or serialized,
   // certain data may be withheld corresponding to the invoking user or system's access level.
   FieldVisibility visibility = 8;
+
+  // Provided for backwards compatibility. Do not use.
+  string description = 9 [deprecated = true];
 }
 
 
