@@ -76,7 +76,7 @@ MICRONAUT_VERSION = "2.0.0"
 MICRONAUT_DATA_VERSION = "1.1.1"
 MICRONAUT_GRPC_VERSION = "2.0.1"
 MICRONAUT_TEST_VERSION = "1.2.0"
-MICRONAUT_REDIS_VERSION = "1.2.0"
+MICRONAUT_REDIS_VERSION = "2.3.1"
 MICRONAUT_SECURITY_VERSION = "2.0.0.M2"
 
 GRPC_EXCLUSIONS = [
@@ -236,7 +236,7 @@ MICRONAUT_EXTRAS = [
     ("io.micronaut.grpc:micronaut-grpc-runtime", MICRONAUT_GRPC_VERSION),
     ("io.micronaut.grpc:micronaut-grpc-annotation", MICRONAUT_GRPC_VERSION),
     ("io.micronaut.grpc:micronaut-protobuff-support", MICRONAUT_GRPC_VERSION),
-    ("io.micronaut.configuration:micronaut-redis-lettuce", MICRONAUT_REDIS_VERSION),
+    ("io.micronaut.redis:micronaut-redis-lettuce", MICRONAUT_REDIS_VERSION),
 ]
 
 MICRONAUT_BUILD_ARTIFACTS = ["%s:%s" % (i, MICRONAUT_VERSION) for i in MICRONAUT_COORDINATES] + [
