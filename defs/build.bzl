@@ -255,14 +255,6 @@ DEPS = {
         "overlay": "normalize.bzl",
         "seal": "53933ba214ab20b501a4ed1f08796ef716a5f1ccb8e0f9977a27f802cb09bcda"},
 
-    # Material Design Lite
-    "mdl": {
-        "type": "github",
-        "repo": "sgammon/material-design-lite",
-        "overlay": "mdl.bzl",
-        "target": "a963d185479d06c495bcf9c44966036d089813bf",
-        "seal": "7abe53c1f56f3f2317386e8d1aaf2dce853238e03bcdc3a985b17bf089fbe56c"},
-
     # Common Protocol Buffers
     "proto_common": {
         "type": "github",
