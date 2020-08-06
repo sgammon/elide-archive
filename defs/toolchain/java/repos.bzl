@@ -67,6 +67,7 @@ GCLOUD_PUBSUB_VERSION = "1.103.1"
 GCLOUD_STORAGE_VERSION = "1.105.1"
 GCLOUD_FIRESTORE_VERSION = "1.32.5"
 GCLOUD_MONITORING_VERSION = "1.99.2"
+COMMON_PROTOS_VERSION = "1.18.0"
 
 GRPC_JAVA_VERSION = "1.30.2"
 TOMCAT_ANNOTATIONS_VERSION = "6.0.53"
@@ -174,6 +175,8 @@ GRPC_BUILD_ARTIFACTS = [
     "io.grpc:grpc-context:%s" % GRPC_JAVA_VERSION,
     "io.grpc:grpc-protobuf:%s" % GRPC_JAVA_VERSION,
     "io.grpc:grpc-netty:%s" % GRPC_JAVA_VERSION,
+    "com.google.api.grpc:proto-google-common-protos:%s" % COMMON_PROTOS_VERSION,
+    "com.google.api.grpc:grpc-google-common-protos:%s" % COMMON_PROTOS_VERSION,
 ]
 
 JUNIT_JUPITER_GROUP_ID = "org.junit.jupiter"
