@@ -12,7 +12,7 @@
 ##
 
 load(
-    "@npm_bazel_jasmine//:index.bzl",
+    "@npm//@bazel/jasmine:index.bzl",
     _jasmine_node_test = "jasmine_node_test",
 )
 
@@ -47,7 +47,6 @@ def _node_test(name,
         deps = (deps or []) + INJECTED_NODE_TEST_DEPS,
         data = (data or []) + INJECTED_NODE_RUNTIME_TEST_DEPS,
         config_file = config,
-        coverage = True,
         **kwargs,
     )
 
@@ -77,7 +76,6 @@ def _node_ts_test(name,
         srcs = [":%s-es5.js" % name],
         deps = (deps or []) + INJECTED_NODE_TEST_DEPS,
         data = data,
-        coverage = True,
         **kwargs
     )
 

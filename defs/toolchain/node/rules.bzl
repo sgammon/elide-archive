@@ -29,7 +29,7 @@ load(
 )
 
 load(
-    "@npm_bazel_rollup//:index.bzl",
+    "@npm//@bazel/rollup:index.bzl",
     _rollup_bundle = "rollup_bundle",
 )
 

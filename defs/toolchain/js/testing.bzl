@@ -20,7 +20,7 @@ load(
 )
 
 load(
-    "@npm_bazel_karma//:index.bzl",
+    "@npm//@bazel/karma:index.bzl",
     _karma_web_test = "karma_web_test",
     _karma_web_test_suite = "karma_web_test_suite",
 )

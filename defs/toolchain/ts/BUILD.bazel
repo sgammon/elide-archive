@@ -21,7 +21,7 @@ load(
 )
 
 load(
-    "@npm_bazel_typescript//:index.bzl",
+    "@npm//@bazel/typescript:index.bzl",
     "ts_config",
 )
 

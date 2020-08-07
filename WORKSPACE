@@ -61,8 +61,8 @@ protobuf_deps()
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 http_archive(
     name = "build_bazel_rules_nodejs",
-    sha256 = "2eca5b934dee47b5ff304f502ae187c40ec4e33e12bcbce872a2eeb786e23269",
-    urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/1.4.1/rules_nodejs-1.4.1.tar.gz"],
+    sha256 = "0f2de53628e848c1691e5729b515022f5a77369c76a09fbe55611e12731c90e3",
+    urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/2.0.1/rules_nodejs-2.0.1.tar.gz"],
 )
 
 load("@build_bazel_rules_nodejs//:index.bzl",
@@ -82,11 +82,7 @@ yarn_install(
 load("@npm//:install_bazel_dependencies.bzl",
      "install_bazel_dependencies")
 
-install_bazel_dependencies()
-
-# Setup TypeScript toolchain
-load("@npm_bazel_typescript//:index.bzl", "ts_setup_workspace")
-ts_setup_workspace()
+install_bazel_dependencies(suppress_warning=True)
 
 ## SASS
 load("@io_bazel_rules_sass//:package.bzl", "rules_sass_dependencies")
@@ -170,7 +166,7 @@ switched_rules_by_language(
     grpc = True)
 
 ## Karma Setup
-load("@npm_bazel_karma//:package.bzl", "npm_bazel_karma_dependencies")
+load("@npm//@bazel/karma:package.bzl", "npm_bazel_karma_dependencies")
 npm_bazel_karma_dependencies()
 
 ## Web Testing Setup

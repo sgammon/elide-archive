@@ -12,7 +12,7 @@
 ##
 
 load(
-    "@npm_bazel_typescript//:index.bzl",
+    "@npm//@bazel/typescript:index.bzl",
     _ts_library = "ts_library"
 )
 
