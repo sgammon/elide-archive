@@ -338,7 +338,14 @@ def _format_maven_jar_dep_name(group_id, artifact_id):
     return "@%s//jar" % _format_maven_jar_name(group_id, artifact_id)
 
 
-def _gust_java_deps(micronaut = True, junit5 = True):
+def _gust_java_deps(
+        app_artifacts = [],
+        app_repositories = [],
+        app_fetch_sources = True,
+        app_excludes = [],
+        app_overrides = [],
+        micronaut = True,
+        junit5 = True):
 
     """ Install Gust runtime Java dependencies. """
 
@@ -352,6 +359,8 @@ def _gust_java_deps(micronaut = True, junit5 = True):
             EXTRA_BUILD_ARTIFACTS +
             MICRONAUT_TEST_ARTIFACTS) if i not in artifacts]
 
+    artifacts += (app_artifacts or [])
+
     if junit5:
         artifacts += (
             junit_platform_java_repositories() +
@@ -359,38 +368,38 @@ def _gust_java_deps(micronaut = True, junit5 = True):
 
     maven_install(
         artifacts = artifacts,
-        repositories = REPOSITORIES,
-        fetch_sources = FETCH_SOURCES,
-        maven_install_json = "@gust//:maven_install.json",
+        repositories = REPOSITORIES + (app_repositories or []),
+        fetch_sources = app_fetch_sources,
+        maven_install_json = "//:maven_install.json",
         generate_compat_repositories = True,
         strict_visibility = STRICT_DEPENDENCIES,
         excluded_artifacts = [
             "com.google.template:soy",
             "com.google.common.html.types:types",
-        ],
-        override_targets = {
-            "io.micronaut:micronaut-views": "@io_micronaut_micronaut_views",
-            "io.micronaut:micronaut-views-soy": "@io_micronaut_micronaut_views_soy",
-            "com.google.guava:guava": "@com_google_guava",
-            "com.google.protobuf:protobuf-java": "@com_google_protobuf//:protobuf_java",
-            "com.google.protobuf:protobuf-javalite": "@com_google_protobuf//:protobuf_javalite",
-            "com.google.protobuf:protobuf-java-util": "@com_google_protobuf//:protobuf_java_util",
-            "com.google.grpc:grpc-auth": "@io_grpc_java//auth:auth",
-            "com.google.grpc:grpc-api": "@io_grpc_java//api:api",
-            "com.google.grpc:grpc-core": "@io_grpc_java//core:core",
-            "com.google.grpc:grpc-stub": "@io_grpc_java//stub:stub",
-            "com.google.grpc:grpc-protobuf": "@io_grpc_java//protobuf:protobuf",
-            "com.google.grpc:grpc-context": "@io_grpc_java//context:context",
-            "com.google.grpc:grpc-netty": "@io_grpc_java//netty:netty",
-            "com.google.grpc:grpc-netty-shaded": "@io_grpc_java//netty-shaded:netty-shaded",
-            "com.google.template:soy": "@com_google_template_soy",
-            "com.google.common.html.types:types": "@com_google_template_soy",
-            "com.google.code:gson": "@com_google_code_gson",
-            "com.google.code.findbugs:jsr305": "@com_google_code_findbugs_jsr305",
-            "com.google.closure:stylesheets": "@com_google_closure_stylesheets",
-            "javax.inject:javax.inject": "@javax_inject",
-            "javax.annotation:javax.annotation-api": "@javax_annotation_api",
-        },
+        ] + (app_excludes or []),
+        override_targets = dict(([
+            ("io.micronaut:micronaut-views", "@io_micronaut_micronaut_views"),
+            ("io.micronaut:micronaut-views-soy", "@io_micronaut_micronaut_views_soy"),
+            ("com.google.guava:guava", "@com_google_guava"),
+            ("com.google.protobuf:protobuf-java", "@com_google_protobuf//:protobuf_java"),
+            ("com.google.protobuf:protobuf-javalite", "@com_google_protobuf//:protobuf_javalite"),
+            ("com.google.protobuf:protobuf-java-util", "@com_google_protobuf//:protobuf_java_util"),
+            ("com.google.grpc:grpc-auth", "@io_grpc_java//auth:auth"),
+            ("com.google.grpc:grpc-api", "@io_grpc_java//api:api"),
+            ("com.google.grpc:grpc-core", "@io_grpc_java//core:core"),
+            ("com.google.grpc:grpc-stub", "@io_grpc_java//stub:stub"),
+            ("com.google.grpc:grpc-protobuf", "@io_grpc_java//protobuf:protobuf"),
+            ("com.google.grpc:grpc-context", "@io_grpc_java//context:context"),
+            ("com.google.grpc:grpc-netty", "@io_grpc_java//netty:netty"),
+            ("com.google.grpc:grpc-netty-shaded", "@io_grpc_java//netty-shaded:netty-shaded"),
+            ("com.google.template:soy", "@com_google_template_soy"),
+            ("com.google.common.html.types:types", "@com_google_template_soy"),
+            ("com.google.code:gson", "@com_google_code_gson"),
+            ("com.google.code.findbugs:jsr305", "@com_google_code_findbugs_jsr305"),
+            ("com.google.closure:stylesheets", "@com_google_closure_stylesheets"),
+            ("javax.inject:javax.inject", "@javax_inject"),
+            ("javax.annotation:javax.annotation-api", "@javax_annotation_api"),
+        ] + (app_overrides or []))),
     )
 
 
