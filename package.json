@@ -21,7 +21,7 @@
     "@bazel/karma": "^1.2.4",
     "@bazel/rollup": "^1.3.0",
     "@bazel/source-map-support": "latest",
-    "@bazel/terser": "^1.2.4",
+    "@bazel/terser": "^2.0.2",
     "@bazel/typescript": "^1.2.4",
     "@feathersjs/express": "^4.5.1",
     "@feathersjs/feathers": "^4.5.1",
