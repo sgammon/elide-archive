@@ -484,7 +484,7 @@ def _micronaut_application(name,
             injected_resources.append(js_modules[module])
 #            injected_resources.append("%s.map" % js_modules[module])
             bundle_inputs.append("--js=\"%s:$(locations %s)\"" % (module, js_modules[module]))
-    if len(js_modules) > 0:
+    if len(css_modules) > 0:
         for module in css_modules:
             injected_resources.append("%s.css" % css_modules[module])
             injected_resources.append("%s.css.json" % css_modules[module])

@@ -38,6 +38,16 @@ config_setting(
 )
 
 
+## Condition: `style_renaming`
+## ------------------------
+## Activates when style renaming should be on.
+config_setting(
+    name = "style_renaming",
+    values = {"style_renaming": "active"},
+    visibility = ["//visibility:public"],
+)
+
+
 ## Condition: `zulu`
 ## ------------------------
 ## Activates when we are running in IntelliJ/locally.

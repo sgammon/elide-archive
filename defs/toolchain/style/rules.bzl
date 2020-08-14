@@ -40,7 +40,11 @@ BASE_GSS_DEFS = [
     "--allowed-at-rule=requires",
 ]
 
-OPTIMIZE_STYLES = False
+OPTIMIZE_STYLES = select({
+  "@gust//defs/config:release": True,
+  "@gust//defs/config:debug": False,
+  "//conditions:default": False
+})
 
 
 def _style_library(name,

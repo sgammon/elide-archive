@@ -11,6 +11,12 @@
 # is strictly forbidden except in adherence with assigned license requirements.
 ##
 
+
+## Framework version tag.
+## ------------------------------------
+## Displayed in certain areas of the app, mostly when `DEV` is active.
+VERSION = "1.0.0-alpha5"
+
 ## `Local` mode.
 ## ------------------------------------
 ## Set to `True` to build against local dependencies.
@@ -19,22 +25,28 @@ LOCAL = False
 ## `Debug` mode.
 ## ------------------------------------
 ## Set to `True` to shut off symbol rewriting and enable logging.
-DEBUG = True
+DEBUG = select({
+   "//defs/conditions:dev": True,
+   "//defs/conditions:release": False,
+   "//conditions:default": True
+})
 
 ## `Dev` mode.
 ## ------------------------------------
 ## Set to `True` to enable in-page dev tools and UI, regardless of DEBUG mode.
-DEV = True
-
-## Framework version tag.
-## ------------------------------------
-## Displayed in certain areas of the app, mostly when `DEV` is active.
-VERSION = "1.0.0-alpha4"
+DEV = select({
+    "//defs/conditions:dev": True,
+    "//defs/conditions:release": False,
+    "//conditions:default": True
+})
 
 ## `Renaming` mode.
 ## ------------------------------------
 ## Set to `True` to obfuscate styles.
-RENAMING = False
+RENAMING = select({
+    "//defs/conditions:style_renaming": True,
+    "//conditions:default": False
+})
 
 ## Browser target year.
 ## ------------------------------------
