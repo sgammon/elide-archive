@@ -351,8 +351,8 @@ DEPS = {
     "com_google_closure_stylesheets": {
         "type": "java",
         "licenses": ["notice"],
-        "targets": ["https://storage.googleapis.com/elide-software/closure-stylesheets-1.6.0-b9.jar"],
-        "seal": "ef0d4e8b658ff37f99f7702ef82a80f4e9f8b3a8731a0277981267c09567e61a",
+        "targets": ["https://storage.googleapis.com/elide-software/closure-stylesheets-1.6.0-b10.jar"],
+        "seal": "11b4341aa1d4a76cf90c2f0ee90ef85f584688bf49757c79040ecbef06dfa9c3",
         "deps": [
             "@args4j",
             "@com_google_javascript_closure_compiler",
