@@ -43,7 +43,7 @@ config_setting(
 ## Activates when style renaming should be on.
 config_setting(
     name = "style_renaming",
-    values = {"style_renaming": "active"},
+    define_values = {"style_renaming": "active"},
     visibility = ["//visibility:public"],
 )
 

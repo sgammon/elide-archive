@@ -106,8 +106,7 @@ def _style_binary(name,
        with GSS after compilation, and then any applicable. post-processors. """
 
     renaming_state = select({
-        "@gust//defs/config:release": True,
-        "@gust//defs/config:debug": False,
+        "@gust//defs/conditions:style_renaming": True,
         "//conditions:default": False
     })
 
