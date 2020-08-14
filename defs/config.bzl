@@ -25,20 +25,12 @@ LOCAL = False
 ## `Debug` mode.
 ## ------------------------------------
 ## Set to `True` to shut off symbol rewriting and enable logging.
-DEBUG = select({
-   "//defs/conditions:dev": True,
-   "//defs/conditions:release": False,
-   "//conditions:default": True
-})
+DEBUG = False
 
 ## `Dev` mode.
 ## ------------------------------------
 ## Set to `True` to enable in-page dev tools and UI, regardless of DEBUG mode.
-DEV = select({
-    "//defs/conditions:dev": True,
-    "//defs/conditions:release": False,
-    "//conditions:default": True
-})
+DEV = False
 
 ## `Renaming` mode.
 ## ------------------------------------
