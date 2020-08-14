@@ -113,7 +113,7 @@ def _style_binary(name,
     debug_state = select({
         "@gust//defs/config:release": False,
         "@gust//defs/config:debug": True,
-        "//conditions:default": True
+        "//conditions:default": False
     })
 
     if src != None and (src.endswith(".sass") or src.endswith(".scss")):
