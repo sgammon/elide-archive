@@ -27,6 +27,22 @@ def _closure_path(*path):
     return "@io_bazel_rules_closure//closure/library/%s" % genpath
 
 
+def _closure_service(target, type = "binary"):
+
+    """ Computes a target name, postfixed with a sentinel indicating
+        a request for a Closure-based gRPC client. """
+
+    return "%s-%s-%s" % (target, "grpc_js", type)
+
+
+def _closure_proto(target):
+
+    """ Computes a target name, postfixed with a sentinel indicating
+        a request for a Closure-based JS proto. """
+
+    return "%s-%s" % (target, "closure_proto")
+
+
 def _maven(path):
 
     """ Computes a Maven dependency path, based on the coordinates
@@ -49,3 +65,5 @@ def _javaproto(path):
 maven = _maven
 javaproto = _javaproto
 closure = _closure_path
+js_proto = _closure_proto
+js_service = _closure_service

@@ -48,6 +48,7 @@
     "karma-requirejs": "1.1.0",
     "karma-safari-launcher": "^1.0.0",
     "karma-sourcemap-loader": "0.3.7",
+    "minimist": "1.2.5",
     "postcss": "^7.0.26",
     "requirejs": "2.3.6",
     "rollup": "^1.31.1",

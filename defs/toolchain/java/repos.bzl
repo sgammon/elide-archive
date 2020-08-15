@@ -54,7 +54,9 @@ JUNIT_JUPITER_VERSION = "5.6.0"
 JUNIT_PLATFORM_VERSION = "1.6.0"
 
 GAX_VERSION = "1.54.0"
+NETTY_VERSION = "4.1.45.Final"
 RXJAVA_VERSION = "2.2.18"
+PICOCLI_VERSION = "4.2.0"
 REACTIVE_VERSION = "1.0.3"
 THREETEN_VERSION = "1.4.1"
 GAPI_COMMON_VERSION = "1.8.1"
@@ -147,6 +149,12 @@ BUILD_ARTIFACTS = [
     "javax.validation:validation-api:%s" % VALIDATION_VERSION,
 ]
 
+# These are not auto-injected.
+EXTRA_BUILD_ARTIFACTS = [
+    "info.picocli:picocli:%s" % PICOCLI_VERSION,
+    "info.picocli:picocli-codegen:%s" % PICOCLI_VERSION,
+]
+
 GRPC_BUILD_ARTIFACTS = [
     "io.grpc:grpc-core:%s" % GRPC_JAVA_VERSION,
     "io.grpc:grpc-auth:%s" % GRPC_JAVA_VERSION,
@@ -210,6 +218,7 @@ MICRONAUT_COORDINATES = [
 ]
 
 MICRONAUT_EXTRAS = [
+    ("io.netty:netty-buffer", NETTY_VERSION),
     ("io.micronaut:micronaut-security", MICRONAUT_SECURITY_VERSION),
     ("io.micronaut.data:micronaut-data-processor", MICRONAUT_DATA_VERSION),
     ("io.micronaut.grpc:micronaut-grpc-runtime", MICRONAUT_GRPC_VERSION),
@@ -323,6 +332,7 @@ def _gust_java_deps(micronaut = True, junit5 = True):
             GRPC_BUILD_ARTIFACTS +
             MICRONAUT_BUILD_ARTIFACTS +
             MICRONAUT_RUNTIME_ARTIFACTS +
+            EXTRA_BUILD_ARTIFACTS +
             MICRONAUT_TEST_ARTIFACTS) if i not in artifacts]
 
     if junit5:

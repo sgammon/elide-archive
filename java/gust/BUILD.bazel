@@ -96,6 +96,7 @@ filegroup(
       "*.java"
     ]) + [
         "//java/gust/backend:sources",
+        "//java/gust/util:sources",
     ]
 )
 
@@ -105,8 +106,12 @@ javadoc_library(
         ":sources",
     ],
     deps = ALL_DEPENDENCIES + [
+        javaproto("//gust/assets:bundle_proto"),
+        javaproto("//gust/core:crypto"),
+        javaproto("//gust/core:data"),
         javaproto("//gust/core:datamodel"),
         javaproto("//gust/page:page_proto"),
+        "//java/gust/util:util",
     ],
     bottom_text = "Copyright (©) 2020, The Gust Framework Authors",
     doctitle = "GUST Framework",

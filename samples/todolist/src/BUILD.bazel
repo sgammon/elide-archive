@@ -55,16 +55,19 @@ service(
         "@proto_common//:type_month",
         "@proto_common//:type_latlng",
         "@proto_common//:type_timeofday",
-        "@proto_common//:rpc_status",
-        "@proto_common//:rpc_error_details",
         "@proto_common//google/api:annotations_proto",
         "@proto_common//google/api:client_proto",
         "@proto_common//google/api:field_behavior",
-        "@com_google_protobuf//:any_proto",
         "@com_google_protobuf//:empty_proto",
         "@com_google_protobuf//:timestamp_proto",
         "@com_google_protobuf//:field_mask_proto",
     ]
+)
+
+
+alias(
+    name = "frontend",
+    actual = "//samples/todolist/src/frontend:frontend",
 )
 
 ssr_library(
@@ -108,7 +111,10 @@ micronaut_controller(
     srcs = ["server/HomeController.kt"],
     templates = [":home_soy"],
     proto_deps = [":todolist_proto"],
-    deps = [":TodolistLogic"],
+    deps = [
+        ":TodolistLogic",
+        "//java/gust/backend/annotations:annotations",
+    ],
 )
 
 micronaut_application(
@@ -127,6 +133,15 @@ micronaut_application(
         ":TasksService",
         ":ReflectionService",
     ],
+
+    js_modules = {
+        "todolist.main": "//samples/todolist/src/frontend:app",
+    },
+
+    css_modules = {
+        "todolist.mdl": "//samples/todolist/src/frontend:mdl",
+        "todolist.styles": "//samples/todolist/src/frontend:styles",
+    },
 
     # -- Publishing / Images -- #
     native = False,

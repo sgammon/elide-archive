@@ -15,16 +15,13 @@ package server
 import gust.backend.AppController
 import gust.backend.PageContextManager
 import gust.backend.PageRender
-import io.micronaut.http.MediaType
+import io.micronaut.http.HttpResponse
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.QueryValue
 import io.micronaut.security.annotation.Secured
 import io.micronaut.views.View
 import org.slf4j.LoggerFactory
-import tools.elide.page.Context.Styles.Stylesheet
-import tools.elide.page.Context.Scripts.JavaScript
-import java.net.URI
 import javax.inject.Inject
 
 
@@ -35,22 +32,13 @@ import javax.inject.Inject
  */
 @Controller
 @Secured("isAnonymous()")
-class HomeController @Inject constructor (ctx: PageContextManager): AppController(ctx) {
+class HomeController @Inject constructor(ctx: PageContextManager): AppController(ctx) {
   companion object {
     // Logging pipe.
     @JvmStatic private val logging = LoggerFactory.getLogger(HomeController::class.java)
 
     // Default name to show.
     private const val defaultName = "World"
-
-    // CDN at which to access MDC.
-    private const val materialCDN = "https://unpkg.com/material-components-web@latest/dist"
-
-    // Material JS.
-    private const val materialJS = "$materialCDN/material-components-web.min.js"
-
-    // Material CSS.
-    private const val materialCSS = "$materialCDN/material-components-web.min.css"
   }
 
   /**
@@ -66,23 +54,19 @@ class HomeController @Inject constructor (ctx: PageContextManager): AppControlle
    * client-side app, so we don't need to worry about it here. Similarly, if the user hits the homepage without being
    * logged in, and then logs in, that flow is also handled by the re-hydrated CSR frontend.
    */
-  @Get("/", produces = [MediaType.TEXT_HTML])
   @View("todolist.home.page")
-  fun home(@QueryValue("name", defaultValue = defaultName) name: String): PageRender {
+  @Get("/", produces = ["text/html;charset=UTF-8"])
+  fun home(@QueryValue("name", defaultValue = defaultName) name: String): HttpResponse<PageRender> {
     if (name != defaultName)
       logging.info("Greeting user with name '$name'...")
     if (logging.isDebugEnabled)
       logging.debug("Serving home page...")
-    return this.context
-      .title("Todolist - Homepage - Manage personal todo-lists across devices")
-      .put("name", name)
-
-      .script(JavaScript.newBuilder()
-        .setDefer(true)
-        .setUri(this.trustedResource(URI.create(materialJS))))
-
-      .stylesheet(Stylesheet.newBuilder()
-        .setMedia("screen")
-        .setUri(this.trustedResource(URI.create(materialCSS))))
+    return this.serve(
+      this.context
+        .title("Todolist - Homepage - Manage personal todo-lists across devices")
+        .put("name", name)
+        .stylesheet("todolist.mdl")
+        .stylesheet("todolist.styles")
+        .script("todolist.main"))
   }
 }

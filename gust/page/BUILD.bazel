@@ -43,8 +43,11 @@ model(
     srcs = ["page.proto"],
     deps = [
         ":semantic_proto",
+        "//gust/core:data",
         "//gust/base:language_proto",
         "@safe_html_types//:proto",
+        "@com_google_protobuf//:duration_proto",
+        "@com_google_protobuf//:timestamp_proto",
     ]
 )
 
@@ -53,7 +56,10 @@ template_library(
     name = "page_soy",
     srcs = ["page.soy"],
     java_package = "gust.page",
-    proto_deps = [":page_proto"],
+    proto_deps = [
+        ":page_proto",
+        "//gust/core:datamodel",
+    ],
     soy_deps = [
         "//gust/base:language_soy",
         "//gust/dom:assets_soy",

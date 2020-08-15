@@ -1,10 +1,27 @@
 ## `@elide-tools/gust` [![Build status](https://badge.buildkite.com/7a69b0fadb7d08b691e96177f589971a7646217b1a8b4a269e.svg)](https://buildkite.com/bloomworks/elide) [![codecov](https://codecov.io/gh/sgammon/GUST/branch/master/graph/badge.svg)](https://codecov.io/gh/sgammon/GUST) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/61aeb894c7914e3cac651d5eb2d86954)](https://www.codacy.com/manual/samuel-gammon/GUST?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=sgammon/GUST&amp;utm_campaign=Badge_Grade) [![Maintainability](https://api.codeclimate.com/v1/badges/3216f45caac250619f4f/maintainability)](https://codeclimate.com/github/sgammon/GUST/maintainability)
 
-_Gust is alpha software. Consider yourself warned..._
+<hr />
+
+_**Gust is alpha software. Consider yourself warned...**_
+
+<hr />
 
 Gust is a polyglot software application development framework. Bring the most road-tested toolchain on the planet to your development process, with [Bazel](https://bazel.build), [Protobuf](https://developers.google.com/protocol-buffers), [gRPC](https://grpc.io), [Soy](https://github.com/google/closure-templates), and more, all pre-integrated and tested out of the box. Early support is included for Java, Kotlin, Python, and NodeJS on the backend; Closure, TypeScript, or even Java on the frontend (transpiled to highly-optimized and type-checked JS); and Java, Kotlin, Swift, Objective-C and C/C++ for mobile applications.
 
 Runtime libraries are also published to support easy development of _web applications_ (in Java and Python using Soy), and _mobile applications_ (in Java and Swift). The framework is also capable of leveraging [GraalVM](https://graalvm.org) to build your app into a [native application](https://www.graalvm.org/docs/reference-manual/native-image/) (where supported), alleviating the need entirely for a JVM or Python runtime in your app containers. Native apps also have the nice benefit of _way_ shorter startup times (try `30ms`, lol!), and, in some cases, significant latency and memory use improvements.
+
+## Framework development
+
+Right now, the primary goal of this work is a functional framework. This work is tracked in the following over-arching tickets:
+- [App Framework](sgammon/gust#27) - tracks progress toward a useful runtime layer for app development
+- [MVP Functionality Matrix](sgammon/gust#43) - tracks progress toward basic development and app features
+- [Example Apps](sgammon/gust#26) - tracks progress toward a set of representative sample apps
+
+### Developing apps with *Gust*
+
+Documentation is in the works. For now, there is API documentation in Java and some in JS. If you're familiar with the Closure/Bazel universe, navigating the framework should be relatively easy. If not, you may have a bad time.
+
+If you'd like to use *Gust* for your own app, drop us a line by filing an issue, and we'll help you get there. *Gust* is already in use for production apps, but only inside our own team - so we can support it, but only on an individual/one-off basis, for now.
 
 ### Sample Apps
 
@@ -16,6 +33,12 @@ As part of the framework code, a few sample apps are included. Each of these is 
 - `todolist` (Java/Closure): Full holistic app example (see below for more)
 
 ### Todolist App ([Demo](https://todolist.apps.bloomworks.io))
+
+<hr />
+
+_**Until this framework is out of `beta`, the below is a list of goals, not a current feature-list.**_
+
+<hr />
 
 The richest and best example app is _Todolist_, which is designed to be an example SaaS startup in a box. This includes a server app, a web app, mobile apps (for Android and iOS), and full-blown declarative infrastructure to support it all. The app includes the following components and features:
 - **Devops toolkit**
@@ -65,7 +88,6 @@ Most development tasks on the framework involve the `Makefile`, which offers con
 $ make help
 
 GUST Framework Tools:
-
 all                            Build and test all framework targets.
 bases                          Build base images and push them.
 build                          Build all framework targets.
@@ -99,3 +121,4 @@ Below we specify licensing details for the Gust/Elide framework, including point
 - Gust/Elide: [Prosperity License](https://github.com/sgammon/GUST/blob/master/LICENSE.txt)
 - `rules_closure`: Apache 2.0 (Entry 1 in `LICENSES.txt`)
 - gRPC Gateway: Roughly Apache 2.0 (Entry 2 in `LICENSES.txt`)
+

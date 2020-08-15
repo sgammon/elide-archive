@@ -10,6 +10,13 @@
  * by trade secret and copyright law. Dissemination of this information, or reproduction of this material, in any form,
  * is strictly forbidden except in adherence with assigned license requirements.
  */
+
+/**
+ * Gust: Core module.
+ *
+ * @fileoverview Provides core declarations, used across platforms and modules.
+ */
+
 /*global goog,gust*/
 goog.provide('gust');
 
@@ -21,7 +28,7 @@ goog.provide('gust');
  * @public
  * @define {!boolean} gust.dev
  */
-gust.dev = goog.define('gust.dev', false);
+gust.dev = goog.define('gust.dev', true);
 
 
 /**
@@ -41,7 +48,7 @@ gust.engine = goog.define('gust.engine', 'browser');
  * @public
  * @define {!boolean} gust.debug
  */
-gust.debug = goog.define('gust.debug', false);
+gust.debug = goog.define('gust.debug', true);
 
 
 /**

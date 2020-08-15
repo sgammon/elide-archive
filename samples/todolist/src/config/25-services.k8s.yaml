@@ -44,47 +44,18 @@ metadata:
 spec:
   ports:
     - name: tls-app
-      port: 8081
+      port: 8080
       protocol: TCP
-      targetPort: 8081
+      targetPort: 8080
     - name: tls-rpc
-      port: 8082
+      port: 8083
       protocol: TCP
-      targetPort: 8082
+      targetPort: 8083
   selector:
     app: todolist
     role: server
     environment: production
   type: NodePort
-  publishNotReadyAddresses: yes
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: todolist-usw2
-  namespace: todolist
-  labels:
-    app: todolist
-    role: server
-    environment: production
-  annotations:
-    cloud.google.com/load-balancer-type: "Internal"
-    networking.gke.io/internal-load-balancer-allow-global-access: "true"
-spec:
-  ports:
-    - name: tls-app
-      port: 8081
-      protocol: TCP
-      targetPort: 8081
-    - name: tls-rpc
-      port: 8082
-      protocol: TCP
-      targetPort: 8082
-  selector:
-    app: todolist
-    role: server
-    environment: production
-  type: LoadBalancer
   publishNotReadyAddresses: yes
 ---
 apiVersion: v1
@@ -97,15 +68,15 @@ metadata:
     role: gateway
     environment: production
   annotations:
-    cloud.google.com/neg: '{"exposed_ports": {"443": {}}}'
-    cloud.google.com/app-protocols: '{"tls-gateway": "HTTP2"}'
-    cloud.google.com/backend-config: '{"ports": {"443":"todolist-server"}}'
+    cloud.google.com/neg: '{"exposed_ports": {"8443": {}}}'
+    cloud.google.com/app-protocols: '{"tls-proxy": "HTTP2"}'
+    cloud.google.com/backend-config: '{"ports": {"8443":"todolist-server"}}'
 spec:
   ports:
-    - name: tls-gateway
-      port: 443
+    - name: tls-proxy
+      port: 8443
       protocol: TCP
-      targetPort: 443
+      targetPort: 8443
   selector:
     app: todolist
     role: gateway

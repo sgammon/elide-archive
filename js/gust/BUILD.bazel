@@ -29,6 +29,16 @@ js_module(
     name = "boot",
     srcs = ["boot.js"],
     deps = [
+        ":logging",
+        "//java/gust:Core-j2cl",
+    ],
+)
+
+
+js_module(
+    name = "logging",
+    srcs = ["logging.js"],
+    deps = [
         "//java/gust:Core-j2cl",
     ],
 )

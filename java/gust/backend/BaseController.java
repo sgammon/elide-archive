@@ -24,18 +24,16 @@ import javax.annotation.Nonnull;
  * have a better base class in mind: all the functionality provided here can easily be obtained via dependency
  * injection.</p>
  */
-@SuppressWarnings("WeakerAccess")
 public abstract class BaseController {
   /** Holds request-bound page context as it is built. */
   protected final @Nonnull PageContextManager context;
 
   /**
-   * Protected (implementor) constructor. Demands each dependency directly (generally, implementors would make use of DI
-   * and pass the provided objects in).
+   * Initialize a base Gust controller from scratch.
    *
-   * @param contextManager Page context manager.
+   * @param context Page context manager, injected.
    */
-  protected BaseController(@Nonnull PageContextManager contextManager) {
-    this.context = contextManager;
+  BaseController(@Nonnull PageContextManager context) {
+    this.context = context;
   }
 }

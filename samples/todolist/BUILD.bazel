@@ -14,3 +14,19 @@
 package(
     default_visibility = ["//visibility:public"],
 )
+
+
+alias(
+    name = "todolist",
+    actual = "//samples/todolist/src:TodolistServer",
+)
+
+alias(
+    name = "container",
+    actual = "//samples/todolist/src:TodolistServer-image",
+)
+
+alias(
+    name = "gateway",
+    actual = "//samples/todolist/src/config/gateway:gateway",
+)

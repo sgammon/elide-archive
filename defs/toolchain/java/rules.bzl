@@ -13,6 +13,7 @@
 
 load(
     "//defs:config.bzl",
+    _RENAMING = "RENAMING",
     _JVM_DEBUG_PORT = "JVM_DEBUG_PORT",
 )
 
@@ -77,6 +78,7 @@ INJECTED_MICRONAUT_DEPS = [
     "@javax_inject",
     "@javax_annotation_api",
     "@gust//java:framework",
+    "@gust//defs/toolchain/java/plugins:picocli",
     "@gust//defs/toolchain/java/plugins:micronaut",
     "@gust//java/gust/backend/runtime:logging",
     "@com_google_guava",
@@ -85,6 +87,7 @@ INJECTED_MICRONAUT_DEPS = [
     "@com_google_code_findbugs_jsr305",
     "@io_micronaut_micronaut_views",
     "@io_micronaut_micronaut_views_soy",
+    "@org_brotli//java/org/brotli/wrapper/enc:enc",
     maven("org.slf4j:slf4j-api"),
     maven("com.google.protobuf:protobuf-java"),
     maven("io.micronaut:micronaut-aop"),
@@ -132,6 +135,10 @@ INJECTED_MICRONAUT_RUNTIME_DEPS = [
     maven("io.micronaut:micronaut-runtime"),
 ]
 
+INJECTED_CONTROLLERS = [
+    "//java/gust/backend:AssetController",
+]
+
 INJECTED_CONTROLLER_DEPS = [
     "//java/gust/backend:PageContext",
     "//java/gust/backend:PageContextManager",
@@ -147,6 +154,45 @@ _JVM_APP_DEBUG_FLAGS = [
 _JVM_APP_RELEASE_FLAGS = [
     # None yet.
 ]
+
+INJECTED_LIBRARIES = [
+    # None yet.
+]
+
+INJECTED_RESOURCE_JARS = [
+    # None yet.
+]
+
+INJECTED_JVM_FLAGS = [
+    # None yet.
+]
+
+ASSET_DIGEST_CHARS = 8
+ASSET_DIGEST_ROUNDS = 3
+ASSET_MANIFEST_PATH = "assets.pb"
+ASSET_MANIFEST_FORMAT = "BINARY"
+ASSET_DIGEST_ALGORITHM = "SHA512"
+ASSETS_ENABLE_GZIP = True
+ASSETS_ENABLE_BROTLI = True
+
+
+def join_cmd(strings):
+
+    """Joins a sequence of objects as strings, with select statements that return
+       strings handled correctly. This has O(N^2) performance, so don't use it for
+       building up large results.
+
+       This is mostly equivalent to " ".join(strings), except for handling select
+       statements correctly."""
+
+    result = ''
+    first = True
+    for string in strings:
+        if type(string) == 'select':
+            result += string
+        else:
+            result += str(string)
+    return result
 
 
 def _dedupe_deps(deps):
@@ -175,6 +221,9 @@ def _jdk_binary(name,
                 srcs = [],
                 deps = None,
                 data = [],
+                jvm_flags = [],
+                resource_jars = [],
+                tags = [],
                 **kwargs):
 
     """ Generate a JDK binary, with built-in support for Kotlin. """
@@ -186,7 +235,19 @@ def _jdk_binary(name,
             name = name,
             srcs = srcs,
             deps = _dedupe_deps(deps),
-            data = data,
+            data = data + INJECTED_LIBRARIES,
+            resource_jars = resource_jars + INJECTED_RESOURCE_JARS,
+            jvm_flags = select({
+               "//defs/config:live_reload": ["-DLIVE_RELOAD=enabled"] + INJECTED_JVM_FLAGS + jvm_flags,
+               "//conditions:default": INJECTED_JVM_FLAGS + jvm_flags,
+            }) + select({
+               "//defs/config:release": _JVM_APP_RELEASE_FLAGS,
+               "//defs/config:debug": _JVM_APP_DEBUG_FLAGS,
+            }),
+            tags = [
+                "ibazel_live_reload",
+                "iblaze_notify_changes",
+            ] + tags,
             **kwargs
         )
 
@@ -197,7 +258,19 @@ def _jdk_binary(name,
             name = name,
             srcs = srcs,
             deps = _dedupe_deps(deps),
-            data = data,
+            data = data + INJECTED_LIBRARIES,
+            resource_jars = resource_jars + INJECTED_RESOURCE_JARS,
+            jvm_flags = select({
+               "//defs/config:live_reload": ["-DLIVE_RELOAD=enabled"] + INJECTED_JVM_FLAGS + jvm_flags,
+               "//conditions:default": INJECTED_JVM_FLAGS + jvm_flags,
+            }) + select({
+               "//defs/config:release": _JVM_APP_RELEASE_FLAGS,
+               "//defs/config:debug": _JVM_APP_DEBUG_FLAGS,
+            }),
+            tags = [
+                "ibazel_live_reload",
+                "iblaze_notify_changes",
+            ] + tags,
             **kwargs
         )
 
@@ -341,6 +414,9 @@ def _micronaut_native_configset(name, srcs, **kwargs):
     )
 
 
+native_tools = native
+
+
 def _micronaut_application(name,
                            native = False,
                            main_class = "gust.backend.Application",
@@ -363,6 +439,7 @@ def _micronaut_application(name,
                            proto_deps = [],
                            data = [],
                            resources = [],
+                           resource_jars = [],
                            runtime_deps = [],
                            jvm_flags = [],
                            defs = {},
@@ -370,17 +447,86 @@ def _micronaut_application(name,
                            tags = [],
                            inject_main = True,
                            reflection_configuration = None,
+                           js_modules = {},
+                           css_modules = {},
                            **kwargs):
 
     """ Wraps a regular JDK application with injected Micronaut dependencies and plugins. """
 
     computed_jvm_flags = _annotate_jvm_flags([i for i in jvm_flags], defs)
 
+    bundle_inputs = []
+    injected_resources = []
+    if len(js_modules) > 0:
+        for module in js_modules:
+            injected_resources.append("%s.js" % js_modules[module])
+            injected_resources.append("%s.js.map" % js_modules[module])
+            bundle_inputs.append("--js=\"%s:$(locations %s)\"" % (module, js_modules[module]))
+    if len(js_modules) > 0:
+        for module in css_modules:
+            injected_resources.append("%s.css" % css_modules[module])
+            injected_resources.append("%s.css.json" % css_modules[module])
+
+            # should we reference the rewrite maps?
+            if _RENAMING:
+                bundle_inputs.append("--css=\"%s:$(locations %s) $(locations %s.css.json)\""
+                                    % (module, css_modules[module], css_modules[module]))
+            else:
+                bundle_inputs.append("--css=\"%s:$(locations %s)\""
+                                     % (module, css_modules[module]))
+
+    bundler_args = [
+        "--output=\"$@\"",
+        "--format=" + ASSET_MANIFEST_FORMAT,
+        "--digest=" + ASSET_DIGEST_ALGORITHM,
+        "--digest-length=" + str(ASSET_DIGEST_CHARS),
+        "--digest-rounds=" + str(ASSET_DIGEST_ROUNDS),
+        "--embed",
+        "--precompress",
+        "--variants=IDENTITY" + (
+            (ASSETS_ENABLE_GZIP and ",GZIP" or "") +
+            (ASSETS_ENABLE_BROTLI and ",BROTLI" or "")),
+        (_RENAMING and "--rewrite-maps") or ("--no-rewrite-maps"),
+    ]
+
+    native_tools.genrule(
+        name = "%s-assets-manifest" % name,
+        outs = [ASSET_MANIFEST_PATH],
+        srcs = [
+            target for (entry, target) in js_modules.items()
+        ] + [
+            target for (entry, target) in css_modules.items()
+        ] + [
+            ("%s.css.json" % target) for (entry, target) in css_modules.items()
+        ],
+        # ends up as `./asset_bundler.sh --output='-' (...) --css="module.here:some/file.css some/file.css" --`
+        cmd = join_cmd([
+          "./$(location //tools:AssetBundler)", " ",
+          "--", select({
+              "@//defs/config:debug": "dbg",
+              "@//defs/config:release": "opt",
+              "//conditions:default": "dbg",
+          }),
+          " ",
+          " ".join(bundler_args + bundle_inputs),
+        ]),
+        message = "Generating asset manifest",
+        output_to_bindir = True,
+        tools = ["//tools:AssetBundler"],
+    )
+
+    _java_library(
+        name = "%s-assets" % name,
+        resources = injected_resources + [
+            ":%s-assets-manifest" % name
+        ],
+    )
+
     if len(srcs) > 0:
         computed_deps = _dedupe_deps((deps or []) + INJECTED_MICRONAUT_DEPS + controllers + services)
         computed_image_deps = _dedupe_deps((deps or []) + INJECTED_MICRONAUT_DEPS)
         computed_image_layers = _dedupe_deps((
-            INJECTED_MICRONAUT_RUNTIME_DEPS + [template_loader] + controllers + services))
+            INJECTED_MICRONAUT_RUNTIME_DEPS + [template_loader] + [":%s-assets" % name] + controllers + services))
         computed_runtime_deps = [template_loader]
 
         if inject_main:
@@ -392,6 +538,7 @@ def _micronaut_application(name,
         computed_runtime_deps = _dedupe_deps(
             (deps or []) +
             INJECTED_MICRONAUT_DEPS +
+            INJECTED_CONTROLLERS +
             services +
             controllers + [
                 maven("io.micronaut:micronaut-runtime"),
@@ -415,6 +562,9 @@ def _micronaut_application(name,
         jvm_flags = computed_jvm_flags + ["-Dgust.engine=jvm"],
         base = base,
         layers = computed_image_layers,
+        resource_jars = resource_jars + [
+            ":%s-assets" % name
+        ],
         classpath_resources = [
             config,
             logging_config,
@@ -432,7 +582,7 @@ def _micronaut_application(name,
         ],
         resource_jars = [
             ("%s-lib" % r) for r in native_configsets
-        ],
+        ] + [":%s-assets" % name],
         resource_strip_prefix = "java/gust" in config and "java/gust/" or None,
     )
 
@@ -456,7 +606,7 @@ def _micronaut_application(name,
 
                 # Extra native-image flags
                 "-H:+ParseRuntimeOptions",
-                "-H:IncludeResources=application.yml|logback.xml",
+                "-H:IncludeResources=application.yml|logback.xml|assets.pb",
 
                 # Build-time init
                 "--initialize-at-build-time=com.google.template.soy.jbcsrc.api.RenderResult$Type",
@@ -515,17 +665,13 @@ def _micronaut_application(name,
         srcs = srcs,
         deps = computed_deps,
         runtime_deps = computed_runtime_deps,
+        resource_jars = [":%s-assets" % name],
         data = data,
         resources = resources,
         classpath_resources = [config, logging_config],
         main_class = main_class or "gust.backend.Application",
-        jvm_flags = computed_jvm_flags + select({
-            "//defs/conditions:release": _JVM_APP_RELEASE_FLAGS,
-            "//defs/conditions:debug": _JVM_APP_DEBUG_FLAGS,
-        }),
-        tags = (tags or []) + [
-          "ibazel_live_reload",
-        ],
+        jvm_flags = computed_jvm_flags,
+        tags = (tags or []),
         **kwargs
     )
 

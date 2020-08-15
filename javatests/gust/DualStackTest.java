@@ -53,4 +53,12 @@ public final class DualStackTest {
     assertNotNull(Core.isProductionMode(),
       "production mode provided by core should not be null");
   }
+
+  /** Test that {@link Core#getDynamicAssetPrefix()} ()} responds as expected. */
+  @Test void testDynamicAssetPrefix() {
+    assertNotNull(Core.getDynamicAssetPrefix(),
+      "dynamic asset prefix should never be null");
+    assertNotEquals("", Core.getDynamicAssetPrefix(),
+      "dynamic asset prefix should never be empty");
+  }
 }

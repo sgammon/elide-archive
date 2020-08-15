@@ -12,6 +12,7 @@
  */
 package gust.backend;
 
+import gust.backend.runtime.AssetManager;
 import io.micronaut.runtime.Micronaut;
 
 
@@ -31,6 +32,7 @@ public final class Application {
   public static void main(String[] args) {
     try {
       ApplicationBoot.load();
+      AssetManager.load();
       Micronaut.run(Application.class);
     } catch (Throwable thr) {
       ApplicationBoot.reportStartupError(thr);

@@ -34,7 +34,7 @@ import java.util.Optional;
  * way to mediate between a single Soy routine and the context attached to it.</p>
  */
 @Immutable
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "WeakerAccess"})
 public final class PageContext implements PageRender {
   /** Shared singleton instance of an empty page context. */
   private static final PageContext _EMPTY = new PageContext(
@@ -232,14 +232,15 @@ public final class PageContext implements PageRender {
   /**
    * Retrieve properties and values that should be made available via `@inject`.
    *
+   * @param framework Framework-injected properties.
    * @return Map of injected properties and their values.
    */
   @Nonnull @Override
-  public Map<String, Object> getInjectedProperties() {
+  public Map<String, Object> getInjectedProperties(@Nonnull Map<String, Object> framework) {
     return ImmutableMap
       .<String, Object>builder()
       .put(PAGE_CONTEXT_IJ_NAME, protoContext)
-      .putAll(rawContext.getInjectedProperties())
+      .putAll(rawContext.getInjectedProperties(framework))
       .build();
   }
 

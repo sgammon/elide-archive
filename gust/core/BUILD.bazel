@@ -23,15 +23,40 @@ load(
 
 ## Core
 model(
+    name = "crypto",
+    srcs = ["crypto.proto"],
+    _internal = True,
+    deps = [
+        ":datamodel",
+    ],
+)
+
+model(
+    name = "data",
+    srcs = ["data.proto"],
+    _internal = True,
+    deps = [
+        ":crypto",
+        ":datamodel",
+    ],
+)
+
+model(
     name = "datamodel",
     srcs = ["datamodel.proto"],
-    deps = ["@com_google_protobuf//:descriptor_proto"],
     _internal = True,
+    deps = [
+        "@com_google_protobuf//:descriptor_proto",
+    ],
 )
 
 
 model_package(
     name = "core",
-    deps = [":datamodel"],
     _internal = True,
+    deps = [
+        ":crypto",
+        ":data",
+        ":datamodel",
+    ],
 )

@@ -16,8 +16,9 @@
 ##
 
 CI ?= no
-CACHE ?= yes
+CACHE ?= no
 REMOTE ?= no
+DEBUG ?= no
 VERBOSE ?= no
 QUIET ?= yes
 STRICT ?= no
@@ -43,6 +44,7 @@ else
 OUTPUT_BASE ?= k8-fastbuild
 endif
 
+ARGS ?=
 DOCS ?= docs
 DISTPATH ?= dist
 OUTPATH ?= $(DISTPATH)/out
@@ -127,6 +129,13 @@ BAZELISK ?= $(shell which bazelisk)
 GENHTML ?= $(shell which genhtml)
 endif
 
+# Flag: `DEBUG`
+ifeq ($(DEBUG),yes)
+VERBOSE = yes
+QUIET = no
+BASE_ARGS += --sandbox_debug
+endif
+
 # Flag: `VERBOSE`
 ifeq ($(VERBOSE),yes)
 BASE_ARGS += -s --verbose_failures
@@ -148,10 +157,10 @@ build:  ## Build all framework targets.
 	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) build $(TAG) $(BASE_ARGS) $(BUILD_ARGS) -- $(TARGETS)
 
 run:  ## Run the specified target.
-	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) run $(TAG) $(BASE_ARGS) $(BUILD_ARGS) -- $(APP)
+	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) run $(TAG) $(BASE_ARGS) $(BUILD_ARGS) -- $(APP) $(ARGS)
 
 dev:  ## Develop against the specified target.
-	$(_RULE)$(IBAZEL) run $(TAG) $(APP)
+	$(_RULE)$(IBAZEL) run $(TAG) --define=LIVE_RELOAD=enabled --define=dev=enabled $(APP)
 
 clean: clean-docs clean-reports  ## Clean ephemeral targets.
 	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) clean
@@ -229,9 +238,9 @@ serve-coverage:  ## Serve the current coverage report (must generate first).
 report-tests: ## Report test results to Report.CI.
 	@echo "Scanning for test results..."
 	$(_RULE)pip install -r tools/requirements.txt
-	$(_RULE)find dist/out/$(OUTPUT_BASE) -name test.xml | xargs python tools/merge_test_results.py reports/tests.xml
+	$(_RULE)find dist/out/$(OUTPUT_BASE) -name test.xml | xargs python3 tools/merge_test_results.py reports/tests.xml
 	@echo "Generating HTML test report..."
-	$(_RULE)cd reports && python -m junit2htmlreport tests.xml
+	$(_RULE)cd reports && python3 -m junit2htmlreport tests.xml
 ifeq ($(ENABLE_REPORTCI),yes)
 	@echo "Reporting test results..."
 	$(_RULE)-TRAVIS=true \

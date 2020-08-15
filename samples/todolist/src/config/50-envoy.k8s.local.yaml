@@ -1,0 +1,141 @@
+##
+# Copyright © 2020, The Gust Framework Authors. All rights reserved.
+#
+# The Gust/Elide framework and tools, and all associated source or object computer code, except where otherwise noted,
+# are licensed under the Zero Prosperity license, which is enclosed in this repository, in the file LICENSE.txt. Use of
+# this code in object or source form requires and implies consent and agreement to that license in principle and
+# practice. Source or object code not listing this header, or unless specified otherwise, remain the property of
+# Elide LLC and its suppliers, if any. The intellectual and technical concepts contained herein are proprietary to
+# Elide LLC and its suppliers and may be covered by U.S. and Foreign Patents, or patents in process, and are protected
+# by trade secret and copyright law. Dissemination of this information, or reproduction of this material, in any form,
+# is strictly forbidden except in adherence with assigned license requirements.
+##
+apiVersion: v1
+kind: Secret
+metadata:
+  name: tls
+  namespace: todolist
+data:
+  tls.key: LS0tLS1CRUdJTiBFQyBQQVJBTUVURVJTLS0tLS0KQmdncWhrak9QUU1CQnc9PQotLS0tLUVORCBFQyBQQVJBTUVURVJTLS0tLS0KLS0tLS1CRUdJTiBFQyBQUklWQVRFIEtFWS0tLS0tCk1IY0NBUUVFSU5OU2UvOWJ0U0hvS3Bza1hQdzdubjRyTzVNMm5uRlJhbnJZME52VTdKOVRvQW9HQ0NxR1NNNDkKQXdFSG9VUURRZ0FFNmlvbVg4cENVazlvT0JWUkVaL0llMzc4YXI4YUYyT243RVVDbVBPeDNzRENSVkM2dXpCUQplYVlMT3Urdm5DcDBkYnVaRkRGQmw0UFUraG5yVy9YaEp3PT0KLS0tLS1FTkQgRUMgUFJJVkFURSBLRVktLS0tLQo=
+  tls.crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUNTRENDQWU0Q0NRQzlZZ21TN20zU1JEQUtCZ2dxaGtqT1BRUURBakNCcXpFTE1Ba0dBMVVFQmhNQ1ZWTXgKRXpBUkJnTlZCQWdNQ2tOaGJHbG1iM0p1YVdFeEVUQVBCZ05WQkFjTUNGZHZiMlJ6YVdSbE1STXdFUVlEVlFRSwpEQXBDYkc5dmJYZHZjbXR6TVJrd0Z3WURWUVFMREJCRmJHbGtaU0JQY0dWeVlYUnBiMjV6TVJjd0ZRWURWUVFECkRBNTBiMlJ2TG1Wc2FXUmxMbVJsZGpFck1Da0dDU3FHU0liM0RRRUpBUlljYVc1bWJ5dGhkWFJvYjNKcGRIbEEKWW14dmIyMTNiM0pyY3k1cGJ6QWVGdzB5TURBek1UZ3dNelF3TXpKYUZ3MHlNVEF6TVRnd016UXdNekphTUlHcgpNUXN3Q1FZRFZRUUdFd0pWVXpFVE1CRUdBMVVFQ0F3S1EyRnNhV1p2Y201cFlURVJNQThHQTFVRUJ3d0lWMjl2ClpITnBaR1V4RXpBUkJnTlZCQW9NQ2tKc2IyOXRkMjl5YTNNeEdUQVhCZ05WQkFzTUVFVnNhV1JsSUU5d1pYSmgKZEdsdmJuTXhGekFWQmdOVkJBTU1EblJ2Wkc4dVpXeHBaR1V1WkdWMk1Tc3dLUVlKS29aSWh2Y05BUWtCRmh4cApibVp2SzJGMWRHaHZjbWwwZVVCaWJHOXZiWGR2Y210ekxtbHZNRmt3RXdZSEtvWkl6ajBDQVFZSUtvWkl6ajBECkFRY0RRZ0FFNmlvbVg4cENVazlvT0JWUkVaL0llMzc4YXI4YUYyT243RVVDbVBPeDNzRENSVkM2dXpCUWVhWUwKT3Urdm5DcDBkYnVaRkRGQmw0UFUraG5yVy9YaEp6QUtCZ2dxaGtqT1BRUURBZ05JQURCRkFpRUFxcUltaThPTAozaExtMVhrVlNsWUtQeDV2Q3dIMDBiVmMzaUpaMVExZS9zWUNJQVZ1bHJSdHdza3ZzNG1xRExCYmdtRmFjY3BiClg2blpCQjdia3BPdDFHOFkKLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=
+---
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: envoy-hpa
+  namespace: todolist
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: envoy
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 80
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: envoy
+  namespace: todolist
+  labels:
+    environment: production
+spec:
+  # -- Replication ----------------------------------------------------------- #
+  replicas: 1
+  revisionHistoryLimit: 2
+  selector:
+    matchLabels:
+      app: todolist
+      role: gateway
+      environment: production
+
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 3
+      maxUnavailable: "30%"
+
+  # -- Timeouts -------------------------------------------------------------- #
+  minReadySeconds: 10
+  progressDeadlineSeconds: 300
+
+  template:
+    metadata:
+      labels:
+        app: todolist
+        role: gateway
+        environment: production
+    spec:
+      # -- Networking --------------------------------------------------------- #
+      dnsPolicy: ClusterFirst
+
+      # -- Placement ---------------------------------------------------------- #
+      tolerations:
+        - key: role
+          operator: Equal
+          value: app
+        - key: sandbox.gke.io/runtime
+          operator: Equal
+          value: gvisor
+
+      affinity:
+        # Schedule away from other gateway pods.
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 50
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: name
+                      operator: In
+                      values:
+                        - gateway
+                topologyKey: kubernetes.io/hostname
+
+      # -- Containers --------------------------------------------------------- #
+      containers:
+        ## Container: Gateway Proxy (Envoy)
+        - name: envoy
+          image: us.gcr.io/elide-tools/sample/todolist/gateway:v7c
+          imagePullPolicy: Never
+          ports:
+            - name: tls-gateway
+              containerPort: 8443
+            - name: http-health
+              containerPort: 8090
+            - name: http-admin
+              containerPort: 9901
+          resources:
+            requests:
+              cpu: "0.2"
+              memory: "64Mi"
+            limits:
+              cpu: "0.4"
+              memory: "256Mi"
+          volumeMounts:
+            - name: tls
+              mountPath: /etc/ssl/envoy
+          readinessProbe:
+            successThreshold: 1
+            periodSeconds: 10
+            timeoutSeconds: 2
+            initialDelaySeconds: 5
+            httpGet:
+              path: /healthz
+              port: 8090
+          livenessProbe:
+            failureThreshold: 2
+            periodSeconds: 5
+            timeoutSeconds: 2
+            httpGet:
+              path: /healthz
+              httpHeaders:
+                - name: x-envoy-livenessprobe
+                  value: healthz
+              port: 8090
+            initialDelaySeconds: 10
+      volumes:
+        - name: tls
+          secret:
+            secretName: tls

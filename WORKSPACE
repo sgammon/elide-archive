@@ -61,8 +61,8 @@ protobuf_deps()
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 http_archive(
     name = "build_bazel_rules_nodejs",
-    sha256 = "b6670f9f43faa66e3009488bbd909bc7bc46a5a9661a33f6bc578068d1837f37",
-    urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/1.3.0/rules_nodejs-1.3.0.tar.gz"],
+    sha256 = "2eca5b934dee47b5ff304f502ae187c40ec4e33e12bcbce872a2eeb786e23269",
+    urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/1.4.1/rules_nodejs-1.4.1.tar.gz"],
 )
 
 load("@build_bazel_rules_nodejs//:index.bzl",
@@ -165,9 +165,6 @@ switched_rules_by_language(
     name = "com_google_googleapis_imports",
     grpc = True)
 
-## Protobuf
-load("@build_stack_rules_proto//java:java_proto_compile.bzl", "java_proto_compile")
-
 ## Karma Setup
 load("@npm_bazel_karma//:package.bzl", "npm_bazel_karma_dependencies")
 npm_bazel_karma_dependencies()
@@ -202,6 +199,13 @@ pip_repositories()
 load("@rules_python//python:pip.bzl", pip_import = "pip3_import")
 
 pip_import(
+    name = "protobuf_py",
+    requirements = "@build_stack_rules_proto//python/requirements:protobuf.txt")
+
+load("@protobuf_py//:requirements.bzl", proto_pip_install = "pip_install")
+proto_pip_install()
+
+pip_import(
     name = "py",
     requirements = "//defs/toolchain/python:requirements_base.txt")
 
@@ -218,6 +222,13 @@ grpc_pip_install()
 
 load("//defs/toolchain/python:repos.bzl", "gust_python_repositories")
 gust_python_repositories()
+
+load("@build_stack_rules_proto//python:deps.bzl", "python_proto_compile")
+python_proto_compile()
+
+## Swift
+load("@build_stack_rules_proto//swift:deps.bzl", "swift_proto_library")
+swift_proto_library()
 
 ## gRPC Core
 load("@com_github_grpc_grpc//bazel:grpc_deps.bzl", "grpc_deps", "grpc_test_only_deps")
@@ -290,3 +301,7 @@ k8s_defaults(
   kind = "deployment",
   cluster = "$(cluster)",
 )
+
+## Brotli Setup
+load("@org_brotli//java:repositories.bzl", "load_brotli_repositories")
+load_brotli_repositories()

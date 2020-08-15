@@ -29,6 +29,8 @@ test_suite(
         "//javatests/gust/backend:NoConfigTest",
         "//javatests/gust/backend:PageContextTest",
         "//javatests/gust/backend:TemplateProviderTest",
+        "//javatests/gust/backend/runtime:AssetManagerTest",
+        "//javatests/gust/backend/runtime:AssetManagerFailTest",
         "//javatests/gust/backend/runtime:LoggingTest",
         "//javatests/gust/backend/runtime:ReactiveFutureTest",
         "//javatests/gust/backend/model:CollapsedMessageTest",
@@ -43,5 +45,7 @@ test_suite(
         "//javatests/gust/backend/driver/inmemory:InMemoryAdapterWithCacheTest",
         "//javatests/gust/backend/driver/inmemory:InMemoryCacheTest",
         "//javatests/gust/backend/driver/inmemory:InMemoryDriverTest",
+        "//javatests/gust/util:HexText",
+        "//javatests/gust/util:PairTest",
     ],
 )

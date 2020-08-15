@@ -11,22 +11,77 @@
 # is strictly forbidden except in adherence with assigned license requirements.
 ##
 
+gust:
+  serving:
+    language: en-US
+
+    etags:
+      enabled: yes
+      strong: on
+      match: on
+
+    vary:
+      enabled: yes
+      accept: on
+      charset: off
+      encoding: on
+      language: off
+      origin: off
+
+    additionalHeaders:
+      X-Content-Type-Options: nosniff
+
+  assets:
+    etags: on
+    lastModified: on
+    noSniff: on
+
+    cdn:
+      enabled: no
+      hostnames:
+        - 1.cdn.todo.elide.deliver
+        - 2.cdn.todo.elide.deliver
+
+    vary:
+      enabled: yes
+      accept: yes
+      language: no
+      charset: no
+      origin: no
+
+    compression:
+      enabled: yes
+      vary: on
+      modes:
+        - GZIP
+        - BROTLI
+
+    caching:
+      enabled: no
+      mode: public
+      shared: true
+      additionalDirectives:
+        - immutable
+
 micronaut:
   application:
     name: Todolist
 
   server:
+    server-header: K9v5
     maxRequestSize: 10MB
     host: 0.0.0.0
-    port: 8081
+    port: 8080
+
     cors:
       enabled: false
+
     netty:
       maxHeaderSize: 500KB
       chunked-supported: true
       use-native-transport: true
       compression-level: 2
-      compression-threshold: 2048
+      compression-threshold: 1024
       parent:
         threads: 4
       worker:
@@ -37,6 +92,9 @@ micronaut:
           tcpQuickack: true
       childOptions:
         soKeepalive: true
+
+  validator:
+    enabled: true
 
   session:
     enabled: true
@@ -79,20 +137,20 @@ micronaut:
     csp:
       enabled: true
       generateNonce: true
-      reportOnly: true
-      policyDirectives: "default-src 'self' data: 'nonce-{#nonceValue}';"
+      reportOnly: false
+      policyDirectives: "default-src 'self' https:; font-src data: https://fonts.gstatic.com; script-src-elem 'self' https://static.cloudflareinsights.com 'nonce-{#nonceValue}';"
 
   executors:
     io:
       type: fixed
-      nThreads: 12
+      nThreads: 4
 
   config-client:
     enabled: true
 
 grpc:
   server:
-    port: 8082
+    port: 8083
     keep-alive-time: 1h
 
   client:
@@ -101,11 +159,11 @@ grpc:
 
 graphql:
   enabled: true
-  path: /v1/graph
+  path: /_/graph
   graphiql:
     enabled: false
     version: 0.13.2
-    path: /_/graphiql
+    path: /_/admin/graphiql
     page-title: "Dashboard - GraphiQL"
 
 kubernetes:

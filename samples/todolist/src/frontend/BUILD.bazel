@@ -1,0 +1,110 @@
+##
+# Copyright © 2020, The Gust Framework Authors. All rights reserved.
+#
+# The Gust/Elide framework and tools, and all associated source or object computer code, except where otherwise noted,
+# are licensed under the Zero Prosperity license, which is enclosed in this repository, in the file LICENSE.txt. Use of
+# this code in object or source form requires and implies consent and agreement to that license in principle and
+# practice. Source or object code not listing this header, or unless specified otherwise, remain the property of
+# Elide LLC and its suppliers, if any. The intellectual and technical concepts contained herein are proprietary to
+# Elide LLC and its suppliers and may be covered by U.S. and Foreign Patents, or patents in process, and are protected
+# by trade secret and copyright law. Dissemination of this information, or reproduction of this material, in any form,
+# is strictly forbidden except in adherence with assigned license requirements.
+##
+
+package(
+    default_visibility = ["//visibility:public"],
+)
+
+load(
+    "//defs/toolchain:deps.bzl",
+    "closure",
+    "js_proto",
+    "js_service",
+)
+
+load(
+    "//defs/toolchain:crosslib.bzl",
+    "cross_lib",
+)
+
+load(
+    "//defs/toolchain:frontend.bzl",
+    "js_app",
+    "js_module",
+)
+
+load(
+    "//defs/toolchain/style:rules.bzl",
+    "style_binary",
+    "style_library",
+)
+
+
+## Frontend: Styles
+
+style_library(
+    name = "style-base",
+    srcs = ["_base.scss"],
+    deps = [
+        ":style-vars",
+    ],
+)
+
+style_library(
+    name = "style-vars",
+    srcs = ["_vars.scss"],
+    deps = [
+        "@gust//style:vars",
+    ],
+)
+
+style_binary(
+    name = "mdl",
+    deps = [
+        "@mdl//:animation-styles",
+        "@mdl//:button-styles",
+        "@mdl//:typography-styles",
+        "@mdl//:ripple-styles",
+        "@mdl//:card-styles",
+        "@mdl//:layout-styles",
+    ],
+)
+
+style_binary(
+    name = "styles",
+    src = "app.scss",
+    deps = [
+        ":style-base",
+    ],
+)
+
+
+## Frontend: JS
+
+js_module(
+    name = "api",
+    srcs = ["api.js"],
+    deps = [
+        "//js/gust:logging",
+        "//java/gust:Core-j2cl",
+        js_service("//samples/todolist/src:todolist_proto"),
+        js_proto("//js:empty_proto"),
+    ],
+)
+
+js_module(
+    name = "main",
+    srcs = ["main.js"],
+    deps = [
+        ":api",
+        "//js/gust:logging",
+    ],
+)
+
+js_app(
+    name = "app",
+    entry_points = ["todolist.main"],
+    deps = [
+        ":main",
+    ],
+)

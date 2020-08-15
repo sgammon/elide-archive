@@ -1,0 +1,40 @@
+apiVersion: skaffold/v2alpha3
+kind: Config
+
+metadata:
+  name: todolist
+
+build:
+  artifacts:
+  - image: us.gcr.io/elide-tools/sample/todolist/jvm
+    bazel:
+      target: //samples/todolist/src:TodolistServer-image.tar
+      args:
+        - --config=dev
+        - --define=dev=enabled
+        - --define=LIVE_RELOAD=enabled
+        - --compilation_mode=dbg
+
+portForward:
+-  resourceType: Deployment
+   resourceName: envoy
+   namespace: todolist
+   port: 8443
+   localPort: 8443
+-  resourceType: Deployment
+   resourceName: envoy
+   namespace: todolist
+   port: 8090
+   localPort: 8090
+
+deploy:
+  kubeContext: docker-desktop
+  kubectl:
+    manifests:
+      - samples/todolist/src/config/00-namespace.k8s.yaml
+      - samples/todolist/src/config/05-networking.k8s.yaml
+      - samples/todolist/src/config/05-permissions.k8s.yaml
+      - samples/todolist/src/config/25-services.k8s.yaml
+      - samples/todolist/src/config/45-redis.k8s.yaml
+      - samples/todolist/src/config/50-envoy.k8s.local.yaml
+      - samples/todolist/src/config/99-todolist.k8s.local.yaml

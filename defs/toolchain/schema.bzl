@@ -12,9 +12,13 @@
 ##
 
 load(
-    "@io_bazel_rules_closure//closure:defs.bzl",
-     _closure_proto_library = "closure_proto_library",
-    _closure_js_proto_library = "closure_js_proto_library",
+    "//defs/toolchain/proto:closure_proto_library.bzl",
+    _closure_proto_library = "closure_proto_library",
+)
+
+load(
+    "//defs/toolchain/web:grpc.bzl",
+    _closure_grpc_library = "closure_grpc_web_library",
 )
 
 load(
@@ -23,14 +27,30 @@ load(
 )
 
 load(
+    "@build_stack_rules_proto//swift:swift_proto_library.bzl",
+    _swift_proto_library = "swift_proto_library",
+)
+
+load(
+    "@build_stack_rules_proto//python:deps.bzl",
+    _python_proto_library = "python_proto_library",
+)
+
+load(
     "@io_grpc_java//:java_grpc_library.bzl",
     _java_grpc_library = "java_grpc_library"
 )
 
+GRPCJS_PREFIX_ = "grpc_js"
+PYPROTO_POSTFIX_ = "py_proto"
 JAVAPROTO_POSTFIX_ = "java_proto"
+SWIFTPROTO_POSTFIX_ = "swift_proto"
 CLOSUREPROTO_POSTFIX_ = "closure_proto"
 GRPCJAVA_POSTFIX_ = "grpc_java"
 _PROTO_ROOT = "/proto"
+
+ENABLE_SWIFT = False
+ENABLE_PYTHON = False
 
 _native_proto = _proto_library
 _native_cc_proto = native.cc_proto_library
@@ -42,12 +62,21 @@ INJECTED_PROTO_DEPS = [
 ]
 
 INJECTED_SERVICE_DEPS = [
-    str(Label("@gust//gust/api:services")),
     str(Label("@safe_html_types//:proto")),
 ]
 
+INJECTED_CLOSURE_SERVICE_DEPS = [
+    "external/com_google_protobuf/src",
+    "external/safe_html_types/proto/src/main/protobuf",
+]
 
-def __declare_lang_protos(name, internal, service, kwargs):
+
+def __declare_lang_protos(name,
+                          internal,
+                          service,
+                          kwargs,
+                          enable_swift = ENABLE_SWIFT,
+                          enable_python = ENABLE_PYTHON):
 
     """ Declare Java and CC proto libraries. """
 
@@ -57,6 +86,18 @@ def __declare_lang_protos(name, internal, service, kwargs):
     _native_java_proto(
         **ckwargs
     )
+
+    if enable_python:
+        ckwargs["name"] = "%s-%s" % (name, PYPROTO_POSTFIX_)
+        _python_proto_library(
+            **ckwargs
+        )
+
+    if enable_swift:
+        ckwargs["name"] = "%s-%s" % (name, SWIFTPROTO_POSTFIX_)
+        _swift_proto_library(
+            **ckwargs
+        )
 
 
 def __declare_native(name, internal, service, kwargs):
@@ -130,6 +171,7 @@ def _service(name,
     additional dependencies and prepares targets related to RPC services.
 
     :param name: Name of the target.
+    :param flavor: Java gRPC generation flavor.
     :param kwargs: Keyword arguments to pass along.
     """
 
@@ -143,6 +185,42 @@ def _service(name,
         deps = [":%s-%s" % (name, JAVAPROTO_POSTFIX_)],
         flavor = flavor,
     )
+
+    _closure_grpc_library(
+        name = "%s-%s-binary" % (name, GRPCJS_PREFIX_),
+        deps = [":%s" % (name)],
+        mode = "grpcweb",
+    )
+
+    _closure_grpc_library(
+        name = "%s-%s-text" % (name, GRPCJS_PREFIX_),
+        deps = [":%s" % (name)],
+        mode = "grpcwebtext",
+    )
+
+
+def well_known_(name,
+                actual,
+                **kwargs):
+
+    """
+    Import a well-known Protocol Buffer definition, wrapping it in the appropriate language-specific rules supported by
+    the framework.
+
+    :param name: Name of the well-known proto target.
+    :param actual: Well-known protobuf library target.
+    :param kwargs: Keyword arguments to pass along.
+    """
+
+    # setup an alias to the native proto lib
+    native.alias(
+        name = name,
+        actual = actual,
+    )
+
+    kwargs["name"] = name
+    __declare_closure_proto(name, True, False, kwargs)
+    __declare_lang_protos(name, True, False, kwargs)
 
 
 model = _proto

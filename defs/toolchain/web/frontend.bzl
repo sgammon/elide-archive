@@ -11,32 +11,18 @@
 # is strictly forbidden except in adherence with assigned license requirements.
 ##
 
-apiVersion: networking.gke.io/v1beta1
-kind: ManagedCertificate
-metadata:
-  name: todolist-cert
-  namespace: todolist
-spec:
-  domains:
-    - todolist.apps.bloomworks.io
----
-apiVersion: extensions/v1beta1
-kind: Ingress
-metadata:
-  name: todolist-gclb
-  namespace: todolist
-  annotations:
-    kubernetes.io/ingress.global-static-ip-name: todolist-ipv4
-    networking.gke.io/managed-certificates: todolist-cert
-spec:
-  backend:
-    serviceName: gateway
-    servicePort: 443
-  rules:
-    - host: todolist.apps.bloomworks.io
-      http:
-        paths:
-          - path: /*
-            backend:
-              serviceName: gateway
-              servicePort: 443
+load(
+    "@io_bazel_rules_closure//closure:defs.bzl",
+    "CLOSURE_JS_TOOLCHAIN_ATTRS",
+    "closure_js_binary",
+    "closure_js_library",
+    "create_closure_js_library",
+    "web_library",
+)
+
+
+def _frontend(name, target):
+
+    """Package a web application frontend for use with a backend Gust app."""
+
+    pass

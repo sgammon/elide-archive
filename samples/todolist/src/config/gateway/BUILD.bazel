@@ -65,9 +65,12 @@ container_image(
     base = "@envoy_base//image",
     image_format = "Docker",
     repository = "elide-tools/sample/todolist/gateway",
-    ports = ["443", "8090", "9901"],
+    ports = ["8443", "8090", "9901"],
     tars = [
         ":tls-assets",
         ":envoy-configs",
+    ],
+    args = [
+      "--component-log-level", "router:debug",
     ],
 )

@@ -26,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 
 /** Tests the {@link PageContext} class for various behavioral contracts. */
-public class PageContextTest {
+public final class PageContextTest {
   /** Test that a simple map context works fine with {@link PageContext}. */
   @Test void testMapContext() {
     String hiprop = "hi";
@@ -50,7 +50,7 @@ public class PageContextTest {
 
     assertEquals(5, ctx.getProperties().get("hi"),
       "properties should be available through regular props, when injection is present");
-    assertEquals(10, ctx.getInjectedProperties().get("yo"),
+    assertEquals(10, ctx.getInjectedProperties(Collections.emptyMap()).get("yo"),
       "inject properties should be made available");
   }
 
@@ -75,7 +75,7 @@ public class PageContextTest {
 
     assertEquals(5, ctx.getProperties().get("hi"),
       "properties should be available through regular props, when injection is present");
-    assertEquals(10, ctx.getInjectedProperties().get("yo"),
+    assertEquals(10, ctx.getInjectedProperties(Collections.emptyMap()).get("yo"),
       "inject properties should be made available");
     assertTrue(ctx.overrideNamingMap().isPresent(),
       "renaming map should be present when we provide it");
@@ -93,7 +93,8 @@ public class PageContextTest {
     assertEquals("Page Title Here", ctx.getPageContext().getMeta().getTitle(),
       "simple proto context should pass properties through");
 
-    assertEquals("Page Title Here", ((Context)ctx.getInjectedProperties().get("page")).getMeta().getTitle(),
+    assertEquals("Page Title Here", ((Context)ctx.getInjectedProperties(Collections.emptyMap())
+        .get("page")).getMeta().getTitle(),
       "simple proto context should be exposed through `@inject context`");
 
     assertEquals(((PageRender)ctx).getPageContext(), ctx.getPageContext(),
@@ -112,7 +113,7 @@ public class PageContextTest {
     PageContext ctx = PageContext.empty();
     assertTrue(ctx.getProperties().isEmpty(),
       "empty prop context should default to an empty map");
-    assertFalse(ctx.getInjectedProperties().isEmpty(),
+    assertFalse(ctx.getInjectedProperties(Collections.emptyMap()).isEmpty(),
       "empty inject context should still specify a context proto");
   }
 
@@ -136,7 +137,8 @@ public class PageContextTest {
     assertEquals("Page Title Here", protoWithProps.getPageContext().getMeta().getTitle(),
       "page title should properly pass through with props present");
     assertEquals("Page Title Here",
-      ((Context)protoWithProps.getInjectedProperties().get("page")).getMeta().getTitle(),
+      ((Context)protoWithProps.getInjectedProperties(Collections.emptyMap())
+        .get("page")).getMeta().getTitle(),
       "page title should properly pass through as injected value with props present");
     assertEquals(5, protoWithProps.getProperties().get("hi"),
       "regular context props should properly pass through with proto-based factory");
@@ -153,13 +155,16 @@ public class PageContextTest {
     assertEquals("Page Title Here", protoWithPropsAndInjectedValues.getPageContext().getMeta().getTitle(),
       "page title should properly pass through with props present (+injected)");
     assertEquals("Page Title Here",
-      ((Context)protoWithPropsAndInjectedValues.getInjectedProperties().get("page")).getMeta().getTitle(),
+      ((Context)protoWithPropsAndInjectedValues.getInjectedProperties(Collections.emptyMap())
+        .get("page")).getMeta().getTitle(),
       "page title should properly pass through as injected value with props present (+injected)");
     assertEquals(5, protoWithPropsAndInjectedValues.getProperties().get("hi"),
       "regular context props should properly pass through with proto-based factory (+injected)");
-    assertEquals(10, protoWithPropsAndInjectedValues.getInjectedProperties().get("yo"),
+    assertEquals(10, protoWithPropsAndInjectedValues
+        .getInjectedProperties(Collections.emptyMap()).get("yo"),
       "injected context props should properly pass through with proto-based factory");
-    assertEquals(15, protoWithPropsAndInjectedValues.getInjectedProperties().get("hi"),
+    assertEquals(15, protoWithPropsAndInjectedValues
+        .getInjectedProperties(Collections.emptyMap()).get("hi"),
       "injected context props should not blend with regular context properties");
 
     SoyNamingMapProvider overrideMap = new SoyNamingMapProvider() {
@@ -188,13 +193,16 @@ public class PageContextTest {
       protoWithPropsAndInjectedValuesAndMap.getPageContext().getMeta().getTitle(),
       "page title should properly pass through with props present (+injected and map)");
     assertEquals("Page Title Here",
-      ((Context)protoWithPropsAndInjectedValuesAndMap.getInjectedProperties().get("page")).getMeta().getTitle(),
+      ((Context)protoWithPropsAndInjectedValuesAndMap
+        .getInjectedProperties(Collections.emptyMap()).get("page")).getMeta().getTitle(),
       "page title should properly pass through as injected value with props present (+injected and map)");
     assertEquals(5, protoWithPropsAndInjectedValuesAndMap.getProperties().get("hi"),
       "regular context props should properly pass through with proto-based factory (+injected and map)");
-    assertEquals(10, protoWithPropsAndInjectedValuesAndMap.getInjectedProperties().get("yo"),
+    assertEquals(10, protoWithPropsAndInjectedValuesAndMap
+        .getInjectedProperties(Collections.emptyMap()).get("yo"),
       "injected context props should properly pass through with proto-based factory (+map)");
-    assertEquals(15, protoWithPropsAndInjectedValuesAndMap.getInjectedProperties().get("hi"),
+    assertEquals(15, protoWithPropsAndInjectedValuesAndMap
+        .getInjectedProperties(Collections.emptyMap()).get("hi"),
       "injected context props should not blend with regular context properties (+map)");
     assertTrue(protoWithPropsAndInjectedValuesAndMap.overrideNamingMap().isPresent(),
       "rewrite map should show as present if provided");

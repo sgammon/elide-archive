@@ -12,11 +12,11 @@
 ##
 
 steps:
-  - command: "make build CI=yes"
+  - command: "make build CI=yes QUIET=no"
     label: ":bazel: Build: Framework"
     key: framework-build
 
-  - command: "make build test report-coverage report-tests CI=yes"
+  - command: "make build test report-coverage report-tests CI=yes QUIET=no"
     label: ":coverage: Testsuite"
     depends_on: framework-build
     artifact_paths:

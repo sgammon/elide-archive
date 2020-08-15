@@ -67,11 +67,6 @@ _k9(
 )
 
 _k9(
-    name = "ingress",
-    template = ":40-ingress.k8s.yaml",
-)
-
-_k9(
     name = "redis",
     template = ":45-redis.k8s.yaml",
 )

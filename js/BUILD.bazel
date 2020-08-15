@@ -16,13 +16,27 @@ package(
 )
 
 load(
-    "//defs/toolchain:frontend.bzl",
-    _js_app = "js_app",
-    _js_test = "js_test",
-    _js_module = "js_module",
+    "@io_bazel_rules_closure//closure:defs.bzl",
+    _closure_js_library = "closure_js_library",
+)
+
+load(
+    "//defs/toolchain:schema.bzl",
+    _well_known = "well_known_",
 )
 
 
-js_app = _js_app
-js_test = _js_test
-js_module = _js_module
+_well_known(
+    name = "empty_proto",
+    actual = "@com_google_protobuf//:empty_proto",
+)
+
+_closure_js_library(
+    name = "ij",
+    srcs = ["ij.js"],
+)
+
+_closure_js_library(
+    name = "xid",
+    srcs = ["xid.js"],
+)

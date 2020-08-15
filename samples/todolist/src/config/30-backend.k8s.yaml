@@ -31,3 +31,21 @@ spec:
       includeHost: true
       includeProtocol: true
       includeQueryString: true
+---
+apiVersion: cloud.google.com/v1beta1
+kind: BackendConfig
+metadata:
+  name: todolist-redirect
+  namespace: todolist
+  labels:
+    environment: production
+spec:
+  timeoutSec: 10
+  connectionDraining:
+    drainingTimeoutSec: 30
+  cdn:
+    enabled: false
+    cachePolicy:
+      includeHost: true
+      includeProtocol: true
+      includeQueryString: true

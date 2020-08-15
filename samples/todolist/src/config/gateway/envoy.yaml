@@ -79,7 +79,7 @@ static_resources:
     ## Port 443: Todolist Application
     - name: rpc_listener_tls
       address:
-        socket_address: { address: 0.0.0.0, port_value: 443 }
+        socket_address: { address: 0.0.0.0, port_value: 8443 }
       filter_chains:
         - tls_context:
             common_tls_context:
@@ -229,7 +229,7 @@ static_resources:
                   address:
                     socket_address:
                       address: todolist
-                      port_value: 8081
+                      port_value: 8080
 
     ## Upstream: API Server
     - name: rpc
@@ -254,7 +254,7 @@ static_resources:
                   address:
                     socket_address:
                       address: todolist
-                      port_value: 8082
+                      port_value: 8083
 
     ## Upstream: Endpoints Service Proxy
     - name: esp
@@ -279,4 +279,4 @@ static_resources:
                   address:
                     socket_address:
                       address: esp
-                      port_value: 8083
+                      port_value: 8084

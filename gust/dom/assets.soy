@@ -14,6 +14,22 @@
 
 
 /**
+ * Calculate a URL to use when referring to a given JavaScript or CSS asset. This factors in the notion of *CDN
+ * prefixes*, which are hostnames that are applied to the beginning of the link.
+ */
+{template .asset_link kind="trusted_resource_uri" visibility="private"}
+  {@param uri: trusted_resource_uri}  /** URI postfix to apply. */
+  {@inject? cdn_prefix: trusted_resource_uri}  /** CDN prefix to use, if applicable. */
+
+  {if isNonnull($cdn_prefix)}
+    {$cdn_prefix}{$uri}
+  {else}
+    {$uri}
+  {/if}
+{/template}
+
+
+/**
  * Render a script asset link from a given `JavaScript` proto type. These style references are always made via URIs
  * listed in HTML <script> tags.
  */
@@ -27,14 +43,20 @@
   {@param? integrity: string}  /** Integrity fingerprint to apply. */
   {@param? crossorigin: string} /** Cross-origin value to use. */
 
+  {let $uri kind="trusted_resource_uri"}
+    {call .asset_link}
+      {param uri: $script /}
+    {/call}
+  {/let}
+
   <script type="text/javascript"
-          src="{$script}"
+          src="{$uri}"
           {if isNonnull($id) and $id != ''} id="{$id}" {/if}
-          {if isNonnull($module) and $module} module{else}{if isNonnull($nomodule) and $nomodule}{sp} nomodule{/if}{/if}
+          {if isNonnull($module) and $module} module{else}{if isNonnull($nomodule) and $nomodule} nomodule{/if}{/if}
           {if isNonnull($async) and $async} async{/if}
           {if isNonnull($defer) and $defer} defer{/if}
-          {if isNonnull($integrity)} integrity="{$integrity}"{/if}
-          {if isNonnull($crossorigin)} crossorigin="{$crossorigin}"{/if}></script>
+          {if isNonnull($integrity) and $integrity != ''} integrity="{$integrity}"{/if}
+          {if isNonnull($crossorigin) and $crossorigin != ''} crossorigin="{$crossorigin}"{/if}></script>
 {/template}
 
 
@@ -46,7 +68,13 @@
   {@param sheet: trusted_resource_uri}  /** URI at which to include the stylesheet. */
   {@param? media: string}  /** Media attribute to specify for the stylesheet. */
 
+  {let $uri kind="trusted_resource_uri"}
+    {call .asset_link}
+      {param uri: $sheet /}
+    {/call}
+  {/let}
+
   {if isNonnull($sheet)}
-    <link rel="stylesheet" href="{$sheet}"{if isNonnull($media)} media="{$media}"{/if} />
+    <link rel="stylesheet" href="{$uri}"{if isNonnull($media) and $media != ''} media="{$media}"{/if} />
   {/if}
 {/template}
