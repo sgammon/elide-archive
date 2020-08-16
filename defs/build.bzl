@@ -437,8 +437,8 @@ DEPS = {
         "forceLocal": False,
         "overlay": "micronaut-views-core.bzl",
         "local": "/Users/sam.g/Workspace/micronaut-views/views-core",
-        "targets": ["https://storage.googleapis.com/elide-software/micronaut/b15/views-core-1.3.4.BUILD-SNAPSHOT.jar"],
-        "seal": "76e3863731ce483a70fc29d72c98c753ebe9b1a84280892e345d0967b2e79e3f",
+        "targets": ["https://storage.googleapis.com/elide-software/micronaut/b16/views-core-1.3.4.BUILD-SNAPSHOT.jar"],
+        "seal": "dab45028fb6c9a67c50e22033e4c75fadaf6424a7b68c0852232d23a6a0e89e0",
         "deps": [
             maven("io.micronaut:micronaut-runtime"),
             maven("io.micronaut:micronaut-http-client"),
@@ -451,11 +451,11 @@ DEPS = {
     "io_micronaut_micronaut_views_soy": {
         "type": "java",
         "licenses": ["notice"],
-        "forceLocal": True,
+        "forceLocal": False,
         "overlay": "micronaut-views-soy.bzl",
         "local": "/Users/sam.g/Workspace/micronaut-views/views-soy",
-        "targets": ["https://storage.googleapis.com/elide-software/micronaut/b15/views-soy-1.3.4.BUILD-SNAPSHOT.jar"],
-        "seal": "54993c9955300cbd17350dd3a99823c0e3a1fa8c467a7c4f17d5c93f64e051fd",
+        "targets": ["https://storage.googleapis.com/elide-software/micronaut/b16/views-soy-1.3.4.BUILD-SNAPSHOT.jar"],
+        "seal": "8ad67491b70a8ee47be3afcfdee3fa280899201c2e09b007d2dfdefa2c4b1d23",
         "deps": [
             "@com_google_template_soy",
             "@com_google_common_html_types",
