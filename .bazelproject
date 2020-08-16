@@ -6,6 +6,8 @@ directories:
   tools
   types
   gust
+  tests
+  jstests
   -vendor/
 
 workspace_type: java
@@ -16,12 +18,15 @@ targets:
   //java/...
   //js/...
   //style/...
+  //tests/...
+  //jstests/...
 
 ts_config_rules:
   //:tsconfig.json
 
 test_sources:
   - */tests/*
+  - */jstests/*
   - */javatests/*
 
 additional_languages:
