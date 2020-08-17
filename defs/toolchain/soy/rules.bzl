@@ -121,7 +121,7 @@ def _ssr_library(name,
         srcs = srcs,
         soy_deps = (soy_deps or []) + INJECTED_SSR_SOY_DEPS,
         proto_deps = (proto_deps or []) + INJECTED_SSR_PROTO_DEPS,
-        java_package = None,
+        java_package = java_package,
         js = False,
     )
 
