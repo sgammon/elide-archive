@@ -130,25 +130,25 @@
   resolved "https://registry.yarnpkg.com/@bazel/ibazel/-/ibazel-0.13.1.tgz#23788f67a6fbe83d96f2d055691df4917c10ac8d"
   integrity sha512-FO1hBKpzpeBL0adnFYF2Dwl/7gox6ccKM6bb+x26AXrQpLbinXPuTi4zeXRL/MW4383mF6i4RovLCmwUU/YW0w==
 
-"@bazel/jasmine@^2.0.1":
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/@bazel/jasmine/-/jasmine-2.0.1.tgz#bab3c174a44aae191051c820abb65d34dc973b5c"
-  integrity sha512-iynq37+ngTgf4cSCGxs8WpX240OvHctD7Pp0oPIokC+nfFIWD20OU0r2RGyFwEEVne3KKmxLLgDNw49QiU51Ug==
+"@bazel/jasmine@2.0.2":
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/@bazel/jasmine/-/jasmine-2.0.2.tgz#a4ccd3bf0b780d3d617cee07d146d459076385e4"
+  integrity sha512-tmQY124GSTJFN67zIjTn34YAUUaPqBcC9MnDhYPyZDWqdbJ5SqDQ4aNQpRDmZvnOV3c14dKKHpXZy28nyFovOA==
   dependencies:
     c8 "~7.1.0"
     jasmine-reporters "~2.3.2"
 
-"@bazel/karma@^2.0.1":
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/@bazel/karma/-/karma-2.0.1.tgz#8e4a2ab6ffc73a10439387d25acc12d9460df91a"
-  integrity sha512-jf9qF7Q/qP2YmJ5SEiWVormG45CiMLHult5kvKKN1Y1GH9iHJ++DMwM21HWz+xa8gYWkhklUVfY0wA7nZw4wAQ==
+"@bazel/karma@2.0.2":
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/@bazel/karma/-/karma-2.0.2.tgz#9863ec7f2e4cfe675b3b3f6e28340c351600758c"
+  integrity sha512-/bgtIQNHIgFYnH1Ts9D1fLE4n0StT8a8AayZrWklTaGSA56UjmTh1l30dACpQuiwV0VVIDlZJrQMAIBacTzwug==
   dependencies:
     tmp "0.1.0"
 
-"@bazel/rollup@^2.0.1":
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/@bazel/rollup/-/rollup-2.0.1.tgz#a826ab15fa02b7b81c13af3acf52eeaeb5813530"
-  integrity sha512-xDNj7BO5A3Sdfmliy3MVNDR3jmtPT+W7PB71Txg/jE0xEPS8Ntw0yPgPNBb+PPIZJRZr5smix9KTNL2oeI08GA==
+"@bazel/rollup@2.0.2":
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/@bazel/rollup/-/rollup-2.0.2.tgz#9bf0df17d94314e67d6ddce1c9d7366a212c83b0"
+  integrity sha512-W8G7XCbSS5cVwIc1mZ11QOmfjqGb/5psATeyB8Z5E77nSPiuYla1tFfgUJn8MOJ9C6wYVQwqIS9l5X44jLmZWg==
 
 "@bazel/source-map-support@latest":
   version "0.5.9-c"
@@ -158,15 +158,15 @@
     buffer-from "^1.0.0"
     source-map "^0.6.0"
 
-"@bazel/terser@^2.0.1":
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/@bazel/terser/-/terser-2.0.1.tgz#e4626f90337e61230fa50f5a221d12fc56e4010d"
-  integrity sha512-8FKQw1QQH/lX9DVWoOcm60fcuAoPyFVM//5RcorsXsw+WYnWEJVRRyD04mRRK5X5qWr+qI6GpYQ2RCCare6Epg==
+"@bazel/terser@2.0.2":
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/@bazel/terser/-/terser-2.0.2.tgz#509109ffdaecc2c466756918f6354644721d714f"
+  integrity sha512-c3VFfgn0HZHhaav9NPpDTxmCuD6yCyFtENZXr3JbM151qPFrkDuJU0hwTe/o5f07m1HC3u6zuchzYGzPpBFyGQ==
 
-"@bazel/typescript@^2.0.1":
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/@bazel/typescript/-/typescript-2.0.1.tgz#f99405ce53e2d16a98f9b66da42bff9f5c055c24"
-  integrity sha512-zoaxp57m8WbBILv8MlNEcRf1xRbtvAyDAy2nekEy2RhvCx96slZ5+JJIQJ7AW6teb37iqvurg1OvNZsO/1bc7Q==
+"@bazel/typescript@2.0.2":
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/@bazel/typescript/-/typescript-2.0.2.tgz#02a2b81e5b73224eace8cec4735a2b0f9975f199"
+  integrity sha512-Ygv3HVxa/y9qnazi8hPvGwXsooeZ2RhgQCJtcIV7QLyGb+X8gv5ZUPlSKkXVI94TFO2x6pxFQHHcgKOEu4HWaw==
   dependencies:
     protobufjs "6.8.8"
     semver "5.6.0"
