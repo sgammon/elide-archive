@@ -539,7 +539,7 @@ def _micronaut_application(name,
 
     _java_library(
         name = "%s-assets" % name,
-        classpath_resources = injected_resources + [
+        resources = injected_resources + [
             ":%s-assets-manifest" % name
         ],
     )
@@ -584,12 +584,11 @@ def _micronaut_application(name,
         jvm_flags = computed_jvm_flags + ["-Dgust.engine=jvm"],
         base = base,
         layers = computed_image_layers,
-        resource_jars = resource_jars + [
-            ":%s-assets" % name
-        ],
+        resource_jars = resource_jars,
         classpath_resources = classpath_resources + [
             config,
             logging_config,
+            ":%s-assets-manifest" % name
         ],
     )
 
