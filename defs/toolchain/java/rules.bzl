@@ -539,7 +539,7 @@ def _micronaut_application(name,
 
     _java_library(
         name = "%s-assets" % name,
-        resources = injected_resources + [
+        classpath_resources = injected_resources + [
             ":%s-assets-manifest" % name
         ],
     )
