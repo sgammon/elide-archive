@@ -97,7 +97,13 @@ public class AssetController {
   public static final class AssetsAwareCspFilter extends CspFilter {
     AssetsAwareCspFilter(Optional<CspConfiguration> cspConfiguration) {
       super(cspConfiguration.isPresent() ? cspConfiguration.get() :
-        new CspConfiguration() {} /** pass in defaults */);
+        new CspConfiguration() {
+          @Override
+          public boolean isEnabled() { return false; }
+
+          @Override
+          public Optional<String> getPolicyDirectives() { return Optional.empty(); }
+        } /** pass in defaults */);
     }
 
     private static boolean nonAssetRequest(@Nonnull HttpRequest request) {
