@@ -95,8 +95,9 @@ public class AssetController {
   /** Replacement for {@link CspFilter} which disables itself when assets (or non-HTML content) are served. */
   @Replaces(CspFilter.class)
   public static final class AssetsAwareCspFilter extends CspFilter {
-    AssetsAwareCspFilter(@Nonnull CspConfiguration cspConfiguration) {
-      super(cspConfiguration);
+    AssetsAwareCspFilter(Optional<CspConfiguration> cspConfiguration) {
+      super(cspConfiguration.isPresent() ? cspConfiguration.get() :
+        new CspConfiguration() {} /** pass in defaults */);
     }
 
     private static boolean nonAssetRequest(@Nonnull HttpRequest request) {
