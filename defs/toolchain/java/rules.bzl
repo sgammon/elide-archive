@@ -504,10 +504,10 @@ def _micronaut_application(name,
         "--digest-length=" + str(ASSET_DIGEST_CHARS),
         "--digest-rounds=" + str(ASSET_DIGEST_ROUNDS),
         "--embed",
-#        "--precompress",
-        "--variants=IDENTITY",  #+ (
-#            (ASSETS_ENABLE_GZIP and ",GZIP" or "") +
-#            (ASSETS_ENABLE_BROTLI and ",BROTLI" or "")),
+        "--precompress",
+        "--variants=IDENTITY" + (
+            (ASSETS_ENABLE_GZIP and ",GZIP" or "") +
+            (ASSETS_ENABLE_BROTLI and ",BROTLI" or "")),
         (_RENAMING and "--rewrite-maps") or ("--no-rewrite-maps"),
     ]
 
