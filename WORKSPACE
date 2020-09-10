@@ -112,6 +112,14 @@ gust_java_repositories()
 load("@maven//:defs.bzl", "pinned_maven_install")
 pinned_maven_install()
 
+## Go
+load("@io_bazel_rules_go//go:deps.bzl", "go_register_toolchains", "go_rules_dependencies")
+load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies")
+
+go_rules_dependencies()
+go_register_toolchains()
+gazelle_dependencies()
+
 ## Web Testing
 load("@io_bazel_rules_webtesting//web:repositories.bzl", "web_test_repositories")
 web_test_repositories()
@@ -305,3 +313,4 @@ k8s_defaults(
 ## Brotli Setup
 load("@org_brotli//java:repositories.bzl", "load_brotli_repositories")
 load_brotli_repositories()
+
