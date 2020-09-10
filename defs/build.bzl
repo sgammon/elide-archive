@@ -53,13 +53,6 @@ DEPS = {
         "target": "87545335ef7fb248051a7e049e88177ac8168c03",
         "seal": "6266a305d6e7b794a39ca4563cc173af25719e7eeefa9a99c1d478f1f44db431"},
 
-    # Bazel: Gazelle
-    "bazel_gazelle": {
-        "type": "github",
-        "repo": "bazelbuild/bazel-gazelle",
-        "target": "83b2dc564469ef341d2e84f358ebf24ffa003a71",
-        "seal": "191ebb38376bb8de3ddc5097c98fe49690bb8cc4ed7b9673bab38ffc87305b3f"},
-
     # Bazel: Toolchains
     "bazel_toolchains": {
         "type": "github",
@@ -144,8 +137,15 @@ DEPS = {
     "io_bazel_rules_go": {
         "type": "github",
         "repo": "bazelbuild/rules_go",
-        "target": "87cc49af2c6d52eb3445860a15fcd264c86c5e80",
-        "seal": "91c34d38f1740dcd9d321928cdf28bd9ba28e58a0717662ef850d42bb694531b"},
+        "target": "516331abf8ebe0a179b6b80baf7069924a4d3147",
+        "seal": "098902119673da7afeb561a94e51f3f81986639a773715deb91427df1aaac085"},
+
+    # Bazel: Gazelle
+    "bazel_gazelle": {
+        "type": "github",
+        "repo": "bazelbuild/bazel-gazelle",
+        "target": "91bbcd937d38c317f63db4cb1c606d49c9e351e0",
+        "seal": "a605cffb401878f97295c3563ba954bb317d2648020d53b78212b0e4ed93ee0f"},
 
     # Rules: Web Testing
     "io_bazel_rules_webtesting": {
