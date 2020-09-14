@@ -270,6 +270,7 @@ GOOGLE_COORDINATES = [
 ]
 
 GOOGLE_CLOUD_COORDINATES = [
+    ("com.google.cloud:google-cloud-core", GCLOUD_GRPC_VERSION),
     ("com.google.cloud:google-cloud-core-grpc", GCLOUD_GRPC_VERSION),
     ("com.google.cloud:google-cloud-tasks", GCLOUD_TASKS_VERSION),
     ("com.google.cloud:google-cloud-pubsub", GCLOUD_PUBSUB_VERSION),

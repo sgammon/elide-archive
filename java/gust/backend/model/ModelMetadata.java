@@ -24,6 +24,7 @@ import com.google.protobuf.FieldMask;
 import com.google.protobuf.GeneratedMessage.GeneratedExtension;
 import com.google.protobuf.Message;
 import com.google.protobuf.util.FieldMaskUtil;
+import tools.elide.core.CollectionMode;
 import tools.elide.core.Datamodel;
 import tools.elide.core.DatapointType;
 import tools.elide.core.FieldType;
@@ -214,6 +215,36 @@ public final class ModelMetadata {
   // -- Internals -- //
 
   /**
+   * Match an annotation to a field. If the field is not annotated as such, the method returns `false`.
+   *
+   * @param field Field to check for the provided annotation.
+   * @param annotation Annotation to check for.
+   * @return Whether the field is annotated with the provided annotation.
+   */
+  static boolean matchFieldAnnotation(@Nonnull FieldDescriptor field, @Nonnull FieldType annotation) {
+    if (field.getOptions().hasExtension(Datamodel.field)) {
+      var extension = field.getOptions().getExtension(Datamodel.field);
+      return annotation.equals(extension.getType());
+    }
+    return false;
+  }
+
+  /**
+   * Match a collection annotation. If the field or model is not annotated as such, the method returns `false`.
+   *
+   * @param field Field to check for the provided annotation.
+   * @param mode Collection mode to check for.
+   * @return Whether the field is annotated for the provided collection mode.
+   */
+  static boolean matchCollectionAnnotation(@Nonnull FieldDescriptor field, @Nonnull CollectionMode mode) {
+    if (field.getOptions().hasExtension(Datamodel.collection)) {
+      var extension = field.getOptions().getExtension(Datamodel.collection);
+      return mode.equals(extension.getMode());
+    }
+    return false;
+  }
+
+  /**
    * Resolve a model field within the tree of {@code descriptor}, where an instance of annotation data of type
    * {@code ext} is affixed to the field. If the (optional) provided {@code filter} function agrees, the item is
    * returned to the caller in a {@link FieldPointer}.
@@ -245,7 +276,7 @@ public final class ModelMetadata {
     for (FieldDescriptor field : descriptor.getFields()) {
       if (field.getOptions().hasExtension(ext)) {
         var extension = field.getOptions().getExtension(ext);
-        if (!filter.isPresent() || filter.get().apply(extension))
+        if (filter.isEmpty() || filter.get().apply(extension))
           return Optional.of(new FieldPointer(
             descriptor,
             stack.isEmpty() ? field.getName() : stack + "." + field.getName(),
@@ -487,10 +518,7 @@ public final class ModelMetadata {
    * @return Type of the provided datamodel.
    */
   public static @Nonnull DatapointType role(@Nonnull Descriptor descriptor) {
-    var ext = modelAnnotation(descriptor, Datamodel.role, false);
-    if (ext.isPresent())
-      return ext.get();
-    return DatapointType.OBJECT;
+    return modelAnnotation(descriptor, Datamodel.role, false).orElse(DatapointType.OBJECT);
   }
 
   /**
@@ -1071,7 +1099,7 @@ public final class ModelMetadata {
     var descriptor = instance.getDescriptorForType();
     enforceAnyRole(descriptor, DatapointType.OBJECT, DatapointType.OBJECT_KEY);
     Optional<FieldPointer> idField = idField(descriptor);
-    if (!idField.isPresent())
+    if (idField.isEmpty())
       throw new MissingAnnotatedField(descriptor, FieldType.ID);
     return ModelMetadata.<ID>pluck(instance, idField.get()).getValue();
   }
@@ -1097,7 +1125,7 @@ public final class ModelMetadata {
       false,
       Optional.of((field) -> field.getType() == FieldType.KEY));
 
-    if (!keyField.isPresent())
+    if (keyField.isEmpty())
       throw new MissingAnnotatedField(descriptor, FieldType.KEY);
     //noinspection unchecked
     return (Optional<Key>)pluck(instance, keyField.get()).getValue();

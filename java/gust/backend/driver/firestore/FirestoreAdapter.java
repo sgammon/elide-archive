@@ -12,10 +12,16 @@
  */
 package gust.backend.driver.firestore;
 
+import com.google.api.gax.core.CredentialsProvider;
+import com.google.api.gax.rpc.TransportChannelProvider;
+import com.google.cloud.firestore.v1.stub.FirestoreStubSettings;
+import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.common.util.concurrent.ListeningScheduledExecutorService;
 import com.google.protobuf.Message;
 import gust.backend.model.*;
 import gust.backend.runtime.Logging;
+import gust.backend.transport.GoogleAPIChannel;
+import gust.backend.transport.GoogleService;
 import io.micronaut.context.annotation.Context;
 import io.micronaut.context.annotation.Factory;
 import io.micronaut.runtime.context.scope.Refreshable;
@@ -127,7 +133,7 @@ public final class FirestoreAdapter<Key extends Message, Model extends Message>
      * Acquire a new instance of the Firestore adapter, using the specified component objects to facilitate model
      * serialization/deserialization, and transport communication with Firestore.
      *
-     * @param messageInstance Empty message instance to infer type information from.
+     * @param messageBuilder Builder for the instance in question.
      * @param driver Driver with which we should talk to Firestore.
      * @param cache Driver with which we should cache eligible data.
      * @return Firestore driver instance.
@@ -135,15 +141,77 @@ public final class FirestoreAdapter<Key extends Message, Model extends Message>
     @Context
     @Refreshable
     public static @Nonnull <K extends Message, M extends Message> FirestoreAdapter<K, M> acquire(
-      @Nonnull Message messageInstance,
+      @Nonnull M.Builder messageBuilder,
       @Nonnull FirestoreDriver<K, M> driver,
       @Nonnull Optional<CacheDriver<K, M>> cache) {
       // resolve model builder from type
       return FirestoreAdapter.forModel(
-        messageInstance.newBuilderForType(),
+        messageBuilder,
         driver,
         cache);
     }
+  }
+
+  /**
+   * Acquire an instance of the {@link FirestoreAdapter} and {@link FirestoreDriver}, customized for the provided
+   * `modelInstance` and `keyInstance`. This method variant makes use of a default object for the gRPC transport
+   * provider and Google credential provider.
+   *
+   * @param keyInstance Key type instance for the record in question.
+   * @param messageInstance Message type instance for the record in question.
+   * @param executorService Background executor service for Firestore operations.
+   * @param <K> Key type.
+   * @param <M> Message type.
+   * @return Instance of the {@link FirestoreAdapter} and {@link FirestoreDriver}, customized as described.
+   */
+  public static @Nonnull <K extends Message, M extends Message> FirestoreAdapter<K, M> acquire(
+      @Nonnull K keyInstance,
+      @Nonnull M messageInstance,
+      @Nonnull ListeningScheduledExecutorService executorService) {
+    return acquire(
+        FirestoreStubSettings.defaultTransportChannelProvider(),
+        FirestoreStubSettings.defaultCredentialsProviderBuilder().build(),
+        GrpcTransportOptions.newBuilder().build(),
+        executorService,
+        keyInstance,
+        messageInstance
+    );
+  }
+
+  /**
+   * Acquire an instance of the {@link FirestoreAdapter} and {@link FirestoreDriver}, customized for the provided
+   * `modelInstance` and `keyInstance`. This method variant allows specification of the full set of objects which
+   * govern the connection and interaction with Firestore.
+   *
+   * @param firestoreChannel Transport provider for Firestore communication channels via gRPC.
+   * @param credentialsProvider Provider for transport/call credentials, when interacting with Firestore.
+   * @param transportOptions gRPC transport options, to apply when instantiating channels for Firestore communications.
+   * @param executorService Background executor service for Firestore operations.
+   * @param keyInstance Key type instance for the record in question.
+   * @param messageInstance Message type instance for the record in question.
+   * @param <K> Key type.
+   * @param <M> Message type.
+   * @return Instance of the {@link FirestoreAdapter} and {@link FirestoreDriver}, customized as described.
+   */
+  public static @Nonnull <K extends Message, M extends Message> FirestoreAdapter<K, M> acquire(
+      @Nonnull @GoogleAPIChannel(service = GoogleService.FIRESTORE) TransportChannelProvider firestoreChannel,
+      @Nonnull CredentialsProvider credentialsProvider,
+      @Nonnull GrpcTransportOptions transportOptions,
+      @Nonnull ListeningScheduledExecutorService executorService,
+      @Nonnull K keyInstance,
+      @Nonnull M messageInstance) {
+    M.Builder builder = messageInstance.newBuilderForType();
+    return FirestoreAdapter.FirestoreAdapterFactory.acquire(
+        builder,
+        FirestoreDriver.FirestoreDriverFactory.acquireDriver(
+            firestoreChannel,
+            credentialsProvider,
+            transportOptions,
+            executorService,
+            builder
+        ),
+        Optional.empty()
+    );
   }
 
   // -- Components -- //

@@ -173,6 +173,7 @@ public final class InMemoryDriver<Key extends Message, Model extends Message>
                                                 final @Nonnull WriteOptions options) {
     Objects.requireNonNull(model, "Cannot persist `null` model.");
     Objects.requireNonNull(options, "Cannot persist model without `options`.");
+    if (key != null) enforceRole(key, DatapointType.OBJECT_KEY);
 
     // resolve target key, and then write mode
     final @Nonnull Key targetKey = key != null ? key : generateKey(model);

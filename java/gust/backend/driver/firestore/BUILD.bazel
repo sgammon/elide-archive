@@ -80,8 +80,20 @@ java_library(
         maven("com.google.api:gax"),
         maven("com.google.api:gax-grpc"),
         maven("com.google.api:api-common"),
+        maven("com.google.cloud:google-cloud-core"),
         maven("com.google.cloud:google-cloud-core-grpc"),
     ] + _COMMON_DEPS,
+    exports = [
+        maven("io.grpc:grpc-api"),
+        maven("io.grpc:grpc-core"),
+        maven("io.grpc:grpc-auth"),
+        maven("io.grpc:grpc-stub"),
+        maven("io.grpc:grpc-protobuf"),
+        maven("com.google.api:gax"),
+        maven("com.google.api:gax-grpc"),
+        maven("com.google.cloud:google-cloud-core"),
+        maven("com.google.cloud:google-cloud-core-grpc"),
+    ],
 )
 
 java_library(

@@ -63,7 +63,8 @@ java_library(
     name = "CollapsedMessage",
     srcs = ["CollapsedMessage.java"],
     deps = [
-        # None yet.
+        ":ModelSerializer",
+        ":WriteProxy",
     ] + _COMMON_DEPS,
 )
 
@@ -77,6 +78,8 @@ java_library(
         ":ModelDeflateException",
         ":ModelInflateException",
         ":ModelSerializer",
+        ":ObjectModelSerializer",
+        ":ObjectModelDeserializer",
         maven("io.micronaut:micronaut-inject"),
         maven("io.micronaut:micronaut-runtime"),
     ] + _COMMON_DEPS,
@@ -235,7 +238,6 @@ java_library(
     name = "ModelSerializer",
     srcs = ["ModelSerializer.java"],
     deps = [
-        ":CollapsedMessage",
         ":ModelDeflateException",
     ] + _COMMON_DEPS,
 )
@@ -280,11 +282,14 @@ java_library(
 
 java_library(
     name = "ObjectModelSerializer",
-    srcs = ["ObjectModelSerializer.java"],
+    srcs = ["ObjectModelSerializer.kt"],
     deps = [
         ":CollapsedMessage",
         ":ModelDeflateException",
         ":ModelSerializer",
+        ":ModelMetadata",
+        "//java/gust/util:InstantFactory",
+        maven("com.google.cloud:google-cloud-firestore"),
     ] + _COMMON_DEPS,
 )
 
@@ -366,6 +371,14 @@ java_library(
 )
 
 java_library(
+    name = "SerializedModel",
+    srcs = ["SerializedModel.java"],
+    deps = [
+        maven("com.google.cloud:google-cloud-firestore"),
+    ] + _COMMON_DEPS,
+)
+
+java_library(
     name = "Transaction",
     srcs = ["Transaction.java"],
     deps = [
@@ -386,6 +399,14 @@ java_library(
     srcs = ["WriteOptions.java"],
     deps = [
         ":OperationOptions",
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "WriteProxy",
+    srcs = ["WriteProxy.java"],
+    deps = [
+        ":SerializedModel",
     ] + _COMMON_DEPS,
 )
 
@@ -426,9 +447,11 @@ java_library(
         ":PersistenceManager",
         ":PersistenceOperationFailed",
         ":ProtoModelCodec",
+        ":SerializedModel",
         ":Transaction",
         ":UpdateOptions",
         ":WriteOptions",
+        ":WriteProxy",
     ]
 )
 

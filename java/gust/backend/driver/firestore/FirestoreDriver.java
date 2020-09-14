@@ -14,11 +14,13 @@ package gust.backend.driver.firestore;
 
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.rpc.TransportChannelProvider;
+import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.FirestoreOptions;
 import com.google.common.base.Function;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListeningScheduledExecutorService;
 import com.google.protobuf.Message;
@@ -31,15 +33,18 @@ import io.micronaut.context.annotation.Context;
 import io.micronaut.context.annotation.Factory;
 import io.micronaut.runtime.context.scope.Refreshable;
 import org.slf4j.Logger;
+import tools.elide.core.DatapointType;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 import javax.annotation.concurrent.ThreadSafe;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.io.IOException;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
+
+import static gust.backend.model.ModelMetadata.enforceRole;
+import static gust.backend.model.ModelMetadata.id;
 
 
 /**
@@ -156,19 +161,66 @@ public final class FirestoreDriver<Key extends Message, Model extends Message>
     return this.codec;
   }
 
+  /**
+   * Convert a model `Key` into a Firestore {@link DocumentReference}.
+   *
+   * @param keyInstance Key instance to convert into a ref.
+   * @return Computed document reference.
+   */
+  private @Nonnull DocumentReference ref(@Nonnull Key keyInstance) {
+    throw new IllegalStateException("not yet implemented");
+  }
+
+  /**
+   * Convert a path and prefix into a Firestore {@link DocumentReference}.
+   *
+   * @param path Path in Firestore for the document.
+   * @param prefix Global prefix to apply to the path.
+   * @return Computed document reference.
+   */
+  private @Nonnull DocumentReference ref(@Nonnull String path, @Nullable String prefix) {
+    if (prefix != null) {
+      return engine.document(prefix + path);
+    } else {
+      return engine.document(path);
+    }
+  }
+
   // -- API: Key Generation -- //
   /** {@inheritDoc} */
   @Override
   public @Nonnull Key generateKey(@Nonnull Message instance) {
-    return null;
+    var fieldPointer = ModelMetadata.keyField(instance);
+    if (fieldPointer.isEmpty())
+      throw new IllegalArgumentException("Failed to resolve key field for message '"
+          + instance.getDescriptorForType().getFullName() + "'.");
+
+    var keyBuilder = instance.toBuilder().getFieldBuilder(fieldPointer.get().getField());
+    var idPointer = ModelMetadata.idField(keyBuilder.getDescriptorForType());
+    if (idPointer.isEmpty())
+      throw new IllegalArgumentException("Failed to resolve key ID field for key message type '"
+          + keyBuilder.getDescriptorForType().getFullName() + "'.");
+
+    ModelMetadata.spliceBuilder(
+        keyBuilder,
+        idPointer.get(),
+        Optional.of(UUID.randomUUID().toString().toUpperCase()));
+
+    //noinspection unchecked
+    return (Key)keyBuilder.build();
   }
 
   // -- API: Fetch -- //
   /** {@inheritDoc} */
   @Override
   public @Nonnull ReactiveFuture<Optional<Model>> retrieve(@Nonnull Key key, @Nonnull FetchOptions opts) {
+    Objects.requireNonNull(key, "Cannot fetch model with `null` for key.");
+    Objects.requireNonNull(opts, "Cannot fetch model without `options`.");
+    enforceRole(key, DatapointType.OBJECT_KEY);
+    final var id = id(key).orElseThrow(() -> new IllegalArgumentException("Cannot fetch model with empty key."));
+
     ExecutorService exec = opts.executorService().orElseGet(this::executorService);
-    return ReactiveFuture.wrap(Futures.transform(ReactiveFuture.wrap(engine.getAll(), exec), new Function<>() {
+    return ReactiveFuture.wrap(Futures.transform(ReactiveFuture.wrap(engine.getAll(ref(key)), exec), new Function<>() {
       @Override
       public @Nonnull Optional<Model> apply(@Nullable List<DocumentSnapshot> documentSnapshots) {
         if (documentSnapshots == null || documentSnapshots.isEmpty()) {
@@ -190,10 +242,47 @@ public final class FirestoreDriver<Key extends Message, Model extends Message>
   // -- API: Persist -- //
   /** {@inheritDoc} */
   @Override
-  public @Nonnull ReactiveFuture<Model> persist(@Nonnull Key documentReference,
+  public @Nonnull ReactiveFuture<Model> persist(@Nonnull Key key,
                                                 @Nonnull Model model,
                                                 @Nonnull WriteOptions options) {
-    return null;
+    Objects.requireNonNull(key, "Cannot write model with `null` for key.");
+    Objects.requireNonNull(model, "Cannot write model which is, itself, `null`.");
+    Objects.requireNonNull(options, "Cannot write model without `options`.");
+    enforceRole(key, DatapointType.OBJECT_KEY);
+
+    try {
+      // collapse the model
+      var serialized = codec.serialize(model);
+      var that = this;
+
+      return ReactiveFuture.wrap(engine.runTransaction(transaction -> {
+        serialized.persist(null, new WriteProxy<DocumentReference>() {
+          @Override
+          public @Nonnull DocumentReference ref(@Nonnull String path, @Nullable String prefix) {
+            return that.ref(path, prefix);
+          }
+
+          @Override
+          public void put(@Nonnull DocumentReference key, @Nonnull SerializedModel message) {
+            transaction.set(key, ImmutableMap.copyOf(message.getData()));
+          }
+
+          @Override
+          public void create(@Nonnull DocumentReference key, @Nonnull SerializedModel message) {
+            transaction.create(key, ImmutableMap.copyOf(message.getData()));
+          }
+
+          @Override
+          public void update(@Nonnull DocumentReference key, @Nonnull SerializedModel message) {
+            transaction.update(key, ImmutableMap.copyOf(message.getData()));
+          }
+        });
+        return model;
+      }));
+
+    } catch (IOException ioe) {
+      throw new IllegalStateException(ioe);
+    }
   }
 
   // -- API: Delete -- //

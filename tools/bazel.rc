@@ -118,6 +118,7 @@ build:remote --remote_timeout=3600
 build:remote --google_default_credentials=true
 
 test --instrumentation_filter=//...
+test --test_env=GOOGLE_APPLICATION_CREDENTIALS
 coverage --instrumentation_filter=//java/...
 
 try-import %workspace%/.bazelrc.user

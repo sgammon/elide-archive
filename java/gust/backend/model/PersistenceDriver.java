@@ -214,7 +214,7 @@ public interface PersistenceDriver<Key extends Message, Model extends Message, I
     var descriptor = instance.getDescriptorForType();
     enforceRole(descriptor, DatapointType.OBJECT);
     var keyType = keyField(descriptor);
-    if (!keyType.isPresent()) throw new MissingAnnotatedField(descriptor, FieldType.KEY);
+    if (keyType.isEmpty()) throw new MissingAnnotatedField(descriptor, FieldType.KEY);
 
     // convert to builder, grab field builder for key (keys must be top-level fields)
     var builder = instance.newBuilderForType();

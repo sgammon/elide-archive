@@ -82,7 +82,7 @@ public final class CollapsedMessageCodec<Model extends Message> implements Model
   private final class CollapsedMessageSerializer implements ModelSerializer<Model, CollapsedMessage> {
     /**
      * Serialize a model instance from the provided object type to the specified output type, throwing exceptions
-     * verbosely if we are unable to correctly, verifiably, and properly export the record.
+     * verbosely if we are unable to correctly and properly export the record.
      *
      * @param input Input record object to serialize.
      * @return Serialized record data, of the specified output type.
@@ -90,7 +90,9 @@ public final class CollapsedMessageCodec<Model extends Message> implements Model
      */
     @Override
     public @Nonnull CollapsedMessage deflate(@Nonnull Message input) throws ModelDeflateException {
-      return null;
+      return ObjectModelSerializer.Companion
+          .defaultInstance()
+          .collapse(input, null, null, WriteDisposition.BLIND);
     }
   }
 
