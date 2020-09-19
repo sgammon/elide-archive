@@ -42,4 +42,16 @@ public interface ModelDeserializer<Input, Model extends Message> {
    * @throws IOException If some IO error occurs.
    */
   @Nonnull Model inflate(@Nonnull Input input) throws ModelInflateException, IOException;
+
+  /** Describes errors that occur during model deserialization or inflation activities. */
+  final class DeserializationError extends RuntimeException {
+    /**
+     * Create a generic de-serializer error from the provided message.
+     *
+     * @param message Error message.
+     */
+    DeserializationError(@Nonnull String message) {
+      super(message);
+    }
+  }
 }

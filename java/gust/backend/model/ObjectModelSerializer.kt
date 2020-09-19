@@ -63,7 +63,7 @@ class ObjectModelSerializer<Model : Message>
     @field:Nonnull @param:Nonnull private val enumMode: EnumSerializeMode,
     /** Temporal instant serialization mode.  */
     @field:Nonnull @param:Nonnull private val instantMode: InstantSerializeMode)
-  : ModelSerializer<Model, SortedMap<String, *>> {
+  : ModelSerializer<Model, Map<String, *>> {
   /** @return Empty serialized object. */
   private fun serializedObject(): SerializedModel = SerializedModel.factory()
 
@@ -1202,18 +1202,7 @@ class ObjectModelSerializer<Model : Message>
     return CollapsedMessage.of(subwrites)
   }
 
-  /**
-   * Serialize a model instance from the provided object type to a generic Java [Map], throwing exceptions
-   * verbosely if we are unable to correctly, and properly export the record.
-   *
-   *
-   * Records serialized in this manner are immutable, and the maps produced by this interface are sorted during
-   * property insertion.
-   *
-   * @param input Input record object to serialize.
-   * @return Serialized record data, of the specified output type.
-   * @throws ModelDeflateException If the model fails to export or serialize for any reason.
-   */
+  /** @inheritDoc */
   @Nonnull
   @Throws(ModelDeflateException::class)
   override fun deflate(@Nonnull input: Model): SortedMap<String, *> {

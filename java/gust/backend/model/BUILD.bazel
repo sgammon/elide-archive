@@ -273,10 +273,12 @@ java_library(
 
 java_library(
     name = "ObjectModelDeserializer",
-    srcs = ["ObjectModelDeserializer.java"],
+    srcs = ["ObjectModelDeserializer.kt"],
     deps = [
         ":ModelDeserializer",
         ":ModelInflateException",
+        ":ObjectModelSerializer",
+        maven("com.google.cloud:google-cloud-firestore"),
     ] + _COMMON_DEPS,
 )
 

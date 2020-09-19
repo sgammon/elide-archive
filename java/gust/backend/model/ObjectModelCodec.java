@@ -31,13 +31,21 @@ public final class ObjectModelCodec<Model extends Message> implements ModelCodec
   /** Model builder instance to use for spawning models. */
   private final Message.Builder builder;
 
+  /** Serializer to use. */
+  private final ObjectModelSerializer<Model> serializer;
+
+  /** De-serializer to use. */
+  private final ObjectModelDeserializer<Model> deserializer;
+
   /**
    * Private constructor. Creates a new object model codec from scratch.
    *
-   * @param builder Builder for the message which is handled by this codec instance.
+   * @param instance Default model instance, from which to spawn a builder.
    */
-  private ObjectModelCodec(@Nonnull Message.Builder builder) {
-    this.builder = builder;
+  private ObjectModelCodec(@Nonnull Model instance) {
+    this.builder = instance.newBuilderForType();
+    this.serializer = ObjectModelSerializer.Companion.defaultInstance();
+    this.deserializer = ObjectModelDeserializer.Companion.defaultInstance(instance);
   }
 
   /**
@@ -48,6 +56,7 @@ public final class ObjectModelCodec<Model extends Message> implements ModelCodec
    * @param messageInstance Message instance (empty) to use for type information.
    * @return Object model codec for the provided data model.
    */
+  @SuppressWarnings("unused")
   public static @Nonnull <M extends Message> ObjectModelCodec<M> forModel(M messageInstance) {
     return forModel(messageInstance.newBuilderForType());
   }
@@ -60,8 +69,9 @@ public final class ObjectModelCodec<Model extends Message> implements ModelCodec
    * @param messageBuilder Message builder (empty) to use for type information.
    * @return Object model codec for the provided data model.
    */
-  public static @Nonnull <M extends Message> ObjectModelCodec<M> forModel(Message.Builder messageBuilder) {
-    return new ObjectModelCodec<>(messageBuilder);
+  public static @Nonnull <M extends Message> ObjectModelCodec<M> forModel(M.Builder messageBuilder) {
+    //noinspection unchecked
+    return new ObjectModelCodec<>((M)messageBuilder.getDefaultInstanceForType());
   }
 
   // -- Components -- //
@@ -72,7 +82,7 @@ public final class ObjectModelCodec<Model extends Message> implements ModelCodec
    */
   @Override
   public @Nonnull ModelSerializer<Model, Map<String, ?>> serializer() {
-    return null;
+    return serializer;
   }
 
   /**
@@ -82,7 +92,7 @@ public final class ObjectModelCodec<Model extends Message> implements ModelCodec
    */
   @Override
   public @Nonnull ModelDeserializer<Map<String, ?>, Model> deserializer() {
-    return null;
+    return deserializer;
   }
 
   // -- Getters -- //
