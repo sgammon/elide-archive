@@ -443,7 +443,7 @@ DEPS = {
             maven("io.micronaut:micronaut-runtime"),
             maven("io.micronaut:micronaut-http-client"),
             maven("io.micronaut:micronaut-http-server-netty"),
-            maven("io.micronaut:micronaut-security"),
+            maven("io.micronaut.security:micronaut-security"),
         ],
     },
 
