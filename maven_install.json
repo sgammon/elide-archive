@@ -9772,17 +9772,7 @@
                 ],
                 "exclusions": [
                     "com.google.template:soy",
-                    "io.grpc:grpc-context",
-                    "io.grpc:grpc-services",
-                    "io.grpc:grpc-okhttp",
-                    "io.grpc:grpc-protobuf-lite",
-                    "io.grpc:grpc-api",
-                    "io.grpc:grpc-auth",
-                    "io.grpc:grpc-protobuf",
-                    "io.grpc:grpc-stub",
-                    "com.google.common.html.types:types",
-                    "io.grpc:grpc-netty",
-                    "io.grpc:grpc-core"
+                    "com.google.common.html.types:types"
                 ],
                 "file": "v1/https/repo1.maven.org/maven2/io/micronaut/micronaut-session/2.0.0/micronaut-session-2.0.0.jar",
                 "mirror_urls": [
@@ -9824,17 +9814,7 @@
                 ],
                 "exclusions": [
                     "com.google.template:soy",
-                    "io.grpc:grpc-context",
-                    "io.grpc:grpc-services",
-                    "io.grpc:grpc-okhttp",
-                    "io.grpc:grpc-protobuf-lite",
-                    "io.grpc:grpc-api",
-                    "io.grpc:grpc-auth",
-                    "io.grpc:grpc-protobuf",
-                    "io.grpc:grpc-stub",
-                    "com.google.common.html.types:types",
-                    "io.grpc:grpc-netty",
-                    "io.grpc:grpc-core"
+                    "com.google.common.html.types:types"
                 ],
                 "file": "v1/https/repo1.maven.org/maven2/io/micronaut/micronaut-session/2.0.0/micronaut-session-2.0.0-sources.jar",
                 "mirror_urls": [

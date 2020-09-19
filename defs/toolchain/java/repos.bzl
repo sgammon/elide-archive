@@ -229,6 +229,7 @@ MICRONAUT_COORDINATES = [
     "io.micronaut:micronaut-messaging",
     "io.micronaut:micronaut-multitenancy",
     "io.micronaut:micronaut-websocket",
+    "io.micronaut:micronaut-session",
     "io.micronaut.security:micronaut-security",
 ]
 
