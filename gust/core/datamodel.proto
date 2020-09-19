@@ -95,6 +95,9 @@ enum FieldType {
 
   // This field represents a key for this item's parent.
   PARENT = 7;
+
+  // This field represents a full key path in hierarchical storage.
+  PATH = 8;
 }
 
 
