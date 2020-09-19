@@ -79,8 +79,7 @@ MICRONAUT_GRPC_VERSION = "2.0.1"
 MICRONAUT_TEST_VERSION = "1.2.0"
 MICRONAUT_REDIS_VERSION = "2.3.1"
 MICRONAUT_CACHE_VERSION = "2.0.0"
-MICRONAUT_SECURITY_VERSION = "2.0.0.M2"
-MICRONAUT_SECURITY_SESSION_VERSION = "2.0.0"
+MICRONAUT_SECURITY_VERSION = "2.0.0"
 
 GRPC_EXCLUSIONS = [
       maven.exclusion(
@@ -226,18 +225,17 @@ MICRONAUT_COORDINATES = [
     "io.micronaut:micronaut-buffer-netty",
     "io.micronaut:micronaut-graal",
     "io.micronaut:micronaut-router",
-    "io.micronaut:micronaut-session",
     "io.micronaut:micronaut-tracing",
     "io.micronaut:micronaut-messaging",
     "io.micronaut:micronaut-multitenancy",
     "io.micronaut:micronaut-websocket",
+    "io.micronaut.security:micronaut-security",
 ]
 
 MICRONAUT_EXTRAS = [
     ("io.netty:netty-buffer", NETTY_VERSION),
-    ("io.micronaut:micronaut-security", MICRONAUT_SECURITY_VERSION),
-    ("io.micronaut.security:micronaut-security-session", MICRONAUT_SECURITY_SESSION_VERSION),
-    ("io.micronaut:micronaut-security-annotations", MICRONAUT_SECURITY_VERSION),
+    ("io.micronaut.security:micronaut-security-session", MICRONAUT_SECURITY_VERSION),
+    ("io.micronaut.security:micronaut-security-annotations", MICRONAUT_SECURITY_VERSION),
     ("io.micronaut.data:micronaut-data-processor", MICRONAUT_DATA_VERSION),
     ("io.micronaut.grpc:micronaut-grpc-runtime", MICRONAUT_GRPC_VERSION),
     ("io.micronaut.grpc:micronaut-grpc-annotation", MICRONAUT_GRPC_VERSION),
