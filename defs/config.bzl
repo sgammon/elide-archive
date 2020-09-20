@@ -32,14 +32,6 @@ DEBUG = False
 ## Set to `True` to enable in-page dev tools and UI, regardless of DEBUG mode.
 DEV = False
 
-## `Renaming` mode.
-## ------------------------------------
-## Set to `True` to obfuscate styles.
-RENAMING = select({
-    "//defs/conditions:style_renaming": True,
-    "//conditions:default": False
-})
-
 ## Browser target year.
 ## ------------------------------------
 ## Tune JS and add polyfills based on this feature-set year.
