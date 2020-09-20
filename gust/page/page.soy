@@ -186,62 +186,84 @@
           {/let}
         <meta name="keywords" content="{$metaKeywords}">
       {/if}
-      {if $additionalHead}{$additionalHead}{/if}
+      {if isNonnull($additionalHead)}{$additionalHead}{/if}
       {if isNonnull($page) and isNonnull($page.meta) and isNonnull($page.meta.title)}
         <title>{$page.meta.title}</title>
       {/if}
       {if isNonnull($page) and isNonnull($page.meta) and isNonnull($page.meta.openGraph)}
-        {if $page.meta.openGraph.url}
-          <meta property="og:url" content="{$page.meta.openGraph.url}">
+        {if isNonnull($page.meta.openGraph.url)}
+          {if $page.meta.openGraph.url}
+              <meta property="og:url" content="{$page.meta.openGraph.url}">
+          {/if}
         {/if}
-        {if $page.meta.openGraph.title}
-          <meta property="og:title" content="{$page.meta.openGraph.title}">
-          <meta name="twitter:title" content="{$page.meta.openGraph.title}">
+        {if isNonnull($page.meta.openGraph.title)}
+          {if $page.meta.openGraph.title}
+              <meta property="og:title" content="{$page.meta.openGraph.title}">
+              <meta name="twitter:title" content="{$page.meta.openGraph.title}">
+          {/if}
         {/if}
-        {if $page.meta.openGraph.description}
-          <meta property="og:description" content="{$page.meta.openGraph.description}">
-          <meta name="twitter:description" content="{$page.meta.openGraph.description}">
+        {if isNonnull($page.meta.openGraph.description)}
+          {if $page.meta.openGraph.description}
+              <meta property="og:description" content="{$page.meta.openGraph.description}">
+              <meta name="twitter:description" content="{$page.meta.openGraph.description}">
+          {/if}
         {/if}
-        {if $page.meta.openGraph.image}
-          <meta property="og:image" content="{$page.meta.openGraph.image}">
-          <meta name="twitter:image:src" content="{$page.meta.openGraph.image}">
+        {if isNonnull($page.meta.openGraph.image)}
+          {if $page.meta.openGraph.image}
+              <meta property="og:image" content="{$page.meta.openGraph.image}">
+              <meta name="twitter:image:src" content="{$page.meta.openGraph.image}">
+          {/if}
         {/if}
-        {if $page.meta.openGraph.imageHeight > 0}
-          <meta property="og:image:height" content="{$page.meta.openGraph.imageHeight}">
+        {if isNonnull($page.meta.openGraph.imageHeight)}
+          {if $page.meta.openGraph.imageHeight > 0}
+              <meta property="og:image:height" content="{$page.meta.openGraph.imageHeight}">
+          {/if}
         {/if}
-        {if $page.meta.openGraph.imageWidth > 0}
-            <meta property="og:image:width" content="{$page.meta.openGraph.imageWidth}">
+        {if isNonnull($page.meta.openGraph.imageWidth)}
+          {if $page.meta.openGraph.imageWidth > 0}
+              <meta property="og:image:width" content="{$page.meta.openGraph.imageWidth}">
+          {/if}
         {/if}
-        {if $languageSpec}
+        {if isNonnull($languageSpec)}
           <meta property="og:locale" content="{$languageSpec}">
         {/if}
-        {if $page.meta.openGraph.type}
-          <meta property="og:type" content="{$page.meta.openGraph.type}">
-          <meta name="twitter:card" content="summary">
+        {if isNonnull($page.meta.openGraph.type)}
+          {if $page.meta.openGraph.type}
+              <meta property="og:type" content="{$page.meta.openGraph.type}">
+              <meta name="twitter:card" content="summary">
+          {/if}
         {/if}
-        {if $page.meta.openGraph.canonical}
-            <meta property="og:url" content="{$page.meta.openGraph.canonical}">
+        {if isNonnull($page.meta.openGraph.canonical)}
+          {if $page.meta.openGraph.canonical}
+              <meta property="og:url" content="{$page.meta.openGraph.canonical}">
+          {/if}
         {/if}
-        {if $page.meta.openGraph.fbApp}
-            <meta property="fb:app_id" content="{$page.meta.openGraph.fbApp}">
+        {if isNonnull($page.meta.openGraph.fbApp)}
+          {if $page.meta.openGraph.fbApp}
+              <meta property="fb:app_id" content="{$page.meta.openGraph.fbApp}">
+          {/if}
         {/if}
-        {if $page.meta.openGraph.twitterSite}
-          <meta name="twitter:site" content="{$page.meta.openGraph.twitterSite}">
+        {if isNonnull($page.meta.openGraph.twitterSite)}
+          {if $page.meta.openGraph.twitterSite}
+              <meta name="twitter:site" content="{$page.meta.openGraph.twitterSite}">
+          {/if}
         {/if}
-        {if $page.meta.openGraph.twitterCreator}
-          <meta name="twitter:creator" content="{$page.meta.openGraph.twitterCreator}">
+        {if isNonnull($page.meta.openGraph.twitterCreator)}
+          {if $page.meta.openGraph.twitterCreator}
+              <meta name="twitter:creator" content="{$page.meta.openGraph.twitterCreator}">
+          {/if}
         {/if}
       {/if}
       {if isNonnull($ogTags)}
           {$ogTags}
       {/if}
-      {if $page.meta.robots}
+      {if isNonnull($page) and isNonnull($page.meta) and isNonnull($page.meta.robots)}
           <meta name="robots" content="{$page.meta.robots}">
       {/if}
-      {if $page.meta.googlebot}
+      {if isNonnull($page) and isNonnull($page.meta) and isNonnull($page.meta.googlebot)}
           <meta name="googlebot" content="{$page.meta.googlebot}">
       {/if}
-      {if $page.meta.rating}
+      {if isNonnull($page) and isNonnull($page.meta) and isNonnull($page.meta.rating)}
           <meta name="rating" content="{$page.meta.rating}">
       {/if}
   </head>
@@ -252,7 +274,7 @@
           {param content: $content /}
           {param pageClass: $pageClass /}
       {/call}
-      {if $jsonLD}
+      {if isNonnull($jsonLD)}
           <script type="application/ld+json">{$jsonLD}</script>
       {/if}
   </body>
