@@ -261,7 +261,7 @@ java_library(
 
 java_library(
     name = "ObjectModelCodec",
-    srcs = ["ObjectModelCodec.java"],
+    srcs = ["ObjectModelCodec.kt"],
     deps = [
         ":ModelCodec",
         ":ModelSerializer",
