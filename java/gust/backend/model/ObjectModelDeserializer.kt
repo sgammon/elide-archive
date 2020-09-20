@@ -309,16 +309,16 @@ class ObjectModelDeserializer<Model: Message> private constructor(
                 builder.setField(field, subBuilder.build())
               } else {
                 // special case: consider timestamps
-                if (field.messageType.fullName == "com.google.protobuf.Timestamp") {
+                if (field.messageType.fullName == "google.protobuf.Timestamp") {
                   when (dataValue.javaClass.name) {
-                    // it's a Google Cloud well-known-value (`Timestamp`, for which we have a converter
+                    // it's a Google Cloud well-known-value (`Timestamp`), for which we have a converter
                     "com.google.cloud.Timestamp" ->
                       builder.setField(field, instantFromCloudTimestamp(
                         dataValue as com.google.cloud.Timestamp))
 
 
-                    // it's a Google well-known-value (`Timestamp`), for which we have a converter
-                    "com.google.protobuf.Timestamp" ->
+                    // it's a Protobuf well-known-value (`Timestamp`), for which we need no conversion
+                    "google.protobuf.Timestamp" ->
                       builder.setField(field, dataValue as Timestamp)
 
 
