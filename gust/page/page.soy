@@ -48,8 +48,10 @@
   {@param? prefixes: list<page.Context.RDFPrefix>}  /** Prefixes to render. */
   {if isNonnull($prefixes)}
     {for $prefix in $prefixes}
-      {if not isFirst($prefix)}{sp}{/if}
-      {$prefix.prefix}:{sp}{$prefix.target}
+        {if isNonnull($prefix) and isNonnull($prefix.prefix) and isNonnull($prefix.target)}
+            {if not isFirst($prefix)}{sp}{/if}
+            {$prefix.prefix}:{sp}{$prefix.target}
+        {/if}
     {/for}
   {else}
     og: http://ogp.me/ns#
@@ -88,10 +90,18 @@
     {else}en-US{/if}
   {/let}
 
+  {let $prefixes kind='text'}
+      {if isNonnull($page) and isNonnull($page.meta) and isNonnull($page.meta.prefixList)}
+          {call .prefixes}
+            {param prefixes: $page.meta.prefixList /}
+          {/call}
+      {/if}
+  {/let}
+
   <!doctype html>
   <html
      class="no-js"{if isNonnull($languageSpec)} lang="{$languageSpec}"{/if}
-     prefix="{call .prefixes}{param prefixes: $page.meta.prefixList /}{/call}">
+     {if isNonnull($prefixes)}prefix="{$prefixes}"{/if}>
   <head>
       <meta charset="utf-8">
 
