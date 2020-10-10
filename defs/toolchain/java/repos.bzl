@@ -76,7 +76,7 @@ OPENTRACING_VERSION = "0.2.1"
 MICRONAUT_VERSION = "2.0.0"
 MICRONAUT_DATA_VERSION = "1.1.1"
 MICRONAUT_GRPC_VERSION = "2.0.1"
-MICRONAUT_TEST_VERSION = "1.2.0"
+MICRONAUT_TEST_VERSION = "2.1.1"
 MICRONAUT_REDIS_VERSION = "2.3.1"
 MICRONAUT_CACHE_VERSION = "2.0.0"
 MICRONAUT_SECURITY_VERSION = "2.0.0"
@@ -297,6 +297,7 @@ TEST_ARTIFACTS = [
 MICRONAUT_TEST_ARTIFACTS = [
     maven.artifact("io.micronaut.test", "micronaut-test-core", MICRONAUT_TEST_VERSION, testonly = True),
     maven.artifact("io.micronaut.test", "micronaut-test-kotlintest", MICRONAUT_TEST_VERSION, testonly = True),
+    maven.artifact("io.micronaut.test", "micronaut-test-junit5", MICRONAUT_TEST_VERSION, testonly = True),
 ]
 
 def junit_jupiter_java_repositories(version = JUNIT_JUPITER_VERSION):

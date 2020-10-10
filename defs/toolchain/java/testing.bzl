@@ -90,6 +90,7 @@ INJECTED_MICRONAUT_TEST_DEPS = [
     maven("io.micronaut:micronaut-http"),
     maven("io.micronaut:micronaut-http-client"),
     maven("io.micronaut.test:micronaut-test-core"),
+    maven("io.micronaut.test:micronaut-test-junit5"),
     maven("io.micronaut.test:micronaut-test-kotlintest"),
 ]
 
