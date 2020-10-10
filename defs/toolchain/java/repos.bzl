@@ -68,6 +68,7 @@ GCLOUD_STORAGE_VERSION = "1.105.1"
 GCLOUD_FIRESTORE_VERSION = "1.32.5"
 GCLOUD_MONITORING_VERSION = "1.99.2"
 COMMON_PROTOS_VERSION = "1.18.0"
+KOTLIN_TEST_VERSION = "3.4.2"
 
 GRPC_JAVA_VERSION = "1.30.2"
 TOMCAT_ANNOTATIONS_VERSION = "6.0.53"
@@ -295,6 +296,11 @@ TEST_ARTIFACTS = [
 ] + RULES_WEBTESTING_ARTIFACTS
 
 MICRONAUT_TEST_ARTIFACTS = [
+#    maven.artifact("io.kotlintest", "kotlintest-core", KOTLIN_TEST_VERSION, testonly = True),
+#    maven.artifact("io.kotlintest", "kotlintest-extensions", KOTLIN_TEST_VERSION, testonly = True),
+#    maven.artifact("io.kotlintest", "kotlintest-runner-jvm", KOTLIN_TEST_VERSION, testonly = True),
+#    maven.artifact("io.kotlintest", "kotlintest-runner-junit5", KOTLIN_TEST_VERSION, testonly = True),
+#    maven.artifact("io.kotlintest", "kotlintest-runner-console", KOTLIN_TEST_VERSION, testonly = True),
     maven.artifact("io.micronaut.test", "micronaut-test-core", MICRONAUT_TEST_VERSION, testonly = True),
     maven.artifact("io.micronaut.test", "micronaut-test-kotlintest", MICRONAUT_TEST_VERSION, testonly = True),
     maven.artifact("io.micronaut.test", "micronaut-test-junit5", MICRONAUT_TEST_VERSION, testonly = True),
