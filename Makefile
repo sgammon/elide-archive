@@ -51,7 +51,7 @@ OUTPATH ?= $(DISTPATH)/out
 BINPATH ?= $(DISTPATH)/bin
 UNZIP ?= $(shell which unzip)
 REVISION ?= $(shell git describe --abbrev=7 --always --tags HEAD)
-BASE_VERSION ?= v1a
+BASE_VERSION ?= v1b
 VERSION ?= $(shell (cat package.json | grep version | head -1 | awk -F: '{ print $2 }' | sed 's/[",]//g' | tr -d '[[:space:]]' | sed 's/version\://g'))
 CHROME_COVERAGE ?= $(shell find dist/out/$(OUTPUT_BASE)/bin -name "coverage*.dat" | grep chrome | xargs)
 COVERAGE_DATA ?= $(OUTPATH)/_coverage/_coverage_report.dat
