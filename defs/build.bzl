@@ -180,8 +180,8 @@ DEPS = {
     "com_google_protobuf": {
         "type": "github",
         "repo": "google/protobuf",
-        "target": "31ebe2ac71400344a5db91ffc13c4ddfb7589f92",
-        "seal": "0e8e32d44c9d4572975f43591b51cd3c77392661e4ded17fdfab81e8460344e8"},
+        "target": "fde7cf7358ec7cd69e8db9be4f1fa6a5c431386a",
+        "seal": "e589e39ef46fb2b3b476b3ca355bd324e5984cbdfac19f0e1625f0042e99c276"},
 
     # Google: J2CL (Java-to-Closure)
     "com_google_j2cl": {
