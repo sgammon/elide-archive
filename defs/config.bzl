@@ -85,7 +85,7 @@ BROWSERS_VERSION = "0.3.2"
 ## GraalVM version.
 ## ------------------------------------
 ## Assigned to the latest available CE VM.
-GRAALVM_VERSION = "20.1.0"
+GRAALVM_VERSION = "20.2.0"
 
 ## GraalVM JDK version.
 ## ------------------------------------
