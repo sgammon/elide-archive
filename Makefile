@@ -189,7 +189,7 @@ samples:  ## Build and push sample app images.
         done
 
 distclean: clean  ## Clean targets, caches and dependencies.
-	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) clean --expunge_async
+	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) clean --expunge
 
 forceclean: distclean  ## Clean everything, and sanitize the codebase (DANGEROUS).
 	$(_RULE)git reset --hard && git clean -xdf
