@@ -42,6 +42,7 @@ STRICT_DEPENDENCIES = True
 
 ASM_VERSION = "7.0"
 SLF4J_VERSION = "1.7.30"
+GSON_VERSION = "2.8.6"
 
 GRAALVM_VERSION = _GRAALVM_VERSION
 
@@ -69,6 +70,12 @@ GCLOUD_FIRESTORE_VERSION = "2.1.0"
 GCLOUD_MONITORING_VERSION = "2.0.7"
 COMMON_PROTOS_VERSION = "2.0.1"
 KOTLIN_TEST_VERSION = "3.4.2"
+J2OBJC_ANNOTATIONS_VERSION = "1.3"
+GAUTH_CREDENTIALS_VERSION = "0.22.0"
+GUAVA_FAILUREACCESS_VERSION = "1.0.1"
+ANIMAL_SNIFFER_VERSION = "1.19"
+ANDROID_ANNOTATIONS_VERSION = "4.1.1.4"
+PERFMARK_VERSION = "0.23.0"
 
 GRPC_JAVA_VERSION = "1.33.1"
 TOMCAT_ANNOTATIONS_VERSION = "6.0.53"
@@ -160,6 +167,7 @@ BUILD_ARTIFACTS = [
     "org.slf4j:slf4j-api:%s" % SLF4J_VERSION,
     "javax.validation:validation-api:%s" % VALIDATION_VERSION,
     "org.apache.tomcat:annotations-api:%s" % TOMCAT_ANNOTATIONS_VERSION,
+    "com.google.code.gson:gson:%s" % GSON_VERSION,
 ]
 
 # These are not auto-injected.
@@ -179,6 +187,16 @@ GRPC_BUILD_ARTIFACTS = [
     "io.grpc:grpc-netty:%s" % GRPC_JAVA_VERSION,
     "com.google.api.grpc:proto-google-common-protos:%s" % COMMON_PROTOS_VERSION,
     "com.google.api.grpc:grpc-google-common-protos:%s" % COMMON_PROTOS_VERSION,
+    "com.google.j2objc:j2objc-annotations:%s" % J2OBJC_ANNOTATIONS_VERSION,
+    "com.google.auth:google-auth-library-credentials:%s" % GAUTH_CREDENTIALS_VERSION,
+    "com.google.guava:failureaccess:%s" % GUAVA_FAILUREACCESS_VERSION,
+    "org.codehaus.mojo:animal-sniffer-annotations:%s" % ANIMAL_SNIFFER_VERSION,
+    "io.perfmark:perfmark-api:%s" % PERFMARK_VERSION,
+    "io.perfmark:perfmark-java9:%s" % PERFMARK_VERSION,
+]
+
+ANDROID_ARTIFACTS = [
+    "com.google.android:annotations:%s" % ANDROID_ANNOTATIONS_VERSION,
 ]
 
 JUNIT_JUPITER_GROUP_ID = "org.junit.jupiter"
@@ -235,6 +253,15 @@ MICRONAUT_COORDINATES = [
 
 MICRONAUT_EXTRAS = [
     ("io.netty:netty-buffer", NETTY_VERSION),
+    ("io.netty:netty-transport", NETTY_VERSION),
+    ("io.netty:netty-resolver", NETTY_VERSION),
+    ("io.netty:netty-common", NETTY_VERSION),
+    ("io.netty:netty-codec", NETTY_VERSION),
+    ("io.netty:netty-codec-http", NETTY_VERSION),
+    ("io.netty:netty-codec-http2", NETTY_VERSION),
+    ("io.netty:netty-codec-socks", NETTY_VERSION),
+    ("io.netty:netty-handler", NETTY_VERSION),
+    ("io.netty:netty-handler-proxy", NETTY_VERSION),
     ("io.micronaut.security:micronaut-security", MICRONAUT_SECURITY_VERSION),
     ("io.micronaut.security:micronaut-security-session", MICRONAUT_SECURITY_VERSION),
     ("io.micronaut.security:micronaut-security-annotations", MICRONAUT_SECURITY_VERSION),
@@ -354,6 +381,7 @@ def _gust_java_deps(
         app_excludes = [],
         app_overrides = [],
         micronaut = True,
+        android = True,
         junit5 = True):
 
     """ Install Gust runtime Java dependencies. """
@@ -367,6 +395,10 @@ def _gust_java_deps(
             MICRONAUT_RUNTIME_ARTIFACTS +
             EXTRA_BUILD_ARTIFACTS +
             MICRONAUT_TEST_ARTIFACTS) if i not in artifacts]
+    if android:
+        artifacts += [i for i in (
+            ANDROID_ARTIFACTS
+        ) if i not in artifacts]
 
     artifacts += (app_artifacts or [])
 
@@ -390,6 +422,7 @@ def _gust_java_deps(
             ("io.micronaut:micronaut-views", "@io_micronaut_micronaut_views"),
             ("io.micronaut:micronaut-views-soy", "@io_micronaut_micronaut_views_soy"),
             ("com.google.guava:guava", "@com_google_guava"),
+            ("com.google.guava", "@com_google_guava"),
             ("com.google.protobuf:protobuf-java", "@com_google_protobuf//:protobuf_java"),
             ("com.google.protobuf:protobuf-javalite", "@com_google_protobuf//:protobuf_javalite"),
             ("com.google.protobuf:protobuf-java-util", "@com_google_protobuf//:protobuf_java_util"),
@@ -403,7 +436,6 @@ def _gust_java_deps(
             ("com.google.grpc:grpc-netty-shaded", "@io_grpc_java//netty-shaded:netty-shaded"),
             ("com.google.template:soy", "@com_google_template_soy"),
             ("com.google.common.html.types:types", "@com_google_template_soy"),
-            ("com.google.code:gson", "@com_google_code_gson"),
             ("com.google.code.findbugs:jsr305", "@com_google_code_findbugs_jsr305"),
             ("com.google.closure:stylesheets", "@com_google_closure_stylesheets"),
             ("javax.inject:javax.inject", "@javax_inject"),
@@ -426,7 +458,6 @@ OVERRIDE_DEPS = [
     "@io_grpc_java//context:context",
     "@io_grpc_java//netty:netty",
     "@com_google_template_soy",
-    "@com_google_code_gson",
     "@com_google_code_findbugs_jsr305",
     "@com_google_closure_stylesheets",
     "@javax_inject",

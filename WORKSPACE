@@ -53,12 +53,29 @@ load(
 protobuf_deps()
 
 
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+
+#
+# Java
+#
+
+RULES_JVM_EXTERNAL_TAG = "3.2"
+RULES_JVM_EXTERNAL_SHA = "82262ff4223c5fda6fb7ff8bd63db8131b51b413d26eb49e3131037e79e324af"
+
+http_archive(
+    name = "rules_jvm_external",
+    strip_prefix = "rules_jvm_external-%s" % RULES_JVM_EXTERNAL_TAG,
+    sha256 = RULES_JVM_EXTERNAL_SHA,
+    url = "https://github.com/bazelbuild/rules_jvm_external/archive/%s.zip" % RULES_JVM_EXTERNAL_TAG,
+)
+
+
 #
 # Extensions
 #
 
 ## NodeJS
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 http_archive(
     name = "build_bazel_rules_nodejs",
     sha256 = "6a67a8a1bf6fddc9113f73471029b819eef4575c3a936a4a01d57e411894d692",
@@ -109,6 +126,9 @@ graal_bindist_repository(
 load("//defs/toolchain/java:repos.bzl", "gust_java_repositories")
 gust_java_repositories()
 
+load("@maven//:compat.bzl", "compat_repositories")
+compat_repositories()
+
 load("@maven//:defs.bzl", "pinned_maven_install")
 pinned_maven_install()
 
@@ -149,9 +169,6 @@ load("@io_bazel_rules_docker//repositories:deps.bzl",
 
 container_repositories()
 container_deps()
-
-load("@io_bazel_rules_docker//repositories:pip_repositories.bzl", "pip_deps")
-pip_deps()
 
 _go_image_repos()
 _py_image_repos()
@@ -204,7 +221,7 @@ py_repositories()
 load("@rules_python//python:pip.bzl", "pip_repositories")
 pip_repositories()
 
-load("@rules_python//python:pip.bzl", pip_import = "pip3_import")
+load("@rules_python//python/legacy_pip_import:pip.bzl", pip_import = "pip3_import")
 
 pip_import(
     name = "protobuf_py",

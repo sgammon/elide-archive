@@ -66,6 +66,9 @@ java_library(
 js_module(
     name = "CoreModule",
     srcs = ["module.js"],
+    suppress = [
+        "JSC_USE_OF_GOOG_PROVIDE",
+    ],
 )
 
 cross_lib(

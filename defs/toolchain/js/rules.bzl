@@ -67,7 +67,7 @@ def _js_app(name,
         deps = deps,
         rewrite_polyfills = True,
 #        dependency_mode = "PRUNE",
-        extra_flags = flags,
+        extra_production_args = flags,
         closure_defines = overlay_defs,
         css = css_target,
         **kwargs
