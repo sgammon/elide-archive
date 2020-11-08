@@ -81,8 +81,8 @@ DEPS = {
     "rules_python": {
         "type": "github",
         "repo": "bazelbuild/rules_python",
-        "target": "c8c79aae9aa1b61d199ad03d5fe06338febd0774",
-        "seal": "95ee649313caeb410b438b230f632222fb5d2053e801fe4ae0572eb1d71e95b8"},
+        "target": "748aa53d7701e71101dfd15d800e100f6ff8e5d1",
+        "seal": "64a3c26f95db470c32ad86c924b23a821cd16c3879eed732a7841779a32a60f8"},
 
     # Rules: Java
     "rules_java": {
@@ -160,8 +160,8 @@ DEPS = {
     "io_bazel_rules_docker": {
         "type": "github",
         "repo": "bazelbuild/rules_docker",
-        "target": "a8b3c6c528271c406ab353de49c45e54a299e023",
-        "seal": "7e054932f044a2e1a3d1df9b4cdd457e18f3619bd72b03d0b3693d18ab3ea997"},
+        "target": "204e77bf954269d5e40c2850dd76dad4adbf2edf",
+        "seal": "57e0bf27fa5606b39c5a6e30008968359c8d671cda2f0b65a23bf8e892b2d7a8"},
 
     # Rules: Kubernetes
     "io_bazel_rules_k8s": {
