@@ -170,6 +170,9 @@ load("@io_bazel_rules_docker//repositories:deps.bzl",
 container_repositories()
 container_deps()
 
+load("@io_bazel_rules_docker//repositories:pip_repositories.bzl", "pip_deps")
+pip_deps()
+
 _go_image_repos()
 _py_image_repos()
 _java_image_repos()
