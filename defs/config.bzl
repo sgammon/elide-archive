@@ -105,12 +105,12 @@ KOTLIN_LANGUAGE_LEVEL = "1.3"
 ## Kubernetes toolchain version.
 ## ------------------------------------
 ## Sets the version for the Kubectl tool, etc.
-K8S_VERSION = "1.15.9"
+K8S_VERSION = "1.17.13"
 
 ## Protobuf toolchain version.
 ## ------------------------------------
 ## Sets the version enforced throughout for Protobuf.
-PROTOBUF_VERSION = "3.12.3"
+PROTOBUF_VERSION = "3.13.0"
 
 ## JVM-based app debug port.
 ## ------------------------------------
