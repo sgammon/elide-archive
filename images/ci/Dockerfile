@@ -3,7 +3,7 @@ FROM gcr.io/cloud-marketplace/google/ubuntu1804@sha256:48c02d82c9c5a8e63b12fc064
 RUN apt-get update \
     && apt-get install --no-install-recommends -y \
         python python-pip python3 python3-pip build-essential default-jdk git golang unzip apt-transport-https ca-certificates \
-        curl gnupg-agent software-properties-common cmake \
+        curl gnupg-agent software-properties-common cmake ninja-build \
     && curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add - \
     && add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
         $(lsb_release -cs) \
