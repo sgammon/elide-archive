@@ -54,13 +54,6 @@ DEPS = {
         "target": "87545335ef7fb248051a7e049e88177ac8168c03",
         "seal": "6266a305d6e7b794a39ca4563cc173af25719e7eeefa9a99c1d478f1f44db431"},
 
-    # Bazel: Toolchains
-    "bazel_toolchains": {
-        "type": "github",
-        "repo": "bazelbuild/bazel-toolchains",
-        "target": "3bac046cdcbf9d00179827c7d094723d3b8495be",
-        "seal": "a703602d151b011cdd955388caa3ac7b253f16f95a68a223498d9f9ccf8e6796"},
-
     # Rules: Closure
     "io_bazel_rules_closure": {
         "type": "github",
