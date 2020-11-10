@@ -2,7 +2,7 @@
 
 <hr />
 
-_**Gust is alpha software. Consider yourself warned...**_
+_**Gust is beta software. Consider yourself warned...**_
 
 <hr />
 
