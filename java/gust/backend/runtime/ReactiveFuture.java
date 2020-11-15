@@ -29,7 +29,10 @@ import javax.annotation.concurrent.ThreadSafe;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 
 /**
@@ -58,13 +61,19 @@ import java.util.function.Consumer;
 @SuppressWarnings("UnstableApiUsage")
 public final class ReactiveFuture<R> implements Publisher<R>, ListenableFuture<R>, ApiFuture<R> {
   /** Inner future, if one is set. Otherwise {@link Optional#empty()}. */
-  private final Optional<ListenableFuture<R>> future;
+  private final @Nonnull Optional<ListenableFuture<R>> future;
+
+  /** Inner future, if we are operating on a regular Java completable future. */
+  private final @Nonnull Optional<CompletableFuture<R>> javaFuture;
 
   /** If a `publisher` is present, this object adapts it to a `future`. */
   private final @Nullable PublisherListenableFuture<R> publisherAdapter;
 
   /** If a `future` is present, this object adapts it to a `publisher`. */
   private final @Nullable ListenableFuturePublisher<R> futureAdapter;
+
+  /** If a `future` is present, this object adapts it to a `publisher`. */
+  private final @Nullable CompletableFuturePublisher<R> javaFutureAdapter;
 
   /**
    * Spawn a reactive/future adapter in a reactive context, from a {@link Publisher}. Constructing a reactive future in
@@ -74,8 +83,10 @@ public final class ReactiveFuture<R> implements Publisher<R>, ListenableFuture<R
    */
   private ReactiveFuture(@Nonnull Publisher<R> publisher) {
     this.future = Optional.empty();
+    this.javaFuture = Optional.empty();
     this.futureAdapter = null;
     this.publisherAdapter = new PublisherListenableFuture<>(publisher);
+    this.javaFutureAdapter = null;
   }
 
   /**
@@ -87,14 +98,33 @@ public final class ReactiveFuture<R> implements Publisher<R>, ListenableFuture<R
    */
   private ReactiveFuture(@Nonnull ListenableFuture<R> future, @Nonnull Executor executor) {
     this.future = Optional.of(future);
+    this.javaFuture = Optional.empty();
     this.futureAdapter = new ListenableFuturePublisher<>(future, executor);
     this.publisherAdapter = null;
+    this.javaFutureAdapter = null;
+  }
+
+  /**
+   * Spawn a reactive/future adapter in a future context, from a {@link CompletableFuture}. Constructing a reactive
+   * future in this manner causes the object to operate in a "future-backed" mode.
+   *
+   * @param future Future to work with.
+   * @param executor Executor to use when running callbacks.
+   */
+  private ReactiveFuture(@Nonnull CompletableFuture<R> future, @Nonnull Executor executor) {
+    this.future = Optional.empty();
+    this.javaFuture = Optional.of(future);
+    this.futureAdapter = null;
+    this.publisherAdapter = null;
+    this.javaFutureAdapter = new CompletableFuturePublisher<>(future, executor);
   }
 
   /** @return Internal future representation. */
   private @Nonnull ListenableFuture<R> resolveFuture() {
     if (this.publisherAdapter != null)
       return this.publisherAdapter;
+    else if (this.javaFutureAdapter != null)
+      return this.javaFutureAdapter;
     //noinspection OptionalGetWithoutIsPresent
     return this.future.get();
   }
@@ -103,6 +133,8 @@ public final class ReactiveFuture<R> implements Publisher<R>, ListenableFuture<R
   private @Nonnull Publisher<R> resolvePublisher() {
     if (this.futureAdapter != null)
       return this.futureAdapter;
+    else if (this.javaFutureAdapter != null)
+      return this.javaFutureAdapter;
     return Objects.requireNonNull(this.publisherAdapter);
   }
 
@@ -128,6 +160,56 @@ public final class ReactiveFuture<R> implements Publisher<R>, ListenableFuture<R
     //noinspection ConstantConditions
     if (publisher == null) throw new IllegalArgumentException("Cannot wrap `null` publisher.");
     return new ReactiveFuture<>(publisher);
+  }
+
+  /**
+   * Wrap a regular Java {@link CompletableFuture} in a universal {@link ReactiveFuture}, such that it may be used with
+   * any interface requiring support for that class.
+   *
+   * <p>The resulting object is usable as any of {@link ListenableFuture}, {@link Publisher}, or {@link ApiFuture}. See
+   * class docs for more information.</p>
+   *
+   * <p><b>Note:</b> to use a {@link Publisher} as a {@link Future} (or any descendent thereof), the {@link Publisher}
+   * may only emit one value, and no more. Emitting multiple items is considered an error when wrapped in this class and
+   * accessed as a {@link Future}, to prevent silently dropping intermediate values on the floor.</p>
+   *
+   * <p><b>Warning:</b> this method uses {@link MoreExecutors#directExecutor()} for callback execution. You should only
+   * do this if the callbacks associated with your future are lightweight and exit quickly. Otherwise, it is heavily
+   * recommended to use the variants of {@code wrap} that accept an {@link Executor}. For instance, the corresponding
+   * method to this one is {@link #wrap(ListenableFuture, Executor)}.</p>
+   *
+   * @param future Completable future to wrap.
+   * @param <R> Return or emission type of the future.
+   * @return Wrapped reactive future object.
+   */
+  public static @Nonnull <R> ReactiveFuture<R> wrap(@Nonnull CompletableFuture<R> future) {
+    //noinspection ConstantConditions
+    if (future == null) throw new IllegalArgumentException("Cannot wrap `null` publisher.");
+    return wrap(future, MoreExecutors.directExecutor());
+  }
+
+  /**
+   * Wrap a regular Java {@link CompletableFuture} in a universal {@link ReactiveFuture}, such that it may be used with
+   * any interface requiring support for that class.
+   *
+   * <p>The resulting object is usable as any of {@link ListenableFuture}, {@link Publisher}, or {@link ApiFuture}. See
+   * class docs for more information.</p>
+   *
+   * <p><b>Note:</b> to use a {@link Publisher} as a {@link Future} (or any descendent thereof), the {@link Publisher}
+   * may only emit one value, and no more. Emitting multiple items is considered an error when wrapped in this class and
+   * accessed as a {@link Future}, to prevent silently dropping intermediate values on the floor.</p>
+   *
+   * @param future Completable future to wrap.
+   * @param executor Executor to use.
+   * @param <R> Return or emission type of the future.
+   * @return Wrapped reactive future object.
+   */
+  public static @Nonnull <R> ReactiveFuture<R> wrap(@Nonnull CompletableFuture<R> future, @Nonnull Executor executor) {
+    //noinspection ConstantConditions
+    if (future == null) throw new IllegalArgumentException("Cannot wrap `null` future.");
+    //noinspection ConstantConditions
+    if (executor == null) throw new IllegalArgumentException("Cannot wrap future with `null` executor.");
+    return new ReactiveFuture<>(future, executor);
   }
 
   /**
@@ -585,6 +667,378 @@ public final class ReactiveFuture<R> implements Publisher<R>, ListenableFuture<R
   }
 
   /**
+   * Structure that adapts Java's {@link CompletableFuture} to a Reactive Java {@link Publisher}, which publishes one
+   * item - either the result of the computation, or an error.
+   *
+   * <p>This object is used in the specific circumstance that a {@link CompletableFuture} is wrapped by a
+   * {@link ReactiveFuture}, and then used within the Reactive Java or Guava ecosystems as a {@link Publisher} or a
+   * {@link ListenableFuture} (or {@link ApiFuture}), or a descendent thereof. As in {@link ListenableFuturePublisher},
+   * we simply set the callback for the future value, upon item-request (one cycle is allowed), and propagate any events
+   * received to the publisher.</p>
+   *
+   * @param <T> Emit type for this adapter. Matches the future it wraps.
+   */
+  public final static class CompletableFuturePublisher<T>
+      implements Publisher<T>, ListenableFuture<T>, CompletionStage<T> {
+    private final @Nonnull CompletableFuture<T> future;
+    private final @Nonnull CompletionStage<T> stage;
+    private final @Nonnull Executor callbackExecutor;
+
+    /**
+     * Construct an adapter that propagates signals from a {@link CompletableFuture} to a {@link Publisher}.
+     *
+     * @param future Completable future to wrap.
+     * @param callbackExecutor Callback executor to use.
+     */
+    private CompletableFuturePublisher(@Nonnull CompletableFuture<T> future,
+                                       @Nonnull Executor callbackExecutor) {
+      this.future = future;
+      this.stage = future;
+      this.callbackExecutor = callbackExecutor;
+    }
+
+    /* == `Future`/`ListenableFuture` Interface Compliance == */
+
+    /** @inheritDoc */
+    @Override public final void subscribe(Subscriber<? super T> subscriber) {
+      Objects.requireNonNull(subscriber, "Subscriber cannot be null");
+      subscriber.onSubscribe(new CompletableFutureSubscription(this.future, subscriber, this.callbackExecutor));
+    }
+
+    /** @inheritDoc */
+    @Override public void addListener(Runnable runnable, Executor executor) {
+      future.thenRunAsync(runnable, executor);
+    }
+
+    /** @inheritDoc */
+    @Override public boolean cancel(boolean mayInterruptIfRunning) {
+      return future.cancel(mayInterruptIfRunning);
+    }
+
+    /** @inheritDoc */
+    @Override public boolean isCancelled() {
+      return future.isCancelled();
+    }
+
+    /** @inheritDoc */
+    @Override public boolean isDone() {
+      return future.isDone();
+    }
+
+    /** @inheritDoc */
+    @Override public T get() throws InterruptedException, ExecutionException {
+      return future.get();
+    }
+
+    /** @inheritDoc */
+    @Override
+    public T get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+      return future.get(timeout, unit);
+    }
+
+    /* == `CompletionStage` Interface Compliance == */
+
+    /** @inheritDoc */
+    @Override public <U> CompletionStage<U> thenApply(Function<? super T, ? extends U> fn) {
+      return stage.thenApply(fn);
+    }
+
+    /** @inheritDoc */
+    @Override public <U> CompletionStage<U> thenApplyAsync(Function<? super T, ? extends U> fn) {
+      return stage.thenApplyAsync(fn);
+    }
+
+    /** @inheritDoc */
+    @Override public <U> CompletionStage<U> thenApplyAsync(Function<? super T, ? extends U> fn, Executor executor) {
+      return stage.thenApplyAsync(fn, executor);
+    }
+
+    /** @inheritDoc */
+    @Override public CompletionStage<Void> thenAccept(Consumer<? super T> action) {
+      return stage.thenAccept(action);
+    }
+
+    /** @inheritDoc */
+    @Override public CompletionStage<Void> thenAcceptAsync(Consumer<? super T> action) {
+      return stage.thenAcceptAsync(action);
+    }
+
+    /** @inheritDoc */
+    @Override public CompletionStage<Void> thenAcceptAsync(Consumer<? super T> action, Executor executor) {
+      return stage.thenAcceptAsync(action, executor);
+    }
+
+    /** @inheritDoc */
+    @Override public CompletionStage<Void> thenRun(Runnable action) {
+      return stage.thenRun(action);
+    }
+
+    /** @inheritDoc */
+    @Override public CompletionStage<Void> thenRunAsync(Runnable action) {
+      return stage.thenRunAsync(action);
+    }
+
+    /** @inheritDoc */
+    @Override public CompletionStage<Void> thenRunAsync(Runnable action, Executor executor) {
+      return stage.thenRunAsync(action, executor);
+    }
+
+    /** @inheritDoc */
+    @Override public <U, V> CompletionStage<V> thenCombine(CompletionStage<? extends U> other,
+                                                           BiFunction<? super T, ? super U, ? extends V> fn) {
+      return stage.thenCombine(other, fn);
+    }
+
+    /** @inheritDoc */
+    @Override public <U, V> CompletionStage<V> thenCombineAsync(CompletionStage<? extends U> other,
+                                                                BiFunction<? super T, ? super U, ? extends V> fn) {
+      return stage.thenCombineAsync(other, fn);
+    }
+
+    /** @inheritDoc */
+    @Override public <U, V> CompletionStage<V> thenCombineAsync(CompletionStage<? extends U> other,
+                                                                BiFunction<? super T, ? super U, ? extends V> fn,
+                                                                Executor executor) {
+      return stage.thenCombineAsync(other, fn, executor);
+    }
+
+    /** @inheritDoc */
+    @Override public <U> CompletionStage<Void> thenAcceptBoth(CompletionStage<? extends U> other,
+                                                              BiConsumer<? super T, ? super U> action) {
+      return stage.thenAcceptBoth(other, action);
+    }
+
+    /** @inheritDoc */
+    @Override public <U> CompletionStage<Void> thenAcceptBothAsync(CompletionStage<? extends U> other,
+                                                                   BiConsumer<? super T, ? super U> action) {
+      return stage.thenAcceptBothAsync(other, action);
+    }
+
+    /** @inheritDoc */
+    @Override
+    public <U> CompletionStage<Void> thenAcceptBothAsync(CompletionStage<? extends U> other,
+                                                         BiConsumer<? super T, ? super U> action,
+                                                         Executor executor) {
+      return stage.thenAcceptBothAsync(other, action, executor);
+    }
+
+    /** @inheritDoc */
+    @Override
+    public CompletionStage<Void> runAfterBoth(CompletionStage<?> other, Runnable action) {
+      return stage.runAfterBoth(other, action);
+    }
+
+    /** @inheritDoc */
+    @Override
+    public CompletionStage<Void> runAfterBothAsync(CompletionStage<?> other, Runnable action) {
+      return stage.runAfterBothAsync(other, action);
+    }
+
+    /** @inheritDoc */
+    @Override
+    public CompletionStage<Void> runAfterBothAsync(CompletionStage<?> other, Runnable action, Executor executor) {
+      return stage.runAfterBothAsync(other, action, executor);
+    }
+
+    /** @inheritDoc */
+    @Override
+    public <U> CompletionStage<U> applyToEither(CompletionStage<? extends T> other, Function<? super T, U> fn) {
+      return stage.applyToEither(other, fn);
+    }
+
+    /** @inheritDoc */
+    @Override
+    public <U> CompletionStage<U> applyToEitherAsync(CompletionStage<? extends T> other, Function<? super T, U> fn) {
+      return stage.applyToEitherAsync(other, fn);
+    }
+
+    /** @inheritDoc */
+    @Override
+    public <U> CompletionStage<U> applyToEitherAsync(CompletionStage<? extends T> other,
+                                                     Function<? super T, U> fn,
+                                                     Executor executor) {
+      return stage.applyToEitherAsync(other, fn, executor);
+    }
+
+    /** @inheritDoc */
+    @Override public CompletionStage<Void> acceptEither(CompletionStage<? extends T> other,
+                                                        Consumer<? super T> action) {
+      return stage.acceptEither(other, action);
+    }
+
+    /** @inheritDoc */
+    @Override public CompletionStage<Void> acceptEitherAsync(CompletionStage<? extends T> other,
+                                                             Consumer<? super T> action) {
+      return stage.acceptEitherAsync(other, action);
+    }
+
+    /** @inheritDoc */
+    @Override public CompletionStage<Void> acceptEitherAsync(CompletionStage<? extends T> other,
+                                                             Consumer<? super T> action,
+                                                             Executor executor) {
+      return stage.acceptEitherAsync(other, action, executor);
+    }
+
+    /** @inheritDoc */
+    @Override public CompletionStage<Void> runAfterEither(CompletionStage<?> other, Runnable action) {
+      return stage.runAfterEither(other, action);
+    }
+
+    /** @inheritDoc */
+    @Override public CompletionStage<Void> runAfterEitherAsync(CompletionStage<?> other, Runnable action) {
+      return stage.runAfterEitherAsync(other, action);
+    }
+
+    /** @inheritDoc */
+    @Override public CompletionStage<Void> runAfterEitherAsync(CompletionStage<?> other, Runnable action, Executor executor) {
+      return stage.runAfterEitherAsync(other, action, executor);
+    }
+
+    /** @inheritDoc */
+    @Override public <U> CompletionStage<U> thenCompose(Function<? super T, ? extends CompletionStage<U>> fn) {
+      return stage.thenCompose(fn);
+    }
+
+    /** @inheritDoc */
+    @Override public <U> CompletionStage<U> thenComposeAsync(Function<? super T, ? extends CompletionStage<U>> fn) {
+      return stage.thenComposeAsync(fn);
+    }
+
+    /** @inheritDoc */
+    @Override public <U> CompletionStage<U> thenComposeAsync(Function<? super T, ? extends CompletionStage<U>> fn,
+                                                             Executor executor) {
+      return stage.thenComposeAsync(fn, executor);
+    }
+
+    /** @inheritDoc */
+    @Override public <U> CompletionStage<U> handle(BiFunction<? super T, Throwable, ? extends U> fn) {
+      return stage.handle(fn);
+    }
+
+    /** @inheritDoc */
+    @Override public <U> CompletionStage<U> handleAsync(BiFunction<? super T, Throwable, ? extends U> fn) {
+      return stage.handleAsync(fn);
+    }
+
+    /** @inheritDoc */
+    @Override public <U> CompletionStage<U> handleAsync(BiFunction<? super T, Throwable, ? extends U> fn,
+                                                        Executor executor) {
+      return stage.handleAsync(fn, executor);
+    }
+
+    /** @inheritDoc */
+    @Override public CompletionStage<T> whenComplete(BiConsumer<? super T, ? super Throwable> action) {
+      return stage.whenComplete(action);
+    }
+
+    /** @inheritDoc */
+    @Override public CompletionStage<T> whenCompleteAsync(BiConsumer<? super T, ? super Throwable> action) {
+      return stage.whenCompleteAsync(action);
+    }
+
+    /** @inheritDoc */
+    @Override public CompletionStage<T> whenCompleteAsync(BiConsumer<? super T, ? super Throwable> action,
+                                                          Executor executor) {
+      return stage.whenCompleteAsync(action, executor);
+    }
+
+    /** @inheritDoc */
+    @Override public CompletionStage<T> exceptionally(Function<Throwable, ? extends T> fn) {
+      return stage.exceptionally(fn);
+    }
+
+    /** @inheritDoc */
+    @Override public CompletableFuture<T> toCompletableFuture() {
+      return stage.toCompletableFuture();
+    }
+
+    /**
+     * Models a Reactive Java {@link Subscription}, which is responsible for propagating events from a
+     * Concurrent Java {@link CompletableFuture} to a {@link Subscriber}.
+     *
+     * <p>This object is generally used internally by the {@link CompletableFuturePublisher}, once a {@link Subscriber}
+     * attaches itself to a {@link Publisher} that is actually a wrapped {@link CompletableFuture}. Error (exception)
+     * events and value events are both propagated. Subscribers based on this wrapping will only ever receive a maximum
+     * of <b>one value</b> or <b>one error</b>.</p>
+     */
+    @Immutable
+    @ThreadSafe
+    public final class CompletableFutureSubscription implements Subscription {
+      private final AtomicBoolean completed = new AtomicBoolean(false);
+      private final @Nonnull Subscriber<? super T> subscriber;
+      private final @Nonnull CompletableFuture<T> future;
+      private final @Nonnull Executor executor;
+
+      /**
+       * Private constructor, meant for use by {@link CompletableFuturePublisher} only.
+       *
+       * @param future Future value to adapt.
+       * @param subscriber The subscriber.
+       * @param executor Executor to run callbacks with.
+       */
+      CompletableFutureSubscription(@Nonnull CompletableFuture<T> future,
+                                    @Nonnull Subscriber<? super T> subscriber,
+                                    @Nonnull Executor executor) {
+        this.future = Objects.requireNonNull(future);
+        this.subscriber = Objects.requireNonNull(subscriber);
+        this.executor = Objects.requireNonNull(executor);
+      }
+
+      /**
+       * Request the specified number of items from the underlying {@link Subscription}. This must <b>always be
+       * <pre>1</pre></b>.
+       *
+       * @param n Number of elements to request to the upstream (must always be <pre>1</pre>).
+       * @throws IllegalArgumentException If any value other than <pre>1</pre> is passed in.
+       */
+      public synchronized void request(long n) {
+        if (n == 1 && !completed.get()) {
+          try {
+            CompletableFuture<T> future = this.future;
+            future.thenAcceptAsync(t -> {
+              T val = null;
+              Throwable err = null;
+              try {
+                val = future.get();
+              } catch (Exception exc) {
+                err = exc;
+              }
+
+              if (completed.compareAndSet(false, true)) {
+                if (err != null) {
+                  subscriber.onError(err);
+                } else {
+                  if (val != null) {
+                    subscriber.onNext(val);
+                  }
+                  subscriber.onComplete();
+                }
+              }
+            }, executor);
+
+          } catch (Exception e) {
+            subscriber.onError(e);
+          }
+        } else if (n != 1) {
+          IllegalArgumentException ex = new IllegalArgumentException(
+              "Cannot request more or less than 1 item from a ReactiveFuture-wrapped publisher.");
+          subscriber.onError(ex);
+        }
+      }
+
+      /**
+       * Request the publisher to stop sending data and clean up resources.
+       */
+      public synchronized void cancel() {
+        if (completed.compareAndSet(false, true)) {
+          subscriber.onComplete();
+          future.cancel(false);
+        }
+      }
+    }
+  }
+
+  /**
    * Structure that adapts Guava's {@link ListenableFuture} to a Reactive Java {@link Publisher}, which publishes one
    * item - either the result of the computation, or an error.
    *
@@ -592,6 +1046,8 @@ public final class ReactiveFuture<R> implements Publisher<R>, ListenableFuture<R
    * {@link ReactiveFuture}, and then used within the Reactive Java ecosystem as a {@link Publisher}. We simply set a
    * callback for the future value, upon item-request (one cycle is allowed), and propagate any events received to the
    * publisher.</p>
+   *
+   * @param <T> Emit type for this adapter. Matches the publisher it wraps.
    */
   public final static class ListenableFuturePublisher<T> implements Publisher<T> {
     private final @Nonnull ListenableFuture<T> future;
