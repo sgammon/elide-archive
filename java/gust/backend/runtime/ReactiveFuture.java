@@ -63,9 +63,6 @@ public final class ReactiveFuture<R> implements Publisher<R>, ListenableFuture<R
   /** Inner future, if one is set. Otherwise {@link Optional#empty()}. */
   private final @Nonnull Optional<ListenableFuture<R>> future;
 
-  /** Inner future, if we are operating on a regular Java completable future. */
-  private final @Nonnull Optional<CompletableFuture<R>> javaFuture;
-
   /** If a `publisher` is present, this object adapts it to a `future`. */
   private final @Nullable PublisherListenableFuture<R> publisherAdapter;
 
@@ -83,7 +80,6 @@ public final class ReactiveFuture<R> implements Publisher<R>, ListenableFuture<R
    */
   private ReactiveFuture(@Nonnull Publisher<R> publisher) {
     this.future = Optional.empty();
-    this.javaFuture = Optional.empty();
     this.futureAdapter = null;
     this.publisherAdapter = new PublisherListenableFuture<>(publisher);
     this.javaFutureAdapter = null;
@@ -98,7 +94,6 @@ public final class ReactiveFuture<R> implements Publisher<R>, ListenableFuture<R
    */
   private ReactiveFuture(@Nonnull ListenableFuture<R> future, @Nonnull Executor executor) {
     this.future = Optional.of(future);
-    this.javaFuture = Optional.empty();
     this.futureAdapter = new ListenableFuturePublisher<>(future, executor);
     this.publisherAdapter = null;
     this.javaFutureAdapter = null;
@@ -113,7 +108,6 @@ public final class ReactiveFuture<R> implements Publisher<R>, ListenableFuture<R
    */
   private ReactiveFuture(@Nonnull CompletableFuture<R> future, @Nonnull Executor executor) {
     this.future = Optional.empty();
-    this.javaFuture = Optional.of(future);
     this.futureAdapter = null;
     this.publisherAdapter = null;
     this.javaFutureAdapter = new CompletableFuturePublisher<>(future, executor);
