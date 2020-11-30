@@ -28,7 +28,9 @@ build --define cluster=_cluster_
 
 build:dev --define=project=elide-ai
 build:dev --define=todolist_release_tag=latest
-#build:dev --google_default_credentials=true
+build:adc --google_default_credentials=true
+build:devkey --google_credentials=crypto/build-key.json
+test:devkey --action_env=GOOGLE_APPLICATION_CREDENTIALS
 
 build --watchfs
 build --symlink_prefix=dist/

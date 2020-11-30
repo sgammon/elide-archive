@@ -54,13 +54,6 @@ DEPS = {
         "target": "87545335ef7fb248051a7e049e88177ac8168c03",
         "seal": "6266a305d6e7b794a39ca4563cc173af25719e7eeefa9a99c1d478f1f44db431"},
 
-    # Bazel: Toolchains
-    "bazel_toolchains": {
-        "type": "github",
-        "repo": "bazelbuild/bazel-toolchains",
-        "target": "3bac046cdcbf9d00179827c7d094723d3b8495be",
-        "seal": "a703602d151b011cdd955388caa3ac7b253f16f95a68a223498d9f9ccf8e6796"},
-
     # Rules: Closure
     "io_bazel_rules_closure": {
         "type": "github",
@@ -174,8 +167,8 @@ DEPS = {
     "com_google_protobuf": {
         "type": "github",
         "repo": "google/protobuf",
-        "target": "fde7cf7358ec7cd69e8db9be4f1fa6a5c431386a",
-        "seal": "e589e39ef46fb2b3b476b3ca355bd324e5984cbdfac19f0e1625f0042e99c276"},
+        "target": "2514f0bd7da7e2af1bed4c5d1b84f031c4d12c10",
+        "seal": "04c5e84492093469a7e6342114df3cfd1281e4a90b0d18428ac6c297b87c03e3"},
 
     # Google: J2CL (Java-to-Closure)
     "com_google_j2cl": {
@@ -254,9 +247,9 @@ DEPS = {
     # gRPC: Core
     "com_github_grpc_grpc": {
         "type": "github",
-        "repo": "grpc/grpc",
-        "target": "054ff69350dfea1876f388e7cf05f19d5d76bc12",
-        "seal": "93355e58569ff5fe21ed07bafe91814145bfa0fb35958c2082e3a447ee63605b"},
+        "repo": "sgammon/grpc",
+        "target": "7e741fc12cc361906b1adc70bc3f7960eb3598d4",
+        "seal": "c3b9395345828256b77a9472022966df590457e9ed8f351e104adeea6667754c"},
 
     # gRPC: Java
     "io_grpc_java": {
@@ -285,8 +278,8 @@ DEPS = {
     "envoy": {
         "type": "github",
         "repo": "envoyproxy/envoy",
-        "target": "bb7ceff4c3c5bd4555dff28b6e56d27f2f8be0a7",
-        "seal": "95d365cea109f1f6b06f4c010602b5a2f8dc2e65d631b5e2c17e62aa114408d9"},
+        "target": "c39a22e1ee744f4e6031c0b53f7ccd2b6165e29f",
+        "seal": "57a1d595c0440e4f6e17559004b56e8a04e84eb96321702f0da7e065ab495a1d"},
 
     # Kubernetes: Build Tools
     "io_kubernetes_build": {
