@@ -42,12 +42,12 @@ import static gust.backend.model.ModelMetadata.*;
  */
 @SuppressWarnings("UnstableApiUsage")
 public final class InMemoryDriver<Key extends Message, Model extends Message>
-  implements PersistenceDriver<Key, Model, EncodedModel> {
+  implements PersistenceDriver<Key, Model, EncodedModel, EncodedModel> {
   /** Private logging pipe. */
   private static final Logger logging = Logging.logger(InMemoryStorage.class);
 
   /** Codec to use for model serialization/de-serialization. */
-  private final @Nonnull ModelCodec<Model, EncodedModel> codec;
+  private final @Nonnull ModelCodec<Model, EncodedModel, EncodedModel> codec;
 
   /** Executor service to use for storage calls. */
   private final @Nonnull ListeningScheduledExecutorService executorService;
@@ -84,7 +84,7 @@ public final class InMemoryDriver<Key extends Message, Model extends Message>
    * @param codec Codec to use when serializing and de-serializing models with this driver.
    * @param executorService Executor service to run against.
    */
-  private InMemoryDriver(@Nonnull ModelCodec<Model, EncodedModel> codec,
+  private InMemoryDriver(@Nonnull ModelCodec<Model, EncodedModel, EncodedModel> codec,
                          @Nonnull ListeningScheduledExecutorService executorService) {
     this.codec = codec;
     this.executorService = executorService;
@@ -107,7 +107,7 @@ public final class InMemoryDriver<Key extends Message, Model extends Message>
    * @return In-memory driver instance created for the specified message type.
    */
   static @Nonnull <K extends Message, M extends Message> InMemoryDriver<K, M> acquire(
-    @Nonnull ModelCodec<M, EncodedModel> codec,
+    @Nonnull ModelCodec<M, EncodedModel, EncodedModel> codec,
     @Nonnull ListeningScheduledExecutorService executorService) {
     return new InMemoryDriver<>(codec, executorService);
   }
@@ -115,7 +115,7 @@ public final class InMemoryDriver<Key extends Message, Model extends Message>
   // -- Getters -- //
   /** {@inheritDoc} */
   @Override
-  public @Nonnull ModelCodec<Model, EncodedModel> codec() {
+  public @Nonnull ModelCodec<Model, EncodedModel, EncodedModel> codec() {
     return this.codec;
   }
 
@@ -173,6 +173,7 @@ public final class InMemoryDriver<Key extends Message, Model extends Message>
                                                 final @Nonnull WriteOptions options) {
     Objects.requireNonNull(model, "Cannot persist `null` model.");
     Objects.requireNonNull(options, "Cannot persist model without `options`.");
+    if (key != null) enforceRole(key, DatapointType.OBJECT_KEY);
 
     // resolve target key, and then write mode
     final @Nonnull Key targetKey = key != null ? key : generateKey(model);
@@ -237,6 +238,7 @@ public final class InMemoryDriver<Key extends Message, Model extends Message>
   public @Nonnull ReactiveFuture<Key> delete(@Nonnull Key key, @Nonnull DeleteOptions options) {
     Objects.requireNonNull(key, "Cannot delete `null` key.");
     Objects.requireNonNull(options, "Cannot delete model without `options`.");
+    ModelMetadata.enforceRole(key, DatapointType.OBJECT_KEY);
 
     final @Nonnull Object targetId = id(key)
       .orElseThrow(() -> new IllegalStateException("Cannot delete record with empty key/ID."));

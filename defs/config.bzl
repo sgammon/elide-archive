@@ -32,14 +32,6 @@ DEBUG = False
 ## Set to `True` to enable in-page dev tools and UI, regardless of DEBUG mode.
 DEV = False
 
-## `Renaming` mode.
-## ------------------------------------
-## Set to `True` to obfuscate styles.
-RENAMING = select({
-    "//defs/conditions:style_renaming": True,
-    "//conditions:default": False
-})
-
 ## Browser target year.
 ## ------------------------------------
 ## Tune JS and add polyfills based on this feature-set year.
@@ -93,7 +85,7 @@ BROWSERS_VERSION = "0.3.2"
 ## GraalVM version.
 ## ------------------------------------
 ## Assigned to the latest available CE VM.
-GRAALVM_VERSION = "20.1.0"
+GRAALVM_VERSION = "20.2.0"
 
 ## GraalVM JDK version.
 ## ------------------------------------
@@ -118,7 +110,7 @@ K8S_VERSION = "1.15.9"
 ## Protobuf toolchain version.
 ## ------------------------------------
 ## Sets the version enforced throughout for Protobuf.
-PROTOBUF_VERSION = "3.12.3"
+PROTOBUF_VERSION = "3.13.0"
 
 ## JVM-based app debug port.
 ## ------------------------------------

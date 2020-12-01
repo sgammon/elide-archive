@@ -53,16 +53,33 @@ load(
 protobuf_deps()
 
 
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+
+#
+# Java
+#
+
+RULES_JVM_EXTERNAL_TAG = "3.2"
+RULES_JVM_EXTERNAL_SHA = "82262ff4223c5fda6fb7ff8bd63db8131b51b413d26eb49e3131037e79e324af"
+
+http_archive(
+    name = "rules_jvm_external",
+    strip_prefix = "rules_jvm_external-%s" % RULES_JVM_EXTERNAL_TAG,
+    sha256 = RULES_JVM_EXTERNAL_SHA,
+    url = "https://github.com/bazelbuild/rules_jvm_external/archive/%s.zip" % RULES_JVM_EXTERNAL_TAG,
+)
+
+
 #
 # Extensions
 #
 
 ## NodeJS
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 http_archive(
     name = "build_bazel_rules_nodejs",
-    sha256 = "6a67a8a1bf6fddc9113f73471029b819eef4575c3a936a4a01d57e411894d692",
-    urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/2.0.2/rules_nodejs-2.0.2.tar.gz"],
+    sha256 = "f2194102720e662dbf193546585d705e645314319554c6ce7e47d8b59f459e9c",
+    urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/2.2.2/rules_nodejs-2.2.2.tar.gz"],
 )
 
 load("@build_bazel_rules_nodejs//:index.bzl",
@@ -108,6 +125,9 @@ graal_bindist_repository(
 ## Java Repos/Deps
 load("//defs/toolchain/java:repos.bzl", "gust_java_repositories")
 gust_java_repositories()
+
+load("@maven//:compat.bzl", "compat_repositories")
+compat_repositories()
 
 load("@maven//:defs.bzl", "pinned_maven_install")
 pinned_maven_install()
@@ -188,10 +208,6 @@ browser_repositories(
     chromium = True,
     firefox = True,
 )
-
-## Toolchains (RBE)
-load("@bazel_toolchains//rules:rbe_repo.bzl", "rbe_autoconfig")
-rbe_autoconfig(name = "rbe_default")
 
 ## Stardoc
 load("@io_bazel_stardoc//:setup.bzl", "stardoc_repositories")

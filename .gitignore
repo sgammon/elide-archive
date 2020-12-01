@@ -13,3 +13,4 @@ bazel-out
 .bazelrc.user
 reports
 report-ci.py
+crypto/build-key.json

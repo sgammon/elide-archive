@@ -16,6 +16,7 @@
 ##
 
 CI ?= no
+DEV ?= no
 CACHE ?= no
 REMOTE ?= no
 DEBUG ?= no
@@ -51,7 +52,7 @@ OUTPATH ?= $(DISTPATH)/out
 BINPATH ?= $(DISTPATH)/bin
 UNZIP ?= $(shell which unzip)
 REVISION ?= $(shell git describe --abbrev=7 --always --tags HEAD)
-BASE_VERSION ?= v1a
+BASE_VERSION ?= v1b
 VERSION ?= $(shell (cat package.json | grep version | head -1 | awk -F: '{ print $2 }' | sed 's/[",]//g' | tr -d '[[:space:]]' | sed 's/version\://g'))
 CHROME_COVERAGE ?= $(shell find dist/out/$(OUTPUT_BASE)/bin -name "coverage*.dat" | grep chrome | xargs)
 COVERAGE_DATA ?= $(OUTPATH)/_coverage/_coverage_report.dat
@@ -81,9 +82,18 @@ endif
 TEST_ARGS_WITH_COVERAGE ?= --combined_report=lcov --nocache_test_results
 BUILD_ARGS ?= --define project=$(PROJECT)
 
+BUILDKEY_PLAINTEXT ?= $(shell pwd)/crypto/build-key.json
+BUILDKEY_CIPHERTEXT ?= $(BUILDKEY_PLAINTEXT).enc
+BUILDKEY_KMS_LOCATION ?= global
+BUILDKEY_KMS_KEYRING ?= dev
+BUILDKEY_KMS_KEY ?= key-material
+BUILDKEY_BASE_ARGS ?= --location=$(BUILDKEY_KMS_LOCATION) --keyring=$(BUILDKEY_KMS_KEYRING) --key=$(BUILDKEY_KMS_KEY) \
+			--plaintext-file=$(BUILDKEY_PLAINTEXT) --ciphertext-file=$(BUILDKEY_CIPHERTEXT) --project=$(IMAGE_PROJECT)
+
 POSIX_FLAGS ?=
 BAZELISK_ARGS ?=
 BASE_ARGS ?=
+BAZELISK_PREAMBLE ?=
 
 
 # Flag: `FORCE_COVERAGE`
@@ -92,6 +102,12 @@ TEST_COMMAND ?= coverage
 TEST_ARGS += $(TEST_ARGS_WITH_COVERAGE)
 else
 TEST_COMMAND ?= test
+endif
+
+# Flag: `DEV`
+ifeq ($(DEV),yes)
+BASE_ARGS += --config=devkey --test_output=errors
+BAZELISK_PREAMBLE = GOOGLE_APPLICATION_CREDENTIALS=$(BUILDKEY_PLAINTEXT)
 endif
 
 # Flag: `STRICT`.
@@ -125,7 +141,7 @@ GENHTML ?= /bin/genhtml
 else
 TAG += --config=dev
 IBAZEL ?= $(shell which ibazel)
-BAZELISK ?= $(shell which bazelisk)
+BAZELISK ?= $(BAZELISK_PREAMBLE) $(shell which bazelisk)
 GENHTML ?= $(shell which genhtml)
 endif
 
@@ -163,6 +179,7 @@ dev:  ## Develop against the specified target.
 	$(_RULE)$(IBAZEL) run $(TAG) --define=LIVE_RELOAD=enabled --define=dev=enabled $(APP)
 
 clean: clean-docs clean-reports  ## Clean ephemeral targets.
+	$(_RULE)rm -f $(BUILDKEY_PLAINTEXT)
 	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) clean
 
 clean-docs:  ## Clean built documentation.
@@ -189,7 +206,7 @@ samples:  ## Build and push sample app images.
         done
 
 distclean: clean  ## Clean targets, caches and dependencies.
-	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) clean --expunge_async
+	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) clean --expunge
 
 forceclean: distclean  ## Clean everything, and sanitize the codebase (DANGEROUS).
 	$(_RULE)git reset --hard && git clean -xdf
@@ -285,6 +302,22 @@ release-images:  ## Pull, tag, and release Docker images.
 	$(_RULE)docker push $(REGISTRY)/sample-basic-jvm:$(VERSION);
 	$(_RULE)docker push $(REGISTRY)/sample-ssr:$(VERSION);
 	$(_RULE)docker push $(REGISTRY)/sample-ssr-jvm:$(VERSION);
+
+
+## Crypto
+$(BUILDKEY_CIPHERTEXT):
+	@echo "Encrypting build key..."
+	$(_RULE)gcloud kms encrypt $(BUILDKEY_BASE_ARGS)
+
+encrypt: $(BUILDKEY_CIPHERTEXT)  ## Encrypt private key material.
+	@echo "Key material encrypted."
+
+$(BUILDKEY_PLAINTEXT):
+	@echo "Decrypting build key..."
+	$(_RULE)gcloud kms decrypt $(BUILDKEY_BASE_ARGS)
+
+decrypt: $(BUILDKEY_PLAINTEXT)  ## Decrypt private key material.
+	@echo "Key material decrypted."
 
 
 .PHONY: build test help samples release-images update-deps devtools

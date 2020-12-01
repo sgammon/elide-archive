@@ -39,4 +39,19 @@ public interface OperationOptions {
   default @Nonnull Optional<ListeningScheduledExecutorService> executorService() {
     return Optional.empty();
   }
+
+  /** @return Set a precondition for the precise time (in microseconds) that a record was updated. */
+  default @Nonnull Optional<Long> updatedAtMicros() {
+    return Optional.empty();
+  }
+
+  /** @return Set a precondition for the precise time (in seconds) that a record was updated. */
+  default @Nonnull Optional<Long> updatedAtSeconds() {
+    return Optional.empty();
+  }
+
+  /** @return Number of retries, otherwise the default is used. */
+  default @Nonnull Optional<Integer> retries() {
+    return Optional.empty();
+  }
 }

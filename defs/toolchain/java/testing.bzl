@@ -81,7 +81,8 @@ INJECTED_TEST_DEPS = [
 ]
 
 INJECTED_KOTLIN_TEST_DEPS = [
-    "@com_github_jetbrains_kotlin//:kotlin-test",
+#    "@com_github_jetbrains_kotlin//:kotlin-test",
+#    maven("io.micronaut.test:micronaut-test-kotlintest"),
     "@gust//defs/toolchain/java/plugins:micronaut",
 ]
 
@@ -90,7 +91,7 @@ INJECTED_MICRONAUT_TEST_DEPS = [
     maven("io.micronaut:micronaut-http"),
     maven("io.micronaut:micronaut-http-client"),
     maven("io.micronaut.test:micronaut-test-core"),
-    maven("io.micronaut.test:micronaut-test-kotlintest"),
+    maven("io.micronaut.test:micronaut-test-junit5"),
 ]
 
 INJECTED_MICRONAUT_TEST_RUNTIME_DEPS = [

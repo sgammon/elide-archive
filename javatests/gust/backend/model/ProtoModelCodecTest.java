@@ -25,14 +25,14 @@ import static org.junit.jupiter.api.Assertions.*;
 public final class ProtoModelCodecTest {
   /** Check for interface compliance regarding {@link ModelCodec}. */
   @Test void testCodecInterface() {
-    ModelCodec<Person, EncodedModel> personCodec = ProtoModelCodec.forModel(Person.getDefaultInstance());
+    ModelCodec<Person, EncodedModel, EncodedModel> personCodec = ProtoModelCodec.forModel(Person.getDefaultInstance());
     assertNotNull(personCodec.serializer(), "codec should produce a serializer");
     assertNotNull(personCodec.deserializer(), "codec should produce a de-serializer");
   }
 
   /** Test that the codec can encode models in the default format. */
   @Test void testCodecDefault() throws IOException {
-    ModelCodec<Person, EncodedModel> personCodec = ProtoModelCodec.forModel(Person.getDefaultInstance());
+    ModelCodec<Person, EncodedModel, EncodedModel> personCodec = ProtoModelCodec.forModel(Person.getDefaultInstance());
     Person person = Person.newBuilder().setName("Jane Doe").build();
 
     EncodedModel encodedPerson = personCodec.serialize(person);
@@ -54,7 +54,7 @@ public final class ProtoModelCodecTest {
 
   /** Test that the codec can encode models in binary format. */
   @Test void testCodecBinary() throws IOException {
-    ModelCodec<Person, EncodedModel> personCodec = ProtoModelCodec.forModel(
+    ModelCodec<Person, EncodedModel, EncodedModel> personCodec = ProtoModelCodec.forModel(
       Person.getDefaultInstance(), EncodingMode.BINARY);
     Person person = Person.newBuilder().setName("Jane Doe").build();
 
@@ -77,7 +77,7 @@ public final class ProtoModelCodecTest {
 
   /** Test that the codec can encode models in ProtoJSON format. */
   @Test void testCodecJSON() throws IOException {
-    ModelCodec<Person, EncodedModel> personCodec = ProtoModelCodec.forModel(
+    ModelCodec<Person, EncodedModel, EncodedModel> personCodec = ProtoModelCodec.forModel(
       Person.getDefaultInstance(), EncodingMode.JSON);
     Person person = Person.newBuilder().setName("Jane Doe").build();
 

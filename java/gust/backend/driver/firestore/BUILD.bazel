@@ -72,6 +72,9 @@ java_library(
         "//java/gust/backend/model:FetchOptions",
         "//java/gust/backend/model:ModelCodec",
         "//java/gust/backend/model:ModelMetadata",
+        "//java/gust/backend/model:ObjectModelCodec",
+        "//java/gust/backend/model:ObjectModelSerializer",
+        "//java/gust/backend/model:ObjectModelDeserializer",
         "//java/gust/backend/model:UpdateOptions",
         "//java/gust/backend/model:WriteOptions",
         "//java/gust/backend/transport:GoogleService",
@@ -80,8 +83,20 @@ java_library(
         maven("com.google.api:gax"),
         maven("com.google.api:gax-grpc"),
         maven("com.google.api:api-common"),
+        maven("com.google.cloud:google-cloud-core"),
         maven("com.google.cloud:google-cloud-core-grpc"),
     ] + _COMMON_DEPS,
+    exports = [
+        maven("io.grpc:grpc-api"),
+        maven("io.grpc:grpc-core"),
+        maven("io.grpc:grpc-auth"),
+        maven("io.grpc:grpc-stub"),
+        maven("io.grpc:grpc-protobuf"),
+        maven("com.google.api:gax"),
+        maven("com.google.api:gax-grpc"),
+        maven("com.google.cloud:google-cloud-core"),
+        maven("com.google.cloud:google-cloud-core-grpc"),
+    ],
 )
 
 java_library(

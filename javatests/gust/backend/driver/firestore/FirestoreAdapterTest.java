@@ -10,11 +10,12 @@
  * by trade secret and copyright law. Dissemination of this information, or reproduction of this material, in any form,
  * is strictly forbidden except in adherence with assigned license requirements.
  */
-package gust.backend.driver.inmemory;
+package gust.backend.driver.firestore;
+
 
 import com.google.common.util.concurrent.ListeningScheduledExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
-import gust.backend.model.*;
+import gust.backend.model.GenericPersistenceAdapterTest;
 import gust.backend.model.PersonRecord.Person;
 import gust.backend.model.PersonRecord.PersonKey;
 import org.junit.jupiter.api.AfterAll;
@@ -24,22 +25,22 @@ import javax.annotation.Nonnull;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 
-/** Tests for the {@link InMemoryAdapter}. */
+/** Tests for the {@link FirestoreAdapter}. */
 @SuppressWarnings("UnstableApiUsage")
-public final class InMemoryAdapterTest extends GenericPersistenceAdapterTest<InMemoryAdapter<PersonKey, Person>> {
+public final class FirestoreAdapterTest extends GenericPersistenceAdapterTest<FirestoreAdapter<PersonKey, Person>> {
   private static ListeningScheduledExecutorService executorService;
-  private static InMemoryAdapter<PersonKey, Person> personAdapter;
+  private static FirestoreAdapter<PersonKey, Person> personAdapter;
 
   @BeforeAll
   static void initExecutor() {
     executorService = MoreExecutors.listeningDecorator(Executors.newScheduledThreadPool(3));
-    personAdapter = InMemoryAdapter.acquire(
-      PersonKey.getDefaultInstance(),
-      Person.getDefaultInstance(),
-      executorService);
+    personAdapter = FirestoreAdapter.acquire(
+        PersonKey.getDefaultInstance(),
+        Person.getDefaultInstance(),
+        executorService);
   }
 
   @AfterAll
@@ -52,17 +53,17 @@ public final class InMemoryAdapterTest extends GenericPersistenceAdapterTest<InM
 
   /** {@inheritDoc} */
   @Override
-  protected @Nonnull InMemoryAdapter<PersonKey, Person> adapter() {
+  protected @Nonnull FirestoreAdapter<PersonKey, Person> adapter() {
     return personAdapter;
   }
 
   /** {@inheritDoc} */
   @Override
   protected void acquireDriver() {
-    InMemoryAdapter<PersonKey, Person> personAdapter = InMemoryAdapter.acquire(
-      PersonKey.getDefaultInstance(),
-      Person.getDefaultInstance(),
-      executorService);
+    FirestoreAdapter<PersonKey, Person> personAdapter = FirestoreAdapter.acquire(
+        PersonKey.getDefaultInstance(),
+        Person.getDefaultInstance(),
+        executorService);
     assertNotNull(personAdapter, "should not get `null` for adapter acquire");
   }
 }

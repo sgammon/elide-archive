@@ -24,15 +24,15 @@ import javax.annotation.Nonnull;
  * @param <Key> Type of key used to uniquely address models.
  * @param <Model> Message type which this database adapter is handling.
  */
-public interface DatabaseAdapter<Key extends Message, Model extends Message, DataRecord>
-  extends ModelAdapter<Key, Model, DataRecord> {
+public interface DatabaseAdapter<Key extends Message, Model extends Message, ReadRecord, WriteRecord>
+  extends ModelAdapter<Key, Model, ReadRecord, WriteRecord> {
   /**
    * Return the lower-level {@link DatabaseDriver} powering this adapter. The driver is responsible for communicating
    * with the actual database or storage service, either via local stubs/emulators or a production API.
    *
    * @return Database driver instance currently in use by this model adapter.
    */
-  @Nonnull DatabaseDriver<Key, Model, DataRecord> engine();
+  @Nonnull DatabaseDriver<Key, Model, ReadRecord, WriteRecord> engine();
 
   /** {@inheritDoc} */
   @Override

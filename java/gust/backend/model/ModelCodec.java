@@ -30,10 +30,10 @@ import java.io.IOException;
  * @see ModelSerializer Surface definition for a model serializer.
  * @see ModelDeserializer Surface definition for a model de-serializer.
  * @param <Model> Model type which this codec is responsible for serializing and de-serializing.
- * @param <Intermediate> Intermediate record type which this codec converts model instances into.
+ * @param <WriteIntermediate> Intermediate record type which this codec converts model instances into.
  */
 @SuppressWarnings("unused")
-public interface ModelCodec<Model extends Message, Intermediate> {
+public interface ModelCodec<Model extends Message, WriteIntermediate, ReadIntermediate> {
   // -- Components -- //
   /**
    * Acquire an instance of the {@link ModelSerializer} attached to this adapter. The instance is not guaranteed to be
@@ -43,7 +43,7 @@ public interface ModelCodec<Model extends Message, Intermediate> {
    * @see #deserialize(Object) To call into de-serialization directly.
    * @return Serializer instance.
    */
-  @Nonnull ModelSerializer<Model, Intermediate> serializer();
+  @Nonnull ModelSerializer<Model, WriteIntermediate> serializer();
 
   /**
    * Acquire an instance of the {@link ModelDeserializer} attached to this adapter. The instance is not guaranteed to be
@@ -53,7 +53,7 @@ public interface ModelCodec<Model extends Message, Intermediate> {
    * @see #serialize(Message) To call into serialization directly.
    * @return Deserializer instance.
    */
-  @Nonnull ModelDeserializer<Intermediate, Model> deserializer();
+  @Nonnull ModelDeserializer<ReadIntermediate, Model> deserializer();
 
   // -- Proxies -- //
   /**
@@ -67,7 +67,7 @@ public interface ModelCodec<Model extends Message, Intermediate> {
    * @throws ModelDeflateException If some error occurs while serializing the model.
    * @throws IOException If some IO error occurs.
    */
-  default @Nonnull Intermediate serialize(Model instance) throws ModelDeflateException, IOException {
+  default @Nonnull WriteIntermediate serialize(Model instance) throws ModelDeflateException, IOException {
     return serializer().deflate(instance);
   }
 
@@ -82,7 +82,7 @@ public interface ModelCodec<Model extends Message, Intermediate> {
    * @throws ModelInflateException If some error occurs while de-serializing the model.
    * @throws IOException If some IO error occurs.
    */
-  default @Nonnull Model deserialize(Intermediate input) throws ModelInflateException, IOException {
+  default @Nonnull Model deserialize(ReadIntermediate input) throws ModelInflateException, IOException {
     return deserializer().inflate(input);
   }
 }

@@ -41,6 +41,8 @@ message Person {
 // Models a key.
 message PersonKey {
   option (core.role) = OBJECT_KEY;
+  option (core.db).path = "people";
+  option (core.db).mode = COLLECTION;
 
   // Unique record ID.
   string id = 1 [(core.field).type = ID];
@@ -59,7 +61,7 @@ message PersonAddress {
 
 // Simple nested record.
 message ContactInfo {
-  option (core.db).mode = COLLECTION;
+  option (core.db).mode = NESTED;
 
   // Person's email address.
   string email_address = 1;

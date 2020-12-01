@@ -33,10 +33,7 @@ _RULES_CLOSURE_OMIT = [
     "rules_python",
 ]
 
-_J2CL_CLOSURE_OMIT = [i for i in _RULES_CLOSURE_OMIT if "auto_common" not in i] + [
-    "com_google_jsinterop_annotations_head",
-    "org_gwtproject_gwt",
-]
+_J2CL_CLOSURE_OMIT = [i for i in _RULES_CLOSURE_OMIT if "auto_common" not in i]
 
 
 def _setup_workspace():

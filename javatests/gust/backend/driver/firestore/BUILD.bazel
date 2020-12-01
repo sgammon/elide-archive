@@ -16,54 +16,36 @@ package(
 )
 
 load(
-    "//defs/toolchain/java:rules.bzl",
-    java_library = "jdk_library",
+    "//defs/toolchain/java:testing.bzl",
+    java_test = "jdk_test",
 )
 
 load(
     "//defs/toolchain:deps.bzl",
+    "javaproto",
     "maven",
 )
 
+_COMMON_DEPS = [
+    "//java/gust/backend/runtime:runtime",
+    maven("com.google.guava:guava"),
+    maven("com.google.protobuf:protobuf-java"),
+    maven("org.slf4j:slf4j-api"),
+]
 
-java_library(
-    name = "Hex",
-    srcs = ["Hex.java"],
+
+java_test(
+    name = "FirestoreAdapterTest",
+    srcs = ["FirestoreAdapterTest.java"],
+    test_package = "gust.backend.driver.firestore",
     deps = [
-        "@javax_annotation_api",
-        "@com_google_code_findbugs_jsr305",
+        "//java/gust/backend/driver/firestore:FirestoreAdapter",
+        "//java/gust/backend/driver/firestore:FirestoreDriver",
+        "//java/gust/backend/driver/inmemory:InMemoryCache",
+        javaproto("//javatests/gust/backend/model:person"),
+        "//javatests/gust/backend/model:GenericPersistenceAdapterTest",
+    ] + _COMMON_DEPS,
+    classpath_resources = [
+        "//javatests:logback.xml",
     ],
-)
-
-java_library(
-    name = "Pair",
-    srcs = ["Pair.java"],
-    deps = [
-        "@javax_annotation_api",
-        "@com_google_code_findbugs_jsr305",
-    ],
-)
-
-java_library(
-    name = "InstantFactory",
-    srcs = ["InstantFactory.java"],
-    deps = [
-        "@javax_annotation_api",
-        "@com_google_code_findbugs_jsr305",
-        maven("com.google.protobuf:protobuf-java"),
-    ],
-)
-
-
-java_library(
-    name = "util",
-    exports = [
-        ":Pair",
-        ":Hex",
-    ],
-)
-
-filegroup(
-    name = "sources",
-    srcs = glob(["*.java"]),
 )

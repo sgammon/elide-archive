@@ -12,7 +12,6 @@
  */
 package gust.backend.model;
 
-
 import com.google.protobuf.Message;
 
 import javax.annotation.Nonnull;
@@ -27,6 +26,57 @@ import java.io.IOException;
  * @param <Output> Output type which the serializer will provide when invoked with a matching model instance.
  */
 public interface ModelSerializer<Model extends Message, Output> {
+  /**
+   * Describes available <i>write dispositions</i>, each of which presents a strategy that governs how an individual
+   * write operation is handled with regard to underlying storage. Each option is explained in its own documentation.
+   */
+  enum WriteDisposition {
+    /** Blind writes. Just applies the write without regard to side effects. */
+    BLIND,
+
+    /** Create-style writes. Guarantees the object does not exist before writing. */
+    CREATE,
+
+    /** Update-style writes. Guarantees the object <i>does</i> exist before writing. */
+    UPDATE
+  }
+
+  /**
+   * Enumerates modes for encoding enums. In NUMERIC mode, enumerated entry ID numbers are used when serializing enum
+   * values. In NAME mode, the string name is used. Both are valid for read operations.
+   */
+  enum EnumSerializeMode {
+    /** Encode enum values as their numeric ID. */
+    NUMERIC,
+
+    /** Encode enum values as their string name. */
+    NAME
+  }
+
+  /**
+   * Enumerates modes for encoding timestamps. In TIMESTAMP mode, numeric timestamps with millisecond precision (since
+   * the Unix epoch) are provided. In ISO8601 mode, ISO8601-formatted strings are provided.
+   */
+  enum InstantSerializeMode {
+    /** Encode temporal instants as millisecond-precision Unix timestamps. */
+    TIMESTAMP,
+
+    /** Encode temporal instants as ISO8601-formatted strings. */
+    ISO8601
+  }
+
+  /** Describes errors that occur during model serialization activities. */
+  final class SerializationError extends RuntimeException {
+    /**
+     * Create a generic serialization error from the provided message.
+     *
+     * @param message Error message.
+     */
+    SerializationError(@Nonnull String message) {
+      super(message);
+    }
+  }
+
   /**
    * Serialize a model instance from the provided object type to the specified output type, throwing exceptions
    * verbosely if we are unable to correctly, verifiably, and properly export the record.

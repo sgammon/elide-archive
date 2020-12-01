@@ -122,6 +122,7 @@ def _process_github_dep(key, repo, force_local):
             native.new_local_repository(
                 name = key,
                 build_file = "//external:%s" % repo["overlay"],
+                build_file_content = repo.get("injected_overlay"),
                 path = repo["local"])
         else:
             # regular local
@@ -135,7 +136,9 @@ def _process_github_dep(key, repo, force_local):
               name = key,
               remote = "git@github.com:" + repo["repo"] + ".git",
               commit = repo["target"],
-              shallow_since = repo.get("seal"))
+              shallow_since = repo.get("seal"),
+              patch = repo.get("patch"),
+              patch_args = repo.get("patch_args"))
         else:
             if repo.get("directory") != None:
                 renderedTarget = "%s/%s" % (repo["target"], repo["directory"])
@@ -147,7 +150,10 @@ def _process_github_dep(key, repo, force_local):
                 strip_prefix = "%s-%s%s" % (repoName, renderedTarget, additionalStrip),
                 sha256 = repo.get("seal"),
                 build_file = repo.get("overlay"),
-                url = "https://github.com/%s/archive/%s.tar.gz" % (repo["repo"], repo["target"]))
+                build_file_content = repo.get("injected_overlay"),
+                url = "https://github.com/%s/archive/%s.tar.gz" % (repo["repo"], repo["target"]),
+                patch = repo.get("patch"),
+                patch_args = repo.get("patch_args"))
 
 
 def _github_repo(name, repo, tag, sha256 = None):

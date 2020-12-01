@@ -42,6 +42,7 @@ STRICT_DEPENDENCIES = True
 
 ASM_VERSION = "7.0"
 SLF4J_VERSION = "1.7.30"
+GSON_VERSION = "2.8.6"
 
 GRAALVM_VERSION = _GRAALVM_VERSION
 
@@ -53,33 +54,40 @@ VALIDATION_VERSION = "2.0.0.Final"
 JUNIT_JUPITER_VERSION = "5.6.0"
 JUNIT_PLATFORM_VERSION = "1.6.0"
 
-GAX_VERSION = "1.57.1"
-NETTY_VERSION = "4.1.48.Final"
-RXJAVA_VERSION = "2.2.18"
+GAX_VERSION = "1.60.0"
+NETTY_VERSION = "4.1.51.Final"
+RXJAVA_VERSION = "2.2.20"
 PICOCLI_VERSION = "4.2.0"
 REACTIVE_VERSION = "1.0.3"
-THREETEN_VERSION = "1.4.1"
-GAPI_COMMON_VERSION = "1.8.1"
-GCLOUD_API_VERSION = "0.122.3-alpha"
-GCLOUD_GRPC_VERSION = "1.93.1"
-GCLOUD_TASKS_VERSION = "1.28.2"
-GCLOUD_PUBSUB_VERSION = "1.103.1"
-GCLOUD_STORAGE_VERSION = "1.105.1"
-GCLOUD_FIRESTORE_VERSION = "1.32.5"
-GCLOUD_MONITORING_VERSION = "1.99.2"
-COMMON_PROTOS_VERSION = "1.18.0"
+THREETEN_VERSION = "1.5.0"
+GAPI_COMMON_VERSION = "1.10.1"
+GCLOUD_API_VERSION = "0.142.0"
+GCLOUD_GRPC_VERSION = "1.93.10"
+GCLOUD_TASKS_VERSION = "1.30.7"
+GCLOUD_PUBSUB_VERSION = "1.108.7"
+GCLOUD_STORAGE_VERSION = "1.113.2"
+GCLOUD_FIRESTORE_VERSION = "2.1.0"
+GCLOUD_MONITORING_VERSION = "2.0.7"
+COMMON_PROTOS_VERSION = "2.0.1"
+KOTLIN_TEST_VERSION = "3.4.2"
+J2OBJC_ANNOTATIONS_VERSION = "1.3"
+GAUTH_CREDENTIALS_VERSION = "0.22.0"
+GUAVA_FAILUREACCESS_VERSION = "1.0.1"
+ANIMAL_SNIFFER_VERSION = "1.19"
+ANDROID_ANNOTATIONS_VERSION = "4.1.1.4"
+PERFMARK_VERSION = "0.23.0"
 
-GRPC_JAVA_VERSION = "1.30.2"
+GRPC_JAVA_VERSION = "1.33.1"
 TOMCAT_ANNOTATIONS_VERSION = "6.0.53"
-OPENTRACING_VERSION = "0.2.1"
+OPENTRACING_VERSION = "0.2.3"
 
-MICRONAUT_VERSION = "2.0.0"
-MICRONAUT_DATA_VERSION = "1.1.1"
-MICRONAUT_GRPC_VERSION = "2.0.1"
-MICRONAUT_TEST_VERSION = "1.2.0"
-MICRONAUT_REDIS_VERSION = "2.3.1"
-MICRONAUT_CACHE_VERSION = "2.0.0"
-MICRONAUT_SECURITY_VERSION = "2.0.0.M2"
+MICRONAUT_VERSION = "2.1.3"
+MICRONAUT_DATA_VERSION = "2.1.1"
+MICRONAUT_GRPC_VERSION = "2.1.0"
+MICRONAUT_TEST_VERSION = "2.2.1"
+MICRONAUT_REDIS_VERSION = "3.0.0"
+MICRONAUT_CACHE_VERSION = "2.1.0"
+MICRONAUT_SECURITY_VERSION = "2.1.2"
 
 GRPC_EXCLUSIONS = [
       maven.exclusion(
@@ -159,6 +167,7 @@ BUILD_ARTIFACTS = [
     "org.slf4j:slf4j-api:%s" % SLF4J_VERSION,
     "javax.validation:validation-api:%s" % VALIDATION_VERSION,
     "org.apache.tomcat:annotations-api:%s" % TOMCAT_ANNOTATIONS_VERSION,
+    "com.google.code.gson:gson:%s" % GSON_VERSION,
 ]
 
 # These are not auto-injected.
@@ -178,6 +187,16 @@ GRPC_BUILD_ARTIFACTS = [
     "io.grpc:grpc-netty:%s" % GRPC_JAVA_VERSION,
     "com.google.api.grpc:proto-google-common-protos:%s" % COMMON_PROTOS_VERSION,
     "com.google.api.grpc:grpc-google-common-protos:%s" % COMMON_PROTOS_VERSION,
+    "com.google.j2objc:j2objc-annotations:%s" % J2OBJC_ANNOTATIONS_VERSION,
+    "com.google.auth:google-auth-library-credentials:%s" % GAUTH_CREDENTIALS_VERSION,
+    "com.google.guava:failureaccess:%s" % GUAVA_FAILUREACCESS_VERSION,
+    "org.codehaus.mojo:animal-sniffer-annotations:%s" % ANIMAL_SNIFFER_VERSION,
+    "io.perfmark:perfmark-api:%s" % PERFMARK_VERSION,
+    "io.perfmark:perfmark-java9:%s" % PERFMARK_VERSION,
+]
+
+ANDROID_ARTIFACTS = [
+    "com.google.android:annotations:%s" % ANDROID_ANNOTATIONS_VERSION,
 ]
 
 JUNIT_JUPITER_GROUP_ID = "org.junit.jupiter"
@@ -225,17 +244,27 @@ MICRONAUT_COORDINATES = [
     "io.micronaut:micronaut-buffer-netty",
     "io.micronaut:micronaut-graal",
     "io.micronaut:micronaut-router",
-    "io.micronaut:micronaut-session",
     "io.micronaut:micronaut-tracing",
     "io.micronaut:micronaut-messaging",
     "io.micronaut:micronaut-multitenancy",
     "io.micronaut:micronaut-websocket",
+    "io.micronaut:micronaut-session",
 ]
 
 MICRONAUT_EXTRAS = [
     ("io.netty:netty-buffer", NETTY_VERSION),
-    ("io.micronaut:micronaut-security", MICRONAUT_SECURITY_VERSION),
-    ("io.micronaut:micronaut-security-annotations", MICRONAUT_SECURITY_VERSION),
+    ("io.netty:netty-transport", NETTY_VERSION),
+    ("io.netty:netty-resolver", NETTY_VERSION),
+    ("io.netty:netty-common", NETTY_VERSION),
+    ("io.netty:netty-codec", NETTY_VERSION),
+    ("io.netty:netty-codec-http", NETTY_VERSION),
+    ("io.netty:netty-codec-http2", NETTY_VERSION),
+    ("io.netty:netty-codec-socks", NETTY_VERSION),
+    ("io.netty:netty-handler", NETTY_VERSION),
+    ("io.netty:netty-handler-proxy", NETTY_VERSION),
+    ("io.micronaut.security:micronaut-security", MICRONAUT_SECURITY_VERSION),
+    ("io.micronaut.security:micronaut-security-session", MICRONAUT_SECURITY_VERSION),
+    ("io.micronaut.security:micronaut-security-annotations", MICRONAUT_SECURITY_VERSION),
     ("io.micronaut.data:micronaut-data-processor", MICRONAUT_DATA_VERSION),
     ("io.micronaut.grpc:micronaut-grpc-runtime", MICRONAUT_GRPC_VERSION),
     ("io.micronaut.grpc:micronaut-grpc-annotation", MICRONAUT_GRPC_VERSION),
@@ -270,6 +299,7 @@ GOOGLE_COORDINATES = [
 ]
 
 GOOGLE_CLOUD_COORDINATES = [
+    ("com.google.cloud:google-cloud-core", GCLOUD_GRPC_VERSION),
     ("com.google.cloud:google-cloud-core-grpc", GCLOUD_GRPC_VERSION),
     ("com.google.cloud:google-cloud-tasks", GCLOUD_TASKS_VERSION),
     ("com.google.cloud:google-cloud-pubsub", GCLOUD_PUBSUB_VERSION),
@@ -293,8 +323,14 @@ TEST_ARTIFACTS = [
 ] + RULES_WEBTESTING_ARTIFACTS
 
 MICRONAUT_TEST_ARTIFACTS = [
+#    maven.artifact("io.kotlintest", "kotlintest-core", KOTLIN_TEST_VERSION, testonly = True),
+#    maven.artifact("io.kotlintest", "kotlintest-extensions", KOTLIN_TEST_VERSION, testonly = True),
+#    maven.artifact("io.kotlintest", "kotlintest-runner-jvm", KOTLIN_TEST_VERSION, testonly = True),
+#    maven.artifact("io.kotlintest", "kotlintest-runner-junit5", KOTLIN_TEST_VERSION, testonly = True),
+#    maven.artifact("io.kotlintest", "kotlintest-runner-console", KOTLIN_TEST_VERSION, testonly = True),
     maven.artifact("io.micronaut.test", "micronaut-test-core", MICRONAUT_TEST_VERSION, testonly = True),
     maven.artifact("io.micronaut.test", "micronaut-test-kotlintest", MICRONAUT_TEST_VERSION, testonly = True),
+    maven.artifact("io.micronaut.test", "micronaut-test-junit5", MICRONAUT_TEST_VERSION, testonly = True),
 ]
 
 def junit_jupiter_java_repositories(version = JUNIT_JUPITER_VERSION):
@@ -345,6 +381,7 @@ def _gust_java_deps(
         app_excludes = [],
         app_overrides = [],
         micronaut = True,
+        android = True,
         junit5 = True):
 
     """ Install Gust runtime Java dependencies. """
@@ -358,6 +395,10 @@ def _gust_java_deps(
             MICRONAUT_RUNTIME_ARTIFACTS +
             EXTRA_BUILD_ARTIFACTS +
             MICRONAUT_TEST_ARTIFACTS) if i not in artifacts]
+    if android:
+        artifacts += [i for i in (
+            ANDROID_ARTIFACTS
+        ) if i not in artifacts]
 
     artifacts += (app_artifacts or [])
 
@@ -381,6 +422,7 @@ def _gust_java_deps(
             ("io.micronaut:micronaut-views", "@io_micronaut_micronaut_views"),
             ("io.micronaut:micronaut-views-soy", "@io_micronaut_micronaut_views_soy"),
             ("com.google.guava:guava", "@com_google_guava"),
+            ("com.google.guava", "@com_google_guava"),
             ("com.google.protobuf:protobuf-java", "@com_google_protobuf//:protobuf_java"),
             ("com.google.protobuf:protobuf-javalite", "@com_google_protobuf//:protobuf_javalite"),
             ("com.google.protobuf:protobuf-java-util", "@com_google_protobuf//:protobuf_java_util"),
@@ -394,7 +436,6 @@ def _gust_java_deps(
             ("com.google.grpc:grpc-netty-shaded", "@io_grpc_java//netty-shaded:netty-shaded"),
             ("com.google.template:soy", "@com_google_template_soy"),
             ("com.google.common.html.types:types", "@com_google_template_soy"),
-            ("com.google.code:gson", "@com_google_code_gson"),
             ("com.google.code.findbugs:jsr305", "@com_google_code_findbugs_jsr305"),
             ("com.google.closure:stylesheets", "@com_google_closure_stylesheets"),
             ("javax.inject:javax.inject", "@javax_inject"),
@@ -417,7 +458,6 @@ OVERRIDE_DEPS = [
     "@io_grpc_java//context:context",
     "@io_grpc_java//netty:netty",
     "@com_google_template_soy",
-    "@com_google_code_gson",
     "@com_google_code_findbugs_jsr305",
     "@com_google_closure_stylesheets",
     "@javax_inject",

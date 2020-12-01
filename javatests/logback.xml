@@ -6,7 +6,11 @@
             <pattern>%cyan(%d{HH:mm:ss.SSS}) %gray([%thread]) %highlight(%-5level) %magenta(%logger{36}) - %msg%n</pattern>
         </encoder>
     </appender>
-    <root level="trace">
+    <root level="info">
         <appender-ref ref="STDOUT" />
     </root>
+    <logger name="gust.backend.driver.firestore.*" level="TRACE" />
+    <logger name="gust.backend.driver.firestore.FirestoreDriver" level="TRACE" />
+    <logger name="gust.backend.driver.firestore.FirestoreAdapter" level="TRACE" />
+    <logger name="gust.backend.model.GenericPersistenceDriverTest" level="TRACE" />
 </configuration>

@@ -2,7 +2,7 @@
 
 <hr />
 
-_**Gust is alpha software. Consider yourself warned...**_
+_**Gust is beta software. Consider yourself warned...**_
 
 <hr />
 
@@ -95,10 +95,12 @@ builder-image                  Build a new version of the CI builder image for G
 clean-docs                     Clean built documentation.
 clean-reports                  Clean built reports.
 clean                          Clean ephemeral targets.
+decrypt                        Decrypt private key material.
 dev                            Develop against the specified target.
 devtools                       Install local development dependencies.
 distclean                      Clean targets, caches and dependencies.
 docs                           Build documentation for the framework.
+encrypt                        Encrypt private key material.
 forceclean                     Clean everything, and sanitize the codebase (DANGEROUS).
 help                           Show this help text.
 release-images                 Pull, tag, and release Docker images.

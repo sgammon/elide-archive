@@ -42,7 +42,7 @@ import java.util.Optional;
  */
 @Immutable
 @ThreadSafe
-public final class ProtoModelCodec<Model extends Message> implements ModelCodec<Model, EncodedModel> {
+public final class ProtoModelCodec<Model extends Message> implements ModelCodec<Model, EncodedModel, EncodedModel> {
   /** Default wire format mode. */
   private static final EncodingMode DEFAULT_FORMAT = EncodingMode.BINARY;
 

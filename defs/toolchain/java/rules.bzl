@@ -13,7 +13,6 @@
 
 load(
     "//defs:config.bzl",
-    _RENAMING = "RENAMING",
     _JVM_DEBUG_PORT = "JVM_DEBUG_PORT",
 )
 
@@ -99,7 +98,6 @@ INJECTED_MICRONAUT_DEPS = [
     maven("io.micronaut:micronaut-core"),
     maven("io.micronaut:micronaut-http"),
     maven("io.micronaut:micronaut-http-client"),
-    maven("io.micronaut:micronaut-security-annotations"),
     maven("io.micronaut:micronaut-inject"),
     maven("io.micronaut:micronaut-inject-java"),
     maven("io.micronaut:micronaut-validation"),
@@ -109,12 +107,14 @@ INJECTED_MICRONAUT_DEPS = [
     maven("io.micronaut:micronaut-router"),
     maven("io.micronaut:micronaut-tracing"),
     maven("io.micronaut:micronaut-session"),
-    maven("io.micronaut:micronaut-security"),
     maven("io.micronaut:micronaut-messaging"),
     maven("io.micronaut:micronaut-websocket"),
     maven("io.micronaut:micronaut-multitenancy"),
     maven("io.micronaut:micronaut-runtime"),
     maven("io.reactivex.rxjava2:rxjava"),
+    maven("io.micronaut.security:micronaut-security"),
+    maven("io.micronaut.security:micronaut-security-annotations"),
+    maven("io.micronaut.security:micronaut-security-session"),
 ]
 
 INJECTED_MICRONAUT_GRPC_DEPS = [
@@ -471,6 +471,7 @@ def _micronaut_application(name,
                            js_modules = {},
                            css_modules = {},
                            classpath_resources = [],
+                           enable_renaming = False,
                            **kwargs):
 
     """ Wraps a regular JDK application with injected Micronaut dependencies and plugins. """
@@ -490,7 +491,7 @@ def _micronaut_application(name,
             injected_resources.append("%s.css.json" % css_modules[module])
 
             # should we reference the rewrite maps?
-            if _RENAMING:
+            if enable_renaming:
                 bundle_inputs.append("--css=\"%s:$(locations %s) $(locations %s.css.json)\""
                                     % (module, css_modules[module], css_modules[module]))
             else:
@@ -508,7 +509,7 @@ def _micronaut_application(name,
         "--variants=IDENTITY" + (
             (ASSETS_ENABLE_GZIP and ",GZIP" or "") +
             (ASSETS_ENABLE_BROTLI and ",BROTLI" or "")),
-        (_RENAMING and "--rewrite-maps") or ("--no-rewrite-maps"),
+        (enable_renaming and "--rewrite-maps") or ("--no-rewrite-maps"),
     ]
 
     native_tools.genrule(

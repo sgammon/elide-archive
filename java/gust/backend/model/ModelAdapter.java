@@ -50,11 +50,12 @@ import static gust.backend.model.ModelMetadata.*;
  * @see DatabaseAdapter Extends this interface with richer data engine features.
  * @param <Key> Key type, instances of which uniquely address instances of {@code Model}.
  * @param <Model> Model type which this adapter is responsible for adapting.
- * @param <Intermediate> Intermediate record format used by the implementation when de-serializing model instances.
+ * @param <ReadIntermediate> Intermediate record format used by the implementation when de-serializing model instances.
+ * @param <WriteIntermediate> Intermediate record format used when serializing model instances for write.
  */
 @SuppressWarnings("UnstableApiUsage")
-public interface ModelAdapter<Key extends Message, Model extends Message, Intermediate>
-  extends PersistenceDriver<Key, Model, Intermediate> {
+public interface ModelAdapter<Key extends Message, Model extends Message, ReadIntermediate, WriteIntermediate>
+  extends PersistenceDriver<Key, Model, ReadIntermediate, WriteIntermediate> {
   // -- Interface: Drivers -- //
   /**
    * Return the cache driver in use for this particular model adapter. If a cache driver is present, and active/enabled
@@ -70,7 +71,7 @@ public interface ModelAdapter<Key extends Message, Model extends Message, Interm
    *
    * @return Persistence driver instance currently in use by this model adapter.
    */
-  @Nonnull PersistenceDriver<Key, Model, Intermediate> engine();
+  @Nonnull PersistenceDriver<Key, Model, ReadIntermediate, WriteIntermediate> engine();
 
   // -- Interface: Execution -- //
   /** {@inheritDoc} */
@@ -153,12 +154,10 @@ public interface ModelAdapter<Key extends Message, Model extends Message, Interm
 
               Internals.swallowExceptions(() -> {
                 Optional<Model> fetchResult = record.get();
-                if (fetchResult.isPresent()) {
-                  cache.get().put(
+                fetchResult.ifPresent(model -> cache.get().put(
                     key,
-                    fetchResult.get(),
-                    options.executorService().orElseGet(ModelAdapter.this::executorService));
-                }
+                    model,
+                    options.executorService().orElseGet(ModelAdapter.this::executorService)));
               });
             }, options.executorService().orElseGet(ModelAdapter.this::executorService));
             return record;
