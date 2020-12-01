@@ -61,11 +61,11 @@ public abstract class GenericPersistenceDriverTest<Driver extends PersistenceDri
       dynamicTest(format("%s: `storeAndFetchEntityMasked`", subcase), this::storeAndFetchEntityMasked),
       dynamicTest(format("%s: `storeEntityUpdate`", subcase), this::storeEntityUpdate),
       dynamicTest(format("%s: `createEntityThenUpdate`", subcase), this::createEntityThenUpdate),
-      dynamicTest(format("%s: `createUpdateWithInvalidOptions`", subcase), this::createUpdateWithInvalidOptions)
+      dynamicTest(format("%s: `createUpdateWithInvalidOptions`", subcase), this::createUpdateWithInvalidOptions),
+      dynamicTest(format("%s: `createEntityThenDelete`", subcase), this::createEntityThenDelete),
+      dynamicTest(format("%s: `createEntityThenDeleteByRecord`", subcase), this::createEntityThenDeleteByRecord)//,
 //      dynamicTest(format("%s: `storeEntityUpdateNotFound`", subcase), this::storeEntityUpdateNotFound),
 //      dynamicTest(format("%s: `storeEntityCollission`", subcase), this::storeEntityCollission),
-//      dynamicTest(format("%s: `createEntityThenDelete`", subcase), this::createEntityThenDelete),
-//      dynamicTest(format("%s: `createEntityThenDeleteByRecord`", subcase), this::createEntityThenDeleteByRecord),
     );
 
     tests.addAll(subclassTests().orElse(Collections.emptyList()));
@@ -570,7 +570,7 @@ public abstract class GenericPersistenceDriverTest<Driver extends PersistenceDri
 
     // should fail because it has no key
     assertThrows(IllegalStateException.class, () -> {
-      acquire().delete(person);
+      acquire().delete(person.toBuilder().clearKey().build());
     });
 
     // delete it, mercilessly
@@ -626,7 +626,7 @@ public abstract class GenericPersistenceDriverTest<Driver extends PersistenceDri
 
     // should fail because it has no key
     assertThrows(IllegalStateException.class, () -> {
-      acquire().delete(person);
+      acquire().delete(person.toBuilder().clearKey().build());
     });
 
     // delete it, mercilessly
