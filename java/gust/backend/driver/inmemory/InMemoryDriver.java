@@ -238,6 +238,7 @@ public final class InMemoryDriver<Key extends Message, Model extends Message>
   public @Nonnull ReactiveFuture<Key> delete(@Nonnull Key key, @Nonnull DeleteOptions options) {
     Objects.requireNonNull(key, "Cannot delete `null` key.");
     Objects.requireNonNull(options, "Cannot delete model without `options`.");
+    ModelMetadata.enforceRole(key, DatapointType.OBJECT_KEY);
 
     final @Nonnull Object targetId = id(key)
       .orElseThrow(() -> new IllegalStateException("Cannot delete record with empty key/ID."));

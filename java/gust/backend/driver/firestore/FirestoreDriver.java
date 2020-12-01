@@ -395,7 +395,7 @@ public final class FirestoreDriver<Key extends Message, Model extends Message>
                   .orElse(null))
               .build())), documentSnapshots -> {
         // check for results
-        if (documentSnapshots != null && !documentSnapshots.isEmpty()) {
+        if (documentSnapshots != null && !documentSnapshots.isEmpty() && documentSnapshots.get(0).exists()) {
           return Optional.of(that.deserialize(documentSnapshots.get(0)));
         } else {
           // otherwise return an empty optional
