@@ -569,7 +569,7 @@ public abstract class GenericPersistenceDriverTest<Driver extends PersistenceDri
       "re-fetched person record should be identical");
 
     // should fail because it has no key
-    assertThrows(IllegalStateException.class, () -> {
+    assertThrows(InvalidModelType.class, () -> {
       acquire().delete(person.toBuilder().clearKey().build());
     });
 
@@ -625,7 +625,7 @@ public abstract class GenericPersistenceDriverTest<Driver extends PersistenceDri
       "re-fetched person record should be identical");
 
     // should fail because it has no key
-    assertThrows(IllegalStateException.class, () -> {
+    assertThrows(InvalidModelType.class, () -> {
       acquire().delete(person.toBuilder().clearKey().build());
     });
 

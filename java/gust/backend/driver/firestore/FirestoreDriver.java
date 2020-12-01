@@ -14,16 +14,13 @@ package gust.backend.driver.firestore;
 
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.rpc.TransportChannelProvider;
-import com.google.cloud.firestore.DocumentReference;
-import com.google.cloud.firestore.DocumentSnapshot;
+import com.google.cloud.Timestamp;
+import com.google.cloud.firestore.*;
 import com.google.cloud.grpc.GrpcTransportOptions;
-import com.google.cloud.firestore.Firestore;
-import com.google.cloud.firestore.FirestoreOptions;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListeningScheduledExecutorService;
-import com.google.protobuf.ByteString;
 import com.google.protobuf.FieldMask;
 import com.google.protobuf.Message;
 import com.google.protobuf.ProtocolStringList;
@@ -49,7 +46,6 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
-import java.util.stream.Collectors;
 
 import static gust.backend.model.ModelMetadata.enforceRole;
 import static gust.backend.model.ModelMetadata.modelAnnotation;
@@ -82,6 +78,9 @@ public final class FirestoreDriver<Key extends Message, Model extends Message>
   implements DatabaseDriver<Key, Model, DocumentSnapshot, CollapsedMessage> {
   /** Private log pipe. */
   private static final Logger logging = Logging.logger(FirestoreDriver.class);
+
+  /** Whether to run operations in a transactional by default. */
+  private static final Boolean defaultTransactional = true;
 
   /** Executor service to use for async calls. */
   private final ListeningScheduledExecutorService executorService;
@@ -327,7 +326,7 @@ public final class FirestoreDriver<Key extends Message, Model extends Message>
     return (Key)keyBuilder.build();
   }
 
-  /** Convert between a standard Protobuf field mask, and a Firestore field mask. */
+  /** @return Converted Firestore field mask from the provided Protobuf mask. */
   private @Nullable com.google.cloud.firestore.FieldMask convertMask(@Nonnull FieldMask originalMask) {
     ProtocolStringList paths = originalMask.getPathsList();
     if (!paths.isEmpty()) {
@@ -346,6 +345,21 @@ public final class FirestoreDriver<Key extends Message, Model extends Message>
       return com.google.cloud.firestore.FieldMask.of(pathsArr);
     }
     return null;
+  }
+
+  /** @return Preconditions for the provided operational options. */
+  private @Nonnull Precondition generatePreconditions(@Nonnull OperationOptions options) {
+      var updatedTimestamp = options.updatedAtMicros()
+          .map(Timestamp::ofTimeMicroseconds)
+          .orElseGet(() -> options.updatedAtSeconds()
+              .map((secs) -> Timestamp.ofTimeSecondsAndNanos(secs, 0))
+              .orElse(null));
+
+      if (updatedTimestamp == null) {
+        return Precondition.NONE;
+      } else {
+        return Precondition.updatedAt(updatedTimestamp);
+      }
   }
 
   /** @return Fetched model, with the provided field mask enforced. */
@@ -370,29 +384,50 @@ public final class FirestoreDriver<Key extends Message, Model extends Message>
     FieldMask mask = opts.fieldMask().orElse(null);
     var that = this;
 
-    return ReactiveFuture.wrap(Futures.transform(ReactiveFuture.wrap(
-        engine.getAll(
-            refs,
-            mask != null ? this.convertMask(mask) : null
-        ),
-        exec), new Function<>() {
-      @Override
-      public @Nonnull Optional<Model> apply(@Nullable List<DocumentSnapshot> documentSnapshots) {
-        if (documentSnapshots == null || documentSnapshots.isEmpty() || (
-            documentSnapshots.size() == 1 && !documentSnapshots.get(0).exists())) {
-          return Optional.empty();
-
-        } else if (documentSnapshots.size() > 1) {
-          throw new IllegalStateException("Unexpectedly encountered more than 1 result.");
-
+    if (opts.transactional().orElse(defaultTransactional)) {
+      return ReactiveFuture.wrap(Futures.transform(ReactiveFuture.wrap(engine.runAsyncTransaction((txn) ->
+          txn.getAll(refs, mask != null ? this.convertMask(mask) : null),
+          TransactionOptions.createReadOnlyOptionsBuilder()
+              .setExecutor(exec)
+              .setReadTime(opts.snapshot()
+                  .map((secs) -> com.google.protobuf.Timestamp.newBuilder()
+                    .setSeconds(secs))
+                  .orElse(null))
+              .build())), documentSnapshots -> {
+        // check for results
+        if (documentSnapshots != null && !documentSnapshots.isEmpty()) {
+          return Optional.of(that.deserialize(documentSnapshots.get(0)));
         } else {
-          return Optional.of(that.enforceMask(deserialize(
-            Objects.requireNonNull(
-              documentSnapshots.get(0),
-              "Unexpected null `DocumentReference`.")), opts.fieldMask()));
+          // otherwise return an empty optional
+          return Optional.empty();
         }
-      }
-    }, exec), exec);
+      }, exec));
+
+    } else {
+      return ReactiveFuture.wrap(Futures.transform(ReactiveFuture.wrap(
+          engine.getAll(
+              refs,
+              mask != null ? this.convertMask(mask) : null
+          ),
+          exec), new Function<>() {
+        @Override
+        public @Nonnull Optional<Model> apply(@Nullable List<DocumentSnapshot> documentSnapshots) {
+          if (documentSnapshots == null || documentSnapshots.isEmpty() || (
+              documentSnapshots.size() == 1 && !documentSnapshots.get(0).exists())) {
+            return Optional.empty();
+
+          } else if (documentSnapshots.size() > 1) {
+            throw new IllegalStateException("Unexpectedly encountered more than 1 result.");
+
+          } else {
+            return Optional.of(that.enforceMask(deserialize(
+                Objects.requireNonNull(
+                    documentSnapshots.get(0),
+                    "Unexpected null `DocumentReference`.")), opts.fieldMask()));
+          }
+        }
+      }, exec), exec);
+    }
   }
 
   // -- API: Persist -- //
@@ -405,6 +440,7 @@ public final class FirestoreDriver<Key extends Message, Model extends Message>
     Objects.requireNonNull(model, "Cannot write model which is, itself, `null`.");
     Objects.requireNonNull(options, "Cannot write model without `options`.");
     enforceRole(key, DatapointType.OBJECT_KEY);
+    ExecutorService exec = options.executorService().orElseGet(this::executorService);
 
     try {
       // collapse the model
@@ -434,7 +470,10 @@ public final class FirestoreDriver<Key extends Message, Model extends Message>
           }
         });
         return model;
-      }));
+      }, TransactionOptions.createReadWriteOptionsBuilder()
+          .setExecutor(exec)
+          .setNumberOfAttempts(options.retries().orElse(2))
+          .build()));
 
     } catch (IOException ioe) {
       throw new IllegalStateException(ioe);
@@ -445,6 +484,18 @@ public final class FirestoreDriver<Key extends Message, Model extends Message>
   /** {@inheritDoc} */
   @Override
   public @Nonnull ReactiveFuture<Key> delete(@Nonnull Key key, @Nonnull DeleteOptions options) {
-    throw new IllegalStateException("Not yet implemented.");
+    Objects.requireNonNull(key, "Cannot delete model with `null` for key.");
+    Objects.requireNonNull(options, "Cannot delete model without `options`.");
+    enforceRole(key, DatapointType.OBJECT_KEY);
+    id(key).orElseThrow(() -> new IllegalArgumentException("Cannot delete model with empty key."));
+    ExecutorService exec = options.executorService().orElseGet(this::executorService);
+
+    return ReactiveFuture.wrap(engine.runTransaction(transaction -> {
+      transaction.delete(ref(key), generatePreconditions(options));
+      return key;
+    }, TransactionOptions.createReadWriteOptionsBuilder()
+      .setExecutor(exec)
+      .setNumberOfAttempts(options.retries().orElse(2))
+      .build()));
   }
 }

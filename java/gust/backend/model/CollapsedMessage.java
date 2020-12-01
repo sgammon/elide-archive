@@ -117,6 +117,12 @@ public final class CollapsedMessage {
     /** Operational parent to this write, as applicable. */
     private final @Nullable Operation parent;
 
+    /** Collection sub-write mode. */
+    private final @Nonnull CollectionMode collectionMode;
+
+    /** Field which this write is satisfying, if applicable. */
+    private final @Nullable Descriptors.FieldDescriptor field;
+
     /** Serialized object data to write during this operation. */
     protected final @Nonnull SerializedModel data;
 
@@ -138,8 +144,29 @@ public final class CollapsedMessage {
           @Nonnull SerializedModel data) {
       super(path);
       this.disposition = disposition;
+      this.collectionMode = collectionMode;
       this.parent = parentOperation.orElse(null);
+      this.field = field.orElse(null);
       this.data = data;
+    }
+
+    /** @return Disposition for this write. */
+    public @Nonnull ModelSerializer.WriteDisposition getDisposition() {
+      return disposition;
+    }
+
+    /** @return Collection sub-write mode. */
+    public @Nonnull CollectionMode getCollectionMode() {
+      return collectionMode;
+    }
+
+    /** @return Field this write is satisfying, if applicable. */
+    public @Nonnull Optional<Descriptors.FieldDescriptor> getField() {
+      return field != null ? Optional.of(field) : Optional.empty();
+    }
+
+    public @Nonnull SerializedModel getData() {
+      return data;
     }
 
     /** @return Path prefix for this parent placeholder. */
