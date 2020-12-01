@@ -23,7 +23,10 @@ import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListeningScheduledExecutorService;
+import com.google.protobuf.ByteString;
+import com.google.protobuf.FieldMask;
 import com.google.protobuf.Message;
+import com.google.protobuf.ProtocolStringList;
 import gust.backend.model.*;
 import gust.backend.runtime.Logging;
 import gust.backend.runtime.ReactiveFuture;
@@ -33,17 +36,27 @@ import io.micronaut.context.annotation.Context;
 import io.micronaut.context.annotation.Factory;
 import io.micronaut.runtime.context.scope.Refreshable;
 import org.slf4j.Logger;
+import tools.elide.core.Datamodel;
 import tools.elide.core.DatapointType;
+import tools.elide.core.FieldType;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 import javax.annotation.concurrent.ThreadSafe;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
+import java.util.stream.Collectors;
 
 import static gust.backend.model.ModelMetadata.enforceRole;
+import static gust.backend.model.ModelMetadata.modelAnnotation;
+import static gust.backend.model.ModelMetadata.idField;
+import static gust.backend.model.ModelMetadata.keyField;
+import static gust.backend.model.ModelMetadata.spliceBuilder;
+import static gust.backend.model.ModelMetadata.annotatedField;
 import static gust.backend.model.ModelMetadata.id;
 
 
@@ -66,7 +79,7 @@ import static gust.backend.model.ModelMetadata.id;
 @ThreadSafe
 @SuppressWarnings("UnstableApiUsage")
 public final class FirestoreDriver<Key extends Message, Model extends Message>
-  implements DatabaseDriver<Key, Model, CollapsedMessage> {
+  implements DatabaseDriver<Key, Model, DocumentSnapshot, CollapsedMessage> {
   /** Private log pipe. */
   private static final Logger logging = Logging.logger(FirestoreDriver.class);
 
@@ -74,10 +87,42 @@ public final class FirestoreDriver<Key extends Message, Model extends Message>
   private final ListeningScheduledExecutorService executorService;
 
   /** Codec to use for serializing/de-serializing models. */
-  private final ModelCodec<Model, CollapsedMessage> codec;
+  private final ModelCodec<Model, CollapsedMessage, DocumentSnapshot> codec;
 
   /** Firestore client engine. */
   private final Firestore engine;
+
+  /** Deserializes Firestore {@link DocumentSnapshot} instances to {@link Message} instances. */
+  final static class DocumentSnapshotDeserializer<M extends Message> implements ModelDeserializer<DocumentSnapshot, M> {
+    /** Encapsulated object deserializer. */
+    private final ObjectModelDeserializer<M> objectDeserializer;
+
+    /**
+     * Private constructor.
+     *
+     * @param instance Model instance to deserialize.
+     */
+    private DocumentSnapshotDeserializer(@Nonnull M instance) {
+      this.objectDeserializer = ObjectModelDeserializer.defaultInstance(instance);
+    }
+
+    /**
+     * Construct a {@link DocumentSnapshot} deserializer for the provided <b>instance</b>.
+     *
+     * @param instance Model instance to acquire a snapshot deserializer for.
+     * @param <M> Model type to deserialize.
+     * @return Snapshot deserializer instance.
+     */
+    static <M extends Message> DocumentSnapshotDeserializer<M> forModel(@Nonnull M instance) {
+      return new DocumentSnapshotDeserializer<>(instance);
+    }
+
+    /** @inheritDoc */
+    @Override
+    public @Nonnull M inflate(@Nonnull DocumentSnapshot documentSnapshot) throws ModelInflateException {
+      return objectDeserializer.inflate(Objects.requireNonNull(documentSnapshot.getData()));
+    }
+  }
 
   /** Factory responsible for creating {@link FirestoreDriver} instances from injected dependencies. */
   @Factory
@@ -99,13 +144,13 @@ public final class FirestoreDriver<Key extends Message, Model extends Message>
       @Nonnull CredentialsProvider credentialsProvider,
       @Nonnull GrpcTransportOptions transportOptions,
       @Nonnull ListeningScheduledExecutorService executorService,
-      @Nonnull Message.Builder builder) {
+      @Nonnull M instance) {
       return new FirestoreDriver<>(
         firestoreChannel,
         credentialsProvider,
         transportOptions,
         executorService,
-        CollapsedMessageCodec.forModel(builder));
+        CollapsedMessageCodec.forModel(instance, DocumentSnapshotDeserializer.forModel(instance)));
     }
   }
 
@@ -122,7 +167,7 @@ public final class FirestoreDriver<Key extends Message, Model extends Message>
                           CredentialsProvider credentialsProvider,
                           GrpcTransportOptions transportOptions,
                           ListeningScheduledExecutorService executorService,
-                          ModelCodec<Model, CollapsedMessage> codec) {
+                          ModelCodec<Model, CollapsedMessage, DocumentSnapshot> codec) {
     this.codec = codec;
     this.executorService = executorService;
     FirestoreOptions firestoreOptions = FirestoreOptions.newBuilder()
@@ -144,7 +189,15 @@ public final class FirestoreDriver<Key extends Message, Model extends Message>
    * @return Inflated object record, or {@link Optional#empty()}.
    */
   private @Nonnull Model deserialize(@Nonnull DocumentSnapshot snapshot) {
-    throw new IllegalStateException("not yet implemented: " + snapshot.toString());
+    try {
+      return this.codec.deserialize(snapshot);
+    } catch (IOException ioe) {
+      var buf = new StringWriter();
+      var printer = new PrintWriter(buf);
+      ioe.printStackTrace(printer);
+      logging.error("Failed to deserialize model: '" + ioe.getMessage() + "'.\n" + buf);
+      throw new RuntimeException(ioe);
+    }
   }
 
   // -- Getters -- //
@@ -157,7 +210,7 @@ public final class FirestoreDriver<Key extends Message, Model extends Message>
   /** {@inheritDoc} */
   @Nonnull
   @Override
-  public ModelCodec<Model, CollapsedMessage> codec() {
+  public ModelCodec<Model, CollapsedMessage, DocumentSnapshot> codec() {
     return this.codec;
   }
 
@@ -167,8 +220,72 @@ public final class FirestoreDriver<Key extends Message, Model extends Message>
    * @param keyInstance Key instance to convert into a ref.
    * @return Computed document reference.
    */
-  private @Nonnull DocumentReference ref(@Nonnull Key keyInstance) {
-    throw new IllegalStateException("not yet implemented");
+  private @Nonnull DocumentReference ref(@Nonnull Message keyInstance) {
+    if (logging.isDebugEnabled())
+      logging.debug("Creating Firestore ref from key instance '" + keyInstance.toString() + "'.");
+    enforceRole(keyInstance, DatapointType.OBJECT_KEY);
+    var keyDescriptor = keyInstance.getDescriptorForType();
+
+    // first: resolve the key's model path
+    String resolvedPath;
+    var explicitPath = modelAnnotation(keyDescriptor, Datamodel.db, false);
+
+    if (explicitPath.isPresent() && !explicitPath.get().getPath().isEmpty()) {
+      resolvedPath = explicitPath.get().getPath();
+      if (logging.isTraceEnabled())
+        logging.trace("Explicit path found for type '"
+            + keyDescriptor.getFullName() + "'. Using '" + resolvedPath + "'.");
+    } else {
+      // `PersonKey` -> `persons`
+      resolvedPath = keyInstance
+          .getDescriptorForType()
+          .getName()
+          .toLowerCase()
+          .replace("key", "")
+          + "s";
+
+      if (logging.isTraceEnabled())
+        logging.trace("No explicit path found for type '"
+            + keyDescriptor.getFullName() + "'. Resolved as '" + resolvedPath + "'.");
+    }
+
+    // second: resolve the key's ID
+    var resolvedId = id(keyInstance);
+    Optional<String> targetId = resolvedId.map(Object::toString);
+
+    // third: resolve the model's parent, if applicable
+    var parentField = annotatedField(
+        keyDescriptor,
+        Datamodel.field,
+        false,
+        Optional.of((field) -> field.getType() == FieldType.PARENT));
+
+    if (parentField.isPresent()) {
+      var parentInstance = ModelMetadata.pluck(keyInstance, parentField.get());
+      if (parentInstance.getValue().isPresent()) {
+        var parentKey = this.ref((Message)parentInstance.getValue().get());
+
+        DocumentReference ref = targetId
+            .map(s -> parentKey.collection(resolvedPath).document(s))
+            .orElseGet(() -> parentKey.collection(resolvedPath).document());
+
+        if (logging.isDebugEnabled())
+          logging.debug("Generated document reference with parent: '" + ref.toString() + "'.");
+        return ref;
+      } else {
+        // no parent present when one is required: fail
+        throw new IllegalStateException("Cannot persist key with missing parent when one is requred.");
+      }
+    } else {
+      // build a document reference with no parent
+      DocumentReference ref = targetId
+          .map(s -> engine.collection(resolvedPath).document(s))
+          .orElseGet(() -> engine.collection(resolvedPath).document());
+
+      if (logging.isDebugEnabled())
+        logging.debug("Generated document reference with no parent: '" + ref.toString() + "'.");
+      return ref;
+    }
   }
 
   /**
@@ -190,24 +307,53 @@ public final class FirestoreDriver<Key extends Message, Model extends Message>
   /** {@inheritDoc} */
   @Override
   public @Nonnull Key generateKey(@Nonnull Message instance) {
-    var fieldPointer = ModelMetadata.keyField(instance);
+    var fieldPointer = keyField(instance);
     if (fieldPointer.isEmpty())
       throw new IllegalArgumentException("Failed to resolve key field for message '"
           + instance.getDescriptorForType().getFullName() + "'.");
 
     var keyBuilder = instance.toBuilder().getFieldBuilder(fieldPointer.get().getField());
-    var idPointer = ModelMetadata.idField(keyBuilder.getDescriptorForType());
+    var idPointer = idField(keyBuilder.getDescriptorForType());
     if (idPointer.isEmpty())
       throw new IllegalArgumentException("Failed to resolve key ID field for key message type '"
           + keyBuilder.getDescriptorForType().getFullName() + "'.");
 
-    ModelMetadata.spliceBuilder(
+    spliceBuilder(
         keyBuilder,
         idPointer.get(),
         Optional.of(UUID.randomUUID().toString().toUpperCase()));
 
     //noinspection unchecked
     return (Key)keyBuilder.build();
+  }
+
+  /** Convert between a standard Protobuf field mask, and a Firestore field mask. */
+  private @Nullable com.google.cloud.firestore.FieldMask convertMask(@Nonnull FieldMask originalMask) {
+    ProtocolStringList paths = originalMask.getPathsList();
+    if (!paths.isEmpty()) {
+      if (logging.isDebugEnabled())
+        logging.debug("Applying field mask for Firestore operation: \n" + originalMask.toString());
+
+      ArrayList<String> pathsList = new ArrayList<>(paths.size());
+      var count = originalMask.getPathsCount();
+      for (int i = 0; i < count; i++) {
+        pathsList.add(originalMask.getPaths(i));
+      }
+
+      String[] pathsArr = new String[pathsList.size()];
+      pathsList.toArray(pathsArr);
+
+      return com.google.cloud.firestore.FieldMask.of(pathsArr);
+    }
+    return null;
+  }
+
+  /** @return Fetched model, with the provided field mask enforced. */
+  private @Nonnull Model enforceMask(@Nonnull Model instance, @Nullable Optional<FieldMask> mask) {
+    // nothing from nothing
+    Objects.requireNonNull(instance, "model instance should not be null for mask enforcement");
+    // @TODO: field mask enforcement
+    return instance;
   }
 
   // -- API: Fetch -- //
@@ -217,23 +363,33 @@ public final class FirestoreDriver<Key extends Message, Model extends Message>
     Objects.requireNonNull(key, "Cannot fetch model with `null` for key.");
     Objects.requireNonNull(opts, "Cannot fetch model without `options`.");
     enforceRole(key, DatapointType.OBJECT_KEY);
-    final var id = id(key).orElseThrow(() -> new IllegalArgumentException("Cannot fetch model with empty key."));
+    id(key).orElseThrow(() -> new IllegalArgumentException("Cannot fetch model with empty key."));
 
     ExecutorService exec = opts.executorService().orElseGet(this::executorService);
-    return ReactiveFuture.wrap(Futures.transform(ReactiveFuture.wrap(engine.getAll(ref(key)), exec), new Function<>() {
+    DocumentReference[] refs = {ref(key)};
+    FieldMask mask = opts.fieldMask().orElse(null);
+    var that = this;
+
+    return ReactiveFuture.wrap(Futures.transform(ReactiveFuture.wrap(
+        engine.getAll(
+            refs,
+            mask != null ? this.convertMask(mask) : null
+        ),
+        exec), new Function<>() {
       @Override
       public @Nonnull Optional<Model> apply(@Nullable List<DocumentSnapshot> documentSnapshots) {
-        if (documentSnapshots == null || documentSnapshots.isEmpty()) {
+        if (documentSnapshots == null || documentSnapshots.isEmpty() || (
+            documentSnapshots.size() == 1 && !documentSnapshots.get(0).exists())) {
           return Optional.empty();
 
         } else if (documentSnapshots.size() > 1) {
           throw new IllegalStateException("Unexpectedly encountered more than 1 result.");
 
         } else {
-          return Optional.of(deserialize(
+          return Optional.of(that.enforceMask(deserialize(
             Objects.requireNonNull(
               documentSnapshots.get(0),
-              "Unexpected null `DocumentReference`.")));
+              "Unexpected null `DocumentReference`.")), opts.fieldMask()));
         }
       }
     }, exec), exec);
@@ -289,6 +445,6 @@ public final class FirestoreDriver<Key extends Message, Model extends Message>
   /** {@inheritDoc} */
   @Override
   public @Nonnull ReactiveFuture<Key> delete(@Nonnull Key key, @Nonnull DeleteOptions options) {
-    return null;
+    throw new IllegalStateException("Not yet implemented.");
   }
 }

@@ -57,12 +57,15 @@ import static gust.backend.model.ModelMetadata.*;
  * @see DatabaseDriver <pre>`DatabaseDriver`</pre> for drivers with rich features and/or strong durability guarantees.
  * @param <Key> Key record type (must be annotated with model role {@code OBJECT_KEY}).
  * @param <Model> Message/model type which this persistence driver is specialized for.
- * @param <Intermediate> Intermediate record format used by the underlying driver implementation during serialization.
+ * @param <ReadIntermediate> Intermediate record format used by the underlying driver implementation during model
+ *                           de-serialization.
+ * @param <WriteIntermediate> Intermediate record format used by the underlying driver implementation during model
+ *                           serialization.
  */
 @Immutable
 @ThreadSafe
 @SuppressWarnings({"unused", "UnstableApiUsage"})
-public interface PersistenceDriver<Key extends Message, Model extends Message, Intermediate> {
+public interface PersistenceDriver<Key extends Message, Model extends Message, ReadIntermediate, WriteIntermediate> {
   /** Default timeout to apply when otherwise unspecified. */
   long DEFAULT_TIMEOUT = 30;
 
@@ -184,7 +187,7 @@ public interface PersistenceDriver<Key extends Message, Model extends Message, I
    *
    * @return Model codec currently in use by this adapter.
    */
-  @Nonnull ModelCodec<Model, Intermediate> codec();
+  @Nonnull ModelCodec<Model, WriteIntermediate, ReadIntermediate> codec();
 
   // -- API: Key Generation -- //
   /**
@@ -391,7 +394,7 @@ public interface PersistenceDriver<Key extends Message, Model extends Message, I
    */
   default @Nullable Model fetch(@Nonnull Key key, @Nullable FetchOptions options) throws PersistenceException {
     Optional<Model> msg = fetchSafe(key, options);
-    return msg.isPresent() ? msg.get() : null;
+    return msg.orElse(null);
   }
 
   /**

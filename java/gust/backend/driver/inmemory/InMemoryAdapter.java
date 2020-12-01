@@ -32,7 +32,7 @@ import java.util.concurrent.ExecutorService;
  */
 @SuppressWarnings("UnstableApiUsage")
 public final class InMemoryAdapter<Key extends Message, Model extends Message>
-  implements ModelAdapter<Key, Model, EncodedModel> {
+  implements ModelAdapter<Key, Model, EncodedModel, EncodedModel> {
   /** Specifies the format to use. One of `BINARY`, `JSON`, or `TEXT`. */
   private static final EncodingMode FORMAT = EncodingMode.BINARY;
 
@@ -40,7 +40,7 @@ public final class InMemoryAdapter<Key extends Message, Model extends Message>
   private final @Nonnull InMemoryDriver<Key, Model> driver;
 
   /** Codec in use for model serialization/de-serialization activities. */
-  private final @Nonnull ModelCodec<Model, EncodedModel> codec;
+  private final @Nonnull ModelCodec<Model, EncodedModel, EncodedModel> codec;
 
   /** Cache to use for model interactions through this adapter (optional). */
   private final @Nonnull Optional<CacheDriver<Key, Model>> cache;
@@ -55,7 +55,7 @@ public final class InMemoryAdapter<Key extends Message, Model extends Message>
    */
   @SuppressWarnings("unused")
   private InMemoryAdapter(@Nonnull Key keyInstance,
-                          @Nonnull ModelCodec<Model, EncodedModel> codec,
+                          @Nonnull ModelCodec<Model, EncodedModel, EncodedModel> codec,
                           @Nonnull Optional<CacheDriver<Key, Model>> cache,
                           @Nonnull ListeningScheduledExecutorService executorService) {
     this.cache = cache;
@@ -119,7 +119,7 @@ public final class InMemoryAdapter<Key extends Message, Model extends Message>
   // -- Components -- //
   /** {@inheritDoc} */
   @Override
-  public @Nonnull ModelCodec<Model, EncodedModel> codec() {
+  public @Nonnull ModelCodec<Model, EncodedModel, EncodedModel> codec() {
     return this.codec;
   }
 

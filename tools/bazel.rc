@@ -60,6 +60,7 @@ build:release --copt=-Wframe-larger-than=16384
 build:dev --compilation_mode=dbg
 build:dev --spawn_strategy=local
 build:dev --strategy=J2cl=worker
+build:dev --strategy=KotlinCompile=worker
 build:dev --strategy=Closure=worker
 build:dev --strategy=TypeScriptCompile=worker
 build:dev --experimental_persistent_javac

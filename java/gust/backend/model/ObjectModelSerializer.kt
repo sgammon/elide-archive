@@ -12,11 +12,7 @@
  */
 package gust.backend.model
 
-import tools.elide.core.Datamodel
-import tools.elide.core.CollectionMode
-import tools.elide.core.DatapointOptions
 import tools.elide.core.FieldType as CoreFieldType
-import tools.elide.core.FieldPersistenceOptions
 import com.google.firestore.v1.ArrayValue
 import com.google.firestore.v1.MapValue
 import com.google.firestore.v1.Value
@@ -27,6 +23,7 @@ import gust.backend.model.ModelSerializer.EnumSerializeMode
 import gust.backend.model.ModelSerializer.InstantSerializeMode
 import gust.backend.runtime.Logging
 import gust.util.InstantFactory
+import tools.elide.core.*
 import java.util.*
 import javax.annotation.Nonnull
 import javax.annotation.concurrent.Immutable
@@ -681,6 +678,44 @@ class ObjectModelSerializer<Model : Message>
     }
   }
 
+  private fun resolvePersistenceFromKeyOrModel(descriptor: Descriptor,
+                                               ext: PersistenceOptions?,
+                                               field: FieldDescriptor?,
+                                               nested: Boolean,
+                                               defaultMode: CollectionMode): Pair<CollectionMode, String?> {
+    // try to resolve a key instance
+    val keyField = ModelMetadata.keyField(descriptor)
+    val (mode, path) = if (keyField.isPresent) {
+      // grab the key type, look for an annotated path
+      val keyType = keyField.get().field.messageType
+      val keyExt = ModelMetadata.modelAnnotation(keyType, Datamodel.db, false)
+      if (keyExt.isPresent) {
+        val keyValues = keyExt.get()
+        val extMode = when {
+          ext != null && ext.hasField(ext.descriptorForType.findFieldByName("mode")) -> ext.mode
+          keyValues.hasField(keyValues.descriptorForType.findFieldByName("mode")) -> keyValues.mode
+          else -> CollectionMode.NESTED
+        }
+
+        val extPath = when {
+          ext != null && ext.hasField(ext.descriptorForType.findFieldByName("path")) -> ext.path
+          keyValues.hasField(keyValues.descriptorForType.findFieldByName("path")) -> keyValues.path
+          else -> null
+        }
+
+        extMode to extPath
+      } else {
+        // key field has no annotation: generate a default
+        ext?.mode to null
+      }
+    } else {
+      // no key field: no chance to annotate, simply generate a default
+      ext?.mode to null
+    }
+
+    return (mode ?: defaultMode) to (path ?: generateDefaultWritePath(descriptor, nested, field, defaultMode))
+  }
+
   /**
    * Given an entity, and either a nested or root context, resolve a write operation to persist it.
    *
@@ -708,17 +743,20 @@ class ObjectModelSerializer<Model : Message>
       CollectionMode.GROUP
     }
     val fieldProto = field?.toProto()
+    val keyPresent = ModelMetadata.keyField(descriptor).isPresent
 
     // resolve storage mode for this object, and storage path (pluralized + lower-cased message name)
     val (storageMode: CollectionMode, storagePath: String?) = if (
       descriptorProto.hasOptions() && descriptorProto.options.hasExtension(Datamodel.db)) {
-      val extType = descriptorProto.options.getExtension(Datamodel.db)
+      val extType = ModelMetadata.modelAnnotation(descriptor, Datamodel.db, false)
 
-      if (extType != null) {
-        if (extType.path.isEmpty()) {
-          extType.mode to generateDefaultWritePath(descriptor, nested, field, defaultMode)
+      if (extType.isPresent) {
+        val ext = extType.get()
+        if (ext.path.isEmpty()) {
+          resolvePersistenceFromKeyOrModel(descriptor, ext, field, nested, defaultMode)
         } else {
-          extType.mode to extType.path
+          // use the explicit path on the model instance
+          ext.mode to ext.path
         }
       } else {
         (if (nested) {
@@ -727,6 +765,9 @@ class ObjectModelSerializer<Model : Message>
           CollectionMode.GROUP
         }) to generateDefaultWritePath(descriptor, nested, field, defaultMode)
       }
+    } else if (keyPresent) {
+      resolvePersistenceFromKeyOrModel(descriptor, null, field, nested, defaultMode)
+
     } else if (fieldProto != null && fieldProto.options.hasExtension(Datamodel.collection)) {
       // the field has an extension on it
       val extCollection = fieldProto.options.getExtension(Datamodel.collection)

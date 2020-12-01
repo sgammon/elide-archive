@@ -42,12 +42,12 @@ import static gust.backend.model.ModelMetadata.*;
  */
 @SuppressWarnings("UnstableApiUsage")
 public final class InMemoryDriver<Key extends Message, Model extends Message>
-  implements PersistenceDriver<Key, Model, EncodedModel> {
+  implements PersistenceDriver<Key, Model, EncodedModel, EncodedModel> {
   /** Private logging pipe. */
   private static final Logger logging = Logging.logger(InMemoryStorage.class);
 
   /** Codec to use for model serialization/de-serialization. */
-  private final @Nonnull ModelCodec<Model, EncodedModel> codec;
+  private final @Nonnull ModelCodec<Model, EncodedModel, EncodedModel> codec;
 
   /** Executor service to use for storage calls. */
   private final @Nonnull ListeningScheduledExecutorService executorService;
@@ -84,7 +84,7 @@ public final class InMemoryDriver<Key extends Message, Model extends Message>
    * @param codec Codec to use when serializing and de-serializing models with this driver.
    * @param executorService Executor service to run against.
    */
-  private InMemoryDriver(@Nonnull ModelCodec<Model, EncodedModel> codec,
+  private InMemoryDriver(@Nonnull ModelCodec<Model, EncodedModel, EncodedModel> codec,
                          @Nonnull ListeningScheduledExecutorService executorService) {
     this.codec = codec;
     this.executorService = executorService;
@@ -107,7 +107,7 @@ public final class InMemoryDriver<Key extends Message, Model extends Message>
    * @return In-memory driver instance created for the specified message type.
    */
   static @Nonnull <K extends Message, M extends Message> InMemoryDriver<K, M> acquire(
-    @Nonnull ModelCodec<M, EncodedModel> codec,
+    @Nonnull ModelCodec<M, EncodedModel, EncodedModel> codec,
     @Nonnull ListeningScheduledExecutorService executorService) {
     return new InMemoryDriver<>(codec, executorService);
   }
@@ -115,7 +115,7 @@ public final class InMemoryDriver<Key extends Message, Model extends Message>
   // -- Getters -- //
   /** {@inheritDoc} */
   @Override
-  public @Nonnull ModelCodec<Model, EncodedModel> codec() {
+  public @Nonnull ModelCodec<Model, EncodedModel, EncodedModel> codec() {
     return this.codec;
   }
 

@@ -14,6 +14,7 @@ package gust.backend.driver.firestore;
 
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.rpc.TransportChannelProvider;
+import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.v1.stub.FirestoreStubSettings;
 import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.common.util.concurrent.ListeningScheduledExecutorService;
@@ -55,7 +56,7 @@ import java.util.Optional;
 @ThreadSafe
 @SuppressWarnings({"WeakerAccess", "unused", "UnstableApiUsage"})
 public final class FirestoreAdapter<Key extends Message, Model extends Message>
-  implements DatabaseAdapter<Key, Model, CollapsedMessage> {
+  implements DatabaseAdapter<Key, Model, DocumentSnapshot, CollapsedMessage> {
   /** Private log pipe. */
   private static final Logger logging = Logging.logger(FirestoreAdapter.class);
 
@@ -63,7 +64,7 @@ public final class FirestoreAdapter<Key extends Message, Model extends Message>
   private final @Nonnull FirestoreDriver<Key, Model> driver;
 
   /** Serializer and deserializer for this model. */
-  private final @Nonnull ModelCodec<Model, CollapsedMessage> codec;
+  private final @Nonnull ModelCodec<Model, CollapsedMessage, DocumentSnapshot> codec;
 
   /** Cache to use for model interactions through this adapter (optional). */
   private final @Nonnull Optional<CacheDriver<Key, Model>> cache;
@@ -77,7 +78,7 @@ public final class FirestoreAdapter<Key extends Message, Model extends Message>
    * @param cache Cache to use when reading data from Firestore (optional).
    */
   private FirestoreAdapter(@Nonnull FirestoreDriver<Key, Model> driver,
-                           @Nonnull ModelCodec<Model, CollapsedMessage> codec,
+                           @Nonnull ModelCodec<Model, CollapsedMessage, DocumentSnapshot> codec,
                            @Nonnull Optional<CacheDriver<Key, Model>> cache) {
     this.driver = driver;
     this.codec = codec;
@@ -122,7 +123,7 @@ public final class FirestoreAdapter<Key extends Message, Model extends Message>
     @Nonnull Optional<CacheDriver<K, M>> cacheDriver) {
     return new FirestoreAdapter<>(
       driver,
-      CollapsedMessageCodec.forModel(builder),
+      driver.codec(),
       cacheDriver);
   }
 
@@ -208,7 +209,7 @@ public final class FirestoreAdapter<Key extends Message, Model extends Message>
             credentialsProvider,
             transportOptions,
             executorService,
-            builder
+            messageInstance
         ),
         Optional.empty()
     );
@@ -217,7 +218,7 @@ public final class FirestoreAdapter<Key extends Message, Model extends Message>
   // -- Components -- //
   /** {@inheritDoc} */
   @Override
-  public @Nonnull ModelCodec<Model, CollapsedMessage> codec() {
+  public @Nonnull ModelCodec<Model, CollapsedMessage, DocumentSnapshot> codec() {
     return this.codec;
   }
 
@@ -229,7 +230,7 @@ public final class FirestoreAdapter<Key extends Message, Model extends Message>
 
   /** {@inheritDoc} */
   @Override
-  public @Nonnull DatabaseDriver<Key, Model, CollapsedMessage> engine() {
+  public @Nonnull DatabaseDriver<Key, Model, DocumentSnapshot, CollapsedMessage> engine() {
     return this.driver;
   }
 

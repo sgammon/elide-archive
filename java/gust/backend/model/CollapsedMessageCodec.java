@@ -23,22 +23,33 @@ import javax.annotation.concurrent.ThreadSafe;
 
 /**
  *
+ *
  * @param <Model>
+ * @param <ReadIntermediate>
  */
 @Factory
 @Immutable
 @ThreadSafe
-public final class CollapsedMessageCodec<Model extends Message> implements ModelCodec<Model, CollapsedMessage> {
+public final class CollapsedMessageCodec<Model extends Message, ReadIntermediate>
+    implements ModelCodec<Model, CollapsedMessage, ReadIntermediate> {
   /** Builder proto-type used to spawn new instances. */
   private final Message.Builder builder;
+
+  /** Default model instance to build with. */
+  private final Model instance;
 
   /** Singleton access to serializer. */
   private final CollapsedMessageSerializer serializer = new CollapsedMessageSerializer();
 
-  /** Singleton access to de-serializer. */
-  private final CollapsedMessageDeserializer deserializer = new CollapsedMessageDeserializer();
+  /** Deserializer for the model, provided at construction time. */
+  private final ModelDeserializer<ReadIntermediate, Model> deserializer;
 
-  private CollapsedMessageCodec(@Nonnull Message.Builder builder) { this.builder = builder; }
+  private CollapsedMessageCodec(@Nonnull Model instance,
+                                @Nonnull ModelDeserializer<ReadIntermediate, Model> deserializer) {
+    this.instance = instance;
+    this.builder = instance.newBuilderForType();
+    this.deserializer = deserializer;
+  }
 
   /**
    * Create a collapsed message codec which adapts the provided builder to {@link CollapsedMessage} and back. These
@@ -48,8 +59,9 @@ public final class CollapsedMessageCodec<Model extends Message> implements Model
    * @return Collapsed message codec bound to the provided message type.
    */
   @Context
-  public static @Nonnull <M extends Message> CollapsedMessageCodec<M> forModel(Message.Builder builder) {
-    return new CollapsedMessageCodec<>(builder);
+  public static @Nonnull <M extends Message, RI> CollapsedMessageCodec<M, RI> forModel(
+      M instance, ModelDeserializer<RI, M> deserializer) {
+    return new CollapsedMessageCodec<>(instance, deserializer);
   }
 
   /**
@@ -74,7 +86,7 @@ public final class CollapsedMessageCodec<Model extends Message> implements Model
    * @see #serialize(Message) To call into serialization directly.
    */
   @Override
-  public @Nonnull ModelDeserializer<CollapsedMessage, Model> deserializer() {
+  public @Nonnull ModelDeserializer<ReadIntermediate, Model> deserializer() {
     return deserializer;
   }
 
@@ -96,24 +108,13 @@ public final class CollapsedMessageCodec<Model extends Message> implements Model
     }
   }
 
-  /** De-serializes model instances from {@link CollapsedMessage} objects. */
-  private final class CollapsedMessageDeserializer implements ModelDeserializer<CollapsedMessage, Model> {
-    /**
-     * De-serialize a model instance from the provided input type, throwing exceptions verbosely if we are unable to
-     * correctly, verifiably, and properly load the record.
-     *
-     * @param model Input data or object from which to load the model instance.
-     * @return De-serialized and inflated model instance. Always a {@link Message}.
-     * @throws ModelInflateException If the model fails to load for any reason.
-     */
-    @Override
-    public @Nonnull Model inflate(@Nonnull CollapsedMessage model) throws ModelInflateException {
-      return null;
-    }
-  }
-
   /** @return Builder for the model handled by this codec. */
   public Message.Builder getBuilder() {
     return builder;
+  }
+
+  /** @return Default model instance. */
+  public Model getInstance() {
+    return instance;
   }
 }

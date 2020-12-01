@@ -14,7 +14,8 @@ import javax.annotation.concurrent.ThreadSafe
  */
 @Immutable
 @ThreadSafe
-class ObjectModelCodec<Model: Message> private constructor(@Nonnull instance: Model) : ModelCodec<Model, Map<String, *>> {
+class ObjectModelCodec<Model: Message> private constructor(@Nonnull instance: Model) :
+  ModelCodec<Model, Map<String, *>, Map<String, *>> {
   /**
    * @return Builder for the model handled by this codec.
    */

@@ -115,6 +115,7 @@ javadoc_library(
         javaproto("//gust/core:datamodel"),
         javaproto("//gust/page:page_proto"),
         javaproto("//java/gust/backend/builtin:sitemap_proto"),
+        "//java/gust/backend/model:model",
         "//java/gust/util:util",
     ],
     bottom_text = "Copyright (©) 2020, The Gust Framework Authors",

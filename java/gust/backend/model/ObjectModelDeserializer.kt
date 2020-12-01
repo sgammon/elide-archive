@@ -21,7 +21,7 @@ import javax.annotation.Nonnull
  *
  * @param <Model> Model record type which this serializer is responsible for converting.
  */
-class ObjectModelDeserializer<Model: Message> private constructor(
+open class ObjectModelDeserializer<Model: Message> protected constructor(
   /** Default model instance to spawn builders from. */
   private val defaultInstance: Model): ModelDeserializer<Map<String, *>, Model> {
   companion object {
@@ -35,6 +35,7 @@ class ObjectModelDeserializer<Model: Message> private constructor(
      * @param <M> Model type to acquire an object model serializer for.
      * @return Deserializer, customized to the specified type.
      */
+    @JvmStatic
     @Suppress("MemberVisibilityCanBePrivate")
     fun <M: Message> withSettings(instance: M): ObjectModelDeserializer<M> {
       return ObjectModelDeserializer(instance)
@@ -47,6 +48,7 @@ class ObjectModelDeserializer<Model: Message> private constructor(
      * @param <M> Model type to acquire an object model deserializer for.
      * @return Deserializer, customized to the specified type.
      */
+    @JvmStatic
     fun <M: Message> defaultInstance(instance: M): ObjectModelDeserializer<M> {
       return withSettings(instance)
     }
