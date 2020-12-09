@@ -142,7 +142,7 @@ public final class FirestoreAdapter<Key extends Message, Model extends Message>
     @Context
     @Refreshable
     public static @Nonnull <K extends Message, M extends Message> FirestoreAdapter<K, M> acquire(
-      @Nonnull M.Builder messageBuilder,
+      @Nonnull Message.Builder messageBuilder,
       @Nonnull FirestoreDriver<K, M> driver,
       @Nonnull Optional<CacheDriver<K, M>> cache) {
       // resolve model builder from type
@@ -201,7 +201,7 @@ public final class FirestoreAdapter<Key extends Message, Model extends Message>
       @Nonnull ListeningScheduledExecutorService executorService,
       @Nonnull K keyInstance,
       @Nonnull M messageInstance) {
-    M.Builder builder = messageInstance.newBuilderForType();
+    Message.Builder builder = messageInstance.newBuilderForType();
     return FirestoreAdapter.FirestoreAdapterFactory.acquire(
         builder,
         FirestoreDriver.FirestoreDriverFactory.acquireDriver(

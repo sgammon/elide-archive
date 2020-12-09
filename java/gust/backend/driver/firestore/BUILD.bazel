@@ -23,6 +23,7 @@ load(
 load(
     "//defs/toolchain:deps.bzl",
     "maven",
+    "javaproto",
 )
 
 _COMMON_DEPS = [
@@ -58,6 +59,9 @@ java_library(
         "//java/gust/backend/model:ModelCodec",
         "//java/gust/backend/model:ModelMetadata",
         "//java/gust/backend/model:PersistenceDriver",
+        "//java/gust/backend/transport:GoogleService",
+        "//java/gust/backend/transport:GoogleTransportConfig",
+        "//java/gust/backend/transport:GoogleTransportManager",
     ] + _COMMON_DEPS,
 )
 
@@ -71,14 +75,20 @@ java_library(
         "//java/gust/backend/model:DeleteOptions",
         "//java/gust/backend/model:FetchOptions",
         "//java/gust/backend/model:ModelCodec",
+        "//java/gust/backend/model:ModelDeserializer",
+        "//java/gust/backend/model:ModelInflateException",
         "//java/gust/backend/model:ModelMetadata",
         "//java/gust/backend/model:ObjectModelCodec",
         "//java/gust/backend/model:ObjectModelSerializer",
         "//java/gust/backend/model:ObjectModelDeserializer",
+        "//java/gust/backend/model:OperationOptions",
+        "//java/gust/backend/model:SerializedModel",
         "//java/gust/backend/model:UpdateOptions",
         "//java/gust/backend/model:WriteOptions",
+        "//java/gust/backend/model:WriteProxy",
         "//java/gust/backend/transport:GoogleService",
         "//java/gust/backend/transport:GoogleTransportManager",
+        javaproto("//gust/core:datamodel"),
         maven("io.grpc:grpc-api"),
         maven("com.google.api:gax"),
         maven("com.google.api:gax-grpc"),

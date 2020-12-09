@@ -4,7 +4,6 @@ directories:
   java
   javatests
   tools
-  types
   gust
   tests
   jstests
@@ -20,7 +19,7 @@ targets:
   //style/...
   //tests/...
   //javatests/...
-  //jstests/...
+  -//jstests/...
 
 ts_config_rules:
   //:tsconfig.json
@@ -31,6 +30,7 @@ test_sources:
   - */javatests/*
 
 additional_languages:
+  go
   java
   kotlin
   python

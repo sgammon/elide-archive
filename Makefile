@@ -65,13 +65,14 @@ COVERAGE_ARGS ?= --function-coverage \
                  --title "$(PROJECT_NAME)" \
                  --precision 2 \
                  --legend \
+                 --no-source \
                  --rc genhtml_med_limit=60 \
                  --rc genhtml_hi_limit=90
 
 APP ?=
-TARGETS ?= //java/... //gust/... //js/... //style/... //jstests/...
-TESTS ?= //tests/...
-COVERABLE ?= //javatests:suite
+TARGETS ?= //java/... //gust/... //js/... //style/...
+TESTS ?= //javatests:suite
+COVERABLE ?=
 
 TAG ?=
 ifeq ($(QUIET),yes)
@@ -213,12 +214,11 @@ forceclean: distclean  ## Clean everything, and sanitize the codebase (DANGEROUS
 
 test:  ## Run all framework testsuites.
 ifeq ($(COVERAGE),yes)
-	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) $(TEST_COMMAND) $(TAG) $(BASE_ARGS) $(TEST_ARGS) -- $(TESTS)
-	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) coverage $(TAG) $(BASE_ARGS) $(TEST_ARGS) $(TEST_ARGS_WITH_COVERAGE) -- $(COVERABLE)
+	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) coverage $(TAG) $(BASE_ARGS) $(TEST_ARGS) $(TEST_ARGS_WITH_COVERAGE) -- $(TESTS)
 	$(_RULE)$(GENHTML) $(COVERAGE_DATA) --output-directory $(COVERAGE_REPORT) $(COVERAGE_ARGS)
 	$(_RULE)cp -f $(POSIX_FLAGS) $(COVERAGE_DATA) $(COVERAGE_REPORT)/lcov.dat
 else
-	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) $(TEST_COMMAND) $(TAG) $(BASE_ARGS) $(TEST_ARGS) -- $(TESTS) $(COVERABLE)
+	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) $(TEST_COMMAND) $(TAG) $(BASE_ARGS) $(TEST_ARGS) -- $(TESTS)
 endif
 
 docs:  ## Build documentation for the framework.

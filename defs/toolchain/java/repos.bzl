@@ -305,6 +305,7 @@ GOOGLE_CLOUD_COORDINATES = [
     ("com.google.cloud:google-cloud-pubsub", GCLOUD_PUBSUB_VERSION),
     ("com.google.cloud:google-cloud-storage", GCLOUD_STORAGE_VERSION),
     ("com.google.cloud:google-cloud-firestore", GCLOUD_FIRESTORE_VERSION),
+    ("com.google.api.grpc:proto-google-cloud-firestore-v1", GCLOUD_FIRESTORE_VERSION),
     ("com.google.cloud:google-cloud-monitoring", GCLOUD_MONITORING_VERSION),
 ]
 

@@ -65,6 +65,8 @@ java_library(
     deps = [
         ":ModelSerializer",
         ":WriteProxy",
+        ":SerializedModel",
+        javaproto("//gust/core:datamodel"),
     ] + _COMMON_DEPS,
 )
 
@@ -377,6 +379,7 @@ java_library(
     srcs = ["SerializedModel.java"],
     deps = [
         maven("com.google.cloud:google-cloud-firestore"),
+        maven("com.google.api.grpc:proto-google-cloud-firestore-v1"),
     ] + _COMMON_DEPS,
 )
 

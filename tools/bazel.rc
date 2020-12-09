@@ -40,8 +40,12 @@ build --javacopt="-encoding UTF-8"
 build --strict_java_deps=strict
 build --use_ijars
 build --interface_shared_objects
-build --java_toolchain=@bazel_tools//tools/jdk:toolchain_vanilla
-build --host_java_toolchain=@bazel_tools//tools/jdk:toolchain_vanilla
+
+build --java_toolchain=@bazel_tools//tools/jdk:toolchain_java11
+build --host_java_toolchain=@bazel_tools//tools/jdk:toolchain_java11
+#build --java_toolchain=@bazel_tools//tools/jdk:toolchain_vanilla
+#build --host_java_toolchain=@bazel_tools//tools/jdk:toolchain_vanilla
+
 build --workspace_status_command=./tools/bazel_stamp_vars.sh
 
 build:android --java_toolchain=@bazel_tools//tools/jdk:toolchain_java8
@@ -64,10 +68,9 @@ build:dev --strategy=KotlinCompile=worker
 build:dev --strategy=Closure=worker
 build:dev --strategy=TypeScriptCompile=worker
 build:dev --experimental_persistent_javac
-build:dev --define=jdk=zulu
-build:dev --define=ABSOLUTE_JAVABASE=/Library/Java/JavaVirtualMachines/zulu-14.jdk/Contents/Home
-build:dev --define=ZULUBASE=/Library/Java/JavaVirtualMachines/zulu-14.jdk/Contents/Home
-build:dev --javabase=//defs/toolchain/java:java_runtime
+#build:dev --define=ABSOLUTE_JAVABASE=/Library/Java/JavaVirtualMachines/zulu-15.jdk/Contents/Home
+#build:dev --define=ZULUBASE=/Library/Java/JavaVirtualMachines/zulu-15.jdk/Contents/Home
+#build:dev --javabase=//defs/toolchain/java:java_runtime
 build:dev --disk_cache=~/.cache/bazel-disk-cache
 
 build:android --define=ABSOLUTE_JAVABASE=/Library/Java/JavaVirtualMachines/zulu-8.jdk/Contents/Home

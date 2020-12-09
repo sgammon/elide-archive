@@ -534,7 +534,7 @@ public final class ReactiveFuture<R> implements Publisher<R>, ListenableFuture<R
      */
     private PublisherListenableFuture(@Nonnull Publisher<T> publisher) {
       this.future = SettableFuture.create();
-      publisher.subscribe(new Subscriber<>() {
+      publisher.subscribe(new Subscriber<T>() {
         @Override
         public void onSubscribe(Subscription s) {
           PublisherListenableFuture.this.subscription = s;

@@ -38,6 +38,8 @@ model(
 )
 
 _COMMON_DEPS = [
+    "//java/gust/backend/model:InvalidModelType",
+    "//java/gust/backend/runtime:LoggingTools",
     "@com_google_protobuf//:protobuf_java",
     "@com_google_protobuf//:protobuf_java_util",
     "@com_google_code_findbugs_jsr305//:com_google_code_findbugs_jsr305",
