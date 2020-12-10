@@ -141,14 +141,32 @@ def _style_binary(name,
         )
 
     elif src == None or (src.endswith(".gss") or src.endswith(".css")):
-        # process as normal CSS/GSS
-        _closure_css_binary(
-            name = "%s-bin" % name,
-            deps = deps,
-            defs = BASE_GSS_DEFS + defs,
-            renaming = renaming_state,
-            debug = debug_state,
-        )
+        if src == None:
+            _closure_css_binary(
+                name = "%s-bin" % name,
+                deps = deps,
+                defs = BASE_GSS_DEFS + defs,
+                renaming = renaming_state,
+                debug = debug_state,
+            )
+            _closure_css_library(
+                name = "%s-lib" % name,
+                srcs = ["%s-bin.css" % name],
+            )
+        else:
+            _closure_css_library(
+                name = "%s-lib" % name,
+                srcs = [src],
+            )
+
+            # process as normal CSS/GSS
+            _closure_css_binary(
+                name = "%s-bin" % name,
+                deps = [":%s-lib"],
+                defs = BASE_GSS_DEFS + defs,
+                renaming = renaming_state,
+                debug = debug_state,
+            )
     else:
         fail("Unrecognized style_binary src file.")
 
