@@ -61,7 +61,7 @@ def _apple_xcframework(name, path, exclude = None, **kwargs):
             ], exclude = exclude or []),
 
             # x86: default for fastbuild
-            "@gust//defs/conditions:dev": native.glob([
+            "//conditions:default": native.glob([
                  "%s/ios-i386_x86_64-simulator/**" % path,
             ], exclude = exclude or []),
         }),
