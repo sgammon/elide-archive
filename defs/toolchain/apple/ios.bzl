@@ -59,6 +59,11 @@ def _apple_xcframework(name, path, exclude = None, **kwargs):
             "@gust//defs/conditions:release": native.glob([
                  "%s/ios-armv7_arm64/**" % path,
             ], exclude = exclude or []),
+
+            # x86: default for fastbuild
+            "@gust//defs/conditions:dev": native.glob([
+                 "%s/ios-i386_x86_64-simulator/**" % path,
+            ], exclude = exclude or []),
         }),
         **kwargs,
     )
