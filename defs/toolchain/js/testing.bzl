@@ -49,11 +49,14 @@ DEFAULT_PEER_DEPS = [
 TEST_COMPILER_FLAGS = [
     "--env=BROWSER",
     "--isolation_mode=NONE",
-    "--dependency_mode=SORT_ONLY",
+    "--dependency_mode=PRUNE_LEGACY",
     "--process_common_js_modules",
     "--process_closure_primitives",
+    "--formatting=PRETTY_PRINT",
     "--rewrite_polyfills",
     "--use_types_for_optimization",
+    "--create_source_map=%outname%.map",
+    "--source_map_include_content",
 ]
 
 
@@ -66,7 +69,7 @@ def _js_bin_test(name,
                  data = None,
                  deps = None,
                  defs = None,
-                 compilation_level = "ADVANCED",
+                 compilation_level = "BUNDLE",
                  css = None,
                  entry_points = None,
                  html = None,
@@ -118,14 +121,14 @@ def _js_bin_test(name,
             ep = entry_points
 
         _closure_js_binary(
-            name = "%s_bin" % shard,
+            name = "%s_js" % shard,
             deps = [
                 ":%s_lib" % shard,
             ],
             compilation_level = compilation_level,
             css = css,
             debug = True,
-            defs = overlay_defs,
+            defs = overlay_defs + (extra_compiler_flags or []),
             entry_points = ep,
             formatting = "PRETTY_PRINT",
             visibility = visibility,
@@ -136,7 +139,7 @@ def _js_bin_test(name,
         _karma_web_test(
             name = shard,
             srcs = [
-                ":%s_bin" % shard
+                ":%s_js.js" % shard,
             ],
             bootstrap = [str(Label("@io_bazel_rules_closure//closure/testing:karma_runner.js"))],
             config_file = karma_config,
