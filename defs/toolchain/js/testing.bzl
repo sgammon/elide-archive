@@ -77,6 +77,7 @@ def _js_bin_test(name,
                  karma_config = str(Label("@gust//tests:karma_config.js")),
                  tags = [],
                  extra_compiler_flags = TEST_COMPILER_FLAGS,
+                 extra_peer_deps = [],
                  **kwargs):
 
     """ Build a closure JS test. """
@@ -139,7 +140,7 @@ def _js_bin_test(name,
             ],
             bootstrap = [str(Label("@io_bazel_rules_closure//closure/testing:karma_runner.js"))],
             config_file = karma_config,
-            peer_deps = DEFAULT_PEER_DEPS,
+            peer_deps = DEFAULT_PEER_DEPS + (extra_peer_deps or []),
         )
 
 
