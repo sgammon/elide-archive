@@ -71,7 +71,7 @@ COVERAGE_ARGS ?= --function-coverage \
 
 APP ?=
 TARGETS ?= //java/... //gust/... //js/... //style/...
-TESTS ?= //javatests:suite
+TESTS ?= //javatests:suite //jstests/...
 COVERABLE ?=
 
 TAG ?=
