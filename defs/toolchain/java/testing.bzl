@@ -116,6 +116,7 @@ def _browser_test_java(name,
         name = "%s-java" % name,
         srcs = srcs,
         deps = dedupe_deps_((deps or DEFAULT_TEST_DEPS) + INJECTED_TEST_DEPS),
+        testonly = True,
     )
 
     _java_web_test_suite(
@@ -126,6 +127,7 @@ def _browser_test_java(name,
         local = local,
         deps = dedupe_deps_((deps or DEFAULT_TEST_DEPS) + INJECTED_TEST_DEPS),
         jvm_flags = computed_jvm_flags,
+        testonly = True,
     )
 
 
