@@ -250,7 +250,7 @@ def _java_junit5_test(name,
 
 def _micronaut_test(name,
                     srcs,
-                    test_class,
+                    test_class = None,
                     deps = [],
                     runtime_deps = [],
                     browser = False,
