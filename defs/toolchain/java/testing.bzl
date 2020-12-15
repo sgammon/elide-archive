@@ -120,9 +120,6 @@ def _browser_test_java(name,
         srcs = srcs,
         deps = dedupe_deps_((deps or DEFAULT_TEST_DEPS) + INJECTED_TEST_DEPS),
         testonly = True,
-        exported_plugins = [
-          "@gust//defs/toolchain/java/plugins:micronaut",
-        ],
         **lib_args,
     )
 
