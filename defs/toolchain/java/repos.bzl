@@ -236,6 +236,7 @@ MICRONAUT_COORDINATES = [
     "io.micronaut:micronaut-core",
     "io.micronaut:micronaut-http",
     "io.micronaut:micronaut-http-client",
+    "io.micronaut:micronaut-http-client-core",
     "io.micronaut:micronaut-inject",
     "io.micronaut:micronaut-inject-java",
     "io.micronaut:micronaut-runtime",
