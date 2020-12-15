@@ -199,6 +199,13 @@ DEPS = {
         "target": "4881aa1b210d3a44db9789e1a7079679b6a4d0af",
         "seal": "87cf682f565d92f3e1f20b7d0e7b7d2b2b6593deec8ab1ded4d796c1dc72fc34"},
 
+    # Google: JS Interop (Generator)
+    "com_google_jsinterop_annotations": {
+        "type": "github",
+        "repo": "google/jsinterop-annotations",
+        "target": "04bda45586e2a7e0ef5a02f908b828f5da6747af",
+        "seal": "483d3d18ace60a8e62796abef374d472cfeecf233ef1b6f384a47fb99e4bb23f"},
+
     # Google: API (Core)
     "com_google_api": {
         "type": "github",
