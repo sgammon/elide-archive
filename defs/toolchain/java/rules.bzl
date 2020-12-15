@@ -86,7 +86,6 @@ INJECTED_MICRONAUT_DEPS = [
     "@gust//java/gust/backend/runtime:logging",
     "@com_google_guava",
     "@com_google_template_soy",
-    "@com_google_common_html_types",
     "@com_google_code_findbugs_jsr305",
     "@io_micronaut_micronaut_views",
     "@io_micronaut_micronaut_views_soy",

@@ -553,7 +553,11 @@ public final class AssetManager {
     if (logging.isTraceEnabled())
       logging.trace(format("Resolving asset metadata at module '%s'.", module));
     if (!assetMap.containsKey(module)) {
-      logging.warn(format("Asset metadata not found at module name '%s'.", module));
+      if (assetMap.isEmpty()) {
+        logging.warn(format("Asset metadata not found in (EMPTY) module map, at module name '%s'.", module));
+      } else {
+        logging.warn(format("Asset metadata not found at module name '%s'.", module));
+      }
       return Optional.empty();
     }
 

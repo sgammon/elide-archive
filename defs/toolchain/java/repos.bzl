@@ -61,6 +61,7 @@ PICOCLI_VERSION = "4.2.0"
 REACTIVE_VERSION = "1.0.3"
 THREETEN_VERSION = "1.5.0"
 GAPI_COMMON_VERSION = "1.10.1"
+ERROR_PRONE_VERSION = "2.0.2"
 GCLOUD_API_VERSION = "0.142.0"
 GCLOUD_GRPC_VERSION = "1.93.10"
 GCLOUD_TASKS_VERSION = "1.30.7"
@@ -295,6 +296,7 @@ GOOGLE_COORDINATES = [
     ("com.google.api:gax", GAX_VERSION),
     ("com.google.api:gax-grpc", GAX_VERSION),
     ("com.google.api:api-common", GAPI_COMMON_VERSION),
+    ("com.google.errorprone:error_prone_annotations", ERROR_PRONE_VERSION),
     ("org.threeten:threetenbp", THREETEN_VERSION),
 ]
 
@@ -436,7 +438,7 @@ def _gust_java_deps(
             ("com.google.grpc:grpc-netty", "@io_grpc_java//netty:netty"),
             ("com.google.grpc:grpc-netty-shaded", "@io_grpc_java//netty-shaded:netty-shaded"),
             ("com.google.template:soy", "@com_google_template_soy"),
-            ("com.google.common.html.types:types", "@com_google_template_soy"),
+            ("com.google.common.html.types:types", "@safe_html_types//:java"),
             ("com.google.code.findbugs:jsr305", "@com_google_code_findbugs_jsr305"),
             ("com.google.closure:stylesheets", "@com_google_closure_stylesheets"),
             ("javax.inject:javax.inject", "@javax_inject"),

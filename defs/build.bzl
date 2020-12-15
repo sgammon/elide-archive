@@ -363,7 +363,8 @@ DEPS = {
             "@args4j",
             "@com_google_code_findbugs_jsr305",
             "@com_google_code_gson",
-            "@com_google_common_html_types",
+            "@safe_html_types//:java",
+            "@safe_html_types//:java-proto",
             "@com_google_guava",
             "@com_google_inject_extensions_guice_assistedinject",
             "@com_google_inject_extensions_guice_multibindings",
@@ -431,7 +432,6 @@ DEPS = {
         "seal": "c751a3040f7dc3a671fae250ee7b5e3f58bb738f9812d862dd3c74a742431160",
         "deps": [
             "@com_google_template_soy",
-            "@com_google_common_html_types",
             maven("io.micronaut:micronaut-runtime"),
             maven("io.micronaut:micronaut-http"),
             maven("io.micronaut:micronaut-http-server"),

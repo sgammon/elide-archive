@@ -16,6 +16,7 @@ package(
 )
 
 load("@rules_proto//proto:defs.bzl", "proto_library")
+load("@gust//defs/toolchain:deps.bzl", "maven")
 
 
 # Safe HTML Types
@@ -23,4 +24,25 @@ proto_library(
     name = "proto",
     srcs = ["proto/src/main/protobuf/webutil/html/types/html.proto"],
     strip_import_prefix = "proto/src/main/protobuf",
+)
+
+# Java HTML Types
+java_proto_library(
+    name = "java-proto",
+    deps = [":proto"],
+)
+
+java_library(
+    name = "java",
+    srcs = glob(["types/src/main/java/com/google/common/html/types/*.java"]),
+    deps = [
+        ":java-proto",
+        "@com_google_guava",
+        "@javax_annotation_api",
+        "@com_google_jsinterop_annotations//:jsinterop-annotations",
+        maven("com.google.errorprone:error_prone_annotations"),
+    ],
+    exports = [
+        ":java-proto",
+    ]
 )

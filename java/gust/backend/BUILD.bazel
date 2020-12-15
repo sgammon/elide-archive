@@ -69,6 +69,8 @@ micronaut_library(
         "//java/gust/backend:PageContext",
         "//java/gust/backend:PageContextManager",
         "//java/gust/backend:PageRender",
+        "@safe_html_types//:proto",
+        "@safe_html_types//:java-proto",
     ],
 )
 
@@ -112,6 +114,8 @@ micronaut_library(
         javaproto("//gust/assets:bundle_proto"),
         "//java/gust/backend/runtime:runtime",
         "//java/gust/util:Hex",
+        "@safe_html_types//:proto",
+        "@safe_html_types//:java-proto",
     ],
 )
 

@@ -32,7 +32,8 @@ java_library(
     deps = [
         "@gust//defs/toolchain/java/plugins:micronaut",
         "@com_google_template_soy",
-        "@com_google_common_html_types",
+        "@safe_html_types//:java-proto",
+#        "@com_google_common_html_types",
         "@com_google_guava//:com_google_guava",
         "@io_micronaut_micronaut_views//:io_micronaut_micronaut_views",
         "@javax_inject//:javax_inject",

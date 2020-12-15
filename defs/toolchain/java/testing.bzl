@@ -78,6 +78,7 @@ INJECTED_TEST_DEPS = [
     "@org_seleniumhq_selenium_selenium_api",
     "@io_bazel_rules_webtesting//java/com/google/testing/web",
     "@gust//defs/toolchain/java/plugins:micronaut",
+    "@com_google_template_soy",
 ]
 
 INJECTED_KOTLIN_TEST_DEPS = [
@@ -105,7 +106,9 @@ def _browser_test_java(name,
                        deps = None,
                        browsers = None,
                        local = True,
-                       jvm_flags = []):
+                       jvm_flags = [],
+                       lib_args = {},
+                       **kwargs):
 
     """ Run a full-stack test using `WebDriver`, and a Java test spec.
         Uses the default set of browsers if unspecified (Chromium and Gecko). """
@@ -117,6 +120,10 @@ def _browser_test_java(name,
         srcs = srcs,
         deps = dedupe_deps_((deps or DEFAULT_TEST_DEPS) + INJECTED_TEST_DEPS),
         testonly = True,
+        exported_plugins = [
+          "@gust//defs/toolchain/java/plugins:micronaut",
+        ],
+        **lib_args,
     )
 
     _java_web_test_suite(
@@ -128,6 +135,7 @@ def _browser_test_java(name,
         deps = dedupe_deps_((deps or DEFAULT_TEST_DEPS) + INJECTED_TEST_DEPS),
         jvm_flags = computed_jvm_flags,
         testonly = True,
+        **kwargs,
     )
 
 
