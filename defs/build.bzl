@@ -96,8 +96,10 @@ DEPS = {
     "io_bazel_rules_kotlin": {
         "type": "github",
         "repo": "bazelbuild/rules_kotlin",
-        "target": "0779709c477912c06de14d1fd9068b32d20574b8",
-        "seal": "d60a25f1203a5f3df28e9e708c06ed0427cb063ba01698de0aac27e88b0ad25a"},
+        "forceLocal": False,
+        "local": "/Users/sam.g/Workspace/rules_kotlin",
+        "target": "495db022827bb498462b9ef486e2c97110dc1f00",
+        "seal": "9fa74052e2ef421a4e83c74f40a1117457c241f4ee4f0b69a740cf763e3e4a8a"},
 
     # Rules: Apple (iOS/macOS/tvOS)
     "build_bazel_rules_apple": {
