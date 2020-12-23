@@ -96,7 +96,7 @@ DEPS = {
     "io_bazel_rules_kotlin": {
         "type": "github",
         "repo": "bazelbuild/rules_kotlin",
-        "forceLocal": True,
+        "forceLocal": False,
         "local": "/Users/sam.g/Workspace/rules_kotlin",
         "target": "495db022827bb498462b9ef486e2c97110dc1f00",
         "seal": "9fa74052e2ef421a4e83c74f40a1117457c241f4ee4f0b69a740cf763e3e4a8a"},
