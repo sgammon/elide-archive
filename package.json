@@ -17,7 +17,7 @@
     "@bazel/bazel": "latest",
     "@bazel/buildifier": "latest",
     "@bazel/ibazel": "latest",
-    "@bazel/jasmine": "2.0.2",
+    "@bazel/jasmine": "3.0.0",
     "@bazel/karma": "2.0.2",
     "@bazel/rollup": "2.0.2",
     "@bazel/source-map-support": "latest",
