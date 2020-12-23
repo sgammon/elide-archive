@@ -148,8 +148,9 @@ DEPS = {
     "io_bazel_rules_sass": {
         "type": "github",
         "repo": "bazelbuild/rules_sass",
-        "target": "a8ee85cd28518944c0de381cffa0444305bd0bf5",
-        "seal": "73d22c8981d4abf4304aca63a5d33d7aac02c78ca475935cfb9ac8645098d757"},
+        "target": "6d723f01fc9bb19846d22ace42255a91cf0ebdfa",
+        "repo_mapping": {"@build_bazel_rules_sass_deps" : "@npm"},
+        "seal": "fc5525d9b2297f00a85d392629f02e86f7d5b2523028d39c52941cf9690a2200"},
 
     # Rules: Docker
     "io_bazel_rules_docker": {
