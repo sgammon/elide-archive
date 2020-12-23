@@ -78,8 +78,8 @@ http_archive(
 ## NodeJS
 http_archive(
     name = "build_bazel_rules_nodejs",
-    sha256 = "121f17d8b421ce72f3376431c3461cd66bfe14de49059edc7bb008d5aebd16be",
-    urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/2.3.1/rules_nodejs-2.3.1.tar.gz"],
+    sha256 = "6142e9586162b179fdd570a55e50d1332e7d9c030efd853453438d607569721d",
+    urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/3.0.0/rules_nodejs-3.0.0.tar.gz"],
 )
 
 load("@build_bazel_rules_nodejs//:index.bzl",
@@ -88,18 +88,20 @@ load("@build_bazel_rules_nodejs//:index.bzl",
 
 node_repositories(
     package_json = ["//:package.json"],
-    node_version = "10.13.0",
-    yarn_version = "1.12.1")
+    node_version = "14.15.0",
+    yarn_version = "1.22.4")
 
 yarn_install(
     name = "npm",
     package_json = "//:package.json",
     yarn_lock = "//:yarn.lock")
 
-load("@npm//:install_bazel_dependencies.bzl",
-     "install_bazel_dependencies")
+load(
+    "@npm//@bazel/labs:package.bzl",
+    "npm_bazel_labs_dependencies",
+)
 
-install_bazel_dependencies(suppress_warning=True)
+npm_bazel_labs_dependencies()
 
 ## SASS
 load("@io_bazel_rules_sass//:package.bzl", "rules_sass_dependencies")
@@ -192,10 +194,6 @@ load("@com_google_api//:repository_rules.bzl", "switched_rules_by_language")
 switched_rules_by_language(
     name = "com_google_googleapis_imports",
     grpc = True)
-
-## Karma Setup
-load("@npm//@bazel/karma:package.bzl", "npm_bazel_karma_dependencies")
-npm_bazel_karma_dependencies()
 
 ## Web Testing Setup
 load("@io_bazel_rules_webtesting//web:repositories.bzl", "web_test_repositories")
@@ -329,4 +327,21 @@ k8s_defaults(
 ## Brotli Setup
 load("@org_brotli//java:repositories.bzl", "load_brotli_repositories")
 load_brotli_repositories()
+
+
+## Scala Rules
+http_archive(
+    name = "io_bazel_rules_scala",
+    sha256 = "f4873029dcb725ae81e4a8995d89801cfba9969f25c69ecdf5a7c169be8f6ccd",
+    strip_prefix = "rules_scala-d2e7e3b720be8f118e3d4720fd4757abae3c7911",
+    urls = [
+        "https://github.com/bazelbuild/rules_scala/archive/d2e7e3b720be8f118e3d4720fd4757abae3c7911.tar.gz",
+    ],
+)
+
+load("@io_bazel_rules_scala//scala:scala.bzl", "scala_repositories")
+scala_repositories()
+
+load("@io_bazel_rules_scala//scala:toolchains.bzl", "scala_register_toolchains")
+scala_register_toolchains()
 

@@ -20,7 +20,7 @@ load(
 )
 
 load(
-    "@npm//@bazel/karma:index.bzl",
+    "@npm//@bazel/concatjs:index.bzl",
     _karma_web_test = "karma_web_test",
     _karma_web_test_suite = "karma_web_test_suite",
 )
@@ -32,7 +32,7 @@ load(
 )
 
 DEFAULT_PEER_DEPS = [
-    "@npm//@bazel/karma",
+    "@npm//@bazel/concatjs",
     "@npm//jasmine-core",
     "@npm//karma",
     "@npm//karma-coverage",
