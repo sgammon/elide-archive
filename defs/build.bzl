@@ -96,7 +96,7 @@ DEPS = {
     "io_bazel_rules_kotlin": {
         "type": "github",
         "repo": "bazelbuild/rules_kotlin",
-        "forceLocal": False,
+        "forceLocal": True,
         "local": "/Users/sam.g/Workspace/rules_kotlin",
         "target": "495db022827bb498462b9ef486e2c97110dc1f00",
         "seal": "9fa74052e2ef421a4e83c74f40a1117457c241f4ee4f0b69a740cf763e3e4a8a"},
@@ -140,9 +140,9 @@ DEPS = {
     "io_bazel_rules_webtesting": {
         "type": "github",
         "repo": "sgammon/rules_webtesting",
-        "target": "b861fa9748410131d9eab2318163006efd02e96a",
+        "target": "06023bb308158d88c8a0c4bbdbbb59ab751a35ef",
         "local": "/workspace/GUST/vendor/bazel/rules_webtesting",
-        "seal": "887ebbdc0815c7e61376d8b74f03a5692dcbe857bc61b8b4bb4d94322b276d4e"},
+        "seal": "dca075821fae563eaf17fa07e55413ec1c7f27a4b042e08ad76bc1b2c20a0c11"},
 
     # Rules: SCSS/SASS
     "io_bazel_rules_sass": {
