@@ -386,7 +386,8 @@ def _gust_java_deps(
         app_overrides = [],
         micronaut = True,
         android = True,
-        junit5 = True):
+        junit5 = True,
+        **kwargs):
 
     """ Install Gust runtime Java dependencies. """
 
@@ -415,7 +416,6 @@ def _gust_java_deps(
         artifacts = artifacts,
         repositories = REPOSITORIES + (app_repositories or []),
         fetch_sources = app_fetch_sources,
-        maven_install_json = "//:maven_install.json",
         generate_compat_repositories = True,
         strict_visibility = STRICT_DEPENDENCIES,
         excluded_artifacts = [
@@ -445,6 +445,7 @@ def _gust_java_deps(
             ("javax.inject:javax.inject", "@javax_inject"),
             ("javax.annotation:javax.annotation-api", "@javax_annotation_api"),
         ] + (app_overrides or []))),
+        **kwargs
     )
 
 

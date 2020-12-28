@@ -105,22 +105,22 @@ DEPS = {
     "build_bazel_rules_apple": {
         "type": "github",
         "repo": "bazelbuild/rules_apple",
-        "target": "6ba25082bc237be111c5867bfd4eba34ef96217c",
-        "seal": "ce6e3b6a3764e9df1b247e147ec425ad8e7a97db821bebda5e9eed8a92ff2b3e"},
+        "target": "c4868493c3e53e0ddb048c52701c3bd146db2ead",
+        "seal": "131950895970fbccda8f10608827247b2306a043c2d2b5a2d6ba3389884e980c"},
 
     # Rules: Apple (Swift)
     "build_bazel_rules_swift": {
         "type": "github",
         "repo": "bazelbuild/rules_swift",
-        "target": "17126a9d4f049937a0ca03af0ebe61a0bf9c0492",
-        "seal": "3d1d4b0e3ab60602220003062822eb7f984e99051d6a8a04b8729b653328b5c0"},
+        "target": "d916037ac3a918ce7231c355945246d265cb78a3",
+        "seal": "bb5e35d74b3f5dfd08614b0d845371ebf92a5f717a35945a2b7b35be5429b5ca"},
 
     # Deps: Apple Support
     "build_bazel_apple_support": {
         "type": "github",
         "repo": "bazelbuild/apple_support",
-        "target": "8c585c66c29b9d528e5fcf78da8057a6f3a4f001",
-        "seal": "0a8831032b06cabae582b604e734e10f32742311de8975d5182933e586760c5f"},
+        "target": "f7f2b6d7c952f3cf6bdcedce6a0a2a40a27ff596",
+        "seal": "45c848a9416ce042be0d9f213deeef0a05feb4ae262ca73cf622c14b7a7ab467"},
 
     # Rules: Go
     "io_bazel_rules_go": {
@@ -133,8 +133,8 @@ DEPS = {
     "bazel_gazelle": {
         "type": "github",
         "repo": "bazelbuild/bazel-gazelle",
-        "target": "b3e386da135f2ba1e65983a8666840548381c803",
-        "seal": "50cc08209b9bad6454effdf50f8957a895f08ce584f31ce15fa9f35d53e76175"},
+        "target": "d4eb4d207628c149044e3b5dc9e3c5aaaba79f11",
+        "seal": "0d32479dbef7f5ae80ce7b0afc2456c14d84d6d7bbdaaf79bb021de41121313b"},
 
     # Rules: Web Testing
     "io_bazel_rules_webtesting": {
