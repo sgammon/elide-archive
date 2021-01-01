@@ -39,6 +39,7 @@ import javax.annotation.concurrent.ThreadSafe
  */
 @Immutable
 @ThreadSafe
+@Suppress("unused")
 class ObjectModelSerializer<Model : Message>
   /**
    * Construct a model serializer from scratch.
@@ -975,6 +976,7 @@ class ObjectModelSerializer<Model : Message>
    * @param id
    * @return
    */
+  @Suppress("UNUSED_PARAMETER")
   fun serialize(proto: Message,
                 base: Message? = null,
                 skipCollections: Boolean = false,
@@ -1063,6 +1065,7 @@ class ObjectModelSerializer<Model : Message>
    * @param collection Internal flag.
    * @param concrete Internal flag.
    */
+  @Suppress("UNUSED_PARAMETER", "unused")
   private fun collapseMessage(proto: Message,
                               base: Message?,
                               writes: ArrayList<CollapsedMessage.Operation>,
