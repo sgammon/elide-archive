@@ -15,8 +15,10 @@ load(
     "//defs/toolchain/soy:rules.bzl",
     _ssr_library = "ssr_library",
     _template_library = "template_library",
+    _template_messages = "template_messages",
 )
 
 
 ssr_library = _ssr_library
 template_library = _template_library
+template_messages = _template_messages

@@ -21,6 +21,7 @@ load(
     _closure_js_template_library = "closure_js_template_library",
     _closure_py_template_library = "closure_py_template_library",
     _closure_java_template_library = "closure_java_template_library",
+    _closure_messages = "closure_messages",
 )
 
 load(
@@ -130,5 +131,23 @@ def _ssr_library(name,
     )
 
 
+def _template_messages(name,
+                       deps,
+                       targetLocale,
+                       sourceLocale = "en",
+                       **kwargs):
+
+    """ Generate an XLIFF messages file for the provided set of templates. """
+
+    _closure_messages(
+        name = name,
+        deps = deps,
+        targetLocale = targetLocale,
+        sourceLocale = sourceLocale,
+        **kwargs
+    )
+
+
 ssr_library = _ssr_library
 template_library = _template_library
+template_messages = _template_messages
