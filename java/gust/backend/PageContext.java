@@ -57,16 +57,19 @@ public final class PageContext implements PageRender {
    * @param context Map of page context information.
    * @param injected Additional injected properties to apply.
    * @param namingMapProvider Style rewrite naming provider to apply/override (if enabled).
+   * @param i18n Internationalization context to apply.
    */
   private PageContext(@Nullable Context proto,
                       @Nullable Map<String, Object> context,
                       @Nullable Map<String, Object> injected,
-                      @Nullable SoyNamingMapProvider namingMapProvider) {
+                      @Nullable SoyNamingMapProvider namingMapProvider,
+                      @Nullable SoyContext.SoyI18NContext i18n) {
     this.protoContext = proto != null ? proto : Context.getDefaultInstance();
     this.rawContext = SoyContext.fromMap(
       context != null ? context : Collections.emptyMap(),
       injected != null ? Optional.of(injected) : Optional.empty(),
-      namingMapProvider != null ? Optional.of(namingMapProvider) : Optional.empty());
+      namingMapProvider != null ? Optional.of(namingMapProvider) : Optional.empty(),
+      i18n != null ? Optional.of(i18n) : Optional.empty());
   }
 
   // -- Factories: Maps -- //
@@ -89,7 +92,7 @@ public final class PageContext implements PageRender {
    * @return Instance of page context, enclosing the provided context.
    */
   public static PageContext fromMap(@Nonnull Map<String, Object> context) {
-    return new PageContext(null, context, null, null);
+    return new PageContext(null, context, null, null, null);
   }
 
   /**
@@ -103,7 +106,7 @@ public final class PageContext implements PageRender {
    */
   public static PageContext fromMap(@Nonnull Map<String, Object> context,
                                     @Nonnull Map<String, Object> injected) {
-    return new PageContext(null, context, injected, null);
+    return new PageContext(null, context, injected, null, null);
   }
 
   /**
@@ -122,7 +125,31 @@ public final class PageContext implements PageRender {
   public static PageContext fromMap(@Nonnull Map<String, Object> context,
                                     @Nonnull Map<String, Object> injected,
                                     @Nullable SoyNamingMapProvider namingMapProvider) {
-    return new PageContext(null, context, injected, namingMapProvider);
+    return new PageContext(null, context, injected, namingMapProvider, null);
+  }
+
+  /**
+   * Factory to create a page context object from a regular Java map, of string context properties to values of any
+   * object type. Additionally, this interface allows specification of properties declared via <pre>@inject</pre>, and
+   * also a {@link SoyNamingMapProvider} to override any globally-installed map. Under the hood, all context is
+   * processed and converted/wrapped into Soy values.
+   *
+   * <p>Note that style rewriting must be enabled for the <pre>namingMapProvider</pre> override to take effect.</p>
+   *
+   * <p>If the invoking developer wishes to apply internationalization via an XLIFF message bundle or pre-constructed
+   * Soy Messages bundle, they may do so via `i18n`.</p>
+   *
+   * @param context Context with which to render a Soy template - i.e. regular <pre>@param</pre> declarations.
+   * @param injected Injected parameters to provide to the render operation - available via <pre>@inject</pre>.
+   * @param namingMapProvider Override any globally-installed naming map provider.
+   * @param i18n Internationalization context to apply.
+   * @return Fabricated page context object.
+   */
+  public static PageContext fromMap(@Nonnull Map<String, Object> context,
+                                    @Nonnull Map<String, Object> injected,
+                                    @Nullable SoyNamingMapProvider namingMapProvider,
+                                    @Nullable SoyContext.SoyI18NContext i18n) {
+    return new PageContext(null, context, injected, namingMapProvider, i18n);
   }
 
   // -- Factories: Protos -- //
@@ -136,7 +163,7 @@ public final class PageContext implements PageRender {
    * @return Page context object.
    */
   public static @Nonnull PageContext fromProto(@Nonnull Context pageContext) {
-    return new PageContext(pageContext, null, null, null);
+    return new PageContext(pageContext, null, null, null, null);
   }
 
   /**
@@ -153,7 +180,7 @@ public final class PageContext implements PageRender {
    */
   public static @Nonnull PageContext fromProto(@Nonnull Context pageContext,
                                                @Nonnull Map<String, Object> props) {
-    return new PageContext(pageContext, props, null, null);
+    return new PageContext(pageContext, props, null, null, null);
   }
 
   /**
@@ -174,7 +201,7 @@ public final class PageContext implements PageRender {
   public static @Nonnull PageContext fromProto(@Nonnull Context pageContext,
                                                @Nonnull Map<String, Object> props,
                                                @Nonnull Map<String, Object> injected) {
-    return new PageContext(pageContext, props, injected, null);
+    return new PageContext(pageContext, props, injected, null, null);
   }
 
   /**
@@ -201,7 +228,40 @@ public final class PageContext implements PageRender {
                                                @Nonnull Map<String, Object> props,
                                                @Nonnull Map<String, Object> injected,
                                                @Nullable SoyNamingMapProvider namingMapProvider) {
-    return new PageContext(pageContext, props, injected, namingMapProvider);
+    return new PageContext(pageContext, props, injected, namingMapProvider, null);
+  }
+
+  /**
+   * Factory to create a page context object from a proto message containing structured data, which is injected into the
+   * render flow at `context`. Templates may opt-in to receive this value via a parameter declaration such as
+   * <pre>@inject context: gust.page.Context</pre>.
+   *
+   * <p>This method offers the additional ability to specify <pre>props</pre> and <pre>injected</pre> values. Props
+   * should correspond with any <pre>@param</pre> declarations for the subject template to be rendered. Injected values
+   * are opted-into with <pre>@inject</pre>, and are overlaid on any existing injected values (may not override
+   * <pre>context</pre>).</p>
+   *
+   * <p>If desired, an invoking developer may wish to specify a <pre>namingMapProvider</pre>. To have any effect, style
+   * renaming must be active in application config. The naming map provider passed here overrides any globally-installed
+   * style renaming map provider.</p>
+   *
+   * <p>In addition to the other method variant above, this method allows internationalization via the `i18n` parameter,
+   * which accepts a {@link SoyContext.SoyI18NContext} instance. A messages file, resource, or pre-constructed Soy
+   * Message Bundle may be passed for translation during render.</p>
+   *
+   * @param pageContext Protobuf page context.
+   * @param props Parameters to render the template with.
+   * @param injected Additional injected values (may not contain a value at key <pre>context</pre>).
+   * @param namingMapProvider Naming map provider to override any globally-installed provider with, if enabled.
+   * @param i18n Internationalization context to apply.
+   * @return Page context object.
+   */
+  public static @Nonnull PageContext fromProto(@Nonnull Context pageContext,
+                                               @Nonnull Map<String, Object> props,
+                                               @Nonnull Map<String, Object> injected,
+                                               @Nullable SoyNamingMapProvider namingMapProvider,
+                                               @Nullable SoyContext.SoyI18NContext i18n) {
+    return new PageContext(pageContext, props, injected, namingMapProvider, i18n);
   }
 
   // -- Interface: Soy Proto Context -- //

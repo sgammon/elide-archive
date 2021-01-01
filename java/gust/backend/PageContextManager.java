@@ -19,6 +19,7 @@ import com.google.common.collect.Sets;
 import com.google.common.html.types.TrustedResourceUrlProto;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.protobuf.ByteString;
+import com.google.template.soy.msgs.SoyMsgBundle;
 import com.google.template.soy.data.SanitizedContent;
 import com.google.template.soy.data.UnsafeSanitizedContentOrdainer;
 import gust.backend.runtime.AssetManager;
@@ -44,6 +45,7 @@ import tools.elide.page.Context.Scripts.JavaScript;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.Closeable;
+import java.io.File;
 import java.net.URI;
 import java.net.URL;
 import java.security.MessageDigest;
@@ -123,6 +125,15 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
 
   /** Naming map provider to apply during the Soy render flow. */
   private @Nonnull Optional<SoyNamingMapProvider> namingMapProvider;
+
+  /** Translation file to apply during the Soy render flow. */
+  private @Nonnull Optional<File> translationsFile;
+
+  /** Translation resource to apply during the Soy render flow. */
+  private @Nonnull Optional<URL> translationsResource;
+
+  /** Pre-constructed message bundle to apply during the Soy render flow. */
+  private @Nonnull Optional<SoyMsgBundle> messageBundle;
 
   /** Built context: assembled when we "close" the page context manager. */
   private @Nullable PageContext builtContext = null;
@@ -1273,6 +1284,86 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
   public @Nonnull PageContextManager rewrite(@Nonnull Optional<SoyNamingMapProvider> namingMapProvider) {
     this.namingMapProvider = namingMapProvider;
     return this;
+  }
+
+  /**
+   * Indicate whether message translation is enabled for the rendering layer. This checks the presence of either a
+   * translations file, or a translations URL resource. Additionally, a check is performed for any pre-fabricated Soy
+   * messages bundle. If any of those are present, `true` is returned.
+   *
+   * @return Whether translations will be enabled during render.
+   */
+  public boolean translationEnabled() {
+    return (
+      this.translationsFile.isPresent() ||
+      this.translationsResource.isPresent() ||
+      this.messageBundle.isPresent()
+    );
+  }
+
+  /**
+   * Mount a loaded XLIFF file for use during render. Messages mentioned in the XLIFF file and in the corresponding
+   * template are replaced as the renderer proceeds through the template. Passing {@link Optional#empty()} clears any
+   * active translation file.
+   *
+   * @param xliffFile Translations file to apply.
+   * @return Current page context manager (for call chain-ability).
+   */
+  public @Nonnull PageContextManager translationFile(@Nonnull Optional<File> xliffFile) {
+    this.translationsFile = xliffFile;
+    return this;
+  }
+
+  /**
+   * Return the current translation file that will be applied during the next render routine, if available.
+   *
+   * @return Translation file, or {@link Optional#empty()}.
+   */
+  public @Nonnull Optional<File> translationFile() {
+    return this.translationsFile;
+  }
+
+  /**
+   * Load and mount a referenced XLIFF resource for use during render. Messages mentioned in the XLIFF resource and in
+   * the corresponding template are replaced as the renderer proceeds through the template.
+   *
+   * @param xliffData Translations data to apply.
+   * @return Current page context manager (for call chain-ability).
+   */
+  public @Nonnull PageContextManager translationResource(@Nonnull Optional<URL> xliffData) {
+    this.translationsResource = xliffData;
+    return this;
+  }
+
+  /**
+   * Return the current translation resource that will be applied during the next render routine, if available.
+   *
+   * @return Translation resource, or {@link Optional#empty()}.
+   */
+  public @Nonnull Optional<URL> translationResource() {
+    return this.translationsResource;
+  }
+
+  /**
+   * Mount a pre-fabricated Soy message bundle for translation use during render. Messages mentioned in the bundle and
+   * in the corresponding template are replaced as the renderer proceeds through the template.
+   *
+   * @param soyMsgBundle Soy message bundle to apply.
+   * @return Current page context manager (for call chain-ability).
+   */
+  public @Nonnull PageContextManager messageBundle(@Nonnull Optional<SoyMsgBundle> soyMsgBundle) {
+    this.messageBundle = soyMsgBundle;
+    return this;
+  }
+
+  /**
+   * Return the current pre-fabricated Soy message bundle that will be applied during the next render routine, if
+   * available.
+   *
+   * @return Soy message bundle, or {@link Optional#empty()}.
+   */
+  public @Nonnull Optional<SoyMsgBundle> messageBundle() {
+    return this.messageBundle;
   }
 
   // -- Builder Interface (Response) -- //
