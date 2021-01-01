@@ -13,6 +13,7 @@
 package gust.backend;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.template.soy.msgs.SoyMsgBundle;
 import io.micronaut.views.soy.SoyContext;
 import io.micronaut.views.soy.SoyNamingMapProvider;
 import tools.elide.page.Context;
@@ -20,6 +21,9 @@ import tools.elide.page.Context;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
@@ -314,5 +318,50 @@ public final class PageContext implements PageRender {
   @Nonnull @Override
   public Optional<SoyNamingMapProvider> overrideNamingMap() {
     return rawContext.overrideNamingMap();
+  }
+
+  /**
+   * Specify whether to enable translation via Soy message bundles. The default implementation of this method simply
+   * checks whether a translation file has been set by the controller.
+   *
+   * @return Whether to enable translation.
+   */
+  @Override
+  public boolean translate() {
+    return rawContext.translate();
+  }
+
+  /**
+   * Return the file that should be loaded and interpreted to perform translation when rendering this page. If no file,
+   * resource, or bundle is provided, no translation occurs.
+   *
+   * @return File to apply for translations.
+   */
+  @Nonnull @Override
+  public Optional<File> messagesFile() {
+    return rawContext.messagesFile();
+  }
+
+  /**
+   * Return the URL to the resource that should be loaded and interpreted to perform translation when rendering this
+   * page. If no resource, file, or bundle is provided, no translation occurs.
+   *
+   * @return Resource to apply for translations.
+   */
+  @Nonnull @Override
+  public Optional<URL> messagesResource() {
+    return rawContext.messagesResource();
+  }
+
+  /**
+   * Return the pre-fabricated Soy message bundle, or the interpreted Soy message bundle based on the installed messages
+   * file or resource URL.
+   *
+   * @return Pre-fabricated or interpreted message bundle.
+   * @throws IOException If the bundle failed to load.
+   */
+  @Nonnull @Override
+  public Optional<SoyMsgBundle> messageBundle() throws IOException {
+    return rawContext.messageBundle();
   }
 }

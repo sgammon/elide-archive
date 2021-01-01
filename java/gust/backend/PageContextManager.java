@@ -22,6 +22,8 @@ import com.google.protobuf.ByteString;
 import com.google.template.soy.msgs.SoyMsgBundle;
 import com.google.template.soy.data.SanitizedContent;
 import com.google.template.soy.data.UnsafeSanitizedContentOrdainer;
+import com.google.template.soy.msgs.SoyMsgBundleHandler;
+import com.google.template.soy.xliffmsgplugin.XliffMsgPlugin;
 import gust.backend.runtime.AssetManager;
 import gust.backend.runtime.AssetManager.ManagedAsset;
 import gust.backend.runtime.Logging;
@@ -29,6 +31,8 @@ import gust.util.Hex;
 import io.micronaut.http.*;
 import io.micronaut.http.context.ServerRequestContext;
 import io.micronaut.runtime.http.scope.RequestScope;
+import io.micronaut.views.soy.SoyContext;
+import io.micronaut.views.soy.SoyContextMediator;
 import io.micronaut.views.soy.SoyNamingMapProvider;
 import org.slf4j.Logger;
 import tools.elide.assets.AssetBundle.StyleBundle.StyleAsset;
@@ -46,6 +50,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.Closeable;
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.security.MessageDigest;
@@ -127,13 +132,13 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
   private @Nonnull Optional<SoyNamingMapProvider> namingMapProvider;
 
   /** Translation file to apply during the Soy render flow. */
-  private @Nonnull Optional<File> translationsFile;
+  private @Nonnull Optional<File> translationsFile = Optional.empty();
 
   /** Translation resource to apply during the Soy render flow. */
-  private @Nonnull Optional<URL> translationsResource;
+  private @Nonnull Optional<URL> translationsResource = Optional.empty();
 
   /** Pre-constructed message bundle to apply during the Soy render flow. */
-  private @Nonnull Optional<SoyMsgBundle> messageBundle;
+  private @Nonnull Optional<SoyMsgBundle> messageBundle = Optional.empty();
 
   /** Built context: assembled when we "close" the page context manager. */
   private @Nullable PageContext builtContext = null;
@@ -554,7 +559,12 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
         this.context.build(),
         this.props,
         this.injected,
-        this.namingMapProvider.orElse(null));
+        this.namingMapProvider.orElse(null),
+        new SoyContext.SoyI18NContext(
+          this.messageBundle,
+          this.translationsFile,
+          this.translationsResource
+        ));
       if (logging.isDebugEnabled()) {
         logging.debug(format("Exported page context with: %s props, %s injecteds, and proto follows \n%s",
           this.props.size(),
@@ -1293,7 +1303,8 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
    *
    * @return Whether translations will be enabled during render.
    */
-  public boolean translationEnabled() {
+  @Override
+  public boolean translate() {
     return (
       this.translationsFile.isPresent() ||
       this.translationsResource.isPresent() ||
@@ -1309,7 +1320,7 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
    * @param xliffFile Translations file to apply.
    * @return Current page context manager (for call chain-ability).
    */
-  public @Nonnull PageContextManager translationFile(@Nonnull Optional<File> xliffFile) {
+  public @Nonnull PageContextManager messagesFile(@Nonnull Optional<File> xliffFile) {
     this.translationsFile = xliffFile;
     return this;
   }
@@ -1319,7 +1330,8 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
    *
    * @return Translation file, or {@link Optional#empty()}.
    */
-  public @Nonnull Optional<File> translationFile() {
+  @Override
+  public @Nonnull Optional<File> messagesFile() {
     return this.translationsFile;
   }
 
@@ -1330,7 +1342,7 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
    * @param xliffData Translations data to apply.
    * @return Current page context manager (for call chain-ability).
    */
-  public @Nonnull PageContextManager translationResource(@Nonnull Optional<URL> xliffData) {
+  public @Nonnull PageContextManager messagesResource(@Nonnull Optional<URL> xliffData) {
     this.translationsResource = xliffData;
     return this;
   }
@@ -1340,7 +1352,8 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
    *
    * @return Translation resource, or {@link Optional#empty()}.
    */
-  public @Nonnull Optional<URL> translationResource() {
+  @Override
+  public @Nonnull Optional<URL> messagesResource() {
     return this.translationsResource;
   }
 
@@ -1362,8 +1375,12 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
    *
    * @return Soy message bundle, or {@link Optional#empty()}.
    */
-  public @Nonnull Optional<SoyMsgBundle> messageBundle() {
-    return this.messageBundle;
+  @Override
+  public @Nonnull Optional<SoyMsgBundle> messageBundle() throws IOException {
+    if (this.messageBundle.isPresent()) {
+      return this.messageBundle;
+    }
+    return PageRender.super.messageBundle();
   }
 
   // -- Builder Interface (Response) -- //
