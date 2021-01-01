@@ -113,7 +113,11 @@ public abstract class AppController extends BaseController {
   protected @Nonnull <T> MutableHttpResponse<T> affixHeaders(@Nonnull MutableHttpResponse<T> response,
                                                              @Nonnull DynamicServingConfiguration config) {
     // first up: content language
-    if (config.language().isPresent()) {
+    if (this.context.language().isPresent()) {
+      var lang = this.context.language().get();
+      logging.debug(format("Affixing `Content-Language` header from context: '%s'.", lang));
+      response.setAttribute("language", lang);
+    } else if (config.language().isPresent()) {
       logging.debug(format("Affixing `Content-Language` header from config: '%s'.", config.language().get()));
       response.setAttribute("language", config.language().get());
       this.context.language(config.language());

@@ -1495,6 +1495,19 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
   }
 
   /**
+   * Return the language value set for the current render routine - i.e. bound to the current request cycle. This is
+   * often driven by the user's browser settings.
+   *
+   * @return Current language for this request cycle.
+   */
+  public @Nonnull Optional<String> language() {
+    if (this.context.getLanguage().length() > 0) {
+      return Optional.of(this.context.getLanguage());
+    }
+    return Optional.empty();
+  }
+
+  /**
    * Append an HTTP request header considered as part of the {@code Vary} header in the response. These values are de-
    * duplicated before joining and affixing.
    *
