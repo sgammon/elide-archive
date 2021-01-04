@@ -78,6 +78,9 @@
   {@param? additionalHead: html}  /** Additional HTML to apply to the head block. */
   {@param? ogTags: html}  /** OpenGraph tags to include at the bottom of the head block. */
   {@param? jsonLD: js}  /** JSON-LD (JSON Linked Data) description for the page, if any. */
+  {@param? preamble: html}  /** Assets to inject early in the render flow for the page head. */
+  {@inject? htmlAttrs: attributes}  /** Additional attributes to append to the HTML tag. */
+  {@inject? bodyAttrs: attributes}  /** Additional attributes to append to the body tag. */
   {@inject? live_reload_enabled: bool}  /** Whether live-reload mode is enabled. */
   {@inject? live_reload_url: trusted_resource_uri}  /** Live-reload JS target to inject, if enabled. */
   {@inject? contentSecurity: [header: string, policy: string]}  /** Injected CSP to apply via meta tags. */
@@ -101,7 +104,8 @@
   <!doctype html>
   <html
      class="no-js"{if isNonnull($languageSpec)} lang="{$languageSpec}"{/if}
-     {if isNonnull($prefixes)}prefix="{$prefixes}"{/if}>
+     {if isNonnull($prefixes)}prefix="{$prefixes}"{/if}
+     {if isNonnull($htmlAttrs)}{$htmlAttrs}{/if}>
   <head>
       <meta charset="utf-8">
 
@@ -116,6 +120,9 @@
       {/if}
       {if isNonnull($contentSecurity)}
         <meta http-equiv="{$contentSecurity.header}" content="{$contentSecurity.policy}">
+      {/if}
+      {if isNonnull($preamble)}
+          {$preamble}
       {/if}
       {if isNonnull($liftedCSS)}
         <style type="text/css">{$liftedCSS}</style>
@@ -267,7 +274,7 @@
           <meta name="rating" content="{$page.meta.rating}">
       {/if}
   </head>
-  <body{if isNonnull($bodyClass)} class="{$bodyClass}"{/if}>
+  <body{if isNonnull($bodyClass)} class="{$bodyClass}"{/if}{if isNonnull($htmlAttrs)} {$bodyAttrs}{/if}>
       {call .contentRoot}
           {param pageId: $pageId /}
           {param mobile: $mobile /}
