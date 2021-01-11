@@ -3,6 +3,7 @@ directories:
   external
   java
   javatests
+  js
   tools
   gust
   tests

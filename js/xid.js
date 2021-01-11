@@ -13,8 +13,8 @@
 
 /* global goog,ui */
 
-goog.provide('xid');
 goog.provide('ui.xid');
+goog.provide('xid');
 
 
 /**

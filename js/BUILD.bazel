@@ -28,4 +28,7 @@ _closure_js_library(
 _closure_js_library(
     name = "xid",
     srcs = ["xid.js"],
+    suppress = [
+        "JSC_USE_OF_GOOG_PROVIDE",
+    ],
 )
