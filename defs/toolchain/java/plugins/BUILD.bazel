@@ -62,7 +62,7 @@ java_plugin(
     deps = [
         maven("info.picocli:picocli"),
         maven("info.picocli:picocli-codegen"),
-    ]
+    ],
 )
 
 java_plugin(

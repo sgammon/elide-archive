@@ -50,6 +50,7 @@ def _js_app(name,
             defs = {},
             flags = [],
             css = None,
+            dependency_mode = "PRUNE",
             **kwargs):
 
     """ Build a combined frontend application target. """
@@ -66,7 +67,7 @@ def _js_app(name,
         entry_points = entry_points,
         deps = deps,
         rewrite_polyfills = True,
-#        dependency_mode = "PRUNE",
+        dependency_mode = dependency_mode,
         extra_production_args = flags,
         closure_defines = overlay_defs,
         css = css_target,
