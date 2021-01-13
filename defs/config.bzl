@@ -100,7 +100,7 @@ JAVA_LANGUAGE_LEVEL = "11"
 ## Kotlin version.
 ## ------------------------------------
 ## Sets the Kotlin API and runtime version.
-KOTLIN_LANGUAGE_LEVEL = "1.3"
+KOTLIN_LANGUAGE_LEVEL = "1.4"
 
 ## Kubernetes toolchain version.
 ## ------------------------------------
