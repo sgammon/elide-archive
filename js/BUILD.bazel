@@ -23,6 +23,9 @@ load(
 _closure_js_library(
     name = "ij",
     srcs = ["ij.js"],
+    suppress = [
+        "JSC_USE_OF_GOOG_PROVIDE",
+    ],
 )
 
 _closure_js_library(

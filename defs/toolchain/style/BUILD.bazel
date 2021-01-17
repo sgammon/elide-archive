@@ -42,7 +42,11 @@ nodejs_binary(
     args = ["--node_options=--expose-gc"],
     entry_point = ":postcss.js",
     data = [
-        "@npm//:node_modules",
+        "@npm//args",
+        "@npm//autoprefixer",
+        "@npm//cssnano",
+        "@npm//cssnano-preset-default",
+        "@npm//cssnano-preset-advanced",
         "postcss.js",
     ]
 )
