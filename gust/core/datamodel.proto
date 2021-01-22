@@ -265,6 +265,9 @@ message TableFieldOptions {
 
   // Overrides the BigQuery type associated with the exported form of this message.
   string bqtype = 3;
+
+  // Name of the table column, if different from the field.
+  string name = 4;
 }
 
 
