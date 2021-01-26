@@ -79,6 +79,8 @@
   {@param? ogTags: html}  /** OpenGraph tags to include at the bottom of the head block. */
   {@param? jsonLD: js}  /** JSON-LD (JSON Linked Data) description for the page, if any. */
   {@param? preamble: html}  /** Assets to inject early in the render flow for the page head. */
+  {@param? art: html}  /** ASCII artwork or commentary for the page. Prefixes all content. */
+
   {@inject? htmlAttrs: attributes}  /** Additional attributes to append to the HTML tag. */
   {@inject? bodyAttrs: attributes}  /** Additional attributes to append to the body tag. */
   {@inject? live_reload_enabled: bool}  /** Whether live-reload mode is enabled. */
@@ -102,6 +104,9 @@
   {/let}
 
   <!doctype html>
+  {if isNonnull($art)}
+      {$art}
+  {/if}
   <html
      class="no-js"{if isNonnull($languageSpec)} lang="{$languageSpec}"{/if}
      {if isNonnull($prefixes)}prefix="{$prefixes}"{/if}
@@ -273,7 +278,7 @@
       {if isNonnull($page) and isNonnull($page.meta) and isNonnull($page.meta.rating)}
           <meta name="rating" content="{$page.meta.rating}">
       {/if}
-  </head>
+  </head>{\n}
   <body{if isNonnull($bodyClass)} class="{$bodyClass}"{/if}{if isNonnull($htmlAttrs)} {$bodyAttrs}{/if}>
       {call .contentRoot}
           {param pageId: $pageId /}
