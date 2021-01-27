@@ -30,7 +30,7 @@ option java_package = "tools.elide.backend.builtin";
 option csharp_namespace = "Elide.Backend.Builtin";
 option go_package = "github.com/elide-tools/elide/backend/builtin;struct";
 
-import "gust/core/datamodel.proto";
+import "core/datamodel.proto";
 
 
 // Specifies a structure that allows easy rendering of an XML site map from controller annotation metadata. This data

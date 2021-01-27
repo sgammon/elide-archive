@@ -32,7 +32,7 @@ option csharp_namespace = "Elide.Struct";
 option go_package = "github.com/elide-tools/elide/struct;struct";
 
 import "gust/core/crypto.proto";
-import "gust/core/datamodel.proto";
+import "core/datamodel.proto";
 
 
 // Defines a structure that is operable as a 1-to-n-layer Bloom filter. NIST (the National Institute of Standards and

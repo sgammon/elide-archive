@@ -241,6 +241,7 @@ model(
     name = "datamodel",
     srcs = ["datamodel.proto"],
     _internal = True,
+    strip_import_prefix = "/gust/",
     deps = [
         "@com_google_protobuf//:descriptor_proto",
     ],

@@ -20,7 +20,7 @@ option java_multiple_files = false;
 option java_string_check_utf8 = true;
 option java_outer_classname = "PersonRecord";
 
-import "gust/core/datamodel.proto";
+import "core/datamodel.proto";
 
 
 // Proto for dependency testing.

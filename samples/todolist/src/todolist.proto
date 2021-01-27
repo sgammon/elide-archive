@@ -54,7 +54,7 @@ import "google/protobuf/field_mask.proto";
 import "webutil/html/types/html.proto";
 
 import "gust/page/media.proto";
-import "gust/core/datamodel.proto";
+import "core/datamodel.proto";
 
 
 // Defines the priority levels that a task in the task-list can take on. These are essentially arbitrary, and it is
