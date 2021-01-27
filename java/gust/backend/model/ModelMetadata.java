@@ -36,6 +36,7 @@ import java.io.Serializable;
 import java.util.*;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -236,6 +237,7 @@ public final class ModelMetadata {
    * @param mode Collection mode to check for.
    * @return Whether the field is annotated for the provided collection mode.
    */
+  @SuppressWarnings("SameParameterValue")
   static boolean matchCollectionAnnotation(@Nonnull FieldDescriptor field, @Nonnull CollectionMode mode) {
     if (field.getOptions().hasExtension(Datamodel.collection)) {
       var extension = field.getOptions().getExtension(Datamodel.collection);
@@ -1344,5 +1346,125 @@ public final class ModelMetadata {
       fieldPath,
       val,
       fieldPath);
+  }
+
+  /**
+   * Crawl all fields, recursively, on the descriptor provided. This data may also be accessed via a Java stream via the
+   * method variants listed below. Variants of this method also allow predicate-based filtering or control of recursion.
+   *
+   * @see #allFields(Descriptor, Optional) to provide an optional filtering predicate.
+   * @see #allFields(Descriptor, Optional, Boolean) to provide an optional predicate, and/or control recursion.
+   *
+   * @param descriptor Schema descriptor to crawl model definitions on.
+   * @return Iterable of all fields, recursively, from the descriptor.
+   */
+  public static @Nonnull Iterable<FieldDescriptor> allFields(@Nonnull Descriptor descriptor) {
+    return allFields(descriptor, Optional.empty(), true);
+  }
+
+  /**
+   * Crawl all fields, recursively, on the descriptor provided. For each field encountered, run `predicate` to determine
+   * whether to include the field, filtering the returned iterable accordingly. This data may also be accessed via a
+   * Java stream via the method variants listed below.
+   *
+   * @see #allFields(Descriptor, Optional, Boolean) to additionally control recursion.
+   *
+   * @param descriptor Schema descriptor to crawl model definitions on.
+   * @param predicate Filter predicate function, if applicable.
+   * @return Iterable of all fields, recursively, from the descriptor, filtered by `predicate`.
+   */
+  public static @Nonnull Iterable<FieldDescriptor> allFields(@Nonnull Descriptor descriptor,
+                                                             @Nonnull Optional<Predicate<FieldDescriptor>> predicate) {
+    return allFields(descriptor, predicate, true);
+  }
+
+  /**
+   * Crawl all fields, recursively, on the descriptor provided. For each field encountered, run `predicate` to determine
+   * whether to include the field, filtering the returned iterable accordingly. This data may also be accessed via a
+   * Java stream via the method variants listed below.
+   *
+   * @see #streamFields(Descriptor, Optional, Boolean) to access a stream of fields instead.
+   *
+   * @param descriptor Schema descriptor to crawl model definitions on.
+   * @param predicate Filter predicate function, if applicable.
+   * @return Iterable of all fields, optionally recursively, from the descriptor, filtered by `predicate`.
+   */
+  public static @Nonnull Iterable<FieldDescriptor> allFields(@Nonnull Descriptor descriptor,
+                                                             @Nonnull Optional<Predicate<FieldDescriptor>> predicate,
+                                                             @Nonnull Boolean recursive) {
+    return streamFields(
+      descriptor,
+      predicate,
+      recursive
+    ).collect(Collectors.toUnmodifiableList());
+  }
+
+  /**
+   * Crawl all fields, recursively, on the descriptor associated with the provided model instance, and return them in
+   * a stream.
+   *
+   * <p>This method crawls recursively by default, but this behavior can be customized via the alternate method variants
+   * listed below. Other variants also allow applying a predicate to filter the returned fields.</p>
+   *
+   * @see #streamFields(Descriptor, Optional) for the opportunity to provide a filter predicate.
+   * @see #streamFields(Descriptor, Optional, Boolean) for the opportunity to control recursive crawling, and provide a
+   *      filter predicate.
+   *
+   * @param descriptor Schema descriptor to crawl model definitions on.
+   * @return Stream of field descriptors, recursively, which match the `predicate`, if provided.
+   */
+  public static @Nonnull <M extends Message> Stream<FieldDescriptor> streamFields(@Nonnull Descriptor descriptor) {
+    return streamFields(descriptor, Optional.empty());
+  }
+
+  /**
+   * Crawl all fields, recursively, on the descriptor associated with the provided model instance. For each field
+   * encountered, run `predicate` to determine whether to include the field, filtering the returned stream of fields
+   * accordingly.
+   *
+   * <p>This method crawls recursively by default, but this behavior can be customized via the alternate method variants
+   * listed below.</p>
+   *
+   * @see #streamFields(Descriptor, Optional, Boolean) for the opportunity to control recursive crawling.
+   *
+   * @param descriptor Schema descriptor to crawl model definitions on.
+   * @param predicate Filter predicate function, if applicable.
+   * @return Stream of field descriptors, recursively, which match the `predicate`, if provided.
+   */
+  public static @Nonnull Stream<FieldDescriptor> streamFields(@Nonnull Descriptor descriptor,
+                                                              @Nonnull Optional<Predicate<FieldDescriptor>> predicate) {
+    return streamFields(descriptor, predicate, true);
+  }
+
+  /**
+   * Crawl all fields, recursively, on the provided descriptor for a model instance. For each field encountered, run
+   * `predicate` to determine whether to include the field, filtering the returned stream of fields accordingly.
+   *
+   * <p>This method variant allows the user to restrict recursive crawling. If recursion is active, a depth-first search
+   * is performed, with the `predicate` function invoked for every field encountered during the crawl. If no predicate
+   * is provided, the entire set of recursive effective fields is returned from the provided descriptor.</p>
+   *
+   * @see #streamFields(Descriptor) for the cleanest invocation of this method.
+   *
+   * @param descriptor Schema descriptor to crawl model definitions on.
+   * @param predicate Filter predicate function, if applicable.
+   * @param recursive Whether to descend to sub-models recursively.
+   * @return Stream of field descriptors, recursively, which match the `predicate`, if provided.
+   */
+  public static @Nonnull Stream<FieldDescriptor> streamFields(@Nonnull Descriptor descriptor,
+                                                              @Nonnull Optional<Predicate<FieldDescriptor>> predicate,
+                                                              @Nonnull Boolean recursive) {
+    Objects.requireNonNull(descriptor, "cannot crawl fields on null descriptor");
+    Objects.requireNonNull(predicate, "cannot pass `null` for optional predicate");
+    Objects.requireNonNull(recursive, "cannot pass `null` for recursive switch");
+
+    return descriptor.getFields().parallelStream().flatMap((field) -> {
+      if (recursive && field.getType() == FieldDescriptor.Type.MESSAGE) {
+        return field.getMessageType().getFields().parallelStream();
+      }
+      return Stream.of(field);
+    }).filter((field) ->
+      predicate.map(fieldDescriptorPredicate -> fieldDescriptorPredicate.test(field)).orElse(true)
+    );
   }
 }
