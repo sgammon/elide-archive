@@ -1400,6 +1400,31 @@ public final class ModelMetadata {
   }
 
   /**
+   * Crawl all fields, recursively, on the descriptor provided. For each field encountered, run `predicate` to determine
+   * whether to include the field, filtering the returned iterable accordingly. This data may also be accessed via a
+   * Java stream via the method variants listed below.
+   *
+   * <p>If a `MESSAGE` field is encountered and the algorithm needs to decide whether to recurse, this variant includes
+   * support for the `decider` function. `decider` is invoked to decide whether to recurse for opportunity to do so.</p>
+   *
+   * @see #streamFields(Descriptor, Optional, Boolean) to access a stream of fields instead.
+   *
+   * @param descriptor Schema descriptor to crawl model definitions on.
+   * @param predicate Filter predicate function, if applicable.
+   * @param decider Function which decides whether to recurse, for each opportunity to do so.
+   * @return Iterable of all fields, optionally recursively, from the descriptor, filtered by `predicate`.
+   */
+  public static @Nonnull Iterable<FieldDescriptor> allFields(@Nonnull Descriptor descriptor,
+                                                             @Nonnull Optional<Predicate<FieldDescriptor>> predicate,
+                                                             @Nonnull Predicate<FieldDescriptor> decider) {
+    return streamFields(
+      descriptor,
+      predicate,
+      decider
+    ).collect(Collectors.toUnmodifiableList());
+  }
+
+  /**
    * Crawl all fields, recursively, on the descriptor associated with the provided model instance, and return them in
    * a stream.
    *
@@ -1473,13 +1498,44 @@ public final class ModelMetadata {
   public static @Nonnull Stream<FieldDescriptor> streamFields(@Nonnull Descriptor descriptor,
                                                               @Nonnull Optional<Predicate<FieldDescriptor>> predicate,
                                                               @Nonnull Boolean recursive) {
+    Objects.requireNonNull(recursive, "cannot pass `null` for recursive switch");
+
+    return streamFields(
+      descriptor,
+      predicate,
+      (field) -> recursive
+    );
+  }
+
+  /**
+   * Crawl all fields, recursively, on the provided descriptor for a model instance. For each field encountered, run
+   * `predicate` to determine whether to include the field, filtering the returned stream of fields accordingly.
+   *
+   * <p>If a `MESSAGE` field is encountered and the algorithm needs to decide whether to recurse, this variant includes
+   * support for the `decider` function. `decider` is invoked to decide whether to recurse for opportunity to do so.</p>
+   *
+   * <p>This method variant allows the user to restrict recursive crawling. If recursion is active, a depth-first search
+   * is performed, with the `predicate` function invoked for every field encountered during the crawl. If no predicate
+   * is provided, the entire set of recursive effective fields is returned from the provided descriptor.</p>
+   *
+   * @see #streamFields(Descriptor) for the cleanest invocation of this method.
+   *
+   * @param descriptor Schema descriptor to crawl model definitions on.
+   * @param predicate Filter predicate function, if applicable.
+   * @param decider Function that decides whether to recurse.
+   * @return Stream of field descriptors, recursively, which match the `predicate`, if provided.
+   */
+  public static @Nonnull Stream<FieldDescriptor> streamFields(@Nonnull Descriptor descriptor,
+                                                              @Nonnull Optional<Predicate<FieldDescriptor>> predicate,
+                                                              @Nonnull Predicate<FieldDescriptor> decider) {
     Objects.requireNonNull(descriptor, "cannot crawl fields on null descriptor");
     Objects.requireNonNull(predicate, "cannot pass `null` for optional predicate");
-    Objects.requireNonNull(recursive, "cannot pass `null` for recursive switch");
+
 
     return descriptor.getFields().parallelStream().flatMap((field) -> {
       var branch = Stream.of(field);
-      if (recursive && field.getType() == FieldDescriptor.Type.MESSAGE) {
+      if (field.getType() == FieldDescriptor.Type.MESSAGE
+          && decider.test(field)) {
         return Stream.concat(branch, field.getMessageType().getFields().parallelStream());
       }
       return branch;
