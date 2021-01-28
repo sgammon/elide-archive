@@ -1478,10 +1478,11 @@ public final class ModelMetadata {
     Objects.requireNonNull(recursive, "cannot pass `null` for recursive switch");
 
     return descriptor.getFields().parallelStream().flatMap((field) -> {
+      var branch = Stream.of(field);
       if (recursive && field.getType() == FieldDescriptor.Type.MESSAGE) {
-        return field.getMessageType().getFields().parallelStream();
+        return Stream.concat(branch, field.getMessageType().getFields().parallelStream());
       }
-      return Stream.of(field);
+      return branch;
     }).filter((field) ->
       predicate.map(fieldDescriptorPredicate -> fieldDescriptorPredicate.test(field)).orElse(true)
     );
