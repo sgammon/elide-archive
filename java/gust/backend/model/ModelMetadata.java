@@ -1437,6 +1437,25 @@ public final class ModelMetadata {
   }
 
   /**
+   * Crawl all fields, recursively, on the descriptor associated with the provided model instance. For each field
+   * encountered, run `predicate` to determine whether to include the field, filtering the returned stream of fields
+   * accordingly. In this case, `predicate` is required.
+   *
+   * <p>This method crawls recursively by default, but this behavior can be customized via the alternate method variants
+   * listed below.</p>
+   *
+   * @see #streamFields(Descriptor, Optional, Boolean) for the opportunity to control recursive crawling.
+   *
+   * @param descriptor Schema descriptor to crawl model definitions on.
+   * @param predicate Filter predicate function, if applicable.
+   * @return Stream of field descriptors, recursively, which match the `predicate`, if provided.
+   */
+  public static @Nonnull Stream<FieldDescriptor> streamFields(@Nonnull Descriptor descriptor,
+                                                              @Nonnull Predicate<FieldDescriptor> predicate) {
+    return streamFields(descriptor, Optional.of(predicate), true);
+  }
+
+  /**
    * Crawl all fields, recursively, on the provided descriptor for a model instance. For each field encountered, run
    * `predicate` to determine whether to include the field, filtering the returned stream of fields accordingly.
    *
