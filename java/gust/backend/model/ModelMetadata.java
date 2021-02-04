@@ -1593,7 +1593,8 @@ public final class ModelMetadata {
 
       var branch = Stream.of(pointer);
       if (field.getType() == FieldDescriptor.Type.MESSAGE
-        && decider.test(pointer)) {
+          && !field.getMessageType().getFullName().equals(field.getContainingType().getFullName())
+          && decider.test(pointer)) {
         return Stream.concat(branch, streamFieldsRecursive(
           base,
           descriptor.findFieldByNumber(field.getNumber()).getMessageType(),
