@@ -1358,7 +1358,7 @@ public final class ModelMetadata {
    * @param descriptor Schema descriptor to crawl model definitions on.
    * @return Iterable of all fields, recursively, from the descriptor.
    */
-  public static @Nonnull Iterable<FieldDescriptor> allFields(@Nonnull Descriptor descriptor) {
+  public static @Nonnull Iterable<FieldPointer> allFields(@Nonnull Descriptor descriptor) {
     return allFields(descriptor, Optional.empty(), true);
   }
 
@@ -1373,8 +1373,8 @@ public final class ModelMetadata {
    * @param predicate Filter predicate function, if applicable.
    * @return Iterable of all fields, recursively, from the descriptor, filtered by `predicate`.
    */
-  public static @Nonnull Iterable<FieldDescriptor> allFields(@Nonnull Descriptor descriptor,
-                                                             @Nonnull Optional<Predicate<FieldDescriptor>> predicate) {
+  public static @Nonnull Iterable<FieldPointer> allFields(@Nonnull Descriptor descriptor,
+                                                          @Nonnull Optional<Predicate<FieldPointer>> predicate) {
     return allFields(descriptor, predicate, true);
   }
 
@@ -1389,9 +1389,9 @@ public final class ModelMetadata {
    * @param predicate Filter predicate function, if applicable.
    * @return Iterable of all fields, optionally recursively, from the descriptor, filtered by `predicate`.
    */
-  public static @Nonnull Iterable<FieldDescriptor> allFields(@Nonnull Descriptor descriptor,
-                                                             @Nonnull Optional<Predicate<FieldDescriptor>> predicate,
-                                                             @Nonnull Boolean recursive) {
+  public static @Nonnull Iterable<FieldPointer> allFields(@Nonnull Descriptor descriptor,
+                                                          @Nonnull Optional<Predicate<FieldPointer>> predicate,
+                                                          @Nonnull Boolean recursive) {
     return streamFields(
       descriptor,
       predicate,
@@ -1414,9 +1414,9 @@ public final class ModelMetadata {
    * @param decider Function which decides whether to recurse, for each opportunity to do so.
    * @return Iterable of all fields, optionally recursively, from the descriptor, filtered by `predicate`.
    */
-  public static @Nonnull Iterable<FieldDescriptor> allFields(@Nonnull Descriptor descriptor,
-                                                             @Nonnull Optional<Predicate<FieldDescriptor>> predicate,
-                                                             @Nonnull Predicate<FieldDescriptor> decider) {
+  public static @Nonnull Iterable<FieldPointer> allFields(@Nonnull Descriptor descriptor,
+                                                          @Nonnull Optional<Predicate<FieldPointer>> predicate,
+                                                          @Nonnull Predicate<FieldPointer> decider) {
     return streamFields(
       descriptor,
       predicate,
@@ -1438,7 +1438,7 @@ public final class ModelMetadata {
    * @param descriptor Schema descriptor to crawl model definitions on.
    * @return Stream of field descriptors, recursively, which match the `predicate`, if provided.
    */
-  public static @Nonnull <M extends Message> Stream<FieldDescriptor> streamFields(@Nonnull Descriptor descriptor) {
+  public static @Nonnull <M extends Message> Stream<FieldPointer> streamFields(@Nonnull Descriptor descriptor) {
     return streamFields(descriptor, Optional.empty());
   }
 
@@ -1456,8 +1456,8 @@ public final class ModelMetadata {
    * @param predicate Filter predicate function, if applicable.
    * @return Stream of field descriptors, recursively, which match the `predicate`, if provided.
    */
-  public static @Nonnull Stream<FieldDescriptor> streamFields(@Nonnull Descriptor descriptor,
-                                                              @Nonnull Optional<Predicate<FieldDescriptor>> predicate) {
+  public static @Nonnull Stream<FieldPointer> streamFields(@Nonnull Descriptor descriptor,
+                                                           @Nonnull Optional<Predicate<FieldPointer>> predicate) {
     return streamFields(descriptor, predicate, true);
   }
 
@@ -1475,8 +1475,8 @@ public final class ModelMetadata {
    * @param predicate Filter predicate function, if applicable.
    * @return Stream of field descriptors, recursively, which match the `predicate`, if provided.
    */
-  public static @Nonnull Stream<FieldDescriptor> streamFields(@Nonnull Descriptor descriptor,
-                                                              @Nonnull Predicate<FieldDescriptor> predicate) {
+  public static @Nonnull Stream<FieldPointer> streamFields(@Nonnull Descriptor descriptor,
+                                                           @Nonnull Predicate<FieldPointer> predicate) {
     return streamFields(descriptor, Optional.of(predicate), true);
   }
 
@@ -1495,9 +1495,9 @@ public final class ModelMetadata {
    * @param recursive Whether to descend to sub-models recursively.
    * @return Stream of field descriptors, recursively, which match the `predicate`, if provided.
    */
-  public static @Nonnull Stream<FieldDescriptor> streamFields(@Nonnull Descriptor descriptor,
-                                                              @Nonnull Optional<Predicate<FieldDescriptor>> predicate,
-                                                              @Nonnull Boolean recursive) {
+  public static @Nonnull Stream<FieldPointer> streamFields(@Nonnull Descriptor descriptor,
+                                                           @Nonnull Optional<Predicate<FieldPointer>> predicate,
+                                                           @Nonnull Boolean recursive) {
     Objects.requireNonNull(recursive, "cannot pass `null` for recursive switch");
 
     return streamFields(
@@ -1525,22 +1525,52 @@ public final class ModelMetadata {
    * @param decider Function that decides whether to recurse.
    * @return Stream of field descriptors, recursively, which match the `predicate`, if provided.
    */
-  public static @Nonnull Stream<FieldDescriptor> streamFields(@Nonnull Descriptor descriptor,
-                                                              @Nonnull Optional<Predicate<FieldDescriptor>> predicate,
-                                                              @Nonnull Predicate<FieldDescriptor> decider) {
+  public static @Nonnull Stream<FieldPointer> streamFields(@Nonnull Descriptor descriptor,
+                                                           @Nonnull Optional<Predicate<FieldPointer>> predicate,
+                                                           @Nonnull Predicate<FieldPointer> decider) {
     Objects.requireNonNull(descriptor, "cannot crawl fields on null descriptor");
     Objects.requireNonNull(predicate, "cannot pass `null` for optional predicate");
 
+    return streamFieldsRecursive(
+      descriptor,
+      descriptor,
+      predicate,
+      decider,
+      ""
+    );
+  }
 
+  private static @Nonnull Stream<FieldPointer> streamFieldsRecursive(
+    @Nonnull Descriptor base,
+    @Nonnull Descriptor descriptor,
+    @Nonnull Optional<Predicate<FieldPointer>> predicate,
+    @Nonnull Predicate<FieldPointer> decider,
+    @Nonnull String parent) {
     return descriptor.getFields().parallelStream().flatMap((field) -> {
-      var branch = Stream.of(field);
+      var path = String.format("%s.%s", parent, field.getName());
+      var pointer = new FieldPointer(
+        base,
+        path,
+        field
+      );
+
+      var branch = Stream.of(pointer);
       if (field.getType() == FieldDescriptor.Type.MESSAGE
-          && decider.test(field)) {
-        return Stream.concat(branch, field.getMessageType().getFields().parallelStream());
+        && decider.test(pointer)) {
+        return Stream.concat(branch, streamFieldsRecursive(
+          base,
+          descriptor.findFieldByNumber(field.getNumber()).getMessageType(),
+          predicate,
+          decider,
+          path
+        ));
       }
       return branch;
+
     }).filter((field) ->
-      predicate.map(fieldDescriptorPredicate -> fieldDescriptorPredicate.test(field)).orElse(true)
+      predicate.map(fieldDescriptorPredicate ->
+        fieldDescriptorPredicate.test(field)).orElse(true)
+
     );
   }
 }
