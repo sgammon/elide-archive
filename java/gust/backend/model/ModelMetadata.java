@@ -61,8 +61,13 @@ public final class ModelMetadata {
   @Immutable
   @ThreadSafe
   public final static class FieldPointer implements Serializable, Comparable<FieldPointer> {
+    private static final long serialVersionUID = 20210203L;
+
     /** Depth of this field, based on the number of dots in the path. */
     private final @Nonnull Integer depth;
+
+    /** Access path, minus the leaf field. */
+    private final @Nonnull String parent;
 
     /** Access path to the field in some context. */
     private final @Nonnull String path;
@@ -77,6 +82,26 @@ public final class ModelMetadata {
      * Setup a new field pointer - generally kept private and resolved via {@link ModelMetadata}.
      *
      * @param base Base model type where {@code path} begins.
+     * @param parent Dotted-path without the leaf field, or just `""` if the field is at the root.
+     * @param path Dotted-path to the field in question.
+     * @param field Field descriptor for the field in question.
+     */
+    FieldPointer(@Nonnull Descriptor base,
+                 @Nonnull String parent,
+                 @Nonnull String path,
+                 @Nonnull FieldDescriptor field) {
+      this.path = path;
+      this.base = base;
+      this.field = field;
+      this.parent = parent;
+      this.depth = CharMatcher.is('.').countIn(path);
+    }
+
+    /**
+     * Setup a new field pointer - generally kept private and resolved via {@link ModelMetadata}. This consructor
+     * creates a field without a parent set.
+     *
+     * @param base Base model type where {@code path} begins.
      * @param path Dotted-path to the field in question.
      * @param field Field descriptor for the field in question.
      */
@@ -86,6 +111,7 @@ public final class ModelMetadata {
       this.path = path;
       this.base = base;
       this.field = field;
+      this.parent = "";
       this.depth = CharMatcher.is('.').countIn(path);
     }
 
@@ -120,6 +146,16 @@ public final class ModelMetadata {
         "base='" + base.getName() + '\'' +
         ", path=" + path +
         '}';
+    }
+
+    /** @return Path to the specified field. */
+    public @Nonnull String getParent() {
+      return parent;
+    }
+
+    /** @return Path to the specified field. */
+    public boolean hasParent() {
+      return !parent.isEmpty() && !parent.isBlank();
     }
 
     /** @return Path to the specified field. */
@@ -1550,6 +1586,7 @@ public final class ModelMetadata {
       var path = String.format("%s.%s", parent, field.getName());
       var pointer = new FieldPointer(
         base,
+        parent,
         path,
         field
       );
