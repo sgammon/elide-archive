@@ -82,13 +82,14 @@ GRPC_JAVA_VERSION = "1.33.1"
 TOMCAT_ANNOTATIONS_VERSION = "6.0.53"
 OPENTRACING_VERSION = "0.2.3"
 
-MICRONAUT_VERSION = "2.1.3"
+MICRONAUT_VERSION = "2.3.1"
 MICRONAUT_DATA_VERSION = "2.1.1"
 MICRONAUT_GRPC_VERSION = "2.1.0"
 MICRONAUT_TEST_VERSION = "2.2.1"
 MICRONAUT_REDIS_VERSION = "3.0.0"
 MICRONAUT_CACHE_VERSION = "2.1.0"
 MICRONAUT_SECURITY_VERSION = "2.1.2"
+MICRONAUT_MULTITENANCY_VERSION = "2.2.3"
 
 GRPC_EXCLUSIONS = [
       maven.exclusion(
@@ -248,7 +249,6 @@ MICRONAUT_COORDINATES = [
     "io.micronaut:micronaut-router",
     "io.micronaut:micronaut-tracing",
     "io.micronaut:micronaut-messaging",
-    "io.micronaut:micronaut-multitenancy",
     "io.micronaut:micronaut-websocket",
     "io.micronaut:micronaut-session",
 ]
@@ -264,6 +264,7 @@ MICRONAUT_EXTRAS = [
     ("io.netty:netty-codec-socks", NETTY_VERSION),
     ("io.netty:netty-handler", NETTY_VERSION),
     ("io.netty:netty-handler-proxy", NETTY_VERSION),
+    ("io.micronaut:micronaut-multitenancy", MICRONAUT_MULTITENANCY_VERSION),
     ("io.micronaut.security:micronaut-security", MICRONAUT_SECURITY_VERSION),
     ("io.micronaut.security:micronaut-security-session", MICRONAUT_SECURITY_VERSION),
     ("io.micronaut.security:micronaut-security-annotations", MICRONAUT_SECURITY_VERSION),
