@@ -366,6 +366,9 @@ message TableFieldOptions {
 
   // Name of the field in columnar circumstances.
   string name = 7;
+
+  // Unique ID or path assigned to this field in a universally specified data model.
+  string id = 8;
 }
 
 
@@ -411,6 +414,9 @@ extend google.protobuf.FieldOptions {
 
   // Settings that specify state for this field, including validation settings, as applicable.
   DatapointOptions opts = 7003;
+
+  // Unique ID or path assigned to this field in a universally specified data model.
+  string id = 7004;
 }
 
 
