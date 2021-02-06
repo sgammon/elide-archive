@@ -419,6 +419,9 @@ extend google.protobuf.EnumValueOptions {
   // for states in forms or other UI.
   string label = 8003;
 
+  // Aliases when decoding values of this type.
+  repeated string alias = 8005;
+
   // Settings that specify state for this enum value, including validation settings, as applicable.
   DatapointOptions value = 8007;
 }
