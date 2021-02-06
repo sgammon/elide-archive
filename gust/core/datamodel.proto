@@ -363,6 +363,9 @@ message TableFieldOptions {
 
   // Size of the field. Pass `0` (the default) for maximum width.
   uint32 size = 6;
+
+  // Name of the field in columnar circumstances.
+  string name = 7;
 }
 
 
