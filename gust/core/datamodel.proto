@@ -306,6 +306,9 @@ message BigQueryOptions {
 
     // `TIMESTAMP` type.
     TIMESTAMP = 14;
+
+    // `JSON` (special type).
+    JSON = 99;
   }
 }
 
@@ -340,6 +343,9 @@ message SpannerOptions {
 
     // `TIMESTAMP` type.
     TIMESTAMP = 8;
+
+    // `JSON` (special type).
+    JSON = 9;
   }
 }
 
