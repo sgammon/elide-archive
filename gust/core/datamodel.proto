@@ -118,6 +118,9 @@ enum DatapointType {
 
   // The datamodel represents a wire object.
   WIRE = 4;
+
+  // The datamodel represents a hash pre-image.
+  HASH = 5;
 }
 
 
@@ -255,6 +258,92 @@ message FieldPersistenceOptions {
 }
 
 
+// Defines options structures that relate to Google BigQuery.
+message BigQueryOptions {
+  // Specifies types applicable to BigQuery property translation.
+  enum BigQueryType {
+    // Unspecified type for Spanner fields.
+    UNSPECIFIED_TYPE = 0 [deprecated = true];
+
+    // Default concrete type for BigQuery columns: `STRING`.
+    STRING = 1;
+
+    // `NUMERIC` type.
+    NUMERIC = 2;
+
+    // `FLOAT` type.
+    FLOAT = 3;
+
+    // `FLOAT64` type.
+    FLOAT64 = 4;
+
+    // `INTEGER` type.
+    INTEGER = 5;
+
+    // `INT64` type.
+    INT64 = 6;
+
+    // `BYTES` type.
+    BYTES = 7;
+
+    // `RECORD` type.
+    RECORD = 8;
+
+    // `BOOLEAN` type.
+    BOOLEAN = 9;
+
+    // `GEOGRAPHY` type.
+    GEOGRAPHY = 10;
+
+    // `TIME` type.
+    TIME = 11;
+
+    // `DATE` type.
+    DATE = 12;
+
+    // `DATETIME` type.
+    DATETIME = 13;
+
+    // `TIMESTAMP` type.
+    TIMESTAMP = 14;
+  }
+}
+
+
+// Defines options structures that relate to Google Cloud Spanner.
+message SpannerOptions {
+  // Specifies types applicable to Spanner property translation.
+  enum SpannerType {
+    // Unspecified type for Spanner fields.
+    UNSPECIFIED_TYPE = 0 [deprecated = true];
+
+    // `STRING` type.
+    STRING = 1;
+
+    // `NUMERIC` type.
+    NUMERIC = 2;
+
+    // `FLOAT64` type.
+    FLOAT64 = 3;
+
+    // `INT64` type.
+    INT64 = 4;
+
+    // `BYTES` type.
+    BYTES = 5;
+
+    // `BOOL` type.
+    BOOL = 6;
+
+    // `DATE` type.
+    DATE = 7;
+
+    // `TIMESTAMP` type.
+    TIMESTAMP = 8;
+  }
+}
+
+
 // Specifies options specific to storing this field in a tabular-style data engine.
 message TableFieldOptions {
   // Marks this field as `REQUIRED` in tabular schemas.
@@ -263,11 +352,17 @@ message TableFieldOptions {
   // Marks this field as ignored for serialization in tabular circumstances.
   bool ignore = 2;
 
-  // Overrides the BigQuery type associated with the exported form of this message.
-  string bqtype = 3;
+  // Overrides the BigQuery type associated with the exported form of this message field.
+  BigQueryOptions.BigQueryType bqtype = 3;
 
-  // Name of the table column, if different from the field.
-  string name = 4;
+  // Overrides the Spanner type associated with the exported form of this message field.
+  SpannerOptions.SpannerType sptype = 4;
+
+  // Converts this field into a `REPEATED`-mode field in BigQuery.
+  bool repeated = 5;
+
+  // Size of the field. Pass `0` (the default) for maximum width.
+  uint32 size = 6;
 }
 
 
