@@ -38,7 +38,7 @@ import "google/protobuf/timestamp.proto";
 import "webutil/html/types/html.proto";
 
 import "gust/core/data.proto";
-import "core/datamodel.proto";
+import "gust/core/datamodel.proto";
 
 import "gust/base/language.proto";
 import "gust/page/semantic.proto";

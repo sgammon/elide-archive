@@ -1,0 +1,28 @@
+version: v1beta1
+name: buf.build/elide/gust
+deps:
+    - buf.build/elide/safe-html-types
+    - buf.build/beta/googleapis
+build:
+  roots:
+    - .
+  excludes:
+    - defs
+    - external
+    - java
+    - javatests
+    - js
+    - jstests
+    - tests
+    - tools
+    - dist
+    - samples
+    - node_modules/
+    - bazel-out/
+    - bazel-*
+lint:
+  use:
+    - DEFAULT
+breaking:
+  use:
+    - FILE
