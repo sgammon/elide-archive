@@ -1,0 +1,13 @@
+version: v1beta1
+name: buf.build/elide/safe-html-types
+deps:
+    - buf.build/beta/googleapis
+build:
+  roots:
+    - .
+lint:
+  use:
+    - DEFAULT
+breaking:
+  use:
+    - FILE
