@@ -27,6 +27,7 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Predicate;
 
 
 /**
@@ -43,6 +44,7 @@ public final class PageContext implements PageRender {
   /** Shared singleton instance of an empty page context. */
   private static final PageContext _EMPTY = new PageContext(
     Context.getDefaultInstance(),
+    null,
     null,
     null,
     null,
@@ -63,18 +65,21 @@ public final class PageContext implements PageRender {
    * @param injected Additional injected properties to apply.
    * @param namingMapProvider Style rewrite naming provider to apply/override (if enabled).
    * @param i18n Internationalization context to apply.
+   * @param delegatePredicate Predicate for selecting a Soy delegate package, if applicable.
    */
   private PageContext(@Nullable Context proto,
                       @Nullable Map<String, Object> context,
                       @Nullable Map<String, Object> injected,
                       @Nullable SoyNamingMapProvider namingMapProvider,
-                      @Nullable SoyContext.SoyI18NContext i18n) {
+                      @Nullable SoyContext.SoyI18NContext i18n,
+                      @Nullable Predicate<String> delegatePredicate) {
     this.protoContext = proto != null ? proto : Context.getDefaultInstance();
     this.rawContext = SoyContext.fromMap(
       context != null ? context : Collections.emptyMap(),
-      injected != null ? Optional.of(injected) : Optional.empty(),
-      namingMapProvider != null ? Optional.of(namingMapProvider) : Optional.empty(),
-      i18n != null ? Optional.of(i18n) : Optional.empty());
+      Optional.ofNullable(injected),
+      Optional.ofNullable(namingMapProvider),
+      Optional.ofNullable(i18n),
+      Optional.ofNullable(delegatePredicate));
   }
 
   // -- Factories: Maps -- //
@@ -97,7 +102,7 @@ public final class PageContext implements PageRender {
    * @return Instance of page context, enclosing the provided context.
    */
   public static PageContext fromMap(@Nonnull Map<String, Object> context) {
-    return new PageContext(null, context, null, null, null);
+    return new PageContext(null, context, null, null, null, null);
   }
 
   /**
@@ -111,7 +116,7 @@ public final class PageContext implements PageRender {
    */
   public static PageContext fromMap(@Nonnull Map<String, Object> context,
                                     @Nonnull Map<String, Object> injected) {
-    return new PageContext(null, context, injected, null, null);
+    return new PageContext(null, context, injected, null, null, null);
   }
 
   /**
@@ -130,7 +135,7 @@ public final class PageContext implements PageRender {
   public static PageContext fromMap(@Nonnull Map<String, Object> context,
                                     @Nonnull Map<String, Object> injected,
                                     @Nullable SoyNamingMapProvider namingMapProvider) {
-    return new PageContext(null, context, injected, namingMapProvider, null);
+    return new PageContext(null, context, injected, namingMapProvider, null, null);
   }
 
   /**
@@ -148,13 +153,15 @@ public final class PageContext implements PageRender {
    * @param injected Injected parameters to provide to the render operation - available via <pre>@inject</pre>.
    * @param namingMapProvider Override any globally-installed naming map provider.
    * @param i18n Internationalization context to apply.
+   * @param delegatePredicate Predicate for selecting a delegate package.
    * @return Fabricated page context object.
    */
   public static PageContext fromMap(@Nonnull Map<String, Object> context,
                                     @Nonnull Map<String, Object> injected,
                                     @Nullable SoyNamingMapProvider namingMapProvider,
-                                    @Nullable SoyContext.SoyI18NContext i18n) {
-    return new PageContext(null, context, injected, namingMapProvider, i18n);
+                                    @Nullable SoyContext.SoyI18NContext i18n,
+                                    @Nullable Predicate<String> delegatePredicate) {
+    return new PageContext(null, context, injected, namingMapProvider, i18n, delegatePredicate);
   }
 
   // -- Factories: Protos -- //
@@ -168,7 +175,14 @@ public final class PageContext implements PageRender {
    * @return Page context object.
    */
   public static @Nonnull PageContext fromProto(@Nonnull Context pageContext) {
-    return new PageContext(pageContext, null, null, null, null);
+    return new PageContext(
+      pageContext,
+      null,
+      null,
+      null,
+      null,
+      null
+    );
   }
 
   /**
@@ -185,7 +199,14 @@ public final class PageContext implements PageRender {
    */
   public static @Nonnull PageContext fromProto(@Nonnull Context pageContext,
                                                @Nonnull Map<String, Object> props) {
-    return new PageContext(pageContext, props, null, null, null);
+    return new PageContext(
+      pageContext,
+      props,
+      null,
+      null,
+      null,
+      null
+    );
   }
 
   /**
@@ -206,7 +227,14 @@ public final class PageContext implements PageRender {
   public static @Nonnull PageContext fromProto(@Nonnull Context pageContext,
                                                @Nonnull Map<String, Object> props,
                                                @Nonnull Map<String, Object> injected) {
-    return new PageContext(pageContext, props, injected, null, null);
+    return new PageContext(
+      pageContext,
+      props,
+      injected,
+      null,
+      null,
+      null
+    );
   }
 
   /**
@@ -233,7 +261,14 @@ public final class PageContext implements PageRender {
                                                @Nonnull Map<String, Object> props,
                                                @Nonnull Map<String, Object> injected,
                                                @Nullable SoyNamingMapProvider namingMapProvider) {
-    return new PageContext(pageContext, props, injected, namingMapProvider, null);
+    return new PageContext(
+      pageContext,
+      props,
+      injected,
+      namingMapProvider,
+      null,
+      null
+    );
   }
 
   /**
@@ -259,14 +294,23 @@ public final class PageContext implements PageRender {
    * @param injected Additional injected values (may not contain a value at key <pre>context</pre>).
    * @param namingMapProvider Naming map provider to override any globally-installed provider with, if enabled.
    * @param i18n Internationalization context to apply.
+   * @param delegatePredicate Predicate for selecting a Soy delegate package, as applicable.
    * @return Page context object.
    */
   public static @Nonnull PageContext fromProto(@Nonnull Context pageContext,
                                                @Nonnull Map<String, Object> props,
                                                @Nonnull Map<String, Object> injected,
                                                @Nullable SoyNamingMapProvider namingMapProvider,
-                                               @Nullable SoyContext.SoyI18NContext i18n) {
-    return new PageContext(pageContext, props, injected, namingMapProvider, i18n);
+                                               @Nullable SoyContext.SoyI18NContext i18n,
+                                               @Nullable Predicate<String> delegatePredicate) {
+    return new PageContext(
+      pageContext,
+      props,
+      injected,
+      namingMapProvider,
+      i18n,
+      delegatePredicate
+    );
   }
 
   // -- Interface: Soy Proto Context -- //
@@ -363,5 +407,16 @@ public final class PageContext implements PageRender {
   @Nonnull @Override
   public Optional<SoyMsgBundle> messageBundle() throws IOException {
     return rawContext.messageBundle();
+  }
+
+  /**
+   * Return the delegate package that should be active when rendering the desired Soy output, if applicable. If no
+   * delegate package should be applied, an empty {@link Optional} is returned.
+   *
+   * @return Predicate specifying the delegate package, or {@link Optional#empty()}.
+   */
+  @Nonnull @Override
+  public Optional<Predicate<String>> delegatePackage() {
+    return rawContext.delegatePackage();
   }
 }

@@ -22,8 +22,6 @@ import com.google.protobuf.ByteString;
 import com.google.template.soy.msgs.SoyMsgBundle;
 import com.google.template.soy.data.SanitizedContent;
 import com.google.template.soy.data.UnsafeSanitizedContentOrdainer;
-import com.google.template.soy.msgs.SoyMsgBundleHandler;
-import com.google.template.soy.xliffmsgplugin.XliffMsgPlugin;
 import gust.backend.runtime.AssetManager;
 import gust.backend.runtime.AssetManager.ManagedAsset;
 import gust.backend.runtime.Logging;
@@ -32,7 +30,6 @@ import io.micronaut.http.*;
 import io.micronaut.http.context.ServerRequestContext;
 import io.micronaut.runtime.http.scope.RequestScope;
 import io.micronaut.views.soy.SoyContext;
-import io.micronaut.views.soy.SoyContextMediator;
 import io.micronaut.views.soy.SoyNamingMapProvider;
 import org.slf4j.Logger;
 import tools.elide.assets.AssetBundle.StyleBundle.StyleAsset;
@@ -60,6 +57,7 @@ import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
@@ -130,6 +128,9 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
 
   /** Naming map provider to apply during the Soy render flow. */
   private @Nonnull Optional<SoyNamingMapProvider> namingMapProvider;
+
+  /** Predicate for selecting a Soy delegate package, if applicable. */
+  private @Nonnull Optional<Predicate<String>> delegatePredicate;
 
   /** Translation file to apply during the Soy render flow. */
   private @Nonnull Optional<File> translationsFile = Optional.empty();
@@ -564,7 +565,8 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
           this.messageBundle,
           this.translationsFile,
           this.translationsResource
-        ));
+        ),
+        this.delegatePredicate.orElse(null));
       if (logging.isDebugEnabled()) {
         logging.debug(format("Exported page context with: %s props, %s injecteds, and proto follows \n%s",
           this.props.size(),
@@ -1381,6 +1383,59 @@ public class PageContextManager implements Closeable, AutoCloseable, PageRender 
       return this.messageBundle;
     }
     return PageRender.super.messageBundle();
+  }
+
+  // -- Delegate Rendering -- //
+
+  /**
+   * Fetch the active delegate package, or return {@link Optional#empty()}. Either a {@link Predicate} is returned which
+   * is invoked to match the delegate package, or {@link Optional#empty()} indicates that no package should be available
+   * (or that defaults should be used, where available).
+   *
+   * @return Returns the active predicate, as applicable.
+   */
+  @Override
+  public @Nonnull Optional<Predicate<String>> delegatePackage() {
+    return this.delegatePredicate;
+  }
+
+  /**
+   * Set the active delegate package name, wrapped in an implied predicate which filters explicitly against the provided
+   * name value. If the referenced Soy package is included in the build, it should be selected explicitly as the active
+   * package during render.
+   *
+   * <p>Calling this method overwrites any current delegate package.</p>
+   *
+   * @param packageName Package name to match for delegation.
+   * @return Current page context manager (for call chain-ability).
+   */
+  public @Nonnull PageContextManager delegatePackage(@Nonnull String packageName) {
+    this.delegatePredicate = Optional.of(packageName::equals);
+    return this;
+  }
+
+  /**
+   * Set the active delegate package predicate directly. This predicate is invoked to match a delegate package at
+   * runtime, if and when one is needed.
+   *
+   * <p>Calling this method overwrites any current delegate package.</p>
+   *
+   * @param packagePredicate Predicate to match packages.
+   * @return Current page context manager (for call chain-ability).
+   */
+  public @Nonnull PageContextManager delegatePackage(@Nonnull Predicate<String> packagePredicate) {
+    this.delegatePredicate = Optional.of(packagePredicate);
+    return this;
+  }
+
+  /**
+   * Clear any current delegate package.
+   *
+   * @return Current page context manager (for call chain-ability).
+   */
+  public @Nonnull PageContextManager clearDelegatePackage() {
+    this.delegatePredicate = Optional.empty();
+    return this;
   }
 
   // -- Builder Interface (Response) -- //

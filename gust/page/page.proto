@@ -187,6 +187,9 @@ message Context {
 
     // Set the rating for this page (see: SafeSearch ratings).
     string rating = 19;
+
+    // Delegate package for use with Soy rendering, if applicable.
+    string delegate_package = 20;
   }
 
   // Specifies information about an asset or foreign page linked to this page. Stylesheets, favorite icons ("favicons"),
