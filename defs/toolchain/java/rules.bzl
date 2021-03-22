@@ -487,7 +487,8 @@ def _micronaut_application(name,
     if len(css_modules) > 0:
         for module in css_modules:
             injected_resources.append("%s.css" % css_modules[module])
-            injected_resources.append("%s.css.json" % css_modules[module])
+            if enable_renaming:
+                injected_resources.append("%s.css.json" % css_modules[module])
 
             # should we reference the rewrite maps?
             if enable_renaming:
