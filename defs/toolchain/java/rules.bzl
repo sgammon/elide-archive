@@ -519,9 +519,9 @@ def _micronaut_application(name,
             target for (entry, target) in js_modules.items()
         ] + [
             target for (entry, target) in css_modules.items()
-        ] + [
+        ] + (enable_renaming and [
             ("%s.css.json" % target) for (entry, target) in css_modules.items()
-        ],
+        ] or []),
         # ends up as `./asset_bundler.sh --output='-' (...) --css="module.here:some/file.css some/file.css" --`
         cmd = join_cmd([
           "./$(location @gust//tools:AssetBundler)", " ",
