@@ -60,7 +60,7 @@ JAVA_TEMPLATES = True
 ## `PYTHON_TEMPLATES` enable/disable flag.
 ## ------------------------------------
 ## Set to `True` to generate server-side templates for Python by default.
-PYTHON_TEMPLATES = True
+PYTHON_TEMPLATES = False
 
 ## `CHROMIUM` enable/disable flag.
 ## ------------------------------------

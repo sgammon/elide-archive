@@ -128,6 +128,7 @@ def _ssr_library(name,
         proto_deps = (proto_deps or []) + INJECTED_SSR_PROTO_DEPS,
         java_package = java_package,
         js = False,
+        python = _PYTHON_TEMPLATES,
     )
 
 
