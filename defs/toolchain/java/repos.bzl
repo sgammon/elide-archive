@@ -54,25 +54,25 @@ VALIDATION_VERSION = "2.0.0.Final"
 JUNIT_JUPITER_VERSION = "5.6.0"
 JUNIT_PLATFORM_VERSION = "1.6.0"
 
-GAX_VERSION = "1.60.1"
+GAX_VERSION = "1.62.0"
 NETTY_VERSION = "4.1.51.Final"
-RXJAVA_VERSION = "2.2.20"
+RXJAVA_VERSION = "2.2.21"
 PICOCLI_VERSION = "4.2.0"
 REACTIVE_VERSION = "1.0.3"
 THREETEN_VERSION = "1.5.0"
 GAPI_COMMON_VERSION = "1.10.1"
 ERROR_PRONE_VERSION = "2.5.1"
-GCLOUD_API_VERSION = "0.142.0"
-GCLOUD_GRPC_VERSION = "1.93.10"
-GCLOUD_TASKS_VERSION = "1.30.7"
-GCLOUD_PUBSUB_VERSION = "1.108.7"
-GCLOUD_STORAGE_VERSION = "1.113.2"
-GCLOUD_FIRESTORE_VERSION = "2.1.0"
-GCLOUD_MONITORING_VERSION = "2.0.7"
+GCLOUD_API_VERSION = "0.150.0"
+GCLOUD_GRPC_VERSION = "1.94.4"
+GCLOUD_TASKS_VERSION = "1.32.1"
+GCLOUD_PUBSUB_VERSION = "1.112.0"
+GCLOUD_STORAGE_VERSION = "1.113.14"
+GCLOUD_FIRESTORE_VERSION = "2.2.5"
+GCLOUD_MONITORING_VERSION = "2.1.0"
 COMMON_PROTOS_VERSION = "2.0.1"
 KOTLIN_TEST_VERSION = "3.4.2"
 J2OBJC_ANNOTATIONS_VERSION = "1.3"
-GAUTH_CREDENTIALS_VERSION = "0.23.0"
+GAUTH_CREDENTIALS_VERSION = "0.25.2"
 GUAVA_FAILUREACCESS_VERSION = "1.0.1"
 ANIMAL_SNIFFER_VERSION = "1.19"
 ANDROID_ANNOTATIONS_VERSION = "4.1.1.4"
@@ -83,59 +83,75 @@ TOMCAT_ANNOTATIONS_VERSION = "6.0.53"
 OPENTRACING_VERSION = "0.2.3"
 
 MICRONAUT_VERSION = "2.3.1"
-MICRONAUT_DATA_VERSION = "2.2.4"
-MICRONAUT_GRPC_VERSION = "2.2.0"
+MICRONAUT_DATA_VERSION = "2.3.1"
+MICRONAUT_GRPC_VERSION = "2.3.0"
 MICRONAUT_TEST_VERSION = "2.3.2"
-MICRONAUT_REDIS_VERSION = "3.1.0"
+MICRONAUT_REDIS_VERSION = "4.0.1"
 MICRONAUT_CACHE_VERSION = "2.3.0"
-MICRONAUT_SECURITY_VERSION = "2.3.0"
+MICRONAUT_SECURITY_VERSION = "2.3.1"
 MICRONAUT_MULTITENANCY_VERSION = "2.2.3"
 
 GRPC_EXCLUSIONS = [
-      maven.exclusion(
-         artifact = "grpc-api",
-         group = "io.grpc",
-     ),
-      maven.exclusion(
-         artifact = "grpc-auth",
-         group = "io.grpc",
-     ),
-     maven.exclusion(
-         artifact = "grpc-core",
-         group = "io.grpc",
-     ),
-     maven.exclusion(
-         artifact = "grpc-netty",
-         group = "io.grpc",
-     ),
-     maven.exclusion(
-         artifact = "grpc-okhttp",
-         group = "io.grpc",
-     ),
-     maven.exclusion(
-          artifact = "grpc-services",
-          group = "io.grpc",
-      ),
-     maven.exclusion(
-         artifact = "grpc-auth",
-         group = "io.grpc",
-     ),
-     maven.exclusion(
-         artifact = "grpc-stub",
-         group = "io.grpc",
-     ),
-     maven.exclusion(
-         artifact = "grpc-context",
-         group = "io.grpc",
-     ),
-     maven.exclusion(
-         artifact = "grpc-protobuf",
-         group = "io.grpc",
-     ),
-     maven.exclusion(
-         artifact = "grpc-protobuf-lite",
-         group = "io.grpc",
-     ),
+    maven.exclusion(
+        group = "io.grpc",
+        artifact = "grpc-services",
+    ),
+    maven.exclusion(
+        artifact = "grpc-okhttp",
+        group = "io.grpc",
+    ),
+    maven.exclusion(
+        group = "io.grpc",
+        artifact = "grpc-netty-shaded",
+    ),
+    maven.exclusion(
+        group = "io.grpc",
+        artifact = "grpc-netty",
+    ),
+    maven.exclusion(
+        group = "io.grpc",
+        artifact = "grpc-grpclb",
+    ),
+    maven.exclusion(
+        group = "io.grpc",
+        artifact = "grpc-stub",
+    ),
+    maven.exclusion(
+        group = "io.grpc",
+        artifact = "grpc-protobuf",
+    ),
+    maven.exclusion(
+        group = "io.grpc",
+        artifact = "grpc-protobuf-lite",
+    ),
+    maven.exclusion(
+        group = "io.grpc",
+        artifact = "grpc-alts",
+    ),
+    maven.exclusion(
+        group = "io.grpc",
+        artifact = "grpc-auth",
+    ),
+    maven.exclusion(
+        group = "io.grpc",
+        artifact = "grpc-core",
+    ),
+    maven.exclusion(
+        group = "io.grpc",
+        artifact = "grpc-api",
+    ),
+    maven.exclusion(
+        group = "io.grpc",
+        artifact = "grpc-context",
+    ),
+    maven.exclusion(
+        group = "com.google.api",
+        artifact = "gax-grpc",
+    ),
+    maven.exclusion(
+        group = "com.google.api.grpc",
+        artifact = "grpc-google-common-protos",
+    ),
 ]
 
 SOY_EXCLUSIONS = [
@@ -187,6 +203,7 @@ GRPC_BUILD_ARTIFACTS = [
     "io.grpc:grpc-context:%s" % GRPC_JAVA_VERSION,
     "io.grpc:grpc-protobuf:%s" % GRPC_JAVA_VERSION,
     "io.grpc:grpc-netty:%s" % GRPC_JAVA_VERSION,
+    "io.grpc:grpc-netty-shaded:%s" % GRPC_JAVA_VERSION,
     "com.google.api.grpc:proto-google-common-protos:%s" % COMMON_PROTOS_VERSION,
     "com.google.api.grpc:grpc-google-common-protos:%s" % COMMON_PROTOS_VERSION,
     "com.google.j2objc:j2objc-annotations:%s" % J2OBJC_ANNOTATIONS_VERSION,
