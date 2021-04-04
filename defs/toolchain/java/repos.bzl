@@ -56,6 +56,7 @@ JUNIT_PLATFORM_VERSION = "1.6.0"
 
 GAX_VERSION = "1.62.0"
 NETTY_VERSION = "4.1.51.Final"
+NETTY_BORINGSSL_VERSION = "2.0.36.Final"
 RXJAVA_VERSION = "2.2.21"
 PICOCLI_VERSION = "4.2.0"
 REACTIVE_VERSION = "1.0.3"
@@ -198,6 +199,7 @@ GRPC_BUILD_ARTIFACTS = [
     "io.grpc:grpc-core:%s" % GRPC_JAVA_VERSION,
     "io.grpc:grpc-auth:%s" % GRPC_JAVA_VERSION,
     "io.grpc:grpc-api:%s" % GRPC_JAVA_VERSION,
+    "io.grpc:grpc-alts:%s" % GRPC_JAVA_VERSION,
     "io.grpc:grpc-services:%s" % GRPC_JAVA_VERSION,
     "io.grpc:grpc-stub:%s" % GRPC_JAVA_VERSION,
     "io.grpc:grpc-context:%s" % GRPC_JAVA_VERSION,
@@ -281,6 +283,7 @@ MICRONAUT_EXTRAS = [
     ("io.netty:netty-codec-socks", NETTY_VERSION),
     ("io.netty:netty-handler", NETTY_VERSION),
     ("io.netty:netty-handler-proxy", NETTY_VERSION),
+    ("io.netty:netty-tcnative-boringssl-static", NETTY_BORINGSSL_VERSION),
     ("io.micronaut:micronaut-multitenancy", MICRONAUT_MULTITENANCY_VERSION),
     ("io.micronaut.security:micronaut-security", MICRONAUT_SECURITY_VERSION),
     ("io.micronaut.security:micronaut-security-session", MICRONAUT_SECURITY_VERSION),

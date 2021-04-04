@@ -30,47 +30,47 @@ public interface AssetConfiguration {
   AssetConfiguration DEFAULTS = new AssetConfiguration() {};
 
   /** Specifies a bump value to apply to all asset URLs. */
-  @Bindable("bump") default Optional<Integer> bump() {
+  @Bindable(value = "bump") default Optional<Integer> bump() {
     return Optional.empty();
   }
 
   /** Specifies whether to affix {@code ETag} values. */
-  @Bindable("etags") default Boolean enableETags() {
+  @Bindable(value = "etags") default Boolean enableETags() {
     return true;
   }
 
   /** Specifies whether to affix {@code Last-Modified} values. */
-  @Bindable("lastModified") default Boolean enableLastModified() {
+  @Bindable(value = "lastModified") default Boolean enableLastModified() {
     return true;
   }
 
   /** Specifies whether to affix a {@code X-Content-Type-Options} policy for {@code nosniff}. */
-  @Bindable("noSniff") default Boolean enableNoSniff() {
+  @Bindable(value = "noSniff") default Boolean enableNoSniff() {
     return true;
   }
 
   /** Specifies settings regarding CDN use. */
-  @Bindable("cdn") default ContentDistributionConfiguration cdn() {
+  @Bindable(value = "cdn") default ContentDistributionConfiguration cdn() {
     return ContentDistributionConfiguration.DEFAULTS;
   }
 
   /** Specifies settings for {@code Vary} headers. */
-  @Bindable("vary") default AssetVarianceConfiguration variance() {
+  @Bindable(value = "vary") default AssetVarianceConfiguration variance() {
     return AssetVarianceConfiguration.DEFAULTS;
   }
 
   /** Specifies settings for HTTP compression. */
-  @Bindable("compression") default AssetCompressionConfiguration compression() {
+  @Bindable(value = "compression") default AssetCompressionConfiguration compression() {
     return AssetCompressionConfiguration.DEFAULTS;
   }
 
   /** Specifies settings for HTTP caching. */
-  @Bindable("httpCaching") default AssetCachingConfiguration httpCaching() {
+  @Bindable(value = "httpCaching") default AssetCachingConfiguration httpCaching() {
     return AssetCachingConfiguration.DEFAULTS;
   }
 
   /** {@code Cross-Origin-Resource-Policy} configuration for dynamic content. */
-  @Bindable("resourcePolicy") default CrossOriginResourceConfiguration crossOriginResources() {
+  @Bindable(value = "resourcePolicy") default CrossOriginResourceConfiguration crossOriginResources() {
     return CrossOriginResourceConfiguration.DEFAULTS;
   }
 
@@ -81,12 +81,12 @@ public interface AssetConfiguration {
     CrossOriginResourceConfiguration DEFAULTS = new CrossOriginResourceConfiguration() {};
 
     /** Whether to enable {@code Cross-Origin-Resource-Policy} headers for dynamically-served content. */
-    @Bindable("enabled") default Boolean enabled() {
+    @Bindable(value = "enabled") default Boolean enabled() {
       return true;
     }
 
     /** Specifies the default policy to employ for {@code Cross-Origin-Resource-Policy} for dynamic content. */
-    @Bindable("policy") default CrossOriginResourcePolicy policy() {
+    @Bindable(value = "policy") default CrossOriginResourcePolicy policy() {
       return CrossOriginResourcePolicy.SAME_SITE;
     }
   }
@@ -98,17 +98,17 @@ public interface AssetConfiguration {
     AssetCompressionConfiguration DEFAULTS = new AssetCompressionConfiguration() {};
 
     /** Whether to enable serving of pre-compressed assets. */
-    @Bindable("enabled") default Boolean enabled() {
+    @Bindable(value = "enabled") default Boolean enabled() {
       return true;
     }
 
     /** Whether to enable serving of pre-compressed assets. */
-    @Bindable("modes") default SortedSet<CompressionMode> compressionModes() {
+    @Bindable(value = "modes") default SortedSet<CompressionMode> compressionModes() {
       return ImmutableSortedSet.of(CompressionMode.GZIP, CompressionMode.BROTLI);
     }
 
     /** Whether to enable the `Vary` header with regard to compression. */
-    @Bindable("vary") default Boolean enableVary() {
+    @Bindable(value = "vary") default Boolean enableVary() {
       return true;
     }
   }
@@ -120,27 +120,27 @@ public interface AssetConfiguration {
     AssetVarianceConfiguration DEFAULTS = new AssetVarianceConfiguration() {};
 
     /** Whether to enable {@code Vary} headers at all. */
-    @Bindable("enabled") default Boolean enabled() {
+    @Bindable(value = "enabled") default Boolean enabled() {
       return true;
     }
 
     /** Whether to vary based on {@code Accept}. */
-    @Bindable("accept") default Boolean accept() {
+    @Bindable(value = "accept") default Boolean accept() {
       return true;
     }
 
     /** Whether to vary based on {@code Accept-Language}. */
-    @Bindable("language") default Boolean language() {
+    @Bindable(value = "language") default Boolean language() {
       return false;
     }
 
     /** Whether to vary based on {@code Accept-Charset}. */
-    @Bindable("charset") default Boolean charset() {
+    @Bindable(value = "charset") default Boolean charset() {
       return false;
     }
 
     /** Whether to vary based on the value of {@code Origin}. */
-    @Bindable("origin") default Boolean origin() {
+    @Bindable(value = "origin") default Boolean origin() {
       return false;
     }
   }
@@ -152,32 +152,32 @@ public interface AssetConfiguration {
     AssetCachingConfiguration DEFAULTS = new AssetCachingConfiguration() {};
 
     /** Whether to enable intelligent HTTP caching for assets served dynamically. */
-    @Bindable("enabled") default Boolean enabled() {
+    @Bindable(value = "enabled") default Boolean enabled() {
       return false;
     }
 
     /** Main mode to apply with regard to HTTP caching for assets served dynamically. */
-    @Bindable("mode") default String mode() {
+    @Bindable(value = "mode") default String mode() {
       return "private";
     }
 
     /** Additional directives to inject into the HTTP caching header. */
-    @Bindable("additionalDirectives") default Optional<List<String>> additionalDirectives() {
+    @Bindable(value = "additionalDirectives") default Optional<List<String>> additionalDirectives() {
       return Optional.empty();
     }
 
     /** Time-to-live value to apply to the main HTTP cache directive. Units tunable with {@link #ttlUnit()}. */
-    @Bindable("ttl") default Long ttl() {
+    @Bindable(value = "ttl") default Long ttl() {
       return 300L;
     }
 
     /** Whether to enable a shared-cache directive in the HTTP cache settings. */
-    @Bindable("shared") default Boolean enableShared() {
+    @Bindable(value = "shared") default Boolean enableShared() {
       return false;
     }
 
     /** When a shared-cache directive is enabled, this sets the TTL for shared caches. */
-    @Bindable("sharedTtl") default Long sharedTtl() {
+    @Bindable(value = "sharedTtl") default Long sharedTtl() {
       return 86400L;
     }
 
@@ -199,12 +199,12 @@ public interface AssetConfiguration {
     ContentDistributionConfiguration DEFAULTS = new ContentDistributionConfiguration() {};
 
     /** Whether to enable CDN features. */
-    @Bindable("enabled") default Boolean enabled() {
+    @Bindable(value = "enabled") default Boolean enabled() {
       return true;
     }
 
     /** CDN host names to use for assets. A random selection is made from this list for each page render. */
-    @Bindable("hostnames") default List<String> hostnames() {
+    @Bindable(value = "hostnames") default List<String> hostnames() {
       return Collections.emptyList();
     }
   }
