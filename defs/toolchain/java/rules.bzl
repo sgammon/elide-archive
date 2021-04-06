@@ -166,10 +166,14 @@ INJECTED_CONTROLLER_EXPORTS = [
 
 _JVM_APP_DEBUG_FLAGS = [
     "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:%s" % _JVM_DEBUG_PORT,
+    "-Dgust.debug=true",
+    "-Dgust.mode=debug",
 ]
 
 _JVM_APP_RELEASE_FLAGS = [
     # None yet.
+    "-Dgust.release=true",
+    "-Dgust.mode=release",
 ]
 
 INJECTED_LIBRARIES = [
