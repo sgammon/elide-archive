@@ -110,7 +110,7 @@ K8S_VERSION = "1.15.9"
 ## Protobuf toolchain version.
 ## ------------------------------------
 ## Sets the version enforced throughout for Protobuf.
-PROTOBUF_VERSION = "3.13.0"
+PROTOBUF_VERSION = "3.15.8"
 
 ## JVM-based app debug port.
 ## ------------------------------------

@@ -59,9 +59,9 @@ DEPS = {
         "type": "github",
         "forceLocal": False,
         "repo": "sgammon/rules_closure",
-        "target": "5a36c948d7bd17f45c19e590a22495cec33e1de9",
+        "target": "67418786ac081f0c78881ce4e0cca45b7cda521e",
         "local": "/Users/sam.g/Workspace/rules_closure",
-        "seal": "c762b0d814640f87e08bbdb7cd78dc903089da11af09d73bf69d6719c9df50d9"},
+        "seal": "f99161cea10cc8c274f979a1a9e10332fbfb6ac670c0ded7bfbf6f4d90007feb"},
 
     # Rules: Protobuf
     "rules_proto": {
@@ -165,13 +165,6 @@ DEPS = {
         "repo": "bazelbuild/rules_k8s",
         "target": "6e58661104f1d962bc9b03757618f3db647d9b6f",
         "seal": "7e4358fa276d5be0bf7e2ac5629f66dfe6eab4a779e7a5d189872dbb1209081b"},
-
-    # Google: Protobuf
-    "com_google_protobuf": {
-        "type": "github",
-        "repo": "google/protobuf",
-        "target": "2514f0bd7da7e2af1bed4c5d1b84f031c4d12c10",
-        "seal": "04c5e84492093469a7e6342114df3cfd1281e4a90b0d18428ac6c297b87c03e3"},
 
     # Google: J2CL (Java-to-Closure)
     "com_google_j2cl": {
