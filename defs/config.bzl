@@ -105,7 +105,12 @@ KOTLIN_LANGUAGE_LEVEL = "1.4"
 ## Kubernetes toolchain version.
 ## ------------------------------------
 ## Sets the version for the Kubectl tool, etc.
-K8S_VERSION = "1.15.9"
+K8S_VERSION = "1.18.16"
+
+## Kubernetes pinned version state.
+## ------------------------------------
+## Forces use of `kubectl` at the pinned Kubernetes version.
+K8S_PINNED = False
 
 ## Protobuf toolchain version.
 ## ------------------------------------
@@ -116,3 +121,18 @@ PROTOBUF_VERSION = "3.15.8"
 ## ------------------------------------
 ## Sets the port to wait/listen for remote JVM tools on (for launching a debugger).
 JVM_DEBUG_PORT = "5005"
+
+## Golang version to use.
+## ------------------------------------
+## Sets the version to use for Google's Go language.
+GO_VERSION = "1.16.2"
+
+## NodeJS version to use.
+## ------------------------------------
+## Sets the version of the Node JS runtime to use.
+NODE_VERSION = "14.15.0"
+
+## Yarn version to use.
+## ------------------------------------
+## Pins the version for the Yarn package manager for Node.
+YARN_VERSION = "1.22.4"
