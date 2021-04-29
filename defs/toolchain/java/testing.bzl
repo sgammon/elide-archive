@@ -260,6 +260,7 @@ def _micronaut_test(name,
                     jvm_flags = [],
                     config = str(Label("@gust//java/gust:application.yml")),
                     template_loader = str(Label("@gust//java/gust/backend:TemplateProvider")),
+                    classpath_resources = [],
                     **kwargs):
 
     """ Run a backend test on a Micronaut app. Basically wraps a regular JDK test,
@@ -275,7 +276,7 @@ def _micronaut_test(name,
             runtime_deps = dedupe_deps_(
                 INJECTED_TEST_DEPS + INJECTED_MICRONAUT_RUNTIME_DEPS + runtime_deps + [template_loader]),
             resources = resources,
-            classpath_resources = [config],
+            classpath_resources = [config] + classpath_resources,
             jvm_flags = jvm_flags,
             **kwargs
         )
@@ -311,7 +312,7 @@ def _micronaut_test(name,
                 runtime_deps = dedupe_deps_(
                     INJECTED_TEST_DEPS + INJECTED_MICRONAUT_RUNTIME_DEPS + runtime_deps + [template_loader]),
                 resources = resources,
-                classpath_resources = [config],
+                classpath_resources = [config] + classpath_resources,
                 jvm_flags = computed_jvm_flags,
                 testonly = True,
                 **kwargs
