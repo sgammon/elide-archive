@@ -130,6 +130,7 @@ public final class FirestoreDriver<Key extends Message, Model extends Message>
      * Acquire a new instance of the Firestore driver, using the specified configuration settings, and the specified
      * injected channel.
      *
+     * @param baseOptions Base options to apply to the Firestore driver.
      * @param firestoreChannel Managed gRPC channel provider.
      * @param credentialsProvider Transport credentials provider. Generally calls into ADC.
      * @param transportOptions Options to apply to the Firestore channel.
@@ -139,12 +140,14 @@ public final class FirestoreDriver<Key extends Message, Model extends Message>
     @Context
     @Refreshable
     public static @Nonnull <K extends Message, M extends Message> FirestoreDriver<K, M> acquireDriver(
+      @Nonnull FirestoreOptions.Builder baseOptions,
       @Nonnull @GoogleAPIChannel(service = GoogleService.FIRESTORE) TransportChannelProvider firestoreChannel,
       @Nonnull CredentialsProvider credentialsProvider,
       @Nonnull GrpcTransportOptions transportOptions,
       @Nonnull ListeningScheduledExecutorService executorService,
       @Nonnull M instance) {
       return new FirestoreDriver<>(
+        baseOptions,
         firestoreChannel,
         credentialsProvider,
         transportOptions,
@@ -156,20 +159,22 @@ public final class FirestoreDriver<Key extends Message, Model extends Message>
   /**
    * Construct a new Firestore driver from scratch.
    *
+   * @param baseOptions Base options to apply to the Firestore driver.
    * @param channelProvider Managed gRPC channel to use for Firestore RPCAPI interactions.
    * @param credentialsProvider Transport credentials provider.
    * @param transportOptions Options to apply to the transport layer.
    * @param executorService Executor service to use when executing calls.
    * @param codec Model codec to use with this driver.
    */
-  private FirestoreDriver(TransportChannelProvider channelProvider,
-                          CredentialsProvider credentialsProvider,
-                          GrpcTransportOptions transportOptions,
-                          ListeningScheduledExecutorService executorService,
-                          ModelCodec<Model, CollapsedMessage, DocumentSnapshot> codec) {
+  private FirestoreDriver(@Nonnull FirestoreOptions.Builder baseOptions,
+                          @Nonnull TransportChannelProvider channelProvider,
+                          @Nonnull CredentialsProvider credentialsProvider,
+                          @Nonnull GrpcTransportOptions transportOptions,
+                          @Nonnull ListeningScheduledExecutorService executorService,
+                          @Nonnull ModelCodec<Model, CollapsedMessage, DocumentSnapshot> codec) {
     this.codec = codec;
     this.executorService = executorService;
-    FirestoreOptions firestoreOptions = FirestoreOptions.newBuilder()
+    FirestoreOptions firestoreOptions = baseOptions
       .setChannelProvider(channelProvider)
       .setCredentialsProvider(credentialsProvider)
       .setTransportOptions(transportOptions)

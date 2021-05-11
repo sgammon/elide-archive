@@ -15,6 +15,7 @@ package gust.backend.driver.firestore;
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.cloud.firestore.DocumentSnapshot;
+import com.google.cloud.firestore.FirestoreOptions;
 import com.google.cloud.firestore.v1.stub.FirestoreStubSettings;
 import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.common.util.concurrent.ListeningScheduledExecutorService;
@@ -170,6 +171,7 @@ public final class FirestoreAdapter<Key extends Message, Model extends Message>
       @Nonnull M messageInstance,
       @Nonnull ListeningScheduledExecutorService executorService) {
     return acquire(
+        FirestoreOptions.newBuilder(),
         FirestoreStubSettings.defaultTransportChannelProvider(),
         FirestoreStubSettings.defaultCredentialsProviderBuilder().build(),
         GrpcTransportOptions.newBuilder().build(),
@@ -181,9 +183,39 @@ public final class FirestoreAdapter<Key extends Message, Model extends Message>
 
   /**
    * Acquire an instance of the {@link FirestoreAdapter} and {@link FirestoreDriver}, customized for the provided
+   * `modelInstance` and `keyInstance`. This method variant makes use of a default object for the gRPC transport
+   * provider and Google credential provider, but allows specifying custom {@link FirestoreOptions}.
+   *
+   * @param baseOptions Base options to apply to the Firestore driver.
+   * @param keyInstance Key type instance for the record in question.
+   * @param messageInstance Message type instance for the record in question.
+   * @param executorService Background executor service for Firestore operations.
+   * @param <K> Key type.
+   * @param <M> Message type.
+   * @return Instance of the {@link FirestoreAdapter} and {@link FirestoreDriver}, customized as described.
+   */
+  public static @Nonnull <K extends Message, M extends Message> FirestoreAdapter<K, M> acquire(
+    @Nonnull K keyInstance,
+    @Nonnull M messageInstance,
+    @Nonnull FirestoreOptions.Builder baseOptions,
+    @Nonnull ListeningScheduledExecutorService executorService) {
+    return acquire(
+      baseOptions,
+      FirestoreStubSettings.defaultTransportChannelProvider(),
+      FirestoreStubSettings.defaultCredentialsProviderBuilder().build(),
+      GrpcTransportOptions.newBuilder().build(),
+      executorService,
+      keyInstance,
+      messageInstance
+    );
+  }
+
+  /**
+   * Acquire an instance of the {@link FirestoreAdapter} and {@link FirestoreDriver}, customized for the provided
    * `modelInstance` and `keyInstance`. This method variant allows specification of the full set of objects which
    * govern the connection and interaction with Firestore.
    *
+   * @param baseOptions Base options to apply to the Firestore driver.
    * @param firestoreChannel Transport provider for Firestore communication channels via gRPC.
    * @param credentialsProvider Provider for transport/call credentials, when interacting with Firestore.
    * @param transportOptions gRPC transport options, to apply when instantiating channels for Firestore communications.
@@ -195,6 +227,7 @@ public final class FirestoreAdapter<Key extends Message, Model extends Message>
    * @return Instance of the {@link FirestoreAdapter} and {@link FirestoreDriver}, customized as described.
    */
   public static @Nonnull <K extends Message, M extends Message> FirestoreAdapter<K, M> acquire(
+      @Nonnull FirestoreOptions.Builder baseOptions,
       @Nonnull @GoogleAPIChannel(service = GoogleService.FIRESTORE) TransportChannelProvider firestoreChannel,
       @Nonnull CredentialsProvider credentialsProvider,
       @Nonnull GrpcTransportOptions transportOptions,
@@ -205,6 +238,7 @@ public final class FirestoreAdapter<Key extends Message, Model extends Message>
     return FirestoreAdapter.FirestoreAdapterFactory.acquire(
         builder,
         FirestoreDriver.FirestoreDriverFactory.acquireDriver(
+            baseOptions,
             firestoreChannel,
             credentialsProvider,
             transportOptions,
