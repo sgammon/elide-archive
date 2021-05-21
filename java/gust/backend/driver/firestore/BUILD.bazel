@@ -36,6 +36,7 @@ _COMMON_DEPS = [
     maven("com.google.guava:guava"),
     maven("io.micronaut:micronaut-inject"),
     maven("io.micronaut:micronaut-runtime"),
+    maven("io.micronaut:micronaut-context"),
     maven("org.reactivestreams:reactive-streams"),
     maven("javax.validation:validation-api"),
 ]

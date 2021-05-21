@@ -170,6 +170,7 @@ jdk_library(
         "//java/gust/backend/runtime:AssetManager",
         "@com_google_code_findbugs_jsr305",
         maven("io.micronaut:micronaut-runtime"),
+        maven("io.micronaut:micronaut-context"),
     ],
     runtime_deps = [
         maven("io.micronaut:micronaut-runtime"),
