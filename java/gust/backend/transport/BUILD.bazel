@@ -76,6 +76,7 @@ java_library(
         maven("io.grpc:grpc-api"),
         maven("io.micronaut:micronaut-aop"),
         maven("io.micronaut:micronaut-core"),
+        maven("io.micronaut:micronaut-context"),
         maven("io.micronaut:micronaut-inject"),
         maven("io.micronaut:micronaut-runtime"),
         maven("org.threeten:threetenbp"),
