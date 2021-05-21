@@ -65,12 +65,13 @@ micronaut_library(
     deps = [
         ":AssetConfiguration",
         ":BaseController",
+        ":PageRender",
+        ":PageContext",
+        ":PageContextManager",
         ":DynamicServingConfiguration",
-        "//java/gust/backend:PageContext",
-        "//java/gust/backend:PageContextManager",
-        "//java/gust/backend:PageRender",
         "@safe_html_types//:proto",
         "@safe_html_types//:java-proto",
+        javaproto("//gust/page:page_proto"),
     ],
 )
 
@@ -78,8 +79,8 @@ micronaut_library(
     name = "BaseController",
     srcs = ["BaseController.java"],
     deps = [
-        "//java/gust/backend:PageContext",
-        "//java/gust/backend:PageContextManager",
+        ":PageContext",
+        ":PageContextManager",
     ]
 )
 

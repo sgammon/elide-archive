@@ -26,16 +26,20 @@ load(
     "maven",
 )
 
+_BASE_MICRONAUT_DEPS = [
+    maven("io.micronaut:micronaut-aop"),
+    maven("io.micronaut:micronaut-core"),
+    maven("io.micronaut:micronaut-inject"),
+    maven("io.micronaut:micronaut-inject-java"),
+    maven("io.micronaut:micronaut-validation"),
+    maven("io.micronaut.data:micronaut-data-processor"),
+]
+
 
 java_library(
     name = "micronaut-inject",
     exports = [
         "@javax_annotation_api",
-        maven("io.micronaut:micronaut-core"),
-        maven("io.micronaut:micronaut-inject"),
-        maven("io.micronaut:micronaut-inject-java"),
-        maven("io.micronaut:micronaut-validation"),
-        maven("io.micronaut.data:micronaut-data-processor"),
     ],
     runtime_deps = [
         "@javax_annotation_api",
@@ -52,7 +56,7 @@ java_plugin(
     name = "micronaut-beans",
     generates_api = True,
     processor_class = "io.micronaut.annotation.processing.BeanDefinitionInjectProcessor",
-    deps = [":micronaut-inject"],
+    deps = [":micronaut-inject"] + _BASE_MICRONAUT_DEPS,
 )
 
 java_plugin(
@@ -69,43 +73,46 @@ java_plugin(
     name = "micronaut-types",
     generates_api = True,
     processor_class = "io.micronaut.annotation.processing.TypeElementVisitorProcessor",
-    deps = [":micronaut-inject"],
+    deps = [":micronaut-inject"] + _BASE_MICRONAUT_DEPS,
 )
 
 java_plugin(
     name = "micronaut-package-config",
     generates_api = True,
     processor_class = "io.micronaut.annotation.processing.PackageConfigurationInjectProcessor",
-    deps = [":micronaut-inject"],
+    deps = [":micronaut-inject"] + _BASE_MICRONAUT_DEPS,
 )
 
 java_plugin(
     name = "micronaut-service-description",
     generates_api = True,
     processor_class = "io.micronaut.annotation.processing.ServiceDescriptionProcessor",
-    deps = [":micronaut-inject"],
+    deps = [":micronaut-inject"] + _BASE_MICRONAUT_DEPS,
 )
 
 java_plugin(
     name = "micronaut-config",
     generates_api = True,
     processor_class = "io.micronaut.annotation.processing.PackageConfigurationInjectProcessor",
-    deps = [":micronaut-inject"],
+    deps = [":micronaut-inject"] + _BASE_MICRONAUT_DEPS,
 )
 
 java_library(
     name = "micronaut",
     exports = [
         maven("io.micronaut:micronaut-core"),
+        maven("io.micronaut:micronaut-aop"),
+        maven("io.micronaut:micronaut-context"),
         maven("io.micronaut:micronaut-inject"),
         maven("io.micronaut:micronaut-inject-java"),
+        maven("io.micronaut:micronaut-validation"),
     ],
     exported_plugins = [
         ":micronaut-beans",
         ":micronaut-types",
         ":micronaut-config",
-        "micronaut-package-config",
-        "micronaut-service-description",
+        ":micronaut-package-config",
+        ":micronaut-service-description",
     ],
 )
 

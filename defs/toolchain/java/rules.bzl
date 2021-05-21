@@ -81,7 +81,6 @@ INJECTED_MICRONAUT_DEPS = [
     "@javax_inject",
     "@javax_annotation_api",
     "@gust//java:framework",
-    "@gust//defs/toolchain/java/plugins:picocli",
     "@gust//defs/toolchain/java/plugins:micronaut",
     "@gust//java/gust/backend/runtime:logging",
     "@com_google_guava",
