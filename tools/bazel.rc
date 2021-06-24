@@ -25,6 +25,7 @@ build --show_timestamps
 build --embed_label=alpha
 build --define project=elide-ai
 build --define cluster=_cluster_
+build --nojava_header_compilation
 
 build:dev --define=project=elide-ai
 build:dev --define=todolist_release_tag=latest
