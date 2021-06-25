@@ -79,7 +79,7 @@ ANIMAL_SNIFFER_VERSION = "1.19"
 ANDROID_ANNOTATIONS_VERSION = "4.1.1.4"
 PERFMARK_VERSION = "0.23.0"
 
-GRPC_JAVA_VERSION = "1.33.1"
+GRPC_JAVA_VERSION = "1.34.1"
 AUTO_VALUE_VERSION = "1.8.1"
 TOMCAT_ANNOTATIONS_VERSION = "6.0.53"
 OPENTRACING_VERSION = "0.2.3"
@@ -361,6 +361,7 @@ MICRONAUT_TEST_ARTIFACTS = [
     maven.artifact("io.micronaut.test", "micronaut-test-core", MICRONAUT_TEST_VERSION, testonly = True),
     maven.artifact("io.micronaut.test", "micronaut-test-kotlintest", MICRONAUT_TEST_VERSION, testonly = True),
     maven.artifact("io.micronaut.test", "micronaut-test-junit5", MICRONAUT_TEST_VERSION, testonly = True),
+    maven.artifact("io.grpc", "grpc-testing", GRPC_JAVA_VERSION, testonly = True),
 ]
 
 def junit_jupiter_java_repositories(version = JUNIT_JUPITER_VERSION):
