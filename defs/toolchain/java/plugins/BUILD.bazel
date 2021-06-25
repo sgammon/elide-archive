@@ -36,6 +36,25 @@ _BASE_MICRONAUT_DEPS = [
 ]
 
 
+java_plugin(
+    name = "autovalue-plugin",
+    generates_api = True,
+    processor_class = "com.google.auto.value.processor.AutoValueProcessor",
+    deps = [
+        maven("com.google.auto.value:auto-value"),
+    ],
+)
+
+java_library(
+    name = "autovalue",
+    exports = [
+        maven("com.google.auto.value:auto-value-annotations"),
+    ],
+    exported_plugins = [
+        ":autovalue-plugin",
+    ],
+)
+
 java_library(
     name = "micronaut-inject",
     exports = [

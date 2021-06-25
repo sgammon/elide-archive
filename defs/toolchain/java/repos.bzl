@@ -80,6 +80,7 @@ ANDROID_ANNOTATIONS_VERSION = "4.1.1.4"
 PERFMARK_VERSION = "0.23.0"
 
 GRPC_JAVA_VERSION = "1.33.1"
+AUTO_VALUE_VERSION = "1.8.1"
 TOMCAT_ANNOTATIONS_VERSION = "6.0.53"
 OPENTRACING_VERSION = "0.2.3"
 
@@ -194,6 +195,8 @@ BUILD_ARTIFACTS = [
 EXTRA_BUILD_ARTIFACTS = [
     "info.picocli:picocli:%s" % PICOCLI_VERSION,
     "info.picocli:picocli-codegen:%s" % PICOCLI_VERSION,
+    "com.google.auto.value:auto-value:%s" % AUTO_VALUE_VERSION,
+    "com.google.auto.value:auto-value-annotations:%s" % AUTO_VALUE_VERSION,
 ]
 
 GRPC_BUILD_ARTIFACTS = [
