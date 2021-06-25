@@ -54,6 +54,17 @@ java_library(
     ],
 )
 
+java_library(
+    name = "MessageDifferencer",
+    srcs = ["MessageDifferencer.java"],
+    deps = [
+        "//defs/toolchain/java/plugins:autovalue",
+        maven("com.google.guava:guava"),
+        maven("com.google.auto.value:auto-value-annotations"),
+        maven("com.google.protobuf:protobuf-java"),
+    ],
+)
+
 
 java_library(
     name = "util",
