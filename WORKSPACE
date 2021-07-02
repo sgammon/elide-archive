@@ -78,8 +78,8 @@ http_archive(
 ## NodeJS
 http_archive(
     name = "build_bazel_rules_nodejs",
-    sha256 = "6142e9586162b179fdd570a55e50d1332e7d9c030efd853453438d607569721d",
-    urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/3.0.0/rules_nodejs-3.0.0.tar.gz"],
+    sha256 = "0fa2d443571c9e02fcb7363a74ae591bdcce2dd76af8677a95965edf329d778a",
+    urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/3.6.0/rules_nodejs-3.6.0.tar.gz"],
 )
 
 load("@build_bazel_rules_nodejs//:index.bzl",
@@ -89,7 +89,7 @@ load("@build_bazel_rules_nodejs//:index.bzl",
 node_repositories(
     package_json = ["//:package.json"],
     node_version = "14.15.0",
-    yarn_version = "1.22.4")
+    yarn_version = "1.22.10")
 
 yarn_install(
     name = "npm",
