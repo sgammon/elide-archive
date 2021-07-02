@@ -1653,9 +1653,9 @@ globals@^11.1.0:
   integrity sha512-WOBp/EEGUiIsJSp7wcv/y6MO+lV9UoncWqxuFfm8eBwzWNgyfBd6Gz+IeKQ9jCmyhoH99g15M3T+QaVHFjizVA==
 
 google-closure-library@latest:
-  version "20200224.0.0"
-  resolved "https://registry.yarnpkg.com/google-closure-library/-/google-closure-library-20200224.0.0.tgz#70c36576b21c81c514cfbfcc001780c2fdacd173"
-  integrity sha512-cF9LP7F5Klj4go5TB4cPpcCvC/qgSVNYgzVS+bzxPgLvIiVL8aWOwApj6rsCkPY9Yr675FouylqNE24F31LWeQ==
+  version "20210601.0.0"
+  resolved "https://registry.yarnpkg.com/google-closure-library/-/google-closure-library-20210601.0.0.tgz#52bff34b41880d380c1757a698acb035b8e38f3e"
+  integrity sha512-tOpdq+BnDCjJTXrKGoHRsypobTO1YrpjZzYPVIsYmoihtDRppmKYpmcAylRumZgXSiJXl7ekOwU1RD4wP7lbig==
 
 graceful-fs@^4.1.2, graceful-fs@^4.1.6:
   version "4.2.3"
