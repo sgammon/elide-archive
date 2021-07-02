@@ -31,7 +31,7 @@ public final class SerializedModel implements Map<String, Value> {
    *
    * @return Empty serialized model.
    */
-  static SerializedModel factory() {
+  public static @Nonnull SerializedModel factory() {
     return factory(new TreeMap<>());
   }
 
@@ -41,7 +41,7 @@ public final class SerializedModel implements Map<String, Value> {
    * @param data Data to pre-fill the serialized model with.
    * @return Serialized model, pre-filled with the specified data.
    */
-  static SerializedModel factory(@Nonnull SortedMap<String, Value> data) {
+  public static @Nonnull SerializedModel factory(@Nonnull SortedMap<String, Value> data) {
     return new SerializedModel(data, Optional.empty());
   }
 
@@ -52,8 +52,8 @@ public final class SerializedModel implements Map<String, Value> {
    * @param proto Message instance to wrap, for which `data` is provided.
    * @return Serialized model, pre-filled with the specified data.
    */
-  static SerializedModel wrap(@Nonnull SortedMap<String, Value> data,
-                              @Nonnull Message proto) {
+  public static @Nonnull SerializedModel wrap(@Nonnull SortedMap<String, Value> data,
+                                              @Nonnull Message proto) {
     return new SerializedModel(data, Optional.of(proto));
   }
 
