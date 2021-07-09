@@ -67,6 +67,36 @@ message Context {
   message Metadata {
     // Tags for the Facebook Crawler.
     message OpenGraph {
+      // OpenGraph image asset.
+      message OpenGraphImage {
+        // Thumbnail to display when page is shared.
+        string uri = 1;
+
+        // Width of the sharing image, if known.
+        uint32 width = 2;
+
+        // Height of the sharing image, if known.
+        uint32 height = 3;
+
+        // Type of image, if known.
+        string type = 4;
+      }
+
+      // OpenGraph video asset.
+      message OpenGraphVideo {
+        // Reference to the page's main video, as applicable.
+        string uri = 1;
+
+        // Width of the main video on the page.
+        uint32 width = 2;
+
+        // Height of the main video on the page.
+        uint32 height = 3;
+
+        // Type of video, if known.
+        string type = 4;
+      }
+
       // Name of the website.
       string site_name = 1;
 
@@ -82,29 +112,23 @@ message Context {
       // The type of page - i.e. article, website, video.
       string type = 5;
 
-      // Thumbnail to display when page is shared.
-      string image = 6;
-
       // Directs facebook to scrape another url instead of the url the page was served from.
-      string url = 7;
+      string url = 6;
 
-      // "Site" parameter used for Twitter cards.
-      string twitter_site = 8;
-
-      // "Creator" parameter used for Twitter cards.
-      string twitter_creator = 9;
-
-      // Width of the sharing image, if known.
-      uint32 image_width = 10;
-
-      // Height of the sharing image, if known.
-      uint32 image_height = 11;
+      // Information for Twitter's crawler.
+      Twitter twitter = 8;
 
       // Canonical URL for this page.
       string canonical = 12;
 
       // FB application ID for this web application.
       string fb_app = 13;
+
+      // OpenGraph image assets.
+      repeated OpenGraphImage image = 14;
+
+      // OpenGraph video assets.
+      repeated OpenGraphVideo video = 15;
     }
 
     // Tags for the Twitter Crawler.
@@ -127,8 +151,11 @@ message Context {
       // Thumbnail to display when page is shared.
       string image = 6;
 
-      // Directs facebook to scrape another url instead of the url the page was served from.
+      // Directs Twitter to scrape another url instead of the url the page was served from.
       string url = 7;
+
+      // Twitter account considered the "creator" of this content.
+      string creator = 8;
     }
 
     // Defines the HTML title for the page, emitted in the <head>.
