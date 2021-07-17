@@ -25,9 +25,10 @@ load(
 
 _RULES_CLOSURE_OMIT = [
     "com_google_auto_common",
+    "com_google_closure_stylesheets",
+    "com_google_code_gson",
     "com_google_template_soy",
     "com_google_template_soy_jssrc",
-    "com_google_closure_stylesheets",
     "rules_java",
     "rules_proto",
     "rules_python",
