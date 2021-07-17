@@ -271,6 +271,7 @@ MICRONAUT_COORDINATES = [
     "io.micronaut:micronaut-graal",
     "io.micronaut:micronaut-router",
     "io.micronaut:micronaut-tracing",
+    "io.micronaut:micronaut-messaging",
     "io.micronaut:micronaut-websocket",
     "io.micronaut:micronaut-session",
 ]
