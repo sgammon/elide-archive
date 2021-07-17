@@ -244,6 +244,7 @@ JUNIT_PLATFORM_ARTIFACT_ID_LIST = [
 JUNIT_EXTRA_DEPENDENCIES = [
     ("org.apiguardian", "apiguardian-api", "1.0.0"),
     ("org.opentest4j", "opentest4j", "1.1.1"),
+    ("org.junit.platform", "junit-platform-suite-commons", "1.8.0-M1"),
 ]
 
 def _micronaut_artifact(coordinates):
