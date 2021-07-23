@@ -9,8 +9,12 @@
     <root level="info">
         <appender-ref ref="STDOUT" />
     </root>
-    <logger name="gust.backend.driver.firestore.*" level="TRACE" />
+    <logger name="gust.backend.driver.firestore.FirestoreManager" level="TRACE" />
     <logger name="gust.backend.driver.firestore.FirestoreDriver" level="TRACE" />
     <logger name="gust.backend.driver.firestore.FirestoreAdapter" level="TRACE" />
+    <logger name="gust.backend.driver.spanner.SpannerManager" level="TRACE" />
+    <logger name="gust.backend.driver.spanner.SpannerDriver" level="TRACE" />
+    <logger name="gust.backend.driver.spanner.SpannerAdapter" level="TRACE" />
+    <logger name="gust.backend.driver.spanner.SpannerAdapterTest" level="TRACE" />
     <logger name="gust.backend.model.GenericPersistenceDriverTest" level="TRACE" />
 </configuration>

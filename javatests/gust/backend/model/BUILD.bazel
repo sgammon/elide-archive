@@ -116,6 +116,8 @@ java_library(
         javaproto(":person"),
         maven("org.junit.jupiter:junit-jupiter-api"),
         maven("com.google.guava:guava"),
+        maven("com.google.truth:truth"),
+        maven("com.google.truth.extensions:truth-proto-extension"),
     ] + _COMMON_DEPS,
 )
 

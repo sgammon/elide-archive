@@ -378,6 +378,22 @@ message TableFieldOptions {
 }
 
 
+// Extended options for use with Cloud Spanner, which may be affixed to an individual model field.
+message SpannerFieldOptions {
+  // Override column name in Spanner only.
+  string column = 1;
+
+  // Whether to ignore this column in Spanner specifically.
+  bool ignore = 2;
+
+  // Override the field type in Spanner only.
+  SpannerOptions.SpannerType type = 3;
+
+  // Override the field to store STRUCT objects as JSON.
+  bool json = 4;
+}
+
+
 // Specifies mappings for an arbitrary protobuf message object.
 message ObjectMapping {
   // Maps an enumeration instance to this object. Enumeration membership is contextual.
@@ -423,6 +439,9 @@ extend google.protobuf.FieldOptions {
 
   // Unique ID or path assigned to this field in a universally specified data model.
   string id = 7004;
+
+  // Specifies extended options related specifically to use with Cloud Spanner.
+  SpannerFieldOptions spanner = 7005;
 }
 
 

@@ -54,4 +54,9 @@ public interface OperationOptions {
   default @Nonnull Optional<Integer> retries() {
     return Optional.empty();
   }
+
+  /** @return Whether to run in a transaction. */
+  default @Nonnull Optional<Boolean> transactional() {
+    return Optional.empty();
+  }
 }

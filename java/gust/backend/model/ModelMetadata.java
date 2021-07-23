@@ -53,7 +53,7 @@ import java.util.stream.Stream;
  * runtime for Protobuf in Java does not include descriptors at all, which this class relies on).</p>
  */
 @ThreadSafe
-@SuppressWarnings({"WeakerAccess", "unused"})
+@SuppressWarnings({"WeakerAccess", "unused", "OptionalUsedAsFieldOrParameterType"})
 public final class ModelMetadata {
   private ModelMetadata() { /* Disallow construction. */ }
 
@@ -258,7 +258,7 @@ public final class ModelMetadata {
    * @param annotation Annotation to check for.
    * @return Whether the field is annotated with the provided annotation.
    */
-  static boolean matchFieldAnnotation(@Nonnull FieldDescriptor field, @Nonnull FieldType annotation) {
+  public static boolean matchFieldAnnotation(@Nonnull FieldDescriptor field, @Nonnull FieldType annotation) {
     if (field.getOptions().hasExtension(Datamodel.field)) {
       var extension = field.getOptions().getExtension(Datamodel.field);
       return annotation.equals(extension.getType());
@@ -274,7 +274,7 @@ public final class ModelMetadata {
    * @return Whether the field is annotated for the provided collection mode.
    */
   @SuppressWarnings("SameParameterValue")
-  static boolean matchCollectionAnnotation(@Nonnull FieldDescriptor field, @Nonnull CollectionMode mode) {
+  public static boolean matchCollectionAnnotation(@Nonnull FieldDescriptor field, @Nonnull CollectionMode mode) {
     if (field.getOptions().hasExtension(Datamodel.collection)) {
       var extension = field.getOptions().getExtension(Datamodel.collection);
       return mode.equals(extension.getMode());
@@ -422,15 +422,23 @@ public final class ModelMetadata {
                                                                                @Nonnull String path,
                                                                                @Nonnull Optional<Value> value,
                                                                                @Nonnull String remaining) {
+    Objects.requireNonNull(original, "Cannot splice field into `null` original builder.");
     Objects.requireNonNull(builder, "Cannot splice field into `null` builder.");
     Objects.requireNonNull(path, "Cannot resolve field from `null` path.");
-    Objects.requireNonNull(remaining, "Recursive remaining stack should not be `null`.");
     Objects.requireNonNull(value, "Pass an empty optional, not `null`, for value.");
+    Objects.requireNonNull(remaining, "Recursive remaining stack should not be `null`.");
+    if (path.startsWith("."))
+      throw new IllegalArgumentException(String.format(
+        "Cannot splice path that starts with `.` (got: '%s').", path));
+    if (remaining.startsWith("."))
+      throw new IllegalArgumentException(String.format(
+        "Cannot splice path that starts with `.` (got: '%s').", remaining));
 
     var descriptor = builder.getDescriptorForType();
     if (!remaining.isEmpty() && !remaining.contains(".")) {
       // thankfully, no need to recurse
-      var field = Objects.requireNonNull(descriptor.findFieldByName(remaining));
+      var field = Objects.requireNonNull(
+        descriptor.findFieldByName(remaining), String.format("failed to locate field %s", remaining));
       if (value.isPresent()) {
         try {
           builder.setField(field, value.get());
@@ -450,10 +458,18 @@ public final class ModelMetadata {
       String newRemainder = remaining.substring(remaining.indexOf('.') + 1);
       return spliceArbitraryField(
         original,
-        builder.getFieldBuilder(Objects.requireNonNull(descriptor.findFieldByName(segment))),
+        builder.getFieldBuilder(Objects.requireNonNull(
+          descriptor.findFieldByName(segment),
+          String.format(
+            "Failed to locate sub-builder at path '%s' on model '%s'.",
+            segment,
+            builder.getDescriptorForType().getFullName()
+          )
+        )),
         path,
         value,
-        newRemainder);
+        newRemainder
+      );
     }
   }
 
@@ -904,6 +920,23 @@ public final class ModelMetadata {
     return resolveAnnotatedField(descriptor, ext, recursive, filter, "");
   }
 
+  /**
+   * Retrieve a field-level annotation, from the provided field schema {@code descriptor}, structured by {@code ext}. If
+   * no instance of the requested field annotation can be found, {@link Optional#empty()} is returned.
+   *
+   * @param descriptor Schema descriptor for a field on a model type.
+   * @param ext Extension to fetch from the subject field.
+   * @param <E> Generic type of extension we are looking for.
+   * @return Optional, either {@link Optional#empty()}, or wrapping the found extension data instance.
+   */
+  public static @Nonnull <E> Optional<E> fieldAnnotation(@Nonnull FieldDescriptor descriptor,
+                                                         @Nonnull GeneratedExtension<FieldOptions, E> ext) {
+    Objects.requireNonNull(descriptor, "Cannot resolve type for `null` field descriptor.");
+    if (descriptor.getOptions().hasExtension(ext))
+      return Optional.of(descriptor.getOptions().getExtension(ext));
+    return Optional.empty();
+  }
+
   // -- Metadata: ID Fields -- //
 
   /**
@@ -1240,12 +1273,14 @@ public final class ModelMetadata {
     @Nonnull Message.Builder builder,
     @Nonnull FieldPointer field,
     @Nonnull Optional<Value> val) {
+    var noPrefixPath = field.path.startsWith(".") ? field.path.substring(1) : field.path;
     return spliceArbitraryField(
       builder,
       builder,
-      field.path,
+      noPrefixPath,
       val,
-      field.path);
+      noPrefixPath
+    );
   }
 
   // -- Metadata: ID/Key Splice -- //
@@ -1461,6 +1496,101 @@ public final class ModelMetadata {
   }
 
   /**
+   * Crawl all fields, recursively, on the provided descriptor for a model instance. For each field encountered, run
+   * `predicate` to determine whether to include the field, filtering the returned stream of fields accordingly. This
+   * method variant runs each operation serially.
+   *
+   * <p>This method variant does not allow the invoking user to crawl recursively.</p>
+   *
+   * @see #streamFields(Descriptor) for the cleanest invocation of this method.
+   *
+   * @param descriptor Schema descriptor to crawl model definitions on.
+   * @param predicate Filter predicate function, if applicable.
+   * @return Stream of field descriptors, recursively, which match the `predicate`, if provided.
+   */
+  public static @Nonnull Stream<FieldPointer> forEachField(@Nonnull Descriptor descriptor,
+                                                           @Nonnull Optional<Predicate<FieldPointer>> predicate) {
+    Objects.requireNonNull(descriptor, "cannot crawl fields on null descriptor");
+    Objects.requireNonNull(predicate, "cannot pass `null` for optional predicate");
+
+    return streamFieldsRecursive(
+            descriptor,
+            descriptor,
+            predicate,
+            (field) -> false,
+            "",
+            false
+    );
+  }
+
+  /**
+   * Crawl all fields, recursively, on the provided descriptor for a model instance. For each field encountered, run
+   * `predicate` to determine whether to include the field, filtering the returned stream of fields accordingly. This
+   * method variant runs each operation serially.
+   *
+   * <p>This method variant allows the user to restrict recursive crawling. If recursion is active, a depth-first search
+   * is performed, with the `predicate` function invoked for every field encountered during the crawl. If no predicate
+   * is provided, the entire set of recursive effective fields is returned from the provided descriptor.</p>
+   *
+   * @see #streamFields(Descriptor) for the cleanest invocation of this method.
+   *
+   * @param descriptor Schema descriptor to crawl model definitions on.
+   * @param predicate Filter predicate function, if applicable.
+   * @param recursive Whether to perform recursion down to sub-messages.
+   * @return Stream of field descriptors, recursively, which match the `predicate`, if provided.
+   */
+  public static @Nonnull Stream<FieldPointer> forEachField(@Nonnull Descriptor descriptor,
+                                                           @Nonnull Optional<Predicate<FieldPointer>> predicate,
+                                                           boolean recursive) {
+    Objects.requireNonNull(descriptor, "cannot crawl fields on null descriptor");
+    Objects.requireNonNull(predicate, "cannot pass `null` for optional predicate");
+
+    return streamFieldsRecursive(
+            descriptor,
+            descriptor,
+            predicate,
+            (field) -> recursive,
+            "",
+            false
+    );
+  }
+
+  /**
+   * Crawl all fields, recursively, on the provided descriptor for a model instance. For each field encountered, run
+   * `predicate` to determine whether to include the field, filtering the returned stream of fields accordingly. This
+   * method variant runs each operation serially.
+   *
+   * <p>If a `MESSAGE` field is encountered and the algorithm needs to decide whether to recurse, this variant includes
+   * support for the `decider` function. `decider` is invoked to decide whether to recurse for opportunity to do so.</p>
+   *
+   * <p>This method variant allows the user to restrict recursive crawling. If recursion is active, a depth-first search
+   * is performed, with the `predicate` function invoked for every field encountered during the crawl. If no predicate
+   * is provided, the entire set of recursive effective fields is returned from the provided descriptor.</p>
+   *
+   * @see #streamFields(Descriptor) for the cleanest invocation of this method.
+   *
+   * @param descriptor Schema descriptor to crawl model definitions on.
+   * @param predicate Filter predicate function, if applicable.
+   * @param decider Function that decides whether to recurse.
+   * @return Stream of field descriptors, recursively, which match the `predicate`, if provided.
+   */
+  public static @Nonnull Stream<FieldPointer> forEachField(@Nonnull Descriptor descriptor,
+                                                           @Nonnull Optional<Predicate<FieldPointer>> predicate,
+                                                           @Nonnull Predicate<FieldPointer> decider) {
+    Objects.requireNonNull(descriptor, "cannot crawl fields on null descriptor");
+    Objects.requireNonNull(predicate, "cannot pass `null` for optional predicate");
+
+    return streamFieldsRecursive(
+            descriptor,
+            descriptor,
+            predicate,
+            decider,
+            "",
+            false
+    );
+  }
+
+  /**
    * Crawl all fields, recursively, on the descriptor associated with the provided model instance, and return them in
    * a stream.
    *
@@ -1545,7 +1675,8 @@ public final class ModelMetadata {
 
   /**
    * Crawl all fields, recursively, on the provided descriptor for a model instance. For each field encountered, run
-   * `predicate` to determine whether to include the field, filtering the returned stream of fields accordingly.
+   * `predicate` to determine whether to include the field, filtering the returned stream of fields accordingly. By
+   * default, all field streaming methods run in parallel.
    *
    * <p>If a `MESSAGE` field is encountered and the algorithm needs to decide whether to recurse, this variant includes
    * support for the `decider` function. `decider` is invoked to decide whether to recurse for opportunity to do so.</p>
@@ -1572,7 +1703,8 @@ public final class ModelMetadata {
       descriptor,
       predicate,
       decider,
-      ""
+      "",
+      true
     );
   }
 
@@ -1581,8 +1713,9 @@ public final class ModelMetadata {
     @Nonnull Descriptor descriptor,
     @Nonnull Optional<Predicate<FieldPointer>> predicate,
     @Nonnull Predicate<FieldPointer> decider,
-    @Nonnull String parent) {
-    return descriptor.getFields().parallelStream().flatMap((field) -> {
+    @Nonnull String parent,
+    @Nonnull Boolean parallel) {
+    return (parallel ? descriptor.getFields().parallelStream() : descriptor.getFields().stream()).flatMap((field) -> {
       var path = String.format("%s.%s", parent, field.getName());
       var pointer = new FieldPointer(
         base,
@@ -1600,7 +1733,8 @@ public final class ModelMetadata {
           descriptor.findFieldByNumber(field.getNumber()).getMessageType(),
           predicate,
           decider,
-          path
+          path,
+          parallel
         ));
       }
       return branch;

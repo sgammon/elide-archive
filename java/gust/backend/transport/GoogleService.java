@@ -26,7 +26,10 @@ public enum GoogleService {
   STORAGE("storage", null),
 
   /** Google Cloud Firestore (token: <pre>firestore</pre>) */
-  FIRESTORE("firestore", null);
+  FIRESTORE("firestore", null),
+
+  /** Google Cloud Firestore (token: <pre>spanner</pre>) */
+  SPANNER("spanner", null);
 
   /** Prefix at which the specified service may be configured. */
   private final @Nonnull String token;

@@ -54,7 +54,7 @@ OUTPATH ?= $(DISTPATH)/out
 BINPATH ?= $(DISTPATH)/bin
 UNZIP ?= $(shell which unzip)
 REVISION ?= $(shell git describe --abbrev=7 --always --tags HEAD)
-BASE_VERSION ?= v1b
+BASE_VERSION ?= v2a
 VERSION ?= $(shell (cat package.json | grep version | head -1 | awk -F: '{ print $2 }' | sed 's/[",]//g' | tr -d '[[:space:]]' | sed 's/version\://g'))
 CHROME_COVERAGE ?= $(shell find dist/out/$(OUTPUT_BASE)/bin -name "coverage*.dat" | grep chrome | xargs)
 COVERAGE_DATA ?= $(OUTPATH)/_coverage/_coverage_report.dat
@@ -97,7 +97,7 @@ BUILDKEY_BASE_ARGS ?= --location=$(BUILDKEY_KMS_LOCATION) --keyring=$(BUILDKEY_K
 
 POSIX_FLAGS ?=
 BAZELISK_ARGS ?=
-BASE_ARGS ?=
+BASE_ARGS ?= --config=buildbuddy
 BAZELISK_PREAMBLE ?=
 
 ENV ?= $(PWD)/.env
@@ -171,6 +171,10 @@ MKDIR ?= $(shell which mkdir)
 BAZELISK ?= $(ENV)/bin/bazelisk
 GENHTML ?= $(shell which genhtml)
 IBAZEL ?= $(ENV)/bin/ibazel
+DOCKER ?= $(shell which docker)
+
+PYTHON ?= $(shell which python)
+VIRTUALENV ?= $(shell which virtualenv)
 
 # Flag: `CI`
 ifeq ($(CI),yes)
@@ -287,8 +291,7 @@ serve-coverage:  ## Serve the current coverage report (must generate first).
 
 report-tests: ## Report test results to Report.CI.
 	@echo "Scanning for test results..."
-	$(_RULE)pip install -r tools/requirements.txt
-	$(_RULE)find dist/out/$(OUTPUT_BASE) -name test.xml | xargs python3 tools/merge_test_results.py reports/tests.xml
+	$(_RULE)find dist/out/$(OUTPUT_BASE) -name test.xml | xargs $(ENV)/bin/python tools/merge_test_results.py reports/tests.xml
 	@echo "Generating HTML test report..."
 	$(_RULE)cd reports && python3 -m junit2htmlreport tests.xml
 ifeq ($(ENABLE_REPORTCI),yes)
@@ -348,6 +351,10 @@ $(ENV):
 	$(_RULE)$(LN) -s $(ENV)/bazel/ibazel-$(PLATFORM) $(ENV)/bin/ibazel
 	$(_RULE)$(CHMOD) +x $(ENV)/bazel/bazelisk-$(PLATFORM) $(ENV)/bin/bazelisk $(ENV)/bazel/ibazel-$(PLATFORM) $(ENV)/bin/ibazel
 	$(_RULE)$(ENV)/bin/bazelisk version
+	@echo "Creating virtualenv..."
+	$(_RULE)$(VIRTUALENV) $(ENV)/python --python=$(PYTHON)
+	$(_RULE)$(LN) -s $(ENV)/python/bin/python3 $(ENV)/bin/python
+	$(_RULE)$(ENV)/python/bin/pip install -r $(PWD)/tools/requirements.txt
 	@echo "Build environment ready."	
 
 ## Crypto

@@ -46,6 +46,7 @@ test_suite(
         "//javatests/gust/backend/driver/inmemory:InMemoryCacheTest",
         "//javatests/gust/backend/driver/inmemory:InMemoryDriverTest",
         "//javatests/gust/backend/driver/firestore:FirestoreAdapterTest",
+        "//javatests/gust/backend/driver/spanner:SpannerAdapterTest",
         "//javatests/gust/util:HexText",
         "//javatests/gust/util:PairTest",
     ],

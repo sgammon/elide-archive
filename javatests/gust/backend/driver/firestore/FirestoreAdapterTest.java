@@ -79,6 +79,7 @@ public final class FirestoreAdapterTest extends GenericPersistenceAdapterTest<Fi
   }
 
   @AfterAll
+  @SuppressWarnings("ResultOfMethodCallIgnored")
   static void shutdownExecutor() throws InterruptedException {
     executorService.shutdownNow();
     executorService.awaitTermination(5, TimeUnit.SECONDS);

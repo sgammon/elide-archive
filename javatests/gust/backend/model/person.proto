@@ -26,15 +26,22 @@ import "gust/core/datamodel.proto";
 // Proto for dependency testing.
 message Person {
   option (core.role) = OBJECT;
+  option (core.table).name = "People";
 
   // Unique record ID.
-  PersonKey key = 1 [(core.field).type = KEY];
+  PersonKey key = 1 [
+    (core.field).type = KEY,
+    (core.column).name = "Key"
+  ];
 
   // Salutation name.
-  string name = 2;
+  string name = 2 [(core.column).name = "Name"];
 
   // Person's contact info.
-  ContactInfo contact_info = 3;
+  ContactInfo contact_info = 3 [
+    (core.column).name = "ContactInfo",
+    (core.column).sptype = JSON
+  ];
 }
 
 
@@ -43,6 +50,7 @@ message PersonKey {
   option (core.role) = OBJECT_KEY;
   option (core.db).path = "people";
   option (core.db).mode = COLLECTION;
+  option (core.table).name = "People";
 
   // Unique record ID.
   string id = 1 [(core.field).type = ID];
@@ -64,13 +72,13 @@ message ContactInfo {
   option (core.db).mode = NESTED;
 
   // Person's email address.
-  string email_address = 1;
+  string email_address = 1 [(core.column).name = "EmailAddress"];
 
   // Person's phone number in E164 format.
-  string phone_e164 = 2;
+  string phone_e164 = 2 [(core.column).name = "PhoneE164"];
 
   // Person's address info.
-  PersonAddress address = 3;
+  PersonAddress address = 3 [(core.column).ignore = true];
 }
 
 
