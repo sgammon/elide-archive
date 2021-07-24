@@ -34,6 +34,7 @@ _COMMON_DEPS = [
     maven("org.slf4j:slf4j-api"),
     maven("com.google.cloud:google-cloud-firestore"),
     maven("com.google.guava:guava"),
+    maven("io.grpc:grpc-alts"),
     maven("io.micronaut:micronaut-inject"),
     maven("io.micronaut:micronaut-runtime"),
     maven("io.micronaut:micronaut-context"),
