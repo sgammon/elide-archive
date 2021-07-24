@@ -31,6 +31,12 @@ _COMMON_DEPS = [
     maven("com.google.guava:guava"),
     maven("com.google.protobuf:protobuf-java"),
     maven("org.slf4j:slf4j-api"),
+    maven("com.google.truth:truth"),
+    maven("com.google.truth.extensions:truth-java8-extension"),
+    maven("com.google.truth.extensions:truth-proto-extension"),
+    maven("com.testcontainers:testcontainers"),
+    maven("com.testcontainers:junit-jupiter"),
+    maven("com.testcontainers:gcloud"),
 ]
 
 

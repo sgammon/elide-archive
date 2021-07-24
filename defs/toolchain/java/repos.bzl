@@ -94,6 +94,9 @@ MICRONAUT_CACHE_VERSION = "3.0.0.RC1"
 MICRONAUT_SECURITY_VERSION = "3.0.0-M1"
 MICRONAUT_MULTITENANCY_VERSION = "2.2.3"
 
+TESTCONTAINERS_VERSION = "1.15.3"
+TRUTH_VERSION = "1.1.3"
+
 GRPC_EXCLUSIONS = [
     maven.exclusion(
         group = "io.grpc",
@@ -362,7 +365,14 @@ MICRONAUT_TEST_ARTIFACTS = [
     maven.artifact("io.micronaut.test", "micronaut-test-core", MICRONAUT_TEST_VERSION, testonly = True),
     maven.artifact("io.micronaut.test", "micronaut-test-kotlintest", MICRONAUT_TEST_VERSION, testonly = True),
     maven.artifact("io.micronaut.test", "micronaut-test-junit5", MICRONAUT_TEST_VERSION, testonly = True),
+    maven.artifact("org.testcontainers", "testcontainers", TESTCONTAINERS_VERSION, testonly = True),
+    maven.artifact("org.testcontainers", "junit-jupiter", TESTCONTAINERS_VERSION, testonly = True),
+    maven.artifact("org.testcontainers", "gcloud", TESTCONTAINERS_VERSION, testonly = True),
     maven.artifact("io.grpc", "grpc-testing", GRPC_JAVA_VERSION, testonly = True),
+    maven.artifact("com.google.truth", "truth", TRUTH_VERSION, testonly = True),
+    maven.artifact("com.google.truth.extensions", "truth-proto-extension", TRUTH_VERSION, testonly = True),
+    maven.artifact("com.google.truth.extensions", "truth-liteproto-extension", TRUTH_VERSION, testonly = True),
+    maven.artifact("com.google.truth.extensions", "truth-java8-extension", TRUTH_VERSION, testonly = True),
 ]
 
 def junit_jupiter_java_repositories(version = JUNIT_JUPITER_VERSION):
