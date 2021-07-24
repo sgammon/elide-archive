@@ -10,7 +10,7 @@
  * by trade secret and copyright law. Dissemination of this information, or reproduction of this material, in any form,
  * is strictly forbidden except in adherence with assigned license requirements.
  */
-import {DEFAULT_PORT} from "gust/js/backend/app";
+import {DEFAULT_PORT} from "@gust/js/backend/app";
 
 
 describe(`'gust.js.backend': app`, () => {

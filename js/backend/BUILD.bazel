@@ -31,6 +31,7 @@ ts_module(
     name = "init",
     srcs = ["init.ts"],
     runtime = "node",
+    module_name = "@gust/js/backend",
     deps = [
         ":logging",
         "@npm//@feathersjs/express",
@@ -43,6 +44,7 @@ ts_module(
     name = "logging",
     srcs = ["logging.ts"],
     runtime = "node",
+    module_name = "@gust/js/backend",
     deps = [
         "@npm//winston",
         "@npm//@types/winston",
@@ -53,6 +55,7 @@ ts_module(
     name = "app",
     srcs = ["app.ts"],
     runtime = "node",
+    module_name = "@gust/js/backend",
     deps = [
         ":logging",
         ":init",
@@ -67,6 +70,7 @@ ts_module(
     name = "main",
     srcs = ["main.ts"],
     runtime = "node",
+    module_name = "@gust/js/backend",
     deps = [
         ":app",
     ],
