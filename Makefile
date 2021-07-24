@@ -12,7 +12,7 @@
 ##
 
 ##
-## GUST: Makefile
+## Elide: Makefile
 ##
 
 CI ?= no
@@ -30,19 +30,21 @@ IMAGE_PROJECT ?= elide-ai
 RBE_INSTANCE ?= default_instance
 CACHE_KEY ?= GustBuild
 REGISTRY ?= bloomworks
-PROJECT_NAME ?= GUST
+PROJECT_NAME ?= Elide
 ENABLE_REPORTCI ?= yes
 JS_COVERAGE_REPORT ?= no
 REPORTS ?= reports
-CI_REPO ?= sgammon/GUST
+CI_REPO ?= sgammon/elide
 
 SAMPLES ?= //samples/rest_mvc/java:MicronautMVCSample //samples/soy_ssr/src:MicronautSSRSample
 
 
 ifneq (,$(findstring Darwin,$(shell uname -a)))
 OUTPUT_BASE ?= darwin-dbg
+OS_TAG ?= mac
 else
 OUTPUT_BASE ?= k8-fastbuild
+OS_TAG ?= linux
 endif
 
 ARGS ?=
@@ -96,6 +98,34 @@ BAZELISK_ARGS ?=
 BASE_ARGS ?=
 BAZELISK_PREAMBLE ?=
 
+ENV ?= $(PWD)/.env
+STAGE_DIR ?= $(ENV)/.stage
+DATA_DIR ?= $(ENV)/.data
+
+IBAZEL_VERSION ?= v0.15.10
+BAZELISK_VERSION ?= v1.9.0
+
+
+# OS tweaks
+ifeq ($(OS),Windows_NT)
+PLATFORM ?= windows
+else
+    UNAME_S := $(shell uname -s)
+    ifeq ($(UNAME_S),Linux)
+        PLATFORM ?= linux
+    endif
+    ifeq ($(UNAME_S),Darwin)
+        PLATFORM ?= darwin
+    endif
+    UNAME_P := $(shell uname -p)
+    ifeq ($(UNAME_P),x86_64)
+        ARCH ?= x86
+    endif
+    ifneq ($(filter arm%,$(UNAME_P)),)
+        ARCH ?= ARM
+    endif
+endif
+
 
 # Flag: `FORCE_COVERAGE`
 ifeq ($(FORCE_COVERAGE),yes)
@@ -132,23 +162,26 @@ endif
 else
 endif
 
+LN ?= $(shell which ln)
+CURL ?= $(shell which curl)
+CHMOD ?= $(shell which chmod)
+MKDIR ?= $(shell which mkdir)
+BAZELISK ?= $(ENV)/bin/bazelisk
+GENHTML ?= $(shell which genhtml)
+IBAZEL ?= $(ENV)/bin/ibazel
+
 # Flag: `CI`
 ifeq ($(CI),yes)
 TAG += --config=ci
-BAZELISK ?= $(shell which bazelisk)
-GENHTML ?= $(shell which genhtml)
 else
 TAG += --config=dev
-IBAZEL ?= $(shell which ibazel)
-BAZELISK ?= $(BAZELISK_PREAMBLE) $(shell which bazelisk)
-GENHTML ?= $(shell which genhtml)
 endif
 
 # Flag: `DEBUG`
 ifeq ($(DEBUG),yes)
 VERBOSE = yes
 QUIET = no
-BASE_ARGS += --sandbox_debug
+BASE_ARGS += --config=debug
 endif
 
 # Flag: `VERBOSE`
@@ -167,14 +200,14 @@ endif
 
 all: devtools build test  ## Build and test all framework targets.
 
-build:  ## Build all framework targets.
+build: $(ENV)  ## Build all framework targets.
 	$(info Building $(PROJECT_NAME)...)
 	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) build $(TAG) $(BASE_ARGS) $(BUILD_ARGS) -- $(TARGETS)
 
-run:  ## Run the specified target.
+run: $(ENV)  ## Run the specified target.
 	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) run $(TAG) $(BASE_ARGS) $(BUILD_ARGS) -- $(APP) $(ARGS)
 
-dev:  ## Develop against the specified target.
+dev: $(ENV)  ## Develop against the specified target.
 	$(_RULE)$(IBAZEL) run $(TAG) --define=LIVE_RELOAD=enabled --define=dev=enabled $(APP)
 
 clean: clean-docs clean-reports  ## Clean ephemeral targets.
@@ -198,7 +231,7 @@ bases:  ## Build base images and push them.
 	$(_RULE)docker push us.gcr.io/$(IMAGE_PROJECT)/base/alpine:$(BASE_VERSION)
 	$(_RULE)docker push us.gcr.io/$(IMAGE_PROJECT)/base/node:$(BASE_VERSION)
 
-samples:  ## Build and push sample app images.
+samples: $(ENV)  ## Build and push sample app images.
 	$(_RULE)for target in $(SAMPLES) ; do \
         $(BAZELISK) $(BAZELISK_ARGS) run $(TAG) $(BASE_ARGS) $(BUILD_ARGS) $$(echo "$$target")-image-push && \
         $(BAZELISK) $(BAZELISK_ARGS) run $(TAG) $(BASE_ARGS) $(BUILD_ARGS) $$(echo "$$target")-native-image-push; \
@@ -210,7 +243,7 @@ distclean: clean  ## Clean targets, caches and dependencies.
 forceclean: distclean  ## Clean everything, and sanitize the codebase (DANGEROUS).
 	$(_RULE)git reset --hard && git clean -xdf
 
-test:  ## Run all framework testsuites.
+test: $(ENV)  ## Run all framework testsuites.
 ifeq ($(COVERAGE),yes)
 	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) coverage $(TAG) $(BASE_ARGS) $(TEST_ARGS) $(TEST_ARGS_WITH_COVERAGE) -- $(TESTS)
 	$(_RULE)$(GENHTML) $(COVERAGE_DATA) --output-directory $(COVERAGE_REPORT) $(COVERAGE_ARGS)
@@ -220,17 +253,17 @@ else
 endif
 
 docs:  ## Build documentation for the framework.
-	@echo "Building GUST framework docs (Java)..."
+	@echo "Building @elide framework docs (Java)..."
 	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) build $(TAG) $(BASE_ARGS) -- //java:javadoc && \
 		mkdir -p $(DOCS)/java && \
 		$(UNZIP) -o -d $(DOCS)/java/ $(BINPATH)/java/gust/javadoc.jar;
 	@#$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) build $(TAG) $(BASE_ARGS) //:docs
 
 help:  ## Show this help text.
-	$(info GUST Framework Tools:)
+	$(info Elide Framework Tools:)
 	@grep -E '^[a-z1-9A-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
-devtools:  ## Install local development dependencies.
+devtools: $(ENV)  ## Install local development dependencies.
 	@echo "Installing devtools..."
 	$(_RULE)git submodule update --init --recursive
 
@@ -301,6 +334,19 @@ release-images:  ## Pull, tag, and release Docker images.
 	$(_RULE)docker push $(REGISTRY)/sample-ssr:$(VERSION);
 	$(_RULE)docker push $(REGISTRY)/sample-ssr-jvm:$(VERSION);
 
+
+$(ENV):
+	$(info Creating build environment...)
+	$(_RULE)$(MKDIR) -p $(ENV)/bazel $(ENV)/python $(ENV)/bin
+	@echo "Downloading Bazelisk..."
+	$(_RULE)$(CURL) --progress-bar -qL https://github.com/bazelbuild/bazelisk/releases/download/$(BAZELISK_VERSION)/bazelisk-$(PLATFORM)-amd64 > $(ENV)/bazel/bazelisk-$(PLATFORM)
+	@echo "Downloading iBazel..."
+	$(_RULE)$(CURL) --progress-bar -qL https://github.com/bazelbuild/bazel-watcher/releases/download/$(IBAZEL_VERSION)/ibazel_$(PLATFORM)_amd64 > $(ENV)/bazel/ibazel-$(PLATFORM)
+	$(_RULE)$(LN) -s $(ENV)/bazel/bazelisk-$(PLATFORM) $(ENV)/bin/bazelisk
+	$(_RULE)$(LN) -s $(ENV)/bazel/ibazel-$(PLATFORM) $(ENV)/bin/ibazel
+	$(_RULE)$(CHMOD) +x $(ENV)/bazel/bazelisk-$(PLATFORM) $(ENV)/bin/bazelisk $(ENV)/bazel/ibazel-$(PLATFORM) $(ENV)/bin/ibazel
+	$(_RULE)$(ENV)/bin/bazelisk version
+	@echo "Build environment ready."	
 
 ## Crypto
 $(BUILDKEY_CIPHERTEXT):

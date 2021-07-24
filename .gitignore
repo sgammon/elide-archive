@@ -14,3 +14,4 @@ bazel-out
 reports
 report-ci.py
 crypto/build-key.json
+.env/
