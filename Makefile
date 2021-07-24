@@ -135,8 +135,6 @@ endif
 # Flag: `CI`
 ifeq ($(CI),yes)
 TAG += --config=ci
-_DEFAULT_JAVA_HOME = $(shell echo $$JAVA_HOME_12_X64)
-BASE_ARGS += --define=ZULUBASE=$(_DEFAULT_JAVA_HOME) --define=jdk=zulu
 BAZELISK ?= $(shell which bazelisk)
 GENHTML ?= $(shell which genhtml)
 else
