@@ -27,15 +27,20 @@ load(
 
 
 ts_config(
+    name = "tsconfig-common",
+    src = ":tsconfig.common.json",
+)
+
+ts_config(
     name = "tsconfig-node",
-    src = "tsconfig.node.json",
-    deps = ["tsconfig.common.json"],
+    src = ":tsconfig.node.json",
+    deps = [":tsconfig-common"],
 )
 
 ts_config(
     name = "tsconfig-browser",
-    src = "tsconfig.browser.json",
-    deps = ["tsconfig.common.json"],
+    src = ":tsconfig.browser.json",
+    deps = [":tsconfig-common"],
 )
 
 bzl_library(
