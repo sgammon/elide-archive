@@ -13,13 +13,22 @@
 package gust.backend.driver.firestore;
 
 
+import com.google.api.gax.core.NoCredentialsProvider;
+import com.google.cloud.NoCredentials;
+import com.google.cloud.firestore.FirestoreOptions;
+import com.google.cloud.firestore.v1.stub.FirestoreStubSettings;
+import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.common.util.concurrent.ListeningScheduledExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import gust.backend.model.GenericPersistenceAdapterTest;
 import gust.backend.model.PersonRecord.Person;
 import gust.backend.model.PersonRecord.PersonKey;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.testcontainers.containers.FirestoreEmulatorContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
 
 import javax.annotation.Nonnull;
 import java.util.concurrent.Executors;
@@ -29,18 +38,44 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 
 /** Tests for the {@link FirestoreAdapter}. */
+@Testcontainers
 @SuppressWarnings("UnstableApiUsage")
 public final class FirestoreAdapterTest extends GenericPersistenceAdapterTest<FirestoreAdapter<PersonKey, Person>> {
   private static ListeningScheduledExecutorService executorService;
   private static FirestoreAdapter<PersonKey, Person> personAdapter;
+  private static final String firestoreVersion = System.getProperty(
+          "e2e.firestoreVersion", "349.0.0-emulators");
 
-  @BeforeAll
-  static void initExecutor() {
+  @Container
+  public FirestoreEmulatorContainer firestore = new FirestoreEmulatorContainer(
+    DockerImageName.parse("gcr.io/google.com/cloudsdktool/cloud-sdk:" + firestoreVersion)
+  ).withNetworkAliases("firestore");
+
+  @BeforeEach
+  void initExecutor() {
     executorService = MoreExecutors.listeningDecorator(Executors.newScheduledThreadPool(3));
+    var creds = NoCredentialsProvider.create();
+
+    var stubSettings = FirestoreStubSettings.newBuilder()
+      .setEndpoint(firestore.getEmulatorEndpoint())
+      .setCredentialsProvider(creds);
+
     personAdapter = FirestoreAdapter.acquire(
+        FirestoreOptions.newBuilder()
+          .setProjectId("test-project")
+          .setHost(firestore.getEmulatorEndpoint())
+          .setEmulatorHost(firestore.getEmulatorEndpoint())
+          .setCredentials(NoCredentials.getInstance())
+          .setCredentialsProvider(NoCredentialsProvider.create()),
+        stubSettings.getTransportChannelProvider()
+            .withEndpoint(firestore.getEmulatorEndpoint())
+            .withCredentials(NoCredentials.getInstance()),
+        stubSettings.getCredentialsProvider(),
+        GrpcTransportOptions.newBuilder().build(),
+        executorService,
         PersonKey.getDefaultInstance(),
-        Person.getDefaultInstance(),
-        executorService);
+        Person.getDefaultInstance()
+    );
   }
 
   @AfterAll
@@ -60,10 +95,6 @@ public final class FirestoreAdapterTest extends GenericPersistenceAdapterTest<Fi
   /** {@inheritDoc} */
   @Override
   protected void acquireDriver() {
-    FirestoreAdapter<PersonKey, Person> personAdapter = FirestoreAdapter.acquire(
-        PersonKey.getDefaultInstance(),
-        Person.getDefaultInstance(),
-        executorService);
     assertNotNull(personAdapter, "should not get `null` for adapter acquire");
   }
 }

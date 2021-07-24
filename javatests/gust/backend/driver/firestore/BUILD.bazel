@@ -34,9 +34,10 @@ _COMMON_DEPS = [
     maven("com.google.truth:truth"),
     maven("com.google.truth.extensions:truth-java8-extension"),
     maven("com.google.truth.extensions:truth-proto-extension"),
-    maven("com.testcontainers:testcontainers"),
-    maven("com.testcontainers:junit-jupiter"),
-    maven("com.testcontainers:gcloud"),
+    maven("com.google.cloud:google-cloud-firestore"),
+    maven("org.testcontainers:testcontainers"),
+    maven("org.testcontainers:junit-jupiter"),
+    maven("org.testcontainers:gcloud"),
 ]
 
 

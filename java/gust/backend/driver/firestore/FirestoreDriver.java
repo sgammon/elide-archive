@@ -73,7 +73,7 @@ import static gust.backend.model.ModelMetadata.id;
  */
 @Immutable
 @ThreadSafe
-@SuppressWarnings("UnstableApiUsage")
+@SuppressWarnings({"UnstableApiUsage", "OptionalUsedAsFieldOrParameterType"})
 public final class FirestoreDriver<Key extends Message, Model extends Message>
   implements DatabaseDriver<Key, Model, DocumentSnapshot, CollapsedMessage> {
   /** Private log pipe. */

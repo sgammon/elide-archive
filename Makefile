@@ -139,8 +139,8 @@ endif
 
 # Flag: `DEV`
 ifeq ($(DEV),yes)
-BASE_ARGS += --config=devkey --test_output=errors
-BAZELISK_PREAMBLE = GOOGLE_APPLICATION_CREDENTIALS=$(BUILDKEY_PLAINTEXT)
+BASE_ARGS += --test_output=errors
+#BAZELISK_PREAMBLE = GOOGLE_APPLICATION_CREDENTIALS=$(BUILDKEY_PLAINTEXT)
 endif
 
 # Flag: `STRICT`.
