@@ -72,6 +72,27 @@ http_archive(
 
 
 #
+# Java deps
+#
+
+load(
+    "@bazel_tools//tools/build_defs/repo:java.bzl",
+    java_import = "java_import_external",
+)
+
+java_import(
+    name = "com_google_code_gson",
+    licenses = ["notice"],  # Apache 2.0
+    jar_urls = [
+        "https://repo1.maven.org/maven2/com/google/code/gson/gson/2.8.6/gson-2.8.6.jar",
+    ],
+    jar_sha256 = "c8fb4839054d280b3033f800d1f5a97de2f028eb8ba2eb458ad287e536f3f25f",
+    deps = ["@com_google_code_findbugs_jsr305"],
+)
+
+
+
+#
 # Extensions
 #
 
