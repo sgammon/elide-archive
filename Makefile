@@ -97,7 +97,7 @@ BUILDKEY_BASE_ARGS ?= --location=$(BUILDKEY_KMS_LOCATION) --keyring=$(BUILDKEY_K
 
 POSIX_FLAGS ?=
 BAZELISK_ARGS ?=
-BASE_ARGS ?= --config=buildbuddy
+BASE_ARGS ?= --config=labs
 BAZELISK_PREAMBLE ?=
 
 ENV ?= $(PWD)/.env

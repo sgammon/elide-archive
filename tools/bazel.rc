@@ -27,14 +27,7 @@ build --define project=elide-ai
 build --define cluster=_cluster_
 build --nojava_header_compilation
 build --noexperimental_worker_multiplex
-
-build:dev --output_filter='^//(gust|defs|java|js|tools|config|images|javatests|tests|jstests):'
-build:dev --define=project=elide-ai
-build:dev --define=todolist_release_tag=latest
-build:adc --google_default_credentials=true
-#build:devkey --google_credentials=crypto/build-key.json
-#test:devkey --action_env=GOOGLE_APPLICATION_CREDENTIALS
-
+build --output_filter='^//(gust|defs|java|js|tools|config|images|javatests|tests|jstests):'
 build --watchfs
 build --symlink_prefix=dist/
 build --nolegacy_external_runfiles
@@ -43,50 +36,57 @@ build --javacopt="-encoding UTF-8"
 build --strict_java_deps=strict
 build --use_ijars
 build --interface_shared_objects
-
 build --java_toolchain=@bazel_tools//tools/jdk:toolchain_java11
 build --host_java_toolchain=@bazel_tools//tools/jdk:toolchain_java11
-#build --java_toolchain=@bazel_tools//tools/jdk:toolchain_vanilla
-#build --host_java_toolchain=@bazel_tools//tools/jdk:toolchain_vanilla
-
 build --workspace_status_command=./tools/bazel_stamp_vars.sh
+build --worker_sandboxing
+build --spawn_strategy=sandboxed,worker
+build --strategy=Javac=sandboxed
+build --strategy=J2cl=sandboxed
+build --strategy=Closure=sandboxed
+build --strategy=KotlinCompile=sandboxed
+build --strategy=TypeScriptCompile=sandboxed
+build --strategy=JdepsMerger=sandboxed
+build --compilation_mode=fastbuild
+
+build --build_metadata=TEST_GROUPS=//javatests,//jstests,//tests
+build --build_metadata=REPO_URL=https://github.com/CookiesCo/elide.git
+build --build_metadata=VISIBILITY=PUBLIC
+build --bes_results_url=https://app.buildbuddy.io/invocation/
+build --bes_backend=grpcs://cloud.buildbuddy.io
+build --remote_cache=grpcs://cloud.buildbuddy.io
+build --remote_timeout=3600
+build --remote_header=x-buildbuddy-api-key=6R3w0oRMdKhN3cobqlIl
+build --experimental_persistent_javac
+
+build:dev --define=project=elide-ai
+build:dev --define=todolist_release_tag=latest
+build:dev --strategy=Javac=worker
+build:dev --strategy=J2cl=worker
+build:dev --strategy=Closure=worker
+build:dev --strategy=KotlinCompile=worker
+build:dev --strategy=TypeScriptCompile=worker
+build:dev --strategy=JdepsMerger=worker
+
+fetch:dev --repository_cache=~/.cache/bazel/repo
+query:dev --repository_cache=~/.cache/bazel/repo
+build:dev --disk_cache=~/.cache/bazel-disk-cache
+build:dev --repository_cache=~/.cache/bazel/repo
+
+build:adc --google_default_credentials=true
 
 build:android --java_toolchain=@bazel_tools//tools/jdk:toolchain_java8
 build:android --host_java_toolchain=@bazel_tools//tools/jdk:toolchain_java8
 build:android --workspace_status_command=./tools/bazel_stamp_vars.sh
 
-run --incompatible_strict_action_env
-run --workspace_status_command=./tools/bazel_stamp_vars.sh
-
-build:dev --define=todolist_release_tag=latest
-
-build:ci --worker_sandboxing
-build:ci --spawn_strategy=sandboxed
-build:ci --strategy=SassCompiler=local
-build:ci --strategy=Javac=sandboxed
-build:ci --strategy=J2cl=sandboxed
-build:ci --strategy=Closure=sandboxed
-build:ci --strategy=KotlinCompile=sandboxed
-build:ci --strategy=TypeScriptCompile=sandboxed
 build:ci --jobs=32
 build:ci --build_metadata=ROLE=CI
 
-build --build_metadata=TEST_GROUPS=//javatests,//jstests,//tests
-build --build_metadata=REPO_URL=https://github.com/CookiesCo/elide.git
-build --build_metadata=VISIBILITY=PUBLIC
-build:buildbuddy --bes_results_url=https://app.buildbuddy.io/invocation/
-build:buildbuddy --bes_backend=grpcs://cloud.buildbuddy.io
-build:buildbuddy --remote_cache=grpcs://cloud.buildbuddy.io
-build:buildbuddy --remote_timeout=3600
-build:buildbuddy --remote_header=x-buildbuddy-api-key=6R3w0oRMdKhN3cobqlIl
-
 build:ci --worker_max_instances=4
 build:ci --local_ram_resources="HOST_RAM*.9"
-build:ci --experimental_persistent_javac
 build:ci --strategy=JdepsMerger=worker
 run:ci --worker_max_instances=4
 run:ci --local_ram_resources="HOST_RAM*.9"
-run:ci --experimental_persistent_javac
 common:ci --curses=no
 build:ci --verbose_failures
 build:ci --worker_verbose
@@ -110,16 +110,6 @@ build:release --copt=-Wframe-larger-than=16384
 
 build:debug --compilation_mode=dbg
 build:debug --sandbox_debug
-build:dev --spawn_strategy=local
-build:dev --strategy=J2cl=worker
-build:dev --strategy=KotlinCompile=worker
-build:dev --strategy=Closure=worker
-build:dev --strategy=TypeScriptCompile=worker
-build:dev --experimental_persistent_javac
-#build:dev --define=ABSOLUTE_JAVABASE=/Library/Java/JavaVirtualMachines/zulu-15.jdk/Contents/Home
-#build:dev --define=ZULUBASE=/Library/Java/JavaVirtualMachines/zulu-15.jdk/Contents/Home
-#build:dev --javabase=//defs/toolchain/java:java_runtime
-build:dev --disk_cache=~/.cache/bazel-disk-cache
 
 build:android --define=ABSOLUTE_JAVABASE=/Library/Java/JavaVirtualMachines/zulu-8.jdk/Contents/Home
 build:android --host_javabase=@bazel_tools//tools/jdk:absolute_javabase
@@ -128,49 +118,6 @@ build:android --java_toolchain=@bazel_tools//tools/jdk:toolchain_vanilla
 
 query --output=label_kind
 
-# This .bazelrc file contains all of the flags required for the provided
-# toolchain with Remote Build Execution.
-# Note your WORKSPACE must contain an rbe_autoconfig target with
-# name="rbe_default" to use these flags as-is.
-build:remote --jobs=5
-
-# Platform flags:
-# The toolchain container used for execution is defined in the target indicated
-# by "extra_execution_platforms", "host_platform" and "platforms".
-# More about platforms: https://docs.bazel.build/versions/master/platforms.html
-build:remote --extra_toolchains=@rbe_default//config:cc-toolchain
-build:remote --extra_execution_platforms=@rbe_default//config:platform
-build:remote --host_platform=@rbe_default//config:platform
-build:remote --platforms=@rbe_default//config:platform
-build:remote --host_javabase=@rbe_default//java:jdk
-build:remote --javabase=@rbe_default//java:jdk
-build:remote --host_java_toolchain=@bazel_tools//tools/jdk:toolchain_hostjdk8
-build:remote --java_toolchain=@bazel_tools//tools/jdk:toolchain_hostjdk8
-build:remote --crosstool_top=@rbe_default//cc:toolchain
-build:remote --action_env=BAZEL_DO_NOT_DETECT_CPP_TOOLCHAIN=1
-build:remote --spawn_strategy=remote
-
-# Starting with Bazel 0.27.0 strategies do not need to be explicitly
-# defined. See https://github.com/bazelbuild/bazel/issues/7480
-build:remote --define=EXECUTOR=remote
-
-# Enable remote execution so actions are performed on the remote systems.
-build:remote --remote_executor=grpcs://remotebuildexecution.googleapis.com
-
-# Enforce stricter environment rules, which eliminates some non-hermetic
-# behavior and therefore improves both the remote cache hit rate and the
-# correctness and repeatability of the build.
-build:remote --incompatible_strict_action_env=true
-
-# Set a higher timeout value, just in case.
-build:remote --remote_timeout=3600
-
-# Enable authentication. This will pick up application default credentials by
-# default. You can use --google_credentials=some_file.json to use a service
-# account credential instead.
-build:remote --google_default_credentials=true
-
-#test --test_env=GOOGLE_APPLICATION_CREDENTIALS
 test --instrumentation_filter="-/javatests[/:],-/test/java[/:],-/tests[/:],-/jstests[/:],-/protobuf,-protobuf,-/types,-types,-/java/org[/:],-js,-/js"
 
 coverage --collect_code_coverage
@@ -180,6 +127,13 @@ coverage --noinstrument_test_targets
 coverage --ui_event_filters=-DEBUG
 coverage --nocache_test_results
 coverage --experimental_fetch_all_coverage_outputs
-#coverage --experimental_split_coverage_postprocessing
+coverage --experimental_split_coverage_postprocessing
+
+build:labs --features=thin_lto
+build:labs --strict_proto_deps=strict
+build:labs --strict_system_includes
+build:labs --experimental_inmemory_dotd_files
+build:labs --experimental_inmemory_jdeps_files
+#build:labs --experimental_java_classpath=bazel
 
 try-import %workspace%/.bazelrc.user
