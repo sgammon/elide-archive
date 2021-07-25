@@ -16,5 +16,9 @@
     <logger name="gust.backend.driver.spanner.SpannerDriver" level="TRACE" />
     <logger name="gust.backend.driver.spanner.SpannerAdapter" level="TRACE" />
     <logger name="gust.backend.driver.spanner.SpannerAdapterTest" level="TRACE" />
+    <logger name="gust.backend.driver.spanner.SpannerUtil" level="TRACE" />
+    <logger name="gust.backend.driver.spanner.SpannerMutationSerializer" level="TRACE" />
+    <logger name="gust.backend.driver.spanner.SpannerStructDeserializer" level="TRACE" />
+    <logger name="gust.backend.driver.spanner.SpannerCodec" level="TRACE" />
     <logger name="gust.backend.model.GenericPersistenceDriverTest" level="TRACE" />
 </configuration>

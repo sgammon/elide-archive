@@ -226,7 +226,7 @@ clean-docs:  ## Clean built documentation.
 
 clean-reports:  ## Clean built reports.
 	@echo "Cleaning reports..."
-	$(_RULE) -fr $(POSIX_FLAGS) $(REPORTS)
+	$(_RULE)rm -fr $(POSIX_FLAGS) $(REPORTS)
 
 bases:  ## Build base images and push them.
 	@echo "Building Alpine base ('$(BASE_VERSION)')..."
