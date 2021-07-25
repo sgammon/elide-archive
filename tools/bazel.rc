@@ -59,6 +59,8 @@ build --remote_cache=grpcs://cloud.buildbuddy.io
 build --remote_timeout=3600
 build --remote_header=x-buildbuddy-api-key=6R3w0oRMdKhN3cobqlIl
 build --experimental_persistent_javac
+build --strict_proto_deps=strict
+build --strict_system_includes
 
 build:dev --define=project=elide-ai
 build:dev --define=todolist_release_tag=latest
@@ -135,8 +137,6 @@ coverage --experimental_fetch_all_coverage_outputs
 #coverage --experimental_split_coverage_postprocessing
 
 build:labs --features=thin_lto
-build:labs --strict_proto_deps=strict
-build:labs --strict_system_includes
 build:labs --experimental_inmemory_dotd_files
 build:labs --experimental_inmemory_jdeps_files
 build:labs --experimental_delay_virtual_input_materialization
