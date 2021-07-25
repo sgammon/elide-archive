@@ -97,7 +97,7 @@ BUILDKEY_BASE_ARGS ?= --location=$(BUILDKEY_KMS_LOCATION) --keyring=$(BUILDKEY_K
 
 POSIX_FLAGS ?=
 BAZELISK_ARGS ?=
-BASE_ARGS ?= --config=labs
+BASE_ARGS ?=
 BAZELISK_PREAMBLE ?=
 
 ENV ?= $(PWD)/.env
@@ -178,7 +178,7 @@ VIRTUALENV ?= $(shell which virtualenv)
 
 # Flag: `CI`
 ifeq ($(CI),yes)
-TAG += --config=ci
+TAG += --config=ci --config=labs
 else
 TAG += --config=dev
 endif
