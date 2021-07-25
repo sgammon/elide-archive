@@ -178,9 +178,9 @@ VIRTUALENV ?= $(shell which virtualenv)
 
 # Flag: `CI`
 ifeq ($(CI),yes)
-TAG += --config=ci --config=labs
+TAG += --config=ci
 else
-TAG += --config=dev
+TAG += --config=dev --config=labs
 endif
 
 # Flag: `DEBUG`
