@@ -36,15 +36,6 @@ checks:
     config:
       threshold: 5
 
-exclude_patterns:
-- "docs/"
-- "docs/**.*"
-- "tests/"
-- "tests/**.*"
-- "*tests/**.*"
-- "javatests/"
-- "jstests/"
-
 plugins:
   bandit:
     enabled: true
@@ -178,4 +169,11 @@ exclude_patterns:
 - "**/vendor/"
 - "**/*_test.go"
 - "**/*.d.ts"
+- "docs/"
+- "docs/**.*"
+- "tests/"
+- "tests/**.*"
+- "*tests/**.*"
+- "javatests/"
+- "jstests/"
 
