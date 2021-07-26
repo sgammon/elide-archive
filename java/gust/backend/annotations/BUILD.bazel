@@ -37,6 +37,11 @@ _COMMON_DEPS = [
 
 
 java_library(
+    name = "package-info",
+    srcs = ["package-info.java"],
+)
+
+java_library(
     name = "Js",
     srcs = ["Js.java"],
     deps = [
@@ -67,6 +72,7 @@ java_library(
         ":Js",
         ":Page",
         ":Style",
+        ":package-info",
     ]
 )
 
