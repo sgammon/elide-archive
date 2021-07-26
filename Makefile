@@ -221,7 +221,7 @@ clean: clean-docs clean-reports  ## Clean ephemeral targets.
 
 clean-docs:  ## Clean built documentation.
 	@echo "Cleaning docs..."
-	$(_RULE)rm -fr $(POSIX_FLAGS) $(DOCS)
+	$(_RULE)rm -fr $(POSIX_FLAGS) $(DOCS)/java
 
 clean-reports:  ## Clean built reports.
 	@echo "Cleaning reports..."
@@ -372,5 +372,5 @@ decrypt: $(BUILDKEY_PLAINTEXT)  ## Decrypt private key material.
 	@echo "Key material decrypted."
 
 
-.PHONY: build test help samples release-images update-deps devtools
+.PHONY: build test help samples release-images update-deps devtools docs
 
