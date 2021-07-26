@@ -267,7 +267,7 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <th class="colLast" scope="row">&nbsp;</th>
 </tr>
 <tr id="i26" class="altColor">
-<td class="colFirst"><a href="gust/backend/model/DatabaseManager.html" title="interface in gust.backend.model">DatabaseManager</a>&lt;<a href="gust/backend/model/DatabaseManager.html" title="type parameter in DatabaseManager">Driver</a> extends <a href="gust/backend/model/DatabaseDriver.html" title="interface in gust.backend.model">DatabaseDriver</a>&gt;</td>
+<td class="colFirst"><a href="gust/backend/model/DatabaseManager.html" title="interface in gust.backend.model">DatabaseManager</a>&lt;<a href="gust/backend/model/DatabaseManager.html" title="type parameter in DatabaseManager">Adapter</a> extends <a href="gust/backend/model/DatabaseAdapter.html" title="interface in gust.backend.model">DatabaseAdapter</a>,&#8203;<a href="gust/backend/model/DatabaseManager.html" title="type parameter in DatabaseManager">Driver</a> extends <a href="gust/backend/model/DatabaseDriver.html" title="interface in gust.backend.model">DatabaseDriver</a>&gt;</td>
 <th class="colLast" scope="row">&nbsp;</th>
 </tr>
 <tr id="i27" class="rowColor">
@@ -868,7 +868,10 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 </tr>
 <tr id="i123" class="rowColor">
 <td class="colFirst"><a href="gust/backend/driver/spanner/SpannerManager.html" title="class in gust.backend.driver.spanner">SpannerManager</a></td>
-<th class="colLast" scope="row">&nbsp;</th>
+<th class="colLast" scope="row">
+<div class="block">Main adapter manager interface for interaction between Gust/Elide apps and Google Cloud Spanner, enabling seamless
+ persistence for generated <code>Message</code>-driven models.</div>
+</th>
 </tr>
 <tr id="i124" class="altColor">
 <td class="colFirst"><a href="gust/backend/driver/spanner/SpannerMutationSerializer.html" title="class in gust.backend.driver.spanner">SpannerMutationSerializer</a>&lt;<a href="gust/backend/driver/spanner/SpannerMutationSerializer.html" title="type parameter in SpannerMutationSerializer">Model</a> extends com.google.protobuf.Message&gt;</td>

@@ -1535,7 +1535,7 @@
 <span class="sourceLineNo">1526</span><a id="line.1526">   */</a>
 <span class="sourceLineNo">1527</span><a id="line.1527">  public static @Nonnull Stream&lt;FieldPointer&gt; forEachField(@Nonnull Descriptor descriptor,</a>
 <span class="sourceLineNo">1528</span><a id="line.1528">                                                           @Nonnull Optional&lt;Predicate&lt;FieldPointer&gt;&gt; predicate) {</a>
-<span class="sourceLineNo">1529</span><a id="line.1529">    Objects.requireNonNull(descriptor, "cannot crawl fields on null descriptor");</a>
+<span class="sourceLineNo">1529</span><a id="line.1529">    Objects.requireNonNull(descriptor);</a>
 <span class="sourceLineNo">1530</span><a id="line.1530">    Objects.requireNonNull(predicate);</a>
 <span class="sourceLineNo">1531</span><a id="line.1531"></a>
 <span class="sourceLineNo">1532</span><a id="line.1532">    return streamFieldsRecursive(</a>
@@ -1567,7 +1567,7 @@
 <span class="sourceLineNo">1558</span><a id="line.1558">  public static @Nonnull Stream&lt;FieldPointer&gt; forEachField(@Nonnull Descriptor descriptor,</a>
 <span class="sourceLineNo">1559</span><a id="line.1559">                                                           @Nonnull Optional&lt;Predicate&lt;FieldPointer&gt;&gt; predicate,</a>
 <span class="sourceLineNo">1560</span><a id="line.1560">                                                           boolean recursive) {</a>
-<span class="sourceLineNo">1561</span><a id="line.1561">    Objects.requireNonNull(descriptor, "cannot crawl fields on null descriptor");</a>
+<span class="sourceLineNo">1561</span><a id="line.1561">    Objects.requireNonNull(descriptor);</a>
 <span class="sourceLineNo">1562</span><a id="line.1562">    Objects.requireNonNull(predicate);</a>
 <span class="sourceLineNo">1563</span><a id="line.1563"></a>
 <span class="sourceLineNo">1564</span><a id="line.1564">    return streamFieldsRecursive(</a>
@@ -1602,7 +1602,7 @@
 <span class="sourceLineNo">1593</span><a id="line.1593">  public static @Nonnull Stream&lt;FieldPointer&gt; forEachField(@Nonnull Descriptor descriptor,</a>
 <span class="sourceLineNo">1594</span><a id="line.1594">                                                           @Nonnull Optional&lt;Predicate&lt;FieldPointer&gt;&gt; predicate,</a>
 <span class="sourceLineNo">1595</span><a id="line.1595">                                                           @Nonnull Predicate&lt;FieldPointer&gt; decider) {</a>
-<span class="sourceLineNo">1596</span><a id="line.1596">    Objects.requireNonNull(descriptor, "cannot crawl fields on null descriptor");</a>
+<span class="sourceLineNo">1596</span><a id="line.1596">    Objects.requireNonNull(descriptor);</a>
 <span class="sourceLineNo">1597</span><a id="line.1597">    Objects.requireNonNull(predicate);</a>
 <span class="sourceLineNo">1598</span><a id="line.1598"></a>
 <span class="sourceLineNo">1599</span><a id="line.1599">    return streamFieldsRecursive(</a>
@@ -1720,7 +1720,7 @@
 <span class="sourceLineNo">1711</span><a id="line.1711">  public static @Nonnull Stream&lt;FieldPointer&gt; streamFields(@Nonnull Descriptor descriptor,</a>
 <span class="sourceLineNo">1712</span><a id="line.1712">                                                           @Nonnull Optional&lt;Predicate&lt;FieldPointer&gt;&gt; predicate,</a>
 <span class="sourceLineNo">1713</span><a id="line.1713">                                                           @Nonnull Predicate&lt;FieldPointer&gt; decider) {</a>
-<span class="sourceLineNo">1714</span><a id="line.1714">    Objects.requireNonNull(descriptor, "cannot crawl fields on null descriptor");</a>
+<span class="sourceLineNo">1714</span><a id="line.1714">    Objects.requireNonNull(descriptor);</a>
 <span class="sourceLineNo">1715</span><a id="line.1715">    Objects.requireNonNull(predicate);</a>
 <span class="sourceLineNo">1716</span><a id="line.1716"></a>
 <span class="sourceLineNo">1717</span><a id="line.1717">    return streamFieldsRecursive(</a>

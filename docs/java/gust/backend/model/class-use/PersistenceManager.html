@@ -194,7 +194,18 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <tr class="altColor">
 <td class="colFirst"><code>class&nbsp;</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="../../driver/spanner/SpannerManager.html" title="class in gust.backend.driver.spanner">SpannerManager</a></span></code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Main adapter manager interface for interaction between Gust/Elide apps and Google Cloud Spanner, enabling seamless
+ persistence for generated <code>Message</code>-driven models.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>class&nbsp;</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="../../driver/spanner/SpannerManager.ConfiguredSpannerManager.html" title="class in gust.backend.driver.spanner">SpannerManager.ConfiguredSpannerManager</a></span></code></th>
+<td class="colLast">
+<div class="block">Represents a configured version of a central <a href="../../driver/spanner/SpannerManager.html" title="class in gust.backend.driver.spanner"><code>SpannerManager</code></a>, which has been sealed for immutable use at
+ runtime.</div>
+</td>
 </tr>
 </tbody>
 </table>
@@ -215,7 +226,7 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <tbody>
 <tr class="altColor">
 <td class="colFirst"><code>interface&nbsp;</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="../DatabaseManager.html" title="interface in gust.backend.model">DatabaseManager</a>&lt;Driver extends <a href="../DatabaseDriver.html" title="interface in gust.backend.model">DatabaseDriver</a>&gt;</span></code></th>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="../DatabaseManager.html" title="interface in gust.backend.model">DatabaseManager</a>&lt;Adapter extends <a href="../DatabaseAdapter.html" title="interface in gust.backend.model">DatabaseAdapter</a>,&#8203;Driver extends <a href="../DatabaseDriver.html" title="interface in gust.backend.model">DatabaseDriver</a>&gt;</span></code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
 </tbody>

@@ -25,9 +25,10 @@
 <span class="sourceLineNo">016</span><a id="line.16">/**</a>
 <span class="sourceLineNo">017</span><a id="line.17"> *</a>
 <span class="sourceLineNo">018</span><a id="line.18"> */</a>
-<span class="sourceLineNo">019</span><a id="line.19">public interface DatabaseManager&lt;Driver extends DatabaseDriver&gt; extends PersistenceManager&lt;Driver&gt; {</a>
-<span class="sourceLineNo">020</span><a id="line.20">  /* Nothing yet. */</a>
-<span class="sourceLineNo">021</span><a id="line.21">}</a>
+<span class="sourceLineNo">019</span><a id="line.19">@SuppressWarnings("rawtypes")</a>
+<span class="sourceLineNo">020</span><a id="line.20">public interface DatabaseManager&lt;Adapter extends DatabaseAdapter, Driver extends DatabaseDriver&gt;</a>
+<span class="sourceLineNo">021</span><a id="line.21">         extends PersistenceManager&lt;Driver&gt; {</a>
+<span class="sourceLineNo">022</span><a id="line.22">}</a>
 
 
 
