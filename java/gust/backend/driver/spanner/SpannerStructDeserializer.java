@@ -252,7 +252,7 @@ public final class SpannerStructDeserializer<Model extends Message> implements M
                                         modelIndex
                                     ), invalidProtoException);
 
-                                    throw new RuntimeException(invalidProtoException);
+                                    throw new IllegalStateException(invalidProtoException);
                                 }
                             }
 

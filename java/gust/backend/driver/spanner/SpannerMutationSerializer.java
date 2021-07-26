@@ -190,7 +190,7 @@ public final class SpannerMutationSerializer<Model extends Message> implements M
                         }
                     } catch (InvalidProtocolBufferException ipbe) {
                         logging.error("!! Invalid protocol buffer for JSON encoding.", ipbe);
-                        throw new RuntimeException(ipbe);
+                        throw new IllegalStateException(ipbe);
                     }
                 } else {
                     // it's not a JSON field, so serialize it as a string (either singular or repeated).
