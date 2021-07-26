@@ -1526,7 +1526,7 @@ public final class ModelMetadata {
    */
   public static @Nonnull Stream<FieldPointer> forEachField(@Nonnull Descriptor descriptor,
                                                            @Nonnull Optional<Predicate<FieldPointer>> predicate) {
-    Objects.requireNonNull(descriptor, "cannot crawl fields on null descriptor");
+    Objects.requireNonNull(descriptor);
     Objects.requireNonNull(predicate);
 
     return streamFieldsRecursive(
@@ -1558,7 +1558,7 @@ public final class ModelMetadata {
   public static @Nonnull Stream<FieldPointer> forEachField(@Nonnull Descriptor descriptor,
                                                            @Nonnull Optional<Predicate<FieldPointer>> predicate,
                                                            boolean recursive) {
-    Objects.requireNonNull(descriptor, "cannot crawl fields on null descriptor");
+    Objects.requireNonNull(descriptor);
     Objects.requireNonNull(predicate);
 
     return streamFieldsRecursive(
@@ -1593,7 +1593,7 @@ public final class ModelMetadata {
   public static @Nonnull Stream<FieldPointer> forEachField(@Nonnull Descriptor descriptor,
                                                            @Nonnull Optional<Predicate<FieldPointer>> predicate,
                                                            @Nonnull Predicate<FieldPointer> decider) {
-    Objects.requireNonNull(descriptor, "cannot crawl fields on null descriptor");
+    Objects.requireNonNull(descriptor);
     Objects.requireNonNull(predicate);
 
     return streamFieldsRecursive(
@@ -1711,7 +1711,7 @@ public final class ModelMetadata {
   public static @Nonnull Stream<FieldPointer> streamFields(@Nonnull Descriptor descriptor,
                                                            @Nonnull Optional<Predicate<FieldPointer>> predicate,
                                                            @Nonnull Predicate<FieldPointer> decider) {
-    Objects.requireNonNull(descriptor, "cannot crawl fields on null descriptor");
+    Objects.requireNonNull(descriptor);
     Objects.requireNonNull(predicate);
 
     return streamFieldsRecursive(

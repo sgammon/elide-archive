@@ -69,8 +69,7 @@ import static java.lang.String.format;
  * @see gust.backend.driver.firestore.FirestoreDriver Similar driver implementation, built on top of Cloud Firestore,
  *      which itself is implemented on top of Cloud Spanner.
  */
-@Immutable
-@ThreadSafe
+@Immutable @ThreadSafe
 @SuppressWarnings({"UnstableApiUsage", "OptionalUsedAsFieldOrParameterType"})
 public final class SpannerDriver<Key extends Message, Model extends Message>
         implements DatabaseDriver<Key, Model, Struct, Mutation> {

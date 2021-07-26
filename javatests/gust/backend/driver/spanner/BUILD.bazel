@@ -90,6 +90,22 @@ java_test(
 )
 
 java_test(
+    name = "SpannerManagerTest",
+    srcs = ["SpannerManagerTest.java"],
+    classpath_resources = [
+        "//javatests:logback.xml",
+    ],
+    test_package = "gust.backend.driver.spanner",
+    deps = [
+        "//java/gust/backend/driver/spanner:SpannerManager",
+        "//java/gust/backend/driver/spanner:SpannerDriverSettings",
+        "//java/gust/backend/driver/spanner:SpannerTransportConfig",
+        "//java/gust/backend/driver/spanner:SpannerAdapter",
+        javaproto("//javatests/gust/backend/model:person"),
+    ] + _COMMON_DEPS,
+)
+
+java_test(
     name = "SpannerUtilTest",
     srcs = ["SpannerUtilTest.java"],
     classpath_resources = [

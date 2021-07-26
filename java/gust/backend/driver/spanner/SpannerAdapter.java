@@ -33,6 +33,8 @@ import io.micronaut.runtime.context.scope.Refreshable;
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
 import javax.annotation.concurrent.ThreadSafe;
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.Optional;
 import java.util.concurrent.Executors;
 
@@ -66,11 +68,10 @@ import java.util.concurrent.Executors;
  * @see gust.backend.driver.firestore.FirestoreAdapter Similar adapter implementation, built on top of Cloud Firestore,
  *      which itself is implemented on top of Cloud Spanner.
  */
-@Immutable
-@ThreadSafe
+@Immutable @ThreadSafe
 @SuppressWarnings({"OptionalUsedAsFieldOrParameterType", "UnstableApiUsage"})
 public final class SpannerAdapter<Key extends Message, Model extends Message>
-        implements DatabaseAdapter<Key, Model, Struct, Mutation> {
+        implements DatabaseAdapter<Key, Model, Struct, Mutation>, Closeable, AutoCloseable {
     /** Spanner database driver. */
     private final @Nonnull SpannerDriver<Key, Model> driver;
 
@@ -359,7 +360,15 @@ public final class SpannerAdapter<Key extends Message, Model extends Message>
         );
     }
 
+    // -- API: Closeable -- //
+
+    @Override
+    public void close() {
+        // Not yet implemented.
+    }
+
     // -- Components -- //
+
     /** {@inheritDoc} */
     @Override
     public @Nonnull ModelCodec<Model, Mutation, Struct> codec() {

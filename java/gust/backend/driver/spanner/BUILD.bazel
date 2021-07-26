@@ -145,6 +145,7 @@ java_library(
     name = "SpannerManager",
     srcs = ["SpannerManager.java"],
     deps = [
+        ":SpannerAdapter",
         ":SpannerDriver",
         ":SpannerDriverSettings",
         "//java/gust/backend/model:DatabaseManager",
