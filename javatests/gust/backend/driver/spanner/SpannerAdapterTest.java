@@ -17,6 +17,7 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.testcontainers.containers.*;
@@ -26,7 +27,9 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.utility.DockerImageName;
 
 import javax.annotation.Nonnull;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
@@ -217,6 +220,8 @@ public final class SpannerAdapterTest extends GenericPersistenceAdapterTest<
         personAdapter = null;
     }
 
+    // -- Driver Tests: Overrides -- //
+
     /** {@inheritDoc} */
     @Override
     protected @Nonnull SpannerAdapter<PersonRecord.PersonKey, PersonRecord.Person> adapter() {
@@ -233,6 +238,20 @@ public final class SpannerAdapterTest extends GenericPersistenceAdapterTest<
                 executorService);
         assertNotNull(personAdapter, "should not get `null` for adapter acquire");
     }
+
+    /** {@inheritDoc} */
+    @Override
+    protected @Nonnull Optional<List<String>> unsupportedDriverTests() {
+        return Optional.of(Arrays.asList(
+            "storeAndFetchEntityMasked",
+            "createEntityThenDelete",
+            "createEntityThenDeleteByRecord",
+            "storeEntityUpdateNotFound",
+            "storeEntityCollission"
+        ));
+    }
+
+    // -- Concrete Tests -- //
 
     @SuppressWarnings("ConstantConditions")
     @Test public void testNullchecks() {

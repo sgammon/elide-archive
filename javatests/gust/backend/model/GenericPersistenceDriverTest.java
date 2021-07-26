@@ -30,6 +30,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 import static org.junit.jupiter.api.Assertions.*;
@@ -37,7 +38,7 @@ import static org.junit.jupiter.api.DynamicTest.dynamicTest;
 
 
 /** Abstract test factory, which is responsible for testing/enforcing {@link PersistenceDriver} surfaces. */
-@SuppressWarnings({"WeakerAccess", "DuplicatedCode", "CodeBlock2Expr", "unchecked"})
+@SuppressWarnings({"WeakerAccess", "DuplicatedCode", "CodeBlock2Expr", "unchecked", "rawtypes"})
 public abstract class GenericPersistenceDriverTest<Driver extends PersistenceDriver> {
   /** Describes data keys touched in this test case. */
   protected final HashSet<Message> touchedKeys = new HashSet<>();
@@ -51,27 +52,54 @@ public abstract class GenericPersistenceDriverTest<Driver extends PersistenceDri
   @TestFactory
   protected final Iterable<DynamicTest> driverTests() {
     final String subcase = this.getClass().getSimpleName();
-    List<DynamicTest> tests = Arrays.asList(
+    List<DynamicTest> tests = this.supportedDriverTests();
+    Set<String> unsupported = this.unsupportedDriverTests()
+            .orElse(Collections.emptyList())
+            .stream()
+            .map((name) -> String.format("%s: `%s`", subcase, name))
+            .collect(Collectors.toUnmodifiableSet());
+
+    tests.addAll(subclassTests().orElse(Collections.emptyList()));
+
+    return tests.stream().filter((test) ->
+      // mark unsupported tests with ignore annotations
+      unsupported.isEmpty() || !unsupported.contains(test.getDisplayName())
+    ).collect(Collectors.toUnmodifiableList());
+  }
+
+  /**
+   * @return Set of tests that are currently expected to be supported by this driver.
+   */
+  protected @Nonnull List<DynamicTest> supportedDriverTests() {
+    final String subcase = this.getClass().getSimpleName();
+    return Arrays.asList(
       dynamicTest(format("%s: `acquireDriver`", subcase), this::acquireDriver),
       dynamicTest(format("%s: `testDriverCodec`", subcase), this::testDriverCodec),
       dynamicTest(format("%s: `testDriverExecutor`", subcase), this::testDriverExecutor),
       dynamicTest(format("%s: `testGenerateKey`", subcase), this::testGenerateKey),
       dynamicTest(format("%s: `fetchNonExistentEntity`", subcase), this::fetchNonExistentEntity),
       dynamicTest(format("%s: `storeAndFetchEntity`", subcase), this::storeAndFetchEntity),
-//      dynamicTest(format("%s: `storeAndFetchEntityMasked`", subcase), this::storeAndFetchEntityMasked),
+      dynamicTest(format("%s: `storeAndFetchEntityMasked`", subcase), this::storeAndFetchEntityMasked),
       dynamicTest(format("%s: `storeEntityUpdate`", subcase), this::storeEntityUpdate),
       dynamicTest(format("%s: `createEntityThenUpdate`", subcase), this::createEntityThenUpdate),
-      dynamicTest(format("%s: `createUpdateWithInvalidOptions`", subcase), this::createUpdateWithInvalidOptions)
-//      dynamicTest(format("%s: `createEntityThenDelete`", subcase), this::createEntityThenDelete),
-//      dynamicTest(format("%s: `createEntityThenDeleteByRecord`", subcase), this::createEntityThenDeleteByRecord),
-//      dynamicTest(format("%s: `storeEntityUpdateNotFound`", subcase), this::storeEntityUpdateNotFound),
-//      dynamicTest(format("%s: `storeEntityCollission`", subcase), this::storeEntityCollission)
+      dynamicTest(format("%s: `createUpdateWithInvalidOptions`", subcase), this::createUpdateWithInvalidOptions),
+      dynamicTest(format("%s: `createEntityThenDelete`", subcase), this::createEntityThenDelete),
+      dynamicTest(format("%s: `createEntityThenDeleteByRecord`", subcase), this::createEntityThenDeleteByRecord),
+      dynamicTest(format("%s: `storeEntityUpdateNotFound`", subcase), this::storeEntityUpdateNotFound),
+      dynamicTest(format("%s: `storeEntityCollission`", subcase), this::storeEntityCollission)
     );
-
-    tests.addAll(subclassTests().orElse(Collections.emptyList()));
-    return tests;
   }
 
+  /**
+   * @return Set of tests that are not currently supported by this driver.
+   */
+  protected @Nonnull Optional<List<String>> unsupportedDriverTests() {
+    return Optional.empty();
+  }
+
+  /**
+   * @return Additional dynamic tests to add from the specific driver test implementation.
+   */
   protected @Nonnull Optional<List<DynamicTest>> subclassTests() {
     return Optional.empty();
   }

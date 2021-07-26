@@ -25,12 +25,16 @@ import gust.backend.model.PersonRecord.Person;
 import gust.backend.model.PersonRecord.PersonKey;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DynamicTest;
 import org.testcontainers.containers.FirestoreEmulatorContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
 import javax.annotation.Nonnull;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
@@ -97,5 +101,14 @@ public final class FirestoreAdapterTest extends GenericPersistenceAdapterTest<Fi
   @Override
   protected void acquireDriver() {
     assertNotNull(personAdapter, "should not get `null` for adapter acquire");
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  protected @Nonnull Optional<List<String>> unsupportedDriverTests() {
+    return Optional.of(Arrays.asList(
+        "storeEntityUpdateNotFound",
+        "storeEntityCollission"
+    ));
   }
 }
