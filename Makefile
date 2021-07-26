@@ -60,7 +60,6 @@ CHROME_COVERAGE ?= $(shell find dist/out/$(OUTPUT_BASE)/bin -name "coverage*.dat
 COVERAGE_DATA ?= $(OUTPATH)/_coverage/_coverage_report.dat
 COVERAGE_REPORT ?= $(REPORTS)/coverage
 COVERAGE_ARGS ?= --function-coverage \
-                 --branch-coverage \
                  --highlight \
                  --demangle-cpp \
                  --show-details \
