@@ -37,9 +37,13 @@ checks:
       threshold: 5
 
 exclude_patterns:
+- "docs/"
 - "docs/**.*"
+- "tests/"
 - "tests/**.*"
 - "*tests/**.*"
+- "javatests/"
+- "jstests/"
 
 plugins:
   bandit:
