@@ -130,35 +130,11 @@ public final class SpannerAdapterTest extends GenericPersistenceAdapterTest<
                     "new instance should be ready immediately");
             logging.info("New instance is READY: \n{}", newInstance.toString());
 
-            var peopleTableDdlStatement = (
-                "CREATE TABLE People (" +
-                    "Key STRING(64), " +
-                    "Name STRING(64), " +
-                    "ContactInfo STRING(1024)" +
-                ") PRIMARY KEY (Key)"
-            );
-            var typeExamplesDdlStatement = (
-                "CREATE TABLE TypeExamples (" +
-                    "ID INT64 NOT NULL, " +
-                    "IntNormal INT64, " +
-                    "IntDouble INT64, " +
-                    "UintNormal INT64, " +
-                    "UintDouble INT64, " +
-                    "SintNormal INT64, " +
-                    "SintDouble INT64, " +
-                    "FixedNormal INT64, " +
-                    "FixedDouble INT64, " +
-                    "SfixedNormal INT64, " +
-                    "SfixedDouble INT64, " +
-                    "StringField STRING(2048), " +
-                    "BoolField BOOL, " +
-                    "BytesField BYTES(2048), " +
-                    "FloatField FLOAT64, " +
-                    "DoubleField FLOAT64, " +
-                    "EnumField STRING(32), " +
-                    "Labels ARRAY<STRING(240)>" +
-                ") PRIMARY KEY (ID ASC)"
-            );
+            var peopleTableDdlStatement = SpannerGeneratedDDL.generateTableDDL(
+                PersonRecord.Person.getDefaultInstance()).build().getGeneratedStatement().toString();
+
+            var typeExamplesDdlStatement = SpannerGeneratedDDL.generateTableDDL(
+                PersonRecord.TypeBuffet.getDefaultInstance()).build().getGeneratedStatement().toString();
 
             // step two: initialize a new database in the instance
             logging.info("Creating emulated test database `People` with DDL statement: \n{}",

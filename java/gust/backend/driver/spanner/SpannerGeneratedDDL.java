@@ -632,7 +632,22 @@ public final class SpannerGeneratedDDL {
      * Given a model definition, produce a generated DDL statement which creates a backing table in Spanner implementing
      * that model's properties. This method variant operates from a full model instance.
      *
+     * <p>This method offers no ability to control driver settings. See below if you need alternatives.</p>
+     *
+     * @see #generateTableDDL(Message, Optional) For control over driver settings, optionally.
      * @param instance Model instance to generate a table statement for.
+     * @return Generated DDL statement object.
+     */
+    public static @Nonnull SpannerGeneratedDDL.Builder generateTableDDL(@Nonnull Message instance) {
+        return generateTableDDL(instance, Optional.of(SpannerDriverSettings.DEFAULTS));
+    }
+
+    /**
+     * Given a model definition, produce a generated DDL statement which creates a backing table in Spanner implementing
+     * that model's properties. This method variant operates from a full model instance.
+     *
+     * @param instance Model instance to generate a table statement for.
+     * @param settings Settings to employ for the driver. These must align at runtime.
      * @return Generated DDL statement object.
      */
     public static @Nonnull SpannerGeneratedDDL.Builder generateTableDDL(
