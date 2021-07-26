@@ -1,6 +1,5 @@
 directories:
   defs
-  docs
   external
   java
   javatests
