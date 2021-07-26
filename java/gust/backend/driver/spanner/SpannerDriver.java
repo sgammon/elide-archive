@@ -46,6 +46,7 @@ import static com.google.common.util.concurrent.Futures.immediateFuture;
 import static com.google.common.util.concurrent.Futures.withTimeout;
 import static gust.backend.runtime.ReactiveFuture.wrap;
 import static gust.backend.model.ModelMetadata.*;
+import static java.lang.String.format;
 
 
 /**
@@ -252,7 +253,8 @@ public final class SpannerDriver<Key extends Message, Model extends Message>
         Objects.requireNonNull(key, "Cannot fetch model with `null` for key.");
         Objects.requireNonNull(options, "Cannot fetch model without `options`.");
         enforceRole(key, DatapointType.OBJECT_KEY);
-        id(key).orElseThrow(() -> new IllegalArgumentException("Cannot fetch model with empty key."));
+        var keyId = id(key).orElseThrow(() ->
+            new IllegalArgumentException("Cannot fetch model with empty key."));
 
         // resolve the table where we should look for this entity
         var table = resolveTableName(key);
@@ -301,41 +303,35 @@ public final class SpannerDriver<Key extends Message, Model extends Message>
             );
         }
 
-        try {
-            var op = wrap(context.readRowAsync(
-                table,
-                com.google.cloud.spanner.Key.of(id(key).orElseThrow()),
-                fieldsToRead
-            ));
+        var op = wrap(context.readRowAsync(
+            table,
+            com.google.cloud.spanner.Key.of(id(key).orElseThrow()),
+            fieldsToRead
+        ));
 
-            return wrap(transformAsync(withTimeout(op, 120, TimeUnit.SECONDS, exec), (result) -> {
-                if (result == null) {
-                    if (logging.isDebugEnabled())
-                        logging.debug("Query option result was `null`. Returning empty result.");
-                    return immediateFuture(Optional.empty());
+        return wrap(transformAsync(withTimeout(op, 120, TimeUnit.SECONDS, exec), (result) -> {
+            if (result == null) {
+                if (logging.isDebugEnabled())
+                    logging.debug("Query option result was `null`. Returning empty result.");
+                return immediateFuture(Optional.empty());
 
-                } else {
-                    if (logging.isDebugEnabled())
-                        logging.debug("Received non-null `Struct` result from Spanner. Deserializing...");
+            } else {
+                if (logging.isDebugEnabled())
+                    logging.debug("Received non-null `Struct` result from Spanner. Deserializing...");
 
-                    try {
-                        return immediateFuture(Optional.of(codec.deserialize(result)));
+                // deserialize the model
+                var deserialized = codec.deserialize(result);
+                if (logging.isDebugEnabled())
+                    logging.debug(format(
+                        "Found and deserialized model at ID '%s' from Spanner. Record follows:\n%s",
+                        keyId,
+                        deserialized));
 
-                    } catch (RuntimeException rxe) {
-                        logging.error("Encountered fatal error while deserializing Spanner model.", rxe);
-                        throw rxe;
-
-                    }
-                }
-            }, exec));
-        } catch (RuntimeException rxe) {
-            logging.error(
-                "Encountered unrecoverable runtime exception during Spanner `retrieve` processing.",
-                rxe
-            );
-
-            throw rxe;
-        }
+                return immediateFuture(Optional.of(
+                    spliceKey(applyMask(deserialized, options), Optional.of(key))
+                ));
+            }
+        }, exec));
     }
 
     /** @inheritDoc */

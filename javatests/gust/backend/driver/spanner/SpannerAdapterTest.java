@@ -243,7 +243,6 @@ public final class SpannerAdapterTest extends GenericPersistenceAdapterTest<
     @Override
     protected @Nonnull Optional<List<String>> unsupportedDriverTests() {
         return Optional.of(Arrays.asList(
-            "storeAndFetchEntityMasked",
             "storeEntityUpdateNotFound",
             "storeEntityCollission"
         ));
