@@ -20,5 +20,12 @@
     <logger name="gust.backend.driver.spanner.SpannerMutationSerializer" level="TRACE" />
     <logger name="gust.backend.driver.spanner.SpannerStructDeserializer" level="TRACE" />
     <logger name="gust.backend.driver.spanner.SpannerCodec" level="TRACE" />
+    <logger name="gust.backend.model.ModelAdapter" level="TRACE" />
+    <logger name="gust.backend.model.ModelMetadata" level="TRACE" />
+    <logger name="gust.backend.model.ProtoModelCodec" level="TRACE" />
+    <logger name="gust.backend.model.ObjectModelCodec" level="TRACE" />
+    <logger name="gust.backend.model.ObjectModelDeserializer" level="TRACE" />
+    <logger name="gust.backend.model.ObjectModelSerializer" level="TRACE" />
+    <logger name="gust.backend.model.PersistenceDriver" level="TRACE" />
     <logger name="gust.backend.model.GenericPersistenceDriverTest" level="TRACE" />
 </configuration>
