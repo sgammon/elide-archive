@@ -70,6 +70,8 @@ style_binary(
     name = "vendor",
     src = "vendor.scss",
     optimize = True,
+    debug = True,
+    output_style = "expanded",
     plugins = ["autoprefixer"],
     deps = [
         ":example1",
@@ -90,7 +92,8 @@ style_library(
 style_binary(
     name = "gss_example",
     plugins = ["autoprefixer"],
-    optimize = True,
+    debug = True,
+    optimize = False,
     deps = [
         ":mod1",
         ":mod2",
@@ -167,10 +170,7 @@ file_test(
   background: pink;
 }
 .hello {
-  -webkit-user-select: none;
-     -moz-user-select: none;
-      -ms-user-select: none;
-          user-select: none;
+  user-select: none;
 }
 .goodbye {
   background: green;
@@ -180,11 +180,24 @@ file_test(
 file_test(
     name = "gss_opt_default_test",
     file = ":gss_opt_default_example",
-    content = ".test{color:#00f}.hello{background:pink;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}.goodbye{background:green}",
+    content = ".test{color:blue}.hello{background:pink;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}.goodbye{background:green}",
 )
 
 file_test(
     name = "gss_opt_advanced_test",
     file = ":gss_opt_advanced_example",
-    content = ".test{color:#00f}.hello{background:pink;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}.goodbye{background:green}",
+    content = ".test{color:blue}.hello{background:pink;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}.goodbye{background:green}",
+)
+
+
+test_suite(
+    name = "suite",
+    testonly = True,
+    tests = [
+        ":basic_test",
+        ":compressed_test",
+        ":autoprefixer_test",
+        ":gss_opt_default_test",
+        ":gss_opt_advanced_test",
+    ],
 )
