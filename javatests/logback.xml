@@ -9,9 +9,14 @@
     <root level="info">
         <appender-ref ref="STDOUT" />
     </root>
+    <logger name="gust.backend.driver.inmemory.InMemoryAdapter" level="TRACE" />
+    <logger name="gust.backend.driver.inmemory.InMemoryCache" level="TRACE" />
+    <logger name="gust.backend.driver.inmemory.InMemoryDriver" level="TRACE" />
+    <logger name="gust.backend.driver.inmemory.InMemoryManager" level="TRACE" />
     <logger name="gust.backend.driver.firestore.FirestoreManager" level="TRACE" />
     <logger name="gust.backend.driver.firestore.FirestoreDriver" level="TRACE" />
     <logger name="gust.backend.driver.firestore.FirestoreAdapter" level="TRACE" />
+    <logger name="gust.backend.driver.firestore.FirestoreTransportConfig" level="TRACE" />
     <logger name="gust.backend.driver.spanner.SpannerManager" level="TRACE" />
     <logger name="gust.backend.driver.spanner.SpannerDriver" level="TRACE" />
     <logger name="gust.backend.driver.spanner.SpannerAdapter" level="TRACE" />
@@ -20,6 +25,9 @@
     <logger name="gust.backend.driver.spanner.SpannerMutationSerializer" level="TRACE" />
     <logger name="gust.backend.driver.spanner.SpannerStructDeserializer" level="TRACE" />
     <logger name="gust.backend.driver.spanner.SpannerCodec" level="TRACE" />
+    <logger name="gust.backend.driver.spanner.SpannerDriverSettings" level="TRACE" />
+    <logger name="gust.backend.driver.spanner.SpannerTransportConfig" level="TRACE" />
+    <logger name="gust.backend.driver.spanner.SpannerGeneratedDDL" level="TRACE" />
     <logger name="gust.backend.model.ModelAdapter" level="TRACE" />
     <logger name="gust.backend.model.ModelMetadata" level="TRACE" />
     <logger name="gust.backend.model.ProtoModelCodec" level="TRACE" />
