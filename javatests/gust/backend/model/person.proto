@@ -35,7 +35,10 @@ message Person {
   ];
 
   // Salutation name.
-  string name = 2 [(core.column).name = "Name"];
+  string name = 2 [
+    (core.column).name = "Name",
+    (core.column).size = 1024
+  ];
 
   // Person's contact info.
   ContactInfo contact_info = 3 [
@@ -53,7 +56,10 @@ message PersonKey {
   option (core.table).name = "People";
 
   // Unique record ID.
-  string id = 1 [(core.field).type = ID];
+  string id = 1 [
+    (core.field).type = ID,
+    (core.spanner).size = 240
+  ];
 }
 
 
@@ -75,7 +81,7 @@ message ContactInfo {
   string email_address = 1 [(core.column).name = "EmailAddress"];
 
   // Person's phone number in E164 format.
-  string phone_e164 = 2 [(core.column).name = "PhoneE164"];
+  string phone_e164 = 2 [(core.spanner).column = "PhoneE164"];
 
   // Person's address info.
   PersonAddress address = 3 [(core.column).ignore = true];
@@ -85,4 +91,51 @@ message ContactInfo {
 // Models a non-object.
 message EnrollEvent {
   option (core.role) = EVENT;
+}
+
+
+// Sets up an example of every type.
+message TypeBuffet {
+  option (core.table).name = "TypeExample";
+
+  // Sample type key.
+  message SampleKey {
+    option (core.role) = OBJECT_KEY;
+
+    // Unique record ID.
+    uint64 id = 1 [
+      (core.field).type = ID,
+      (core.spanner).size = 240,
+      (core.spanner).type = INT64
+    ];
+  }
+
+  enum SampleEnumeration {
+    DEFAULT_ENUM = 0;
+    ANOTHER_ENUM = 1;
+  }
+
+  // Unique record ID.
+  SampleKey key = 1 [
+    (core.field).type = KEY,
+    (core.spanner).column = "ID"
+  ];
+
+  int32 int_normal = 2;
+  int64 int_double = 3;
+  uint32 uint_normal = 4;
+  uint64 uint_double = 5;
+  sint32 sint_normal = 6;
+  sint64 sint_double = 7;
+  fixed32 fixed_normal = 8;
+  fixed64 fixed_double = 9;
+  sfixed32 sfixed_normal = 10;
+  sfixed64 sfixed_double = 11;
+  string string_field = 12;
+  bool bool_field = 13;
+  bytes bytes_field = 14;
+  float float_field = 15;
+  double double_field = 16;
+  SampleEnumeration enum_field = 17;
+  repeated string labels = 18;
 }

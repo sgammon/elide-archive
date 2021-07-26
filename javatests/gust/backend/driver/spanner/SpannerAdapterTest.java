@@ -10,12 +10,14 @@ import com.google.cloud.spanner.*;
 import com.google.common.util.concurrent.ListeningScheduledExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import gust.backend.model.GenericPersistenceAdapterTest;
+import gust.backend.model.PersistenceOperationFailed;
 import gust.backend.model.PersonRecord;
 import gust.backend.runtime.Logging;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.testcontainers.containers.*;
 import org.testcontainers.containers.SpannerEmulatorContainer;
@@ -42,6 +44,7 @@ public final class SpannerAdapterTest extends GenericPersistenceAdapterTest<
     private static final String spannerVersion = System.getProperty("e2e.spannerVersion", "1.2.0");
     private static ListeningScheduledExecutorService executorService;
     private static SpannerAdapter<PersonRecord.PersonKey, PersonRecord.Person> personAdapter;
+    private static SpannerAdapter<PersonRecord.TypeBuffet.SampleKey, PersonRecord.TypeBuffet> sampleAdapter;
 
     private static final String SPANNER_MODE = System.getProperty("e2e.spannerMode", "EMULATOR");
     private static final String PROJECT_ID = System.getProperty("e2e.spannerProject", "elide-ai");
@@ -163,6 +166,20 @@ public final class SpannerAdapterTest extends GenericPersistenceAdapterTest<
                 SpannerDriverSettings.DEFAULTS,
                 Optional.empty()
             );
+
+            sampleAdapter = SpannerAdapter.acquire(
+                options.toBuilder(),
+                database,
+                channelProvider,
+                Optional.of(NoCredentialsProvider.create()),
+                Optional.empty(),
+                GrpcTransportOptions.newBuilder().build(),
+                executorService,
+                PersonRecord.TypeBuffet.SampleKey.getDefaultInstance(),
+                PersonRecord.TypeBuffet.getDefaultInstance(),
+                SpannerDriverSettings.DEFAULTS,
+                Optional.empty()
+            );
         } else if ("LIVE".equals(SPANNER_MODE)) {
             logging.info("Running in LIVE mode. Setting up Spanner emulator...");
 
@@ -173,6 +190,14 @@ public final class SpannerAdapterTest extends GenericPersistenceAdapterTest<
             personAdapter = SpannerAdapter.acquire(
                 PersonRecord.PersonKey.getDefaultInstance(),
                 PersonRecord.Person.getDefaultInstance(),
+                database,
+                optionsBuilder,
+                executorService
+            );
+
+            sampleAdapter = SpannerAdapter.acquire(
+                PersonRecord.TypeBuffet.SampleKey.getDefaultInstance(),
+                PersonRecord.TypeBuffet.getDefaultInstance(),
                 database,
                 optionsBuilder,
                 executorService
@@ -207,5 +232,30 @@ public final class SpannerAdapterTest extends GenericPersistenceAdapterTest<
                 database,
                 executorService);
         assertNotNull(personAdapter, "should not get `null` for adapter acquire");
+    }
+
+    @SuppressWarnings("ConstantConditions")
+    @Test public void testNullchecks() {
+        assertNotNull(personAdapter, "should not get `null` for adapter acquire");
+        assertThrows(PersistenceOperationFailed.class, () -> personAdapter.fetch(null));
+        assertThrows(NullPointerException.class, () -> personAdapter.retrieve(null, null));
+        assertThrows(NullPointerException.class, () -> personAdapter.retrieve(
+                PersonRecord.PersonKey.newBuilder().setId("test").build(), null));
+        assertThrows(NullPointerException.class, () -> personAdapter.create(null));
+        assertThrows(NullPointerException.class, () -> personAdapter.persist(null, null, null));
+        assertThrows(NullPointerException.class, () -> personAdapter.persist(null,
+                PersonRecord.Person.newBuilder().build(), null));
+        assertThrows(NullPointerException.class, () -> personAdapter.delete(null));
+        assertThrows(NullPointerException.class, () -> personAdapter.delete(null, null));
+    }
+
+    @Test public void testMustDeclareTableName() {
+        assertNotNull(personAdapter, "should not get `null` for adapter acquire");
+        assertThrows(IllegalArgumentException.class, () -> sampleAdapter.retrieve(
+            PersonRecord.TypeBuffet.SampleKey.newBuilder()
+                .setId(123L)
+                .build(),
+            SpannerDriver.SpannerFetchOptions.DEFAULTS
+        ));
     }
 }

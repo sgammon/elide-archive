@@ -26,9 +26,13 @@ load(
 )
 
 SPANNER_EMULATOR_VERSION = "1.2.0"
+
 SPANNER_MODE = "EMULATOR"
+
 SPANNER_PROJECT = "elide-ai"
+
 SPANNER_INSTANCE = "testing"
+
 SPANNER_DATABASE = "tstdb"
 
 _COMMON_DEPS = [
@@ -48,15 +52,6 @@ java_test(
     classpath_resources = [
         "//javatests:logback.xml",
     ],
-    test_package = "gust.backend.driver.spanner",
-    deps = [
-        "//java/gust/backend/driver/spanner:SpannerAdapter",
-        "//java/gust/backend/driver/spanner:SpannerDriver",
-        "//java/gust/backend/driver/inmemory:InMemoryCache",
-        javaproto("//javatests/gust/backend/model:person"),
-        "//java/gust/backend/driver/spanner:SpannerDriverSettings",
-        "//javatests/gust/backend/model:GenericPersistenceAdapterTest",
-    ] + _COMMON_DEPS,
     jvm_flags = [
         "-De2e.spannerVersion=%s" % SPANNER_EMULATOR_VERSION,
         "-De2e.spannerProject=%s" % SPANNER_PROJECT,
@@ -64,4 +59,46 @@ java_test(
         "-De2e.spannerDatabase=%s" % SPANNER_DATABASE,
         "-De2e.spannerMode=%s" % SPANNER_MODE,
     ],
+    test_package = "gust.backend.driver.spanner",
+    deps = [
+        "//java/gust/backend/driver/spanner:SpannerAdapter",
+        "//java/gust/backend/driver/spanner:SpannerDriver",
+        "//java/gust/backend/driver/spanner:SpannerGeneratedDDL",
+        "//java/gust/backend/driver/spanner:SpannerDriverSettings",
+        "//java/gust/backend/driver/inmemory:InMemoryCache",
+        "//java/gust/backend/model:PersistenceOperationFailed",
+        "//javatests/gust/backend/model:GenericPersistenceAdapterTest",
+        javaproto("//javatests/gust/backend/model:person"),
+    ] + _COMMON_DEPS,
+)
+
+java_test(
+    name = "SpannerDDLTest",
+    srcs = ["SpannerDDLTest.java"],
+    classpath_resources = [
+        "//javatests:logback.xml",
+    ],
+    test_package = "gust.backend.driver.spanner",
+    deps = [
+        "//java/gust/backend/driver/spanner:SpannerGeneratedDDL",
+        "//java/gust/backend/driver/spanner:SpannerDriverSettings",
+        javaproto("//javatests/gust/backend/model:person"),
+    ] + _COMMON_DEPS,
+)
+
+java_test(
+    name = "SpannerUtilTest",
+    srcs = ["SpannerUtilTest.java"],
+    classpath_resources = [
+        "//javatests:logback.xml",
+    ],
+    test_package = "gust.backend.driver.spanner",
+    deps = [
+        "//java/gust/backend/driver/spanner:SpannerGeneratedDDL",
+        "//java/gust/backend/driver/spanner:SpannerDriverSettings",
+        javaproto("//gust/core:datamodel"),
+        javaproto("//javatests/gust/backend/model:person"),
+        "//java/gust/backend/driver/spanner:SpannerUtil",
+        "//java/gust/backend/model:ModelMetadata",
+    ] + _COMMON_DEPS,
 )
