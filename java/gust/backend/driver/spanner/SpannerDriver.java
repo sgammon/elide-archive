@@ -129,6 +129,12 @@ public final class SpannerDriver<Key extends Message, Model extends Message>
         SpannerMutationOptions DEFAULTS = new SpannerMutationOptions() {};
     }
 
+    /** Defines Spanner-specific mutative delete options. */
+    interface SpannerDeleteOptions extends SpannerWriteOptions {
+        /** Default set of delete options. */
+        SpannerDeleteOptions DEFAULTS = new SpannerDeleteOptions() {};
+    }
+
     /**
      * Construct a new Spanner driver from scratch.
      *
@@ -365,26 +371,14 @@ public final class SpannerDriver<Key extends Message, Model extends Message>
         try {
             // resolve extended spanner mutation options
             SpannerMutationOptions spannerOpts;
-            if (options instanceof SpannerMutationOptions) {
+            if (options.getClass().isAssignableFrom(SpannerMutationOptions.class)) {
                 spannerOpts = ((SpannerMutationOptions) options);
             } else {
                 spannerOpts = SpannerMutationOptions.DEFAULTS;
             }
 
             // resolve the table where we should look for this entity
-            var table = modelAnnotation(
-                key,
-                Datamodel.table,
-                true
-            ).orElseThrow(() -> new IllegalArgumentException(
-                "Must annotate key model '" + key.getDescriptorForType().getFullName() + "' with table name to use " +
-                "with Spanner."
-            )).getName();
-
-            if (table.isBlank() || table.isEmpty())
-                throw new IllegalArgumentException(
-                    "Empty table name for key '" + key.getDescriptorForType().getFullName() + "'.");
-
+            var table = resolveTableName(key);
             DatabaseId db = spannerOpts.databaseId().orElse(defaultDatabase);
             var client = engine.getDatabaseClient(db);
             boolean transactional = spannerOpts.transactional().isPresent() ?
@@ -442,8 +436,42 @@ public final class SpannerDriver<Key extends Message, Model extends Message>
                                                @Nonnull DeleteOptions options) {
         Objects.requireNonNull(key, "cannot delete null key from Spanner");
         Objects.requireNonNull(options, "cannot delete without valid Spanner options");
+        enforceRole(key, DatapointType.OBJECT_KEY);
+        Object keyId = id(key).orElseThrow(() ->
+                new IllegalArgumentException("Cannot delete key with empty or missing ID."));
 
-        // @TODO(sgammon): implement concrete driver methods
-        throw new IllegalStateException("Not yet implemented.");
+        // prep for an async delete action
+        ListeningScheduledExecutorService exec = options.executorService().orElseGet(this::executorService);
+
+        // resolve extended spanner mutation options
+        SpannerDeleteOptions spannerOpts;
+        if (options.getClass().isAssignableFrom(SpannerDeleteOptions.class)) {
+            spannerOpts = ((SpannerDeleteOptions) options);
+        } else {
+            spannerOpts = SpannerDeleteOptions.DEFAULTS;
+        }
+
+        // next, resolve the table we should work with, and any override DB
+        var table = resolveTableName(key);
+        DatabaseId db = spannerOpts.databaseId().orElse(defaultDatabase);
+        var client = engine.getDatabaseClient(db);
+        boolean transactional = spannerOpts.transactional().isPresent() ?
+                spannerOpts.transactional().get() :
+                options.transactional().orElse(false);
+
+        // prep the delete operation and fire it off
+        var deleteOperation = Mutation.delete(table, com.google.cloud.spanner.Key.of(keyId));
+        if (logging.isDebugEnabled())
+            logging.debug("Deleting model at ID `{}` in table `{}`.", keyId, table);
+        return wrap(exec.submit(() -> {
+            if (transactional) {
+                // @TODO(sgammon): support for delete transactions
+                throw new IllegalStateException("Write transactions are not supported yet.");
+            } else {
+                var result = client.write(Arrays.asList(deleteOperation));
+                Objects.requireNonNull(result, "delete result from Spanner should never be null");
+                return key;
+            }
+        }));
     }
 }

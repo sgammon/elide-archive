@@ -244,8 +244,6 @@ public final class SpannerAdapterTest extends GenericPersistenceAdapterTest<
     protected @Nonnull Optional<List<String>> unsupportedDriverTests() {
         return Optional.of(Arrays.asList(
             "storeAndFetchEntityMasked",
-            "createEntityThenDelete",
-            "createEntityThenDeleteByRecord",
             "storeEntityUpdateNotFound",
             "storeEntityCollission"
         ));
