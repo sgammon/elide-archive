@@ -391,6 +391,9 @@ message SpannerFieldOptions {
 
   // Override the field to store STRUCT objects as JSON.
   bool json = 4;
+
+  // Length of this field in the database, when expressed as a string.
+  uint32 size = 5;
 }
 
 
