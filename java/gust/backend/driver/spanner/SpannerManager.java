@@ -55,6 +55,8 @@ public final class SpannerManager
 
     /** Spanner manager singleton container. */
     private static final class SpannerManagerSingleton {
+        private SpannerManagerSingleton() { /* Disallow construction. */ }
+
         // Global singleton.
         static volatile @Nullable SpannerManager __singleton = null;
     }
