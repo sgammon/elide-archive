@@ -1,0 +1,350 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<main role="main">
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span><a id="line.1">/*</a>
+<span class="sourceLineNo">002</span><a id="line.2"> * Copyright © 2020, The Gust Framework Authors. All rights reserved.</a>
+<span class="sourceLineNo">003</span><a id="line.3"> *</a>
+<span class="sourceLineNo">004</span><a id="line.4"> * The Gust/Elide framework and tools, and all associated source or object computer code, except where otherwise noted,</a>
+<span class="sourceLineNo">005</span><a id="line.5"> * are licensed under the Zero Prosperity license, which is enclosed in this repository, in the file LICENSE.txt. Use of</a>
+<span class="sourceLineNo">006</span><a id="line.6"> * this code in object or source form requires and implies consent and agreement to that license in principle and</a>
+<span class="sourceLineNo">007</span><a id="line.7"> * practice. Source or object code not listing this header, or unless specified otherwise, remain the property of</a>
+<span class="sourceLineNo">008</span><a id="line.8"> * Elide LLC and its suppliers, if any. The intellectual and technical concepts contained herein are proprietary to</a>
+<span class="sourceLineNo">009</span><a id="line.9"> * Elide LLC and its suppliers and may be covered by U.S. and Foreign Patents, or patents in process, and are protected</a>
+<span class="sourceLineNo">010</span><a id="line.10"> * by trade secret and copyright law. Dissemination of this information, or reproduction of this material, in any form,</a>
+<span class="sourceLineNo">011</span><a id="line.11"> * is strictly forbidden except in adherence with assigned license requirements.</a>
+<span class="sourceLineNo">012</span><a id="line.12"> */</a>
+<span class="sourceLineNo">013</span><a id="line.13">package gust.backend.driver.firestore;</a>
+<span class="sourceLineNo">014</span><a id="line.14"></a>
+<span class="sourceLineNo">015</span><a id="line.15">import com.google.api.gax.core.CredentialsProvider;</a>
+<span class="sourceLineNo">016</span><a id="line.16">import com.google.api.gax.rpc.TransportChannelProvider;</a>
+<span class="sourceLineNo">017</span><a id="line.17">import com.google.cloud.firestore.DocumentSnapshot;</a>
+<span class="sourceLineNo">018</span><a id="line.18">import com.google.cloud.firestore.FirestoreOptions;</a>
+<span class="sourceLineNo">019</span><a id="line.19">import com.google.cloud.firestore.v1.stub.FirestoreStubSettings;</a>
+<span class="sourceLineNo">020</span><a id="line.20">import com.google.cloud.grpc.GrpcTransportOptions;</a>
+<span class="sourceLineNo">021</span><a id="line.21">import com.google.common.util.concurrent.ListeningScheduledExecutorService;</a>
+<span class="sourceLineNo">022</span><a id="line.22">import com.google.protobuf.Message;</a>
+<span class="sourceLineNo">023</span><a id="line.23">import gust.backend.model.*;</a>
+<span class="sourceLineNo">024</span><a id="line.24">import gust.backend.runtime.Logging;</a>
+<span class="sourceLineNo">025</span><a id="line.25">import gust.backend.transport.GoogleAPIChannel;</a>
+<span class="sourceLineNo">026</span><a id="line.26">import gust.backend.transport.GoogleService;</a>
+<span class="sourceLineNo">027</span><a id="line.27">import io.micronaut.context.annotation.Context;</a>
+<span class="sourceLineNo">028</span><a id="line.28">import io.micronaut.context.annotation.Factory;</a>
+<span class="sourceLineNo">029</span><a id="line.29">import io.micronaut.runtime.context.scope.Refreshable;</a>
+<span class="sourceLineNo">030</span><a id="line.30">import org.slf4j.Logger;</a>
+<span class="sourceLineNo">031</span><a id="line.31"></a>
+<span class="sourceLineNo">032</span><a id="line.32">import javax.annotation.Nonnull;</a>
+<span class="sourceLineNo">033</span><a id="line.33">import javax.annotation.concurrent.Immutable;</a>
+<span class="sourceLineNo">034</span><a id="line.34">import javax.annotation.concurrent.ThreadSafe;</a>
+<span class="sourceLineNo">035</span><a id="line.35">import java.util.Optional;</a>
+<span class="sourceLineNo">036</span><a id="line.36"></a>
+<span class="sourceLineNo">037</span><a id="line.37"></a>
+<span class="sourceLineNo">038</span><a id="line.38">/**</a>
+<span class="sourceLineNo">039</span><a id="line.39"> * Defines a built-in database adapter for interacting with Google Cloud Firestore, using business-data models defined</a>
+<span class="sourceLineNo">040</span><a id="line.40"> * through Protobuf annotated with framework-provided metadata.</a>
+<span class="sourceLineNo">041</span><a id="line.41"> *</a>
+<span class="sourceLineNo">042</span><a id="line.42"> * &lt;p&gt;This adapter makes use of a specialized {@link DatabaseDriver} ({@link FirestoreDriver}), and supports a custom</a>
+<span class="sourceLineNo">043</span><a id="line.43"> * configuration class ({@link FirestoreTransportConfig}) which is loaded from application config during service channel</a>
+<span class="sourceLineNo">044</span><a id="line.44"> * initialization. Connections are pooled and cached against a caching executor by the active transport manager.&lt;/p&gt;</a>
+<span class="sourceLineNo">045</span><a id="line.45"> *</a>
+<span class="sourceLineNo">046</span><a id="line.46"> * &lt;p&gt;Instantiation is disallowed to facilitate restriction of the active {@link ModelCodec} to Firestore's own model</a>
+<span class="sourceLineNo">047</span><a id="line.47"> * codec, which uses {@link gust.backend.model.ObjectModelCodec} to produce generic collapsed messages during</a>
+<span class="sourceLineNo">048</span><a id="line.48"> * serialization, and to translate from proto-maps during deserialization. Optionally, a compliant instance of</a>
+<span class="sourceLineNo">049</span><a id="line.49"> * {@link CacheDriver} may be provided at construction time, which enables caching against that driver for calls that</a>
+<span class="sourceLineNo">050</span><a id="line.50"> * are eligible (according, again, to settings from {@link FirestoreTransportConfig}).&lt;/p&gt;</a>
+<span class="sourceLineNo">051</span><a id="line.51"> *</a>
+<span class="sourceLineNo">052</span><a id="line.52"> * @param &lt;Model&gt; Model type which this adapter adapts to Firestore.</a>
+<span class="sourceLineNo">053</span><a id="line.53"> * @see FirestoreDriver Driver for speaking to Firestore.</a>
+<span class="sourceLineNo">054</span><a id="line.54"> * @see FirestoreTransportConfig Transport configuration for Firestore.</a>
+<span class="sourceLineNo">055</span><a id="line.55"> */</a>
+<span class="sourceLineNo">056</span><a id="line.56">@Immutable</a>
+<span class="sourceLineNo">057</span><a id="line.57">@ThreadSafe</a>
+<span class="sourceLineNo">058</span><a id="line.58">@SuppressWarnings({"WeakerAccess", "unused", "UnstableApiUsage"})</a>
+<span class="sourceLineNo">059</span><a id="line.59">public final class FirestoreAdapter&lt;Key extends Message, Model extends Message&gt;</a>
+<span class="sourceLineNo">060</span><a id="line.60">  implements DatabaseAdapter&lt;Key, Model, DocumentSnapshot, CollapsedMessage&gt; {</a>
+<span class="sourceLineNo">061</span><a id="line.61">  /** Private log pipe. */</a>
+<span class="sourceLineNo">062</span><a id="line.62">  private static final Logger logging = Logging.logger(FirestoreAdapter.class);</a>
+<span class="sourceLineNo">063</span><a id="line.63"></a>
+<span class="sourceLineNo">064</span><a id="line.64">  /** Firestore database driver. */</a>
+<span class="sourceLineNo">065</span><a id="line.65">  private final @Nonnull FirestoreDriver&lt;Key, Model&gt; driver;</a>
+<span class="sourceLineNo">066</span><a id="line.66"></a>
+<span class="sourceLineNo">067</span><a id="line.67">  /** Serializer and deserializer for this model. */</a>
+<span class="sourceLineNo">068</span><a id="line.68">  private final @Nonnull ModelCodec&lt;Model, CollapsedMessage, DocumentSnapshot&gt; codec;</a>
+<span class="sourceLineNo">069</span><a id="line.69"></a>
+<span class="sourceLineNo">070</span><a id="line.70">  /** Cache to use for model interactions through this adapter (optional). */</a>
+<span class="sourceLineNo">071</span><a id="line.71">  private final @Nonnull Optional&lt;CacheDriver&lt;Key, Model&gt;&gt; cache;</a>
+<span class="sourceLineNo">072</span><a id="line.72"></a>
+<span class="sourceLineNo">073</span><a id="line.73">  /**</a>
+<span class="sourceLineNo">074</span><a id="line.74">   * Setup a new Firestore adapter from scratch. Generally instances of this class are acquired through injection, or</a>
+<span class="sourceLineNo">075</span><a id="line.75">   * static factory methods also listed on this class.</a>
+<span class="sourceLineNo">076</span><a id="line.76">   *</a>
+<span class="sourceLineNo">077</span><a id="line.77">   * @param driver Database driver to use when speaking to Firestore.</a>
+<span class="sourceLineNo">078</span><a id="line.78">   * @param codec Serializer and deserializer to use.</a>
+<span class="sourceLineNo">079</span><a id="line.79">   * @param cache Cache to use when reading data from Firestore (optional).</a>
+<span class="sourceLineNo">080</span><a id="line.80">   */</a>
+<span class="sourceLineNo">081</span><a id="line.81">  private FirestoreAdapter(@Nonnull FirestoreDriver&lt;Key, Model&gt; driver,</a>
+<span class="sourceLineNo">082</span><a id="line.82">                           @Nonnull ModelCodec&lt;Model, CollapsedMessage, DocumentSnapshot&gt; codec,</a>
+<span class="sourceLineNo">083</span><a id="line.83">                           @Nonnull Optional&lt;CacheDriver&lt;Key, Model&gt;&gt; cache) {</a>
+<span class="sourceLineNo">084</span><a id="line.84">    this.driver = driver;</a>
+<span class="sourceLineNo">085</span><a id="line.85">    this.codec = codec;</a>
+<span class="sourceLineNo">086</span><a id="line.86">    this.cache = cache;</a>
+<span class="sourceLineNo">087</span><a id="line.87">  }</a>
+<span class="sourceLineNo">088</span><a id="line.88"></a>
+<span class="sourceLineNo">089</span><a id="line.89">  /**</a>
+<span class="sourceLineNo">090</span><a id="line.90">   * Create or otherwise resolve a {@link FirestoreAdapter} for the provided model type and builder. This additionally</a>
+<span class="sourceLineNo">091</span><a id="line.91">   * resolves a model codec, driver, and optionally a caching engine as well (although one may be provided explicitly at</a>
+<span class="sourceLineNo">092</span><a id="line.92">   * the invoking developer's discretion - see {@link #forModel(Message.Builder, FirestoreDriver, Optional)}).</a>
+<span class="sourceLineNo">093</span><a id="line.93">   *</a>
+<span class="sourceLineNo">094</span><a id="line.94">   * &lt;p&gt;The resulting adapter may not be created fresh for the task at hand, but it is threadsafe and shares no direct</a>
+<span class="sourceLineNo">095</span><a id="line.95">   * state with any other operation.&lt;/p&gt;</a>
+<span class="sourceLineNo">096</span><a id="line.96">   *</a>
+<span class="sourceLineNo">097</span><a id="line.97">   * @see #forModel(Message.Builder, FirestoreDriver, Optional) To provide an explicit cache driver for this type.</a>
+<span class="sourceLineNo">098</span><a id="line.98">   * @param &lt;M&gt; Model type for which we are requesting a Firestore adapter instance.</a>
+<span class="sourceLineNo">099</span><a id="line.99">   * @param builder Model builder instance, which the engine will clone for each retrieve operation.</a>
+<span class="sourceLineNo">100</span><a id="line.100">   * @param driver Driver which we should use when handling instances of &lt;code&gt;M&lt;/code&gt;.</a>
+<span class="sourceLineNo">101</span><a id="line.101">   * @return Pre-fabricated (or otherwise resolved) Firestore adapter for the requested model.</a>
+<span class="sourceLineNo">102</span><a id="line.102">   */</a>
+<span class="sourceLineNo">103</span><a id="line.103">  public static @Nonnull &lt;K extends Message, M extends Message&gt; FirestoreAdapter&lt;K, M&gt; forModel(</a>
+<span class="sourceLineNo">104</span><a id="line.104">    @Nonnull Message.Builder builder,</a>
+<span class="sourceLineNo">105</span><a id="line.105">    @Nonnull FirestoreDriver&lt;K, M&gt; driver) {</a>
+<span class="sourceLineNo">106</span><a id="line.106">    return forModel(builder, driver, Optional.empty());</a>
+<span class="sourceLineNo">107</span><a id="line.107">  }</a>
+<span class="sourceLineNo">108</span><a id="line.108"></a>
+<span class="sourceLineNo">109</span><a id="line.109">  /**</a>
+<span class="sourceLineNo">110</span><a id="line.110">   * Create or otherwise resolve a {@link FirestoreAdapter} for the provided model type and builder. This additionally</a>
+<span class="sourceLineNo">111</span><a id="line.111">   * resolves a model codec, driver, and optionally a caching engine as well.</a>
+<span class="sourceLineNo">112</span><a id="line.112">   *</a>
+<span class="sourceLineNo">113</span><a id="line.113">   * &lt;p&gt;The resulting adapter may not be created fresh for the task at hand, but it is threadsafe and shares no direct</a>
+<span class="sourceLineNo">114</span><a id="line.114">   * state with any other operation.&lt;/p&gt;</a>
+<span class="sourceLineNo">115</span><a id="line.115">   *</a>
+<span class="sourceLineNo">116</span><a id="line.116">   * @param &lt;M&gt; Model type for which we are requesting a Firestore adapter instance.</a>
+<span class="sourceLineNo">117</span><a id="line.117">   * @param driver Driver which we should use when handling instances of &lt;code&gt;M&lt;/code&gt;.</a>
+<span class="sourceLineNo">118</span><a id="line.118">   * @param builder Model builder instance, which the engine will clone for each retrieve operation.</a>
+<span class="sourceLineNo">119</span><a id="line.119">   * @return Pre-fabricated (or otherwise resolved) Firestore adapter for the requested model.</a>
+<span class="sourceLineNo">120</span><a id="line.120">   */</a>
+<span class="sourceLineNo">121</span><a id="line.121">  public static @Nonnull &lt;K extends Message, M extends Message&gt; FirestoreAdapter&lt;K, M&gt; forModel(</a>
+<span class="sourceLineNo">122</span><a id="line.122">    @Nonnull Message.Builder builder,</a>
+<span class="sourceLineNo">123</span><a id="line.123">    @Nonnull FirestoreDriver&lt;K, M&gt; driver,</a>
+<span class="sourceLineNo">124</span><a id="line.124">    @Nonnull Optional&lt;CacheDriver&lt;K, M&gt;&gt; cacheDriver) {</a>
+<span class="sourceLineNo">125</span><a id="line.125">    return new FirestoreAdapter&lt;&gt;(</a>
+<span class="sourceLineNo">126</span><a id="line.126">      driver,</a>
+<span class="sourceLineNo">127</span><a id="line.127">      driver.codec(),</a>
+<span class="sourceLineNo">128</span><a id="line.128">      cacheDriver);</a>
+<span class="sourceLineNo">129</span><a id="line.129">  }</a>
+<span class="sourceLineNo">130</span><a id="line.130"></a>
+<span class="sourceLineNo">131</span><a id="line.131">  /** Factory responsible for creating {@link FirestoreAdapter} instances from injected dependencies. */</a>
+<span class="sourceLineNo">132</span><a id="line.132">  @Factory</a>
+<span class="sourceLineNo">133</span><a id="line.133">  final static class FirestoreAdapterFactory {</a>
+<span class="sourceLineNo">134</span><a id="line.134">    /**</a>
+<span class="sourceLineNo">135</span><a id="line.135">     * Acquire a new instance of the Firestore adapter, using the specified component objects to facilitate model</a>
+<span class="sourceLineNo">136</span><a id="line.136">     * serialization/deserialization, and transport communication with Firestore.</a>
+<span class="sourceLineNo">137</span><a id="line.137">     *</a>
+<span class="sourceLineNo">138</span><a id="line.138">     * @param messageBuilder Builder for the instance in question.</a>
+<span class="sourceLineNo">139</span><a id="line.139">     * @param driver Driver with which we should talk to Firestore.</a>
+<span class="sourceLineNo">140</span><a id="line.140">     * @param cache Driver with which we should cache eligible data.</a>
+<span class="sourceLineNo">141</span><a id="line.141">     * @return Firestore driver instance.</a>
+<span class="sourceLineNo">142</span><a id="line.142">     */</a>
+<span class="sourceLineNo">143</span><a id="line.143">    @Context</a>
+<span class="sourceLineNo">144</span><a id="line.144">    @Refreshable</a>
+<span class="sourceLineNo">145</span><a id="line.145">    public static @Nonnull &lt;K extends Message, M extends Message&gt; FirestoreAdapter&lt;K, M&gt; acquire(</a>
+<span class="sourceLineNo">146</span><a id="line.146">      @Nonnull Message.Builder messageBuilder,</a>
+<span class="sourceLineNo">147</span><a id="line.147">      @Nonnull FirestoreDriver&lt;K, M&gt; driver,</a>
+<span class="sourceLineNo">148</span><a id="line.148">      @Nonnull Optional&lt;CacheDriver&lt;K, M&gt;&gt; cache) {</a>
+<span class="sourceLineNo">149</span><a id="line.149">      // resolve model builder from type</a>
+<span class="sourceLineNo">150</span><a id="line.150">      return FirestoreAdapter.forModel(</a>
+<span class="sourceLineNo">151</span><a id="line.151">        messageBuilder,</a>
+<span class="sourceLineNo">152</span><a id="line.152">        driver,</a>
+<span class="sourceLineNo">153</span><a id="line.153">        cache);</a>
+<span class="sourceLineNo">154</span><a id="line.154">    }</a>
+<span class="sourceLineNo">155</span><a id="line.155">  }</a>
+<span class="sourceLineNo">156</span><a id="line.156"></a>
+<span class="sourceLineNo">157</span><a id="line.157">  /**</a>
+<span class="sourceLineNo">158</span><a id="line.158">   * Acquire an instance of the {@link FirestoreAdapter} and {@link FirestoreDriver}, customized for the provided</a>
+<span class="sourceLineNo">159</span><a id="line.159">   * `modelInstance` and `keyInstance`. This method variant makes use of a default object for the gRPC transport</a>
+<span class="sourceLineNo">160</span><a id="line.160">   * provider and Google credential provider.</a>
+<span class="sourceLineNo">161</span><a id="line.161">   *</a>
+<span class="sourceLineNo">162</span><a id="line.162">   * @param keyInstance Key type instance for the record in question.</a>
+<span class="sourceLineNo">163</span><a id="line.163">   * @param messageInstance Message type instance for the record in question.</a>
+<span class="sourceLineNo">164</span><a id="line.164">   * @param executorService Background executor service for Firestore operations.</a>
+<span class="sourceLineNo">165</span><a id="line.165">   * @param &lt;K&gt; Key type.</a>
+<span class="sourceLineNo">166</span><a id="line.166">   * @param &lt;M&gt; Message type.</a>
+<span class="sourceLineNo">167</span><a id="line.167">   * @return Instance of the {@link FirestoreAdapter} and {@link FirestoreDriver}, customized as described.</a>
+<span class="sourceLineNo">168</span><a id="line.168">   */</a>
+<span class="sourceLineNo">169</span><a id="line.169">  public static @Nonnull &lt;K extends Message, M extends Message&gt; FirestoreAdapter&lt;K, M&gt; acquire(</a>
+<span class="sourceLineNo">170</span><a id="line.170">      @Nonnull K keyInstance,</a>
+<span class="sourceLineNo">171</span><a id="line.171">      @Nonnull M messageInstance,</a>
+<span class="sourceLineNo">172</span><a id="line.172">      @Nonnull ListeningScheduledExecutorService executorService) {</a>
+<span class="sourceLineNo">173</span><a id="line.173">    return acquire(</a>
+<span class="sourceLineNo">174</span><a id="line.174">        FirestoreOptions.newBuilder(),</a>
+<span class="sourceLineNo">175</span><a id="line.175">        FirestoreStubSettings.defaultTransportChannelProvider(),</a>
+<span class="sourceLineNo">176</span><a id="line.176">        FirestoreStubSettings.defaultCredentialsProviderBuilder().build(),</a>
+<span class="sourceLineNo">177</span><a id="line.177">        GrpcTransportOptions.newBuilder().build(),</a>
+<span class="sourceLineNo">178</span><a id="line.178">        executorService,</a>
+<span class="sourceLineNo">179</span><a id="line.179">        keyInstance,</a>
+<span class="sourceLineNo">180</span><a id="line.180">        messageInstance</a>
+<span class="sourceLineNo">181</span><a id="line.181">    );</a>
+<span class="sourceLineNo">182</span><a id="line.182">  }</a>
+<span class="sourceLineNo">183</span><a id="line.183"></a>
+<span class="sourceLineNo">184</span><a id="line.184">  /**</a>
+<span class="sourceLineNo">185</span><a id="line.185">   * Acquire an instance of the {@link FirestoreAdapter} and {@link FirestoreDriver}, customized for the provided</a>
+<span class="sourceLineNo">186</span><a id="line.186">   * `modelInstance` and `keyInstance`. This method variant makes use of a default object for the gRPC transport</a>
+<span class="sourceLineNo">187</span><a id="line.187">   * provider and Google credential provider, but allows specifying custom {@link FirestoreOptions}.</a>
+<span class="sourceLineNo">188</span><a id="line.188">   *</a>
+<span class="sourceLineNo">189</span><a id="line.189">   * @param baseOptions Base options to apply to the Firestore driver.</a>
+<span class="sourceLineNo">190</span><a id="line.190">   * @param keyInstance Key type instance for the record in question.</a>
+<span class="sourceLineNo">191</span><a id="line.191">   * @param messageInstance Message type instance for the record in question.</a>
+<span class="sourceLineNo">192</span><a id="line.192">   * @param executorService Background executor service for Firestore operations.</a>
+<span class="sourceLineNo">193</span><a id="line.193">   * @param &lt;K&gt; Key type.</a>
+<span class="sourceLineNo">194</span><a id="line.194">   * @param &lt;M&gt; Message type.</a>
+<span class="sourceLineNo">195</span><a id="line.195">   * @return Instance of the {@link FirestoreAdapter} and {@link FirestoreDriver}, customized as described.</a>
+<span class="sourceLineNo">196</span><a id="line.196">   */</a>
+<span class="sourceLineNo">197</span><a id="line.197">  public static @Nonnull &lt;K extends Message, M extends Message&gt; FirestoreAdapter&lt;K, M&gt; acquire(</a>
+<span class="sourceLineNo">198</span><a id="line.198">    @Nonnull K keyInstance,</a>
+<span class="sourceLineNo">199</span><a id="line.199">    @Nonnull M messageInstance,</a>
+<span class="sourceLineNo">200</span><a id="line.200">    @Nonnull FirestoreOptions.Builder baseOptions,</a>
+<span class="sourceLineNo">201</span><a id="line.201">    @Nonnull ListeningScheduledExecutorService executorService) {</a>
+<span class="sourceLineNo">202</span><a id="line.202">    return acquire(</a>
+<span class="sourceLineNo">203</span><a id="line.203">      baseOptions,</a>
+<span class="sourceLineNo">204</span><a id="line.204">      FirestoreStubSettings.defaultTransportChannelProvider(),</a>
+<span class="sourceLineNo">205</span><a id="line.205">      FirestoreStubSettings.defaultCredentialsProviderBuilder().build(),</a>
+<span class="sourceLineNo">206</span><a id="line.206">      GrpcTransportOptions.newBuilder().build(),</a>
+<span class="sourceLineNo">207</span><a id="line.207">      executorService,</a>
+<span class="sourceLineNo">208</span><a id="line.208">      keyInstance,</a>
+<span class="sourceLineNo">209</span><a id="line.209">      messageInstance</a>
+<span class="sourceLineNo">210</span><a id="line.210">    );</a>
+<span class="sourceLineNo">211</span><a id="line.211">  }</a>
+<span class="sourceLineNo">212</span><a id="line.212"></a>
+<span class="sourceLineNo">213</span><a id="line.213">  /**</a>
+<span class="sourceLineNo">214</span><a id="line.214">   * Acquire an instance of the {@link FirestoreAdapter} and {@link FirestoreDriver}, customized for the provided</a>
+<span class="sourceLineNo">215</span><a id="line.215">   * `modelInstance` and `keyInstance`. This method variant allows specification of the full set of objects which</a>
+<span class="sourceLineNo">216</span><a id="line.216">   * govern the connection and interaction with Firestore.</a>
+<span class="sourceLineNo">217</span><a id="line.217">   *</a>
+<span class="sourceLineNo">218</span><a id="line.218">   * @param baseOptions Base options to apply to the Firestore driver.</a>
+<span class="sourceLineNo">219</span><a id="line.219">   * @param firestoreChannel Transport provider for Firestore communication channels via gRPC.</a>
+<span class="sourceLineNo">220</span><a id="line.220">   * @param credentialsProvider Provider for transport/call credentials, when interacting with Firestore.</a>
+<span class="sourceLineNo">221</span><a id="line.221">   * @param transportOptions gRPC transport options, to apply when instantiating channels for Firestore communications.</a>
+<span class="sourceLineNo">222</span><a id="line.222">   * @param executorService Background executor service for Firestore operations.</a>
+<span class="sourceLineNo">223</span><a id="line.223">   * @param keyInstance Key type instance for the record in question.</a>
+<span class="sourceLineNo">224</span><a id="line.224">   * @param messageInstance Message type instance for the record in question.</a>
+<span class="sourceLineNo">225</span><a id="line.225">   * @param &lt;K&gt; Key type.</a>
+<span class="sourceLineNo">226</span><a id="line.226">   * @param &lt;M&gt; Message type.</a>
+<span class="sourceLineNo">227</span><a id="line.227">   * @return Instance of the {@link FirestoreAdapter} and {@link FirestoreDriver}, customized as described.</a>
+<span class="sourceLineNo">228</span><a id="line.228">   */</a>
+<span class="sourceLineNo">229</span><a id="line.229">  public static @Nonnull &lt;K extends Message, M extends Message&gt; FirestoreAdapter&lt;K, M&gt; acquire(</a>
+<span class="sourceLineNo">230</span><a id="line.230">      @Nonnull FirestoreOptions.Builder baseOptions,</a>
+<span class="sourceLineNo">231</span><a id="line.231">      @Nonnull @GoogleAPIChannel(service = GoogleService.FIRESTORE) TransportChannelProvider firestoreChannel,</a>
+<span class="sourceLineNo">232</span><a id="line.232">      @Nonnull CredentialsProvider credentialsProvider,</a>
+<span class="sourceLineNo">233</span><a id="line.233">      @Nonnull GrpcTransportOptions transportOptions,</a>
+<span class="sourceLineNo">234</span><a id="line.234">      @Nonnull ListeningScheduledExecutorService executorService,</a>
+<span class="sourceLineNo">235</span><a id="line.235">      @Nonnull K keyInstance,</a>
+<span class="sourceLineNo">236</span><a id="line.236">      @Nonnull M messageInstance) {</a>
+<span class="sourceLineNo">237</span><a id="line.237">    Message.Builder builder = messageInstance.newBuilderForType();</a>
+<span class="sourceLineNo">238</span><a id="line.238">    return FirestoreAdapter.FirestoreAdapterFactory.acquire(</a>
+<span class="sourceLineNo">239</span><a id="line.239">        builder,</a>
+<span class="sourceLineNo">240</span><a id="line.240">        FirestoreDriver.FirestoreDriverFactory.acquireDriver(</a>
+<span class="sourceLineNo">241</span><a id="line.241">            baseOptions,</a>
+<span class="sourceLineNo">242</span><a id="line.242">            firestoreChannel,</a>
+<span class="sourceLineNo">243</span><a id="line.243">            credentialsProvider,</a>
+<span class="sourceLineNo">244</span><a id="line.244">            transportOptions,</a>
+<span class="sourceLineNo">245</span><a id="line.245">            executorService,</a>
+<span class="sourceLineNo">246</span><a id="line.246">            messageInstance</a>
+<span class="sourceLineNo">247</span><a id="line.247">        ),</a>
+<span class="sourceLineNo">248</span><a id="line.248">        Optional.empty()</a>
+<span class="sourceLineNo">249</span><a id="line.249">    );</a>
+<span class="sourceLineNo">250</span><a id="line.250">  }</a>
+<span class="sourceLineNo">251</span><a id="line.251"></a>
+<span class="sourceLineNo">252</span><a id="line.252">  // -- Components -- //</a>
+<span class="sourceLineNo">253</span><a id="line.253">  /** {@inheritDoc} */</a>
+<span class="sourceLineNo">254</span><a id="line.254">  @Override</a>
+<span class="sourceLineNo">255</span><a id="line.255">  public @Nonnull ModelCodec&lt;Model, CollapsedMessage, DocumentSnapshot&gt; codec() {</a>
+<span class="sourceLineNo">256</span><a id="line.256">    return this.codec;</a>
+<span class="sourceLineNo">257</span><a id="line.257">  }</a>
+<span class="sourceLineNo">258</span><a id="line.258"></a>
+<span class="sourceLineNo">259</span><a id="line.259">  /** {@inheritDoc} */</a>
+<span class="sourceLineNo">260</span><a id="line.260">  @Override</a>
+<span class="sourceLineNo">261</span><a id="line.261">  public @Nonnull Optional&lt;CacheDriver&lt;Key, Model&gt;&gt; cache() {</a>
+<span class="sourceLineNo">262</span><a id="line.262">    return this.cache;</a>
+<span class="sourceLineNo">263</span><a id="line.263">  }</a>
+<span class="sourceLineNo">264</span><a id="line.264"></a>
+<span class="sourceLineNo">265</span><a id="line.265">  /** {@inheritDoc} */</a>
+<span class="sourceLineNo">266</span><a id="line.266">  @Override</a>
+<span class="sourceLineNo">267</span><a id="line.267">  public @Nonnull DatabaseDriver&lt;Key, Model, DocumentSnapshot, CollapsedMessage&gt; engine() {</a>
+<span class="sourceLineNo">268</span><a id="line.268">    return this.driver;</a>
+<span class="sourceLineNo">269</span><a id="line.269">  }</a>
+<span class="sourceLineNo">270</span><a id="line.270"></a>
+<span class="sourceLineNo">271</span><a id="line.271">  /** {@inheritDoc} */</a>
+<span class="sourceLineNo">272</span><a id="line.272">  @Override</a>
+<span class="sourceLineNo">273</span><a id="line.273">  public @Nonnull ListeningScheduledExecutorService executorService() {</a>
+<span class="sourceLineNo">274</span><a id="line.274">    return driver.executorService();</a>
+<span class="sourceLineNo">275</span><a id="line.275">  }</a>
+<span class="sourceLineNo">276</span><a id="line.276">}</a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</main>
+</body>
+</html>

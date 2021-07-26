@@ -1,0 +1,421 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../stylesheet.css" title="Style">
+</head>
+<body>
+<main role="main">
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span><a id="line.1">/*</a>
+<span class="sourceLineNo">002</span><a id="line.2"> * Copyright © 2020, The Gust Framework Authors. All rights reserved.</a>
+<span class="sourceLineNo">003</span><a id="line.3"> *</a>
+<span class="sourceLineNo">004</span><a id="line.4"> * The Gust/Elide framework and tools, and all associated source or object computer code, except where otherwise noted,</a>
+<span class="sourceLineNo">005</span><a id="line.5"> * are licensed under the Zero Prosperity license, which is enclosed in this repository, in the file LICENSE.txt. Use of</a>
+<span class="sourceLineNo">006</span><a id="line.6"> * this code in object or source form requires and implies consent and agreement to that license in principle and</a>
+<span class="sourceLineNo">007</span><a id="line.7"> * practice. Source or object code not listing this header, or unless specified otherwise, remain the property of</a>
+<span class="sourceLineNo">008</span><a id="line.8"> * Elide LLC and its suppliers, if any. The intellectual and technical concepts contained herein are proprietary to</a>
+<span class="sourceLineNo">009</span><a id="line.9"> * Elide LLC and its suppliers and may be covered by U.S. and Foreign Patents, or patents in process, and are protected</a>
+<span class="sourceLineNo">010</span><a id="line.10"> * by trade secret and copyright law. Dissemination of this information, or reproduction of this material, in any form,</a>
+<span class="sourceLineNo">011</span><a id="line.11"> * is strictly forbidden except in adherence with assigned license requirements.</a>
+<span class="sourceLineNo">012</span><a id="line.12"> */</a>
+<span class="sourceLineNo">013</span><a id="line.13">package gust.backend;</a>
+<span class="sourceLineNo">014</span><a id="line.14"></a>
+<span class="sourceLineNo">015</span><a id="line.15">import com.google.common.base.Joiner;</a>
+<span class="sourceLineNo">016</span><a id="line.16">import com.google.common.html.types.TrustedResourceUrlProto;</a>
+<span class="sourceLineNo">017</span><a id="line.17">import gust.backend.runtime.Logging;</a>
+<span class="sourceLineNo">018</span><a id="line.18">import io.micronaut.http.HttpHeaders;</a>
+<span class="sourceLineNo">019</span><a id="line.19">import io.micronaut.http.HttpResponse;</a>
+<span class="sourceLineNo">020</span><a id="line.20">import io.micronaut.http.MediaType;</a>
+<span class="sourceLineNo">021</span><a id="line.21">import io.micronaut.http.MutableHttpResponse;</a>
+<span class="sourceLineNo">022</span><a id="line.22">import org.slf4j.Logger;</a>
+<span class="sourceLineNo">023</span><a id="line.23">import tools.elide.page.Context.ClientHint;</a>
+<span class="sourceLineNo">024</span><a id="line.24">import tools.elide.page.Context.FramingPolicy;</a>
+<span class="sourceLineNo">025</span><a id="line.25">import tools.elide.page.Context.ReferrerPolicy;</a>
+<span class="sourceLineNo">026</span><a id="line.26"></a>
+<span class="sourceLineNo">027</span><a id="line.27">import javax.annotation.Nonnull;</a>
+<span class="sourceLineNo">028</span><a id="line.28">import javax.inject.Inject;</a>
+<span class="sourceLineNo">029</span><a id="line.29">import java.net.URI;</a>
+<span class="sourceLineNo">030</span><a id="line.30">import java.net.URL;</a>
+<span class="sourceLineNo">031</span><a id="line.31">import java.nio.charset.StandardCharsets;</a>
+<span class="sourceLineNo">032</span><a id="line.32">import java.util.*;</a>
+<span class="sourceLineNo">033</span><a id="line.33">import java.util.function.BiConsumer;</a>
+<span class="sourceLineNo">034</span><a id="line.34"></a>
+<span class="sourceLineNo">035</span><a id="line.35">import static java.lang.String.format;</a>
+<span class="sourceLineNo">036</span><a id="line.36"></a>
+<span class="sourceLineNo">037</span><a id="line.37"></a>
+<span class="sourceLineNo">038</span><a id="line.38">/**</a>
+<span class="sourceLineNo">039</span><a id="line.39"> * Describes a framework application controller, which is pre-loaded with convenient access to tooling, and any injected</a>
+<span class="sourceLineNo">040</span><a id="line.40"> * application logic. Alternatively, if the invoking developer wishes to use their own base class, they can acquire most</a>
+<span class="sourceLineNo">041</span><a id="line.41"> * or all of the enclosed functionality via injection.</a>
+<span class="sourceLineNo">042</span><a id="line.42"> *</a>
+<span class="sourceLineNo">043</span><a id="line.43"> * &lt;p&gt;Various properties are made available to sub-classes which allow easy access to stuff like:&lt;/p&gt;</a>
+<span class="sourceLineNo">044</span><a id="line.44"> * &lt;ul&gt;</a>
+<span class="sourceLineNo">045</span><a id="line.45"> *   &lt;li&gt;&lt;b&gt;{@code context}:&lt;/b&gt; This property exposes a builder for the current flow's page context. This can be</a>
+<span class="sourceLineNo">046</span><a id="line.46"> *       manipulated to provide/inject properties, and then subsequently used in Soy.&lt;/li&gt;</a>
+<span class="sourceLineNo">047</span><a id="line.47"> * &lt;/ul&gt;</a>
+<span class="sourceLineNo">048</span><a id="line.48"> *</a>
+<span class="sourceLineNo">049</span><a id="line.49"> * &lt;p&gt;To make use of this controller, simply inherit from it in your own {@code @Controller}-annotated class. When a</a>
+<span class="sourceLineNo">050</span><a id="line.50"> * request method is invoked, the logic provided by this object will have been initialized and will be ready to use.&lt;/p&gt;</a>
+<span class="sourceLineNo">051</span><a id="line.51"> */</a>
+<span class="sourceLineNo">052</span><a id="line.52">@SuppressWarnings("unused")</a>
+<span class="sourceLineNo">053</span><a id="line.53">public abstract class AppController extends BaseController {</a>
+<span class="sourceLineNo">054</span><a id="line.54">  /** Private logging pipe for {@code AppController}. */</a>
+<span class="sourceLineNo">055</span><a id="line.55">  private final Logger logging = Logging.logger(AppController.class);</a>
+<span class="sourceLineNo">056</span><a id="line.56"></a>
+<span class="sourceLineNo">057</span><a id="line.57">  /** Pre-ordained HTML object which ensures the character encoding is set to UTF-8. */</a>
+<span class="sourceLineNo">058</span><a id="line.58">  protected final static @Nonnull MediaType HTML;</a>
+<span class="sourceLineNo">059</span><a id="line.59"></a>
+<span class="sourceLineNo">060</span><a id="line.60">  /** Configuration for dynamic serving. */</a>
+<span class="sourceLineNo">061</span><a id="line.61">  private @Inject DynamicServingConfiguration servingConfiguration;</a>
+<span class="sourceLineNo">062</span><a id="line.62"></a>
+<span class="sourceLineNo">063</span><a id="line.63">  /** Configuration for dynamic serving. */</a>
+<span class="sourceLineNo">064</span><a id="line.64">  private @Inject AssetConfiguration assetConfiguration;</a>
+<span class="sourceLineNo">065</span><a id="line.65"></a>
+<span class="sourceLineNo">066</span><a id="line.66">  static {</a>
+<span class="sourceLineNo">067</span><a id="line.67">    // initialize HTML page type</a>
+<span class="sourceLineNo">068</span><a id="line.68">    HTML = new MediaType(MediaType.TEXT_HTML_TYPE.getName(), MediaType.TEXT_HTML_TYPE.getExtension(),</a>
+<span class="sourceLineNo">069</span><a id="line.69">      Collections.singletonMap("charset", StandardCharsets.UTF_8.displayName()));</a>
+<span class="sourceLineNo">070</span><a id="line.70">  }</a>
+<span class="sourceLineNo">071</span><a id="line.71"></a>
+<span class="sourceLineNo">072</span><a id="line.72">  /**</a>
+<span class="sourceLineNo">073</span><a id="line.73">   * Initialize a new application controller.</a>
+<span class="sourceLineNo">074</span><a id="line.74">   *</a>
+<span class="sourceLineNo">075</span><a id="line.75">   * @param context Injected page context manager.</a>
+<span class="sourceLineNo">076</span><a id="line.76">   */</a>
+<span class="sourceLineNo">077</span><a id="line.77">  protected AppController(@Nonnull PageContextManager context) {</a>
+<span class="sourceLineNo">078</span><a id="line.78">    super(context);</a>
+<span class="sourceLineNo">079</span><a id="line.79">  }</a>
+<span class="sourceLineNo">080</span><a id="line.80"></a>
+<span class="sourceLineNo">081</span><a id="line.81">  // -- API: Trusted Resources (Delegated to Context) -- //</a>
+<span class="sourceLineNo">082</span><a id="line.82"></a>
+<span class="sourceLineNo">083</span><a id="line.83">  /**</a>
+<span class="sourceLineNo">084</span><a id="line.84">   * Generate a trusted resource URL for the provided Java URL.</a>
+<span class="sourceLineNo">085</span><a id="line.85">   *</a>
+<span class="sourceLineNo">086</span><a id="line.86">   * @param url Pre-ordained trusted resource URL.</a>
+<span class="sourceLineNo">087</span><a id="line.87">   * @return Trusted resource URL specification proto.</a>
+<span class="sourceLineNo">088</span><a id="line.88">   */</a>
+<span class="sourceLineNo">089</span><a id="line.89">  public @Nonnull TrustedResourceUrlProto trustedResource(@Nonnull URL url) {</a>
+<span class="sourceLineNo">090</span><a id="line.90">    return context.trustedResource(url);</a>
+<span class="sourceLineNo">091</span><a id="line.91">  }</a>
+<span class="sourceLineNo">092</span><a id="line.92"></a>
+<span class="sourceLineNo">093</span><a id="line.93">  /**</a>
+<span class="sourceLineNo">094</span><a id="line.94">   * Generate a trusted resource URL for the provided Java URI.</a>
+<span class="sourceLineNo">095</span><a id="line.95">   *</a>
+<span class="sourceLineNo">096</span><a id="line.96">   * @param uri Pre-ordained trusted resource URI.</a>
+<span class="sourceLineNo">097</span><a id="line.97">   * @return Trusted resource URL specification proto.</a>
+<span class="sourceLineNo">098</span><a id="line.98">   */</a>
+<span class="sourceLineNo">099</span><a id="line.99">  public @Nonnull TrustedResourceUrlProto trustedResource(@Nonnull URI uri) {</a>
+<span class="sourceLineNo">100</span><a id="line.100">    return context.trustedResource(uri);</a>
+<span class="sourceLineNo">101</span><a id="line.101">  }</a>
+<span class="sourceLineNo">102</span><a id="line.102"></a>
+<span class="sourceLineNo">103</span><a id="line.103">  // -- API: Configurable Serving -- //</a>
+<span class="sourceLineNo">104</span><a id="line.104"></a>
+<span class="sourceLineNo">105</span><a id="line.105">  /**</a>
+<span class="sourceLineNo">106</span><a id="line.106">   * Affix headers to the provided response, according to the provided app {@code config} for dynamic serving. The</a>
+<span class="sourceLineNo">107</span><a id="line.107">   * resulting response is kept mutable for further changes.</a>
+<span class="sourceLineNo">108</span><a id="line.108">   *</a>
+<span class="sourceLineNo">109</span><a id="line.109">   * @param response HTTP response to affix headers to.</a>
+<span class="sourceLineNo">110</span><a id="line.110">   * @return HTTP response, with headers affixed.</a>
+<span class="sourceLineNo">111</span><a id="line.111">   */</a>
+<span class="sourceLineNo">112</span><a id="line.112">  @SuppressWarnings({"WeakerAccess", "SameParameterValue"})</a>
+<span class="sourceLineNo">113</span><a id="line.113">  protected @Nonnull &lt;T&gt; MutableHttpResponse&lt;T&gt; affixHeaders(@Nonnull MutableHttpResponse&lt;T&gt; response,</a>
+<span class="sourceLineNo">114</span><a id="line.114">                                                             @Nonnull DynamicServingConfiguration config) {</a>
+<span class="sourceLineNo">115</span><a id="line.115">    // first up: content language</a>
+<span class="sourceLineNo">116</span><a id="line.116">    if (this.context.language().isPresent()) {</a>
+<span class="sourceLineNo">117</span><a id="line.117">      var lang = this.context.language().get();</a>
+<span class="sourceLineNo">118</span><a id="line.118">      logging.debug(format("Affixing `Content-Language` header from context: '%s'.", lang));</a>
+<span class="sourceLineNo">119</span><a id="line.119">      response.setAttribute("language", lang);</a>
+<span class="sourceLineNo">120</span><a id="line.120">    } else if (config.language().isPresent()) {</a>
+<span class="sourceLineNo">121</span><a id="line.121">      logging.debug(format("Affixing `Content-Language` header from config: '%s'.", config.language().get()));</a>
+<span class="sourceLineNo">122</span><a id="line.122">      response.setAttribute("language", config.language().get());</a>
+<span class="sourceLineNo">123</span><a id="line.123">      this.context.language(config.language());</a>
+<span class="sourceLineNo">124</span><a id="line.124">    } else if (logging.isTraceEnabled()) {</a>
+<span class="sourceLineNo">125</span><a id="line.125">      logging.trace("No `Content-Language` header value to set.");</a>
+<span class="sourceLineNo">126</span><a id="line.126">    }</a>
+<span class="sourceLineNo">127</span><a id="line.127"></a>
+<span class="sourceLineNo">128</span><a id="line.128">    // next up: etags</a>
+<span class="sourceLineNo">129</span><a id="line.129">    if (config.etags().enabled()) {</a>
+<span class="sourceLineNo">130</span><a id="line.130">      if (logging.isTraceEnabled())</a>
+<span class="sourceLineNo">131</span><a id="line.131">        logging.trace("Dynamic `ETag` values are enabled.");</a>
+<span class="sourceLineNo">132</span><a id="line.132">      this.context.enableETags(true);</a>
+<span class="sourceLineNo">133</span><a id="line.133">    } else if (logging.isTraceEnabled()) {</a>
+<span class="sourceLineNo">134</span><a id="line.134">      logging.trace("Dynamic `ETag` values are disabled.");</a>
+<span class="sourceLineNo">135</span><a id="line.135">    }</a>
+<span class="sourceLineNo">136</span><a id="line.136"></a>
+<span class="sourceLineNo">137</span><a id="line.137">    // next up: client hints</a>
+<span class="sourceLineNo">138</span><a id="line.138">    if (config.clientHints().enabled()) {</a>
+<span class="sourceLineNo">139</span><a id="line.139">      Set&lt;ClientHint&gt; hints = config.clientHints().hints();</a>
+<span class="sourceLineNo">140</span><a id="line.140">      if (!hints.isEmpty()) {</a>
+<span class="sourceLineNo">141</span><a id="line.141">        if (logging.isDebugEnabled())</a>
+<span class="sourceLineNo">142</span><a id="line.142">          logging.debug(format("Client hints are ENABLED. Applying hints: '%s'.", Joiner.on(", ").join(hints)));</a>
+<span class="sourceLineNo">143</span><a id="line.143">        this.context.supportedClientHints(</a>
+<span class="sourceLineNo">144</span><a id="line.144">          Optional.of(hints),</a>
+<span class="sourceLineNo">145</span><a id="line.145">          config.clientHints().ttl().isPresent() ?</a>
+<span class="sourceLineNo">146</span><a id="line.146">            Optional.of(config.clientHints().ttlUnit().toSeconds(config.clientHints().ttl().get())) :</a>
+<span class="sourceLineNo">147</span><a id="line.147">            Optional.empty());</a>
+<span class="sourceLineNo">148</span><a id="line.148"></a>
+<span class="sourceLineNo">149</span><a id="line.149">      } else if (logging.isTraceEnabled()) {</a>
+<span class="sourceLineNo">150</span><a id="line.150">        logging.trace("No client hints are enabled.");</a>
+<span class="sourceLineNo">151</span><a id="line.151">      }</a>
+<span class="sourceLineNo">152</span><a id="line.152">    } else if (logging.isTraceEnabled()) {</a>
+<span class="sourceLineNo">153</span><a id="line.153">      logging.trace("Client hints are DISABLED.");</a>
+<span class="sourceLineNo">154</span><a id="line.154">    }</a>
+<span class="sourceLineNo">155</span><a id="line.155"></a>
+<span class="sourceLineNo">156</span><a id="line.156">    // next up: vary</a>
+<span class="sourceLineNo">157</span><a id="line.157">    if (config.variance().enabled()) {</a>
+<span class="sourceLineNo">158</span><a id="line.158">      Set&lt;String&gt; varySet = new TreeSet&lt;&gt;();</a>
+<span class="sourceLineNo">159</span><a id="line.159">      response.setAttribute("vary", varySet);</a>
+<span class="sourceLineNo">160</span><a id="line.160">      DynamicServingConfiguration.DynamicVarianceConfiguration varyConfig = config.variance();</a>
+<span class="sourceLineNo">161</span><a id="line.161"></a>
+<span class="sourceLineNo">162</span><a id="line.162">      BiConsumer&lt;Boolean, String&gt; affixVarySegment = (condition, header) -&gt; {</a>
+<span class="sourceLineNo">163</span><a id="line.163">        if (condition) {</a>
+<span class="sourceLineNo">164</span><a id="line.164">          varySet.add(header);</a>
+<span class="sourceLineNo">165</span><a id="line.165">          if (logging.isDebugEnabled()) {</a>
+<span class="sourceLineNo">166</span><a id="line.166">            logging.debug(format("Indicating dynamic response variance by `%s` (due to config).", header));</a>
+<span class="sourceLineNo">167</span><a id="line.167">          }</a>
+<span class="sourceLineNo">168</span><a id="line.168">        } else if (logging.isTraceEnabled()) {</a>
+<span class="sourceLineNo">169</span><a id="line.169">          logging.trace(format("Dynamic response variance by `%s` is DISABLED (due to config).", header));</a>
+<span class="sourceLineNo">170</span><a id="line.170">        }</a>
+<span class="sourceLineNo">171</span><a id="line.171">      };</a>
+<span class="sourceLineNo">172</span><a id="line.172"></a>
+<span class="sourceLineNo">173</span><a id="line.173">      affixVarySegment.accept(varyConfig.accept(), HttpHeaders.ACCEPT);  // `Accept`</a>
+<span class="sourceLineNo">174</span><a id="line.174">      affixVarySegment.accept(varyConfig.charset(), HttpHeaders.ACCEPT_CHARSET);  // `Accept-Charset`</a>
+<span class="sourceLineNo">175</span><a id="line.175">      affixVarySegment.accept(varyConfig.encoding(), HttpHeaders.ACCEPT_ENCODING);  // `Accept-Encoding`</a>
+<span class="sourceLineNo">176</span><a id="line.176">      affixVarySegment.accept(varyConfig.language(), HttpHeaders.ACCEPT_LANGUAGE);  // `Accept-Language`</a>
+<span class="sourceLineNo">177</span><a id="line.177">      affixVarySegment.accept(varyConfig.origin(), HttpHeaders.ORIGIN);  // `Origin`</a>
+<span class="sourceLineNo">178</span><a id="line.178">      if (!varySet.isEmpty()) {</a>
+<span class="sourceLineNo">179</span><a id="line.179">        if (logging.isDebugEnabled())</a>
+<span class="sourceLineNo">180</span><a id="line.180">          logging.debug(format("Indicating configured variance for response: '%s'.", Joiner.on(", ").join(varySet)));</a>
+<span class="sourceLineNo">181</span><a id="line.181">        this.context.vary(varySet);</a>
+<span class="sourceLineNo">182</span><a id="line.182">      } else if (logging.isTraceEnabled()) {</a>
+<span class="sourceLineNo">183</span><a id="line.183">        logging.trace("No variance configured for response.");</a>
+<span class="sourceLineNo">184</span><a id="line.184">      }</a>
+<span class="sourceLineNo">185</span><a id="line.185">    }</a>
+<span class="sourceLineNo">186</span><a id="line.186"></a>
+<span class="sourceLineNo">187</span><a id="line.187">    // next up: feature policy</a>
+<span class="sourceLineNo">188</span><a id="line.188">    if (config.featurePolicy().enabled()) {</a>
+<span class="sourceLineNo">189</span><a id="line.189">      SortedSet&lt;String&gt; featurePolicies = config.featurePolicy().policy();</a>
+<span class="sourceLineNo">190</span><a id="line.190">      if (logging.isDebugEnabled())</a>
+<span class="sourceLineNo">191</span><a id="line.191">        logging.debug(format("Indicating `Feature-Policy` for response: '%s'.", Joiner.on(", ").join(featurePolicies)));</a>
+<span class="sourceLineNo">192</span><a id="line.192">      featurePolicies.forEach((policy) -&gt;</a>
+<span class="sourceLineNo">193</span><a id="line.193">        this.context.getContext().addFeaturePolicy(policy));</a>
+<span class="sourceLineNo">194</span><a id="line.194">    } else if (logging.isDebugEnabled()) {</a>
+<span class="sourceLineNo">195</span><a id="line.195">      logging.debug("`Feature-Policy` disabled via config.");</a>
+<span class="sourceLineNo">196</span><a id="line.196">    }</a>
+<span class="sourceLineNo">197</span><a id="line.197"></a>
+<span class="sourceLineNo">198</span><a id="line.198">    // next up: referrer policy</a>
+<span class="sourceLineNo">199</span><a id="line.199">    if (config.referrerPolicy() != ReferrerPolicy.DEFAULT_REFERRER_POLICY) {</a>
+<span class="sourceLineNo">200</span><a id="line.200">      if (logging.isDebugEnabled())</a>
+<span class="sourceLineNo">201</span><a id="line.201">        logging.debug(format("Applying `Referrer-Policy`: '%s'.", config.referrerPolicy().name()));</a>
+<span class="sourceLineNo">202</span><a id="line.202">      this.context.getContext().setReferrerPolicy(config.referrerPolicy());</a>
+<span class="sourceLineNo">203</span><a id="line.203">    } else if (logging.isDebugEnabled()) {</a>
+<span class="sourceLineNo">204</span><a id="line.204">      logging.debug("`Referrer-Policy` disabled via config.");</a>
+<span class="sourceLineNo">205</span><a id="line.205">    }</a>
+<span class="sourceLineNo">206</span><a id="line.206"></a>
+<span class="sourceLineNo">207</span><a id="line.207">    // next up: framing policy</a>
+<span class="sourceLineNo">208</span><a id="line.208">    if (config.framingPolicy() != FramingPolicy.DEFAULT_FRAMING_POLICY) {</a>
+<span class="sourceLineNo">209</span><a id="line.209">      if (logging.isDebugEnabled())</a>
+<span class="sourceLineNo">210</span><a id="line.210">        logging.debug(format("Applying `X-Frame-Options` policy: '%s'.", config.framingPolicy().name()));</a>
+<span class="sourceLineNo">211</span><a id="line.211">      this.context.getContext().setFramingPolicy(config.framingPolicy());</a>
+<span class="sourceLineNo">212</span><a id="line.212">    } else if (logging.isDebugEnabled()) {</a>
+<span class="sourceLineNo">213</span><a id="line.213">      logging.debug("`X-Frame-Options` disabled via config.");</a>
+<span class="sourceLineNo">214</span><a id="line.214">    }</a>
+<span class="sourceLineNo">215</span><a id="line.215"></a>
+<span class="sourceLineNo">216</span><a id="line.216">    // next up: DNS domain prefetch</a>
+<span class="sourceLineNo">217</span><a id="line.217">    if (!config.dnsPrefetch().isEmpty()) {</a>
+<span class="sourceLineNo">218</span><a id="line.218">      if (logging.isDebugEnabled())</a>
+<span class="sourceLineNo">219</span><a id="line.219">        logging.debug(format("Pre-fetching %s domains via browser DNS: '%s'.",</a>
+<span class="sourceLineNo">220</span><a id="line.220">          config.dnsPrefetch().size(),</a>
+<span class="sourceLineNo">221</span><a id="line.221">          Joiner.on(", ").join(config.dnsPrefetch())));</a>
+<span class="sourceLineNo">222</span><a id="line.222"></a>
+<span class="sourceLineNo">223</span><a id="line.223">      this.context.dnsPrefetch(config.dnsPrefetch());</a>
+<span class="sourceLineNo">224</span><a id="line.224"></a>
+<span class="sourceLineNo">225</span><a id="line.225">    } else if (logging.isDebugEnabled()) {</a>
+<span class="sourceLineNo">226</span><a id="line.226">      logging.debug("No domains to prefetch via DNS.");</a>
+<span class="sourceLineNo">227</span><a id="line.227">    }</a>
+<span class="sourceLineNo">228</span><a id="line.228"></a>
+<span class="sourceLineNo">229</span><a id="line.229">    // next up: domain pre-connect</a>
+<span class="sourceLineNo">230</span><a id="line.230">    if (!config.preconnect().isEmpty()) {</a>
+<span class="sourceLineNo">231</span><a id="line.231">      if (logging.isDebugEnabled())</a>
+<span class="sourceLineNo">232</span><a id="line.232">        logging.debug(format("Pre-connecting to %s domains via browser: '%s'.",</a>
+<span class="sourceLineNo">233</span><a id="line.233">          config.dnsPrefetch().size(),</a>
+<span class="sourceLineNo">234</span><a id="line.234">          Joiner.on(", ").join(config.preconnect())));</a>
+<span class="sourceLineNo">235</span><a id="line.235"></a>
+<span class="sourceLineNo">236</span><a id="line.236">      this.context.preconnect(config.preconnect());</a>
+<span class="sourceLineNo">237</span><a id="line.237"></a>
+<span class="sourceLineNo">238</span><a id="line.238">    } else if (logging.isDebugEnabled()) {</a>
+<span class="sourceLineNo">239</span><a id="line.239">      logging.debug("No domains to pre-connect to.");</a>
+<span class="sourceLineNo">240</span><a id="line.240">    }</a>
+<span class="sourceLineNo">241</span><a id="line.241"></a>
+<span class="sourceLineNo">242</span><a id="line.242">    // next up: `nosniff`</a>
+<span class="sourceLineNo">243</span><a id="line.243">    if (config.noSniff()) {</a>
+<span class="sourceLineNo">244</span><a id="line.244">      if (logging.isDebugEnabled())</a>
+<span class="sourceLineNo">245</span><a id="line.245">        logging.debug("Indicating `nosniff` for `X-Content-Type-Options`.");</a>
+<span class="sourceLineNo">246</span><a id="line.246">      this.context.getContext().setContentTypeNosniff(true);</a>
+<span class="sourceLineNo">247</span><a id="line.247">    } else if (logging.isDebugEnabled())</a>
+<span class="sourceLineNo">248</span><a id="line.248">      logging.debug("`X-Content-Type-Options` disabled via config.");</a>
+<span class="sourceLineNo">249</span><a id="line.249"></a>
+<span class="sourceLineNo">250</span><a id="line.250">    // next up: `X-XSS-Protection`</a>
+<span class="sourceLineNo">251</span><a id="line.251">    if (config.xssProtection().enabled()) {</a>
+<span class="sourceLineNo">252</span><a id="line.252">      String xssProtectToken = config.xssProtection().filter() ? "1" : "0";</a>
+<span class="sourceLineNo">253</span><a id="line.253">      String modeToken = config.xssProtection().block() ? "; mode=block" : "";</a>
+<span class="sourceLineNo">254</span><a id="line.254">      String composedHeader = xssProtectToken + modeToken;</a>
+<span class="sourceLineNo">255</span><a id="line.255"></a>
+<span class="sourceLineNo">256</span><a id="line.256">      if (logging.isDebugEnabled())</a>
+<span class="sourceLineNo">257</span><a id="line.257">        logging.debug(format("Old-style `X-XSS-Protection` is enabled. Affixing header: '%s'.", composedHeader));</a>
+<span class="sourceLineNo">258</span><a id="line.258">      this.context.getContext().setXssProtection(composedHeader);</a>
+<span class="sourceLineNo">259</span><a id="line.259">    } else if (logging.isDebugEnabled())</a>
+<span class="sourceLineNo">260</span><a id="line.260">      logging.debug("Old-style `X-XSS-Protection` is disabled by configuration.");</a>
+<span class="sourceLineNo">261</span><a id="line.261"></a>
+<span class="sourceLineNo">262</span><a id="line.262">    // finally: arbitrary headers</a>
+<span class="sourceLineNo">263</span><a id="line.263">    if (!config.additionalHeaders().isEmpty()) {</a>
+<span class="sourceLineNo">264</span><a id="line.264">      config.additionalHeaders().forEach(this.context::header);</a>
+<span class="sourceLineNo">265</span><a id="line.265">    }</a>
+<span class="sourceLineNo">266</span><a id="line.266">    return response;</a>
+<span class="sourceLineNo">267</span><a id="line.267">  }</a>
+<span class="sourceLineNo">268</span><a id="line.268"></a>
+<span class="sourceLineNo">269</span><a id="line.269">  /**</a>
+<span class="sourceLineNo">270</span><a id="line.270">   * Affix headers to the provided response, according to current app configuration for dynamic serving. The resulting</a>
+<span class="sourceLineNo">271</span><a id="line.271">   * response is kept mutable for further changes.</a>
+<span class="sourceLineNo">272</span><a id="line.272">   *</a>
+<span class="sourceLineNo">273</span><a id="line.273">   * @param response HTTP response to affix headers to.</a>
+<span class="sourceLineNo">274</span><a id="line.274">   * @return HTTP response, with headers affixed.</a>
+<span class="sourceLineNo">275</span><a id="line.275">   */</a>
+<span class="sourceLineNo">276</span><a id="line.276">  protected @Nonnull &lt;T&gt; MutableHttpResponse&lt;T&gt; affixHeaders(@Nonnull MutableHttpResponse&lt;T&gt; response) {</a>
+<span class="sourceLineNo">277</span><a id="line.277">    return affixHeaders(response, DynamicServingConfiguration.DEFAULTS);</a>
+<span class="sourceLineNo">278</span><a id="line.278">  }</a>
+<span class="sourceLineNo">279</span><a id="line.279"></a>
+<span class="sourceLineNo">280</span><a id="line.280">  /**</a>
+<span class="sourceLineNo">281</span><a id="line.281">   * Select the set of CDN prefixes to use in this HTTP cycle, from the configured set. Once this action completes, the</a>
+<span class="sourceLineNo">282</span><a id="line.282">   * set of CDN prefixes is considered "frozen" for this cycle.</a>
+<span class="sourceLineNo">283</span><a id="line.283">   *</a>
+<span class="sourceLineNo">284</span><a id="line.284">   * @param render Page context manager, after the handler has completed.</a>
+<span class="sourceLineNo">285</span><a id="line.285">   * @param response Response object, on which we should set the CDN prefix property.</a>
+<span class="sourceLineNo">286</span><a id="line.286">   * @param servingConfig Serving configuration from which to calculate the active set of CDN prefixes.</a>
+<span class="sourceLineNo">287</span><a id="line.287">   */</a>
+<span class="sourceLineNo">288</span><a id="line.288">  @SuppressWarnings("WeakerAccess")</a>
+<span class="sourceLineNo">289</span><a id="line.289">  protected void selectCdnPrefixes(@Nonnull PageContextManager render,</a>
+<span class="sourceLineNo">290</span><a id="line.290">                                   @Nonnull MutableHttpResponse response,</a>
+<span class="sourceLineNo">291</span><a id="line.291">                                   @Nonnull AssetConfiguration servingConfig) {</a>
+<span class="sourceLineNo">292</span><a id="line.292">    if (!render.getCdnPrefix().isPresent()) {</a>
+<span class="sourceLineNo">293</span><a id="line.293">      // resolve CDN prefix to use for this run</a>
+<span class="sourceLineNo">294</span><a id="line.294">      if (servingConfig.cdn().enabled()) {</a>
+<span class="sourceLineNo">295</span><a id="line.295">        List&lt;String&gt; hostnames = servingConfig.cdn().hostnames();</a>
+<span class="sourceLineNo">296</span><a id="line.296">        if (hostnames.isEmpty() &amp;&amp; logging.isDebugEnabled()) {</a>
+<span class="sourceLineNo">297</span><a id="line.297">          logging.debug("No CDN prefixes available.");</a>
+<span class="sourceLineNo">298</span><a id="line.298">        } else if (!hostnames.isEmpty()) {</a>
+<span class="sourceLineNo">299</span><a id="line.299">          final String hostname;</a>
+<span class="sourceLineNo">300</span><a id="line.300">          if (hostnames.size() == 1) {</a>
+<span class="sourceLineNo">301</span><a id="line.301">            hostname = hostnames.get(0);</a>
+<span class="sourceLineNo">302</span><a id="line.302">          } else {</a>
+<span class="sourceLineNo">303</span><a id="line.303">            // select one</a>
+<span class="sourceLineNo">304</span><a id="line.304">            hostname = hostnames.get(new Random().nextInt(hostnames.size()));</a>
+<span class="sourceLineNo">305</span><a id="line.305">          }</a>
+<span class="sourceLineNo">306</span><a id="line.306">          if (logging.isDebugEnabled())</a>
+<span class="sourceLineNo">307</span><a id="line.307">            logging.debug(format("Selected CDN prefix for HTTP cycle: '%s'.", hostname));</a>
+<span class="sourceLineNo">308</span><a id="line.308">          response.setAttribute("cdn_prefix", hostname);</a>
+<span class="sourceLineNo">309</span><a id="line.309">          render.cdnPrefix(Optional.of(hostname));</a>
+<span class="sourceLineNo">310</span><a id="line.310"></a>
+<span class="sourceLineNo">311</span><a id="line.311">          // add to pre-connect list and DNS prefetch list</a>
+<span class="sourceLineNo">312</span><a id="line.312">          render.dnsPrefetch(hostname);</a>
+<span class="sourceLineNo">313</span><a id="line.313">          render.preconnect(hostname);</a>
+<span class="sourceLineNo">314</span><a id="line.314">        }</a>
+<span class="sourceLineNo">315</span><a id="line.315"></a>
+<span class="sourceLineNo">316</span><a id="line.316">      } else if (logging.isDebugEnabled()) {</a>
+<span class="sourceLineNo">317</span><a id="line.317">        logging.debug("CDN prefix skipped (DISABLED via config).");</a>
+<span class="sourceLineNo">318</span><a id="line.318">      }</a>
+<span class="sourceLineNo">319</span><a id="line.319">    } else if (logging.isDebugEnabled()) {</a>
+<span class="sourceLineNo">320</span><a id="line.320">      logging.debug("Deferring to developer-specified CDN prefix.");</a>
+<span class="sourceLineNo">321</span><a id="line.321">    }</a>
+<span class="sourceLineNo">322</span><a id="line.322">  }</a>
+<span class="sourceLineNo">323</span><a id="line.323"></a>
+<span class="sourceLineNo">324</span><a id="line.324">  /**</a>
+<span class="sourceLineNo">325</span><a id="line.325">   * Serve the provided rendered-page response, while applying any app configuration related to dynamic page headers.</a>
+<span class="sourceLineNo">326</span><a id="line.326">   * This may include headers like {@code Vary}, {@code ETag}, and so on, which may be calculated based on the response</a>
+<span class="sourceLineNo">327</span><a id="line.327">   * intended to be provided to the client.</a>
+<span class="sourceLineNo">328</span><a id="line.328">   *</a>
+<span class="sourceLineNo">329</span><a id="line.329">   * @param render Page render to perform before responding.</a>
+<span class="sourceLineNo">330</span><a id="line.330">   * @return Prepped and rendered HTTP response.</a>
+<span class="sourceLineNo">331</span><a id="line.331">   */</a>
+<span class="sourceLineNo">332</span><a id="line.332">  protected @Nonnull MutableHttpResponse&lt;PageRender&gt; serve(@Nonnull PageContextManager render) {</a>
+<span class="sourceLineNo">333</span><a id="line.333">    DynamicServingConfiguration servingConfig = (</a>
+<span class="sourceLineNo">334</span><a id="line.334">      this.servingConfiguration != null ? this.servingConfiguration : DynamicServingConfiguration.DEFAULTS);</a>
+<span class="sourceLineNo">335</span><a id="line.335">    AssetConfiguration assetConfig = (</a>
+<span class="sourceLineNo">336</span><a id="line.336">      this.assetConfiguration != null ? this.assetConfiguration : AssetConfiguration.DEFAULTS);</a>
+<span class="sourceLineNo">337</span><a id="line.337"></a>
+<span class="sourceLineNo">338</span><a id="line.338">    // order matters here. `selectCdnPrefix` must be called first, to load any CDN prefix before link pre-loads go out.</a>
+<span class="sourceLineNo">339</span><a id="line.339">    // next, `affixHeaders` must be called before `render`, which produces the `ctx` that is set on the response (so it</a>
+<span class="sourceLineNo">340</span><a id="line.340">    // may be picked up in `PageContextManager#finalizeResponse`).</a>
+<span class="sourceLineNo">341</span><a id="line.341">    MutableHttpResponse&lt;PageRender&gt; response = HttpResponse.ok(render);</a>
+<span class="sourceLineNo">342</span><a id="line.342">    selectCdnPrefixes(render, response, assetConfig);</a>
+<span class="sourceLineNo">343</span><a id="line.343">    this.affixHeaders(response, servingConfig);</a>
+<span class="sourceLineNo">344</span><a id="line.344">    response.setAttribute("context", render.render().getPageContext());</a>
+<span class="sourceLineNo">345</span><a id="line.345">    return response;</a>
+<span class="sourceLineNo">346</span><a id="line.346">  }</a>
+<span class="sourceLineNo">347</span><a id="line.347">}</a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</main>
+</body>
+</html>

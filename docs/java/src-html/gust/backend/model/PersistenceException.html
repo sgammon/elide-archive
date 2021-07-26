@@ -1,0 +1,126 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<main role="main">
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span><a id="line.1">/*</a>
+<span class="sourceLineNo">002</span><a id="line.2"> * Copyright © 2020, The Gust Framework Authors. All rights reserved.</a>
+<span class="sourceLineNo">003</span><a id="line.3"> *</a>
+<span class="sourceLineNo">004</span><a id="line.4"> * The Gust/Elide framework and tools, and all associated source or object computer code, except where otherwise noted,</a>
+<span class="sourceLineNo">005</span><a id="line.5"> * are licensed under the Zero Prosperity license, which is enclosed in this repository, in the file LICENSE.txt. Use of</a>
+<span class="sourceLineNo">006</span><a id="line.6"> * this code in object or source form requires and implies consent and agreement to that license in principle and</a>
+<span class="sourceLineNo">007</span><a id="line.7"> * practice. Source or object code not listing this header, or unless specified otherwise, remain the property of</a>
+<span class="sourceLineNo">008</span><a id="line.8"> * Elide LLC and its suppliers, if any. The intellectual and technical concepts contained herein are proprietary to</a>
+<span class="sourceLineNo">009</span><a id="line.9"> * Elide LLC and its suppliers and may be covered by U.S. and Foreign Patents, or patents in process, and are protected</a>
+<span class="sourceLineNo">010</span><a id="line.10"> * by trade secret and copyright law. Dissemination of this information, or reproduction of this material, in any form,</a>
+<span class="sourceLineNo">011</span><a id="line.11"> * is strictly forbidden except in adherence with assigned license requirements.</a>
+<span class="sourceLineNo">012</span><a id="line.12"> */</a>
+<span class="sourceLineNo">013</span><a id="line.13">package gust.backend.model;</a>
+<span class="sourceLineNo">014</span><a id="line.14"></a>
+<span class="sourceLineNo">015</span><a id="line.15">import javax.annotation.Nonnull;</a>
+<span class="sourceLineNo">016</span><a id="line.16">import javax.annotation.Nullable;</a>
+<span class="sourceLineNo">017</span><a id="line.17"></a>
+<span class="sourceLineNo">018</span><a id="line.18"></a>
+<span class="sourceLineNo">019</span><a id="line.19">/**</a>
+<span class="sourceLineNo">020</span><a id="line.20"> * Defines a class of exceptions which can be encountered when interacting with persistence tools, including internal</a>
+<span class="sourceLineNo">021</span><a id="line.21"> * (built-in) data adapters.</a>
+<span class="sourceLineNo">022</span><a id="line.22"> */</a>
+<span class="sourceLineNo">023</span><a id="line.23">@SuppressWarnings("unused")</a>
+<span class="sourceLineNo">024</span><a id="line.24">public abstract class PersistenceException extends RuntimeException {</a>
+<span class="sourceLineNo">025</span><a id="line.25">  /**</a>
+<span class="sourceLineNo">026</span><a id="line.26">   * Create a persistence exception with a string message.</a>
+<span class="sourceLineNo">027</span><a id="line.27">   *</a>
+<span class="sourceLineNo">028</span><a id="line.28">   * @param message Error message.</a>
+<span class="sourceLineNo">029</span><a id="line.29">   */</a>
+<span class="sourceLineNo">030</span><a id="line.30">  PersistenceException(@Nonnull String message) {</a>
+<span class="sourceLineNo">031</span><a id="line.31">    super(message);</a>
+<span class="sourceLineNo">032</span><a id="line.32">  }</a>
+<span class="sourceLineNo">033</span><a id="line.33"></a>
+<span class="sourceLineNo">034</span><a id="line.34">  /**</a>
+<span class="sourceLineNo">035</span><a id="line.35">   * Create a persistence exception with a throwable as a cause.</a>
+<span class="sourceLineNo">036</span><a id="line.36">   *</a>
+<span class="sourceLineNo">037</span><a id="line.37">   * @param cause Cause for the error.</a>
+<span class="sourceLineNo">038</span><a id="line.38">   */</a>
+<span class="sourceLineNo">039</span><a id="line.39">  PersistenceException(@Nonnull Throwable cause) {</a>
+<span class="sourceLineNo">040</span><a id="line.40">    super(cause);</a>
+<span class="sourceLineNo">041</span><a id="line.41">  }</a>
+<span class="sourceLineNo">042</span><a id="line.42"></a>
+<span class="sourceLineNo">043</span><a id="line.43">  /**</a>
+<span class="sourceLineNo">044</span><a id="line.44">   * Create a persistence exception with a throwable cause and an explicit error message.</a>
+<span class="sourceLineNo">045</span><a id="line.45">   *</a>
+<span class="sourceLineNo">046</span><a id="line.46">   * @param message Error message.</a>
+<span class="sourceLineNo">047</span><a id="line.47">   * @param cause Cause for the error.</a>
+<span class="sourceLineNo">048</span><a id="line.48">   */</a>
+<span class="sourceLineNo">049</span><a id="line.49">  PersistenceException(@Nonnull String message, @Nullable Throwable cause) {</a>
+<span class="sourceLineNo">050</span><a id="line.50">    super(message, cause);</a>
+<span class="sourceLineNo">051</span><a id="line.51">  }</a>
+<span class="sourceLineNo">052</span><a id="line.52">}</a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</main>
+</body>
+</html>

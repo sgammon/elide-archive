@@ -1,0 +1,547 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<main role="main">
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span><a id="line.1">/*</a>
+<span class="sourceLineNo">002</span><a id="line.2"> * Copyright © 2020, The Gust Framework Authors. All rights reserved.</a>
+<span class="sourceLineNo">003</span><a id="line.3"> *</a>
+<span class="sourceLineNo">004</span><a id="line.4"> * The Gust/Elide framework and tools, and all associated source or object computer code, except where otherwise noted,</a>
+<span class="sourceLineNo">005</span><a id="line.5"> * are licensed under the Zero Prosperity license, which is enclosed in this repository, in the file LICENSE.txt. Use of</a>
+<span class="sourceLineNo">006</span><a id="line.6"> * this code in object or source form requires and implies consent and agreement to that license in principle and</a>
+<span class="sourceLineNo">007</span><a id="line.7"> * practice. Source or object code not listing this header, or unless specified otherwise, remain the property of</a>
+<span class="sourceLineNo">008</span><a id="line.8"> * Elide LLC and its suppliers, if any. The intellectual and technical concepts contained herein are proprietary to</a>
+<span class="sourceLineNo">009</span><a id="line.9"> * Elide LLC and its suppliers and may be covered by U.S. and Foreign Patents, or patents in process, and are protected</a>
+<span class="sourceLineNo">010</span><a id="line.10"> * by trade secret and copyright law. Dissemination of this information, or reproduction of this material, in any form,</a>
+<span class="sourceLineNo">011</span><a id="line.11"> * is strictly forbidden except in adherence with assigned license requirements.</a>
+<span class="sourceLineNo">012</span><a id="line.12"> */</a>
+<span class="sourceLineNo">013</span><a id="line.13">package gust.backend.driver.spanner;</a>
+<span class="sourceLineNo">014</span><a id="line.14"></a>
+<span class="sourceLineNo">015</span><a id="line.15">import com.google.api.gax.core.CredentialsProvider;</a>
+<span class="sourceLineNo">016</span><a id="line.16">import com.google.api.gax.rpc.TransportChannelProvider;</a>
+<span class="sourceLineNo">017</span><a id="line.17">import com.google.cloud.grpc.GrpcTransportOptions;</a>
+<span class="sourceLineNo">018</span><a id="line.18">import com.google.cloud.spanner.*;</a>
+<span class="sourceLineNo">019</span><a id="line.19">import com.google.cloud.spanner.SpannerOptions;</a>
+<span class="sourceLineNo">020</span><a id="line.20">import com.google.common.util.concurrent.ListeningScheduledExecutorService;</a>
+<span class="sourceLineNo">021</span><a id="line.21">import com.google.protobuf.FieldMask;</a>
+<span class="sourceLineNo">022</span><a id="line.22">import com.google.protobuf.Message;</a>
+<span class="sourceLineNo">023</span><a id="line.23">import com.google.protobuf.util.FieldMaskUtil;</a>
+<span class="sourceLineNo">024</span><a id="line.24">import gust.backend.model.*;</a>
+<span class="sourceLineNo">025</span><a id="line.25">import gust.backend.runtime.Logging;</a>
+<span class="sourceLineNo">026</span><a id="line.26">import gust.backend.runtime.ReactiveFuture;</a>
+<span class="sourceLineNo">027</span><a id="line.27">import gust.backend.transport.GoogleAPIChannel;</a>
+<span class="sourceLineNo">028</span><a id="line.28">import gust.backend.transport.GoogleService;</a>
+<span class="sourceLineNo">029</span><a id="line.29">import io.micronaut.context.annotation.Context;</a>
+<span class="sourceLineNo">030</span><a id="line.30">import io.micronaut.context.annotation.Factory;</a>
+<span class="sourceLineNo">031</span><a id="line.31">import io.micronaut.runtime.context.scope.Refreshable;</a>
+<span class="sourceLineNo">032</span><a id="line.32">import org.slf4j.Logger;</a>
+<span class="sourceLineNo">033</span><a id="line.33">import tools.elide.core.*;</a>
+<span class="sourceLineNo">034</span><a id="line.34"></a>
+<span class="sourceLineNo">035</span><a id="line.35">import javax.annotation.Nonnull;</a>
+<span class="sourceLineNo">036</span><a id="line.36">import javax.annotation.Nullable;</a>
+<span class="sourceLineNo">037</span><a id="line.37">import javax.annotation.concurrent.Immutable;</a>
+<span class="sourceLineNo">038</span><a id="line.38">import javax.annotation.concurrent.ThreadSafe;</a>
+<span class="sourceLineNo">039</span><a id="line.39">import java.io.IOException;</a>
+<span class="sourceLineNo">040</span><a id="line.40">import java.util.*;</a>
+<span class="sourceLineNo">041</span><a id="line.41">import java.util.concurrent.TimeUnit;</a>
+<span class="sourceLineNo">042</span><a id="line.42"></a>
+<span class="sourceLineNo">043</span><a id="line.43">import static gust.backend.driver.spanner.SpannerUtil.*;</a>
+<span class="sourceLineNo">044</span><a id="line.44">import static com.google.common.util.concurrent.Futures.transformAsync;</a>
+<span class="sourceLineNo">045</span><a id="line.45">import static com.google.common.util.concurrent.Futures.immediateFuture;</a>
+<span class="sourceLineNo">046</span><a id="line.46">import static com.google.common.util.concurrent.Futures.withTimeout;</a>
+<span class="sourceLineNo">047</span><a id="line.47">import static gust.backend.runtime.ReactiveFuture.wrap;</a>
+<span class="sourceLineNo">048</span><a id="line.48">import static gust.backend.model.ModelMetadata.*;</a>
+<span class="sourceLineNo">049</span><a id="line.49">import static java.lang.String.format;</a>
+<span class="sourceLineNo">050</span><a id="line.50"></a>
+<span class="sourceLineNo">051</span><a id="line.51"></a>
+<span class="sourceLineNo">052</span><a id="line.52">/**</a>
+<span class="sourceLineNo">053</span><a id="line.53"> * Provides a {@link DatabaseDriver} implementation which enables seamless Protocol Buffer persistence with Google Cloud</a>
+<span class="sourceLineNo">054</span><a id="line.54"> * Spanner, for any {@link Message}-derived (schema-driven) business model in a given Gust app's ecosystem.</a>
+<span class="sourceLineNo">055</span><a id="line.55"> *</a>
+<span class="sourceLineNo">056</span><a id="line.56"> * &lt;p&gt;Model storage can be deeply customized on a per-model basis, thanks to the built-in proto annotations available</a>
+<span class="sourceLineNo">057</span><a id="line.57"> * in &lt;code&gt;gust.core&lt;/code&gt;. The Spanner adapter supports basic persistence (i.e. as a regular</a>
+<span class="sourceLineNo">058</span><a id="line.58"> * &lt;pre&gt;PersistenceDriver&lt;/pre&gt;), but also supports generic, object index-style queries.&lt;/p&gt;</a>
+<span class="sourceLineNo">059</span><a id="line.59"> *</a>
+<span class="sourceLineNo">060</span><a id="line.60"> * &lt;p&gt;See the main {@link SpannerAdapter} for a full description of supported application-level functionality.&lt;/p&gt;</a>
+<span class="sourceLineNo">061</span><a id="line.61"> *</a>
+<span class="sourceLineNo">062</span><a id="line.62"> * @param &lt;Key&gt; Typed {@link Message} which implements a concrete model key structure, as defined and annotated by the</a>
+<span class="sourceLineNo">063</span><a id="line.63"> *              core Gust annotations.</a>
+<span class="sourceLineNo">064</span><a id="line.64"> * @param &lt;Model&gt; Typed {@link Message} which implements a concrete model object structure, as defined and annotated by</a>
+<span class="sourceLineNo">065</span><a id="line.65"> *              the core Gust annotations.</a>
+<span class="sourceLineNo">066</span><a id="line.66"> * @see SpannerAdapter Main typed adapter interface for Spanner.</a>
+<span class="sourceLineNo">067</span><a id="line.67"> * @see SpannerManager Adapter instance manager and factory.</a>
+<span class="sourceLineNo">068</span><a id="line.68"> * @see SpannerDriverSettings Driver-level settings specific to Spanner.</a>
+<span class="sourceLineNo">069</span><a id="line.69"> * @see gust.backend.driver.firestore.FirestoreDriver Similar driver implementation, built on top of Cloud Firestore,</a>
+<span class="sourceLineNo">070</span><a id="line.70"> *      which itself is implemented on top of Cloud Spanner.</a>
+<span class="sourceLineNo">071</span><a id="line.71"> */</a>
+<span class="sourceLineNo">072</span><a id="line.72">@Immutable</a>
+<span class="sourceLineNo">073</span><a id="line.73">@ThreadSafe</a>
+<span class="sourceLineNo">074</span><a id="line.74">@SuppressWarnings({"UnstableApiUsage", "OptionalUsedAsFieldOrParameterType"})</a>
+<span class="sourceLineNo">075</span><a id="line.75">public final class SpannerDriver&lt;Key extends Message, Model extends Message&gt;</a>
+<span class="sourceLineNo">076</span><a id="line.76">        implements DatabaseDriver&lt;Key, Model, Struct, Mutation&gt; {</a>
+<span class="sourceLineNo">077</span><a id="line.77">    /** Private log pipe. */</a>
+<span class="sourceLineNo">078</span><a id="line.78">    private static final Logger logging = Logging.logger(SpannerDriver.class);</a>
+<span class="sourceLineNo">079</span><a id="line.79"></a>
+<span class="sourceLineNo">080</span><a id="line.80">    /** Executor service to use for async calls. */</a>
+<span class="sourceLineNo">081</span><a id="line.81">    private final @Nonnull ListeningScheduledExecutorService executorService;</a>
+<span class="sourceLineNo">082</span><a id="line.82"></a>
+<span class="sourceLineNo">083</span><a id="line.83">    /** Codec to use for serializing/de-serializing models. */</a>
+<span class="sourceLineNo">084</span><a id="line.84">    private final @Nonnull ModelCodec&lt;Model, Mutation, Struct&gt; codec;</a>
+<span class="sourceLineNo">085</span><a id="line.85"></a>
+<span class="sourceLineNo">086</span><a id="line.86">    /** Default database ID to interact with. */</a>
+<span class="sourceLineNo">087</span><a id="line.87">    private final @Nonnull DatabaseId defaultDatabase;</a>
+<span class="sourceLineNo">088</span><a id="line.88"></a>
+<span class="sourceLineNo">089</span><a id="line.89">    /** Settings for the Spanner driver. */</a>
+<span class="sourceLineNo">090</span><a id="line.90">    private final @Nonnull SpannerDriverSettings driverSettings;</a>
+<span class="sourceLineNo">091</span><a id="line.91"></a>
+<span class="sourceLineNo">092</span><a id="line.92">    /** Cloud Spanner client engine. */</a>
+<span class="sourceLineNo">093</span><a id="line.93">    private final @Nonnull Spanner engine;</a>
+<span class="sourceLineNo">094</span><a id="line.94"></a>
+<span class="sourceLineNo">095</span><a id="line.95">    /** Defines generic Spanner operation-specific options. */</a>
+<span class="sourceLineNo">096</span><a id="line.96">    interface SpannerOperationOptions extends OperationOptions {</a>
+<span class="sourceLineNo">097</span><a id="line.97">        /** @return Database to use when connecting to Spanner. */</a>
+<span class="sourceLineNo">098</span><a id="line.98">        default @Nonnull Optional&lt;DatabaseId&gt; databaseId() {</a>
+<span class="sourceLineNo">099</span><a id="line.99">            return Optional.empty();</a>
+<span class="sourceLineNo">100</span><a id="line.100">        }</a>
+<span class="sourceLineNo">101</span><a id="line.101">    }</a>
+<span class="sourceLineNo">102</span><a id="line.102"></a>
+<span class="sourceLineNo">103</span><a id="line.103">    /** Defines Spanner-specific options for all read and query operations. */</a>
+<span class="sourceLineNo">104</span><a id="line.104">    interface SpannerReadOptions extends SpannerOperationOptions, FetchOptions {</a>
+<span class="sourceLineNo">105</span><a id="line.105">        /** @return Manual field projection, as applicable. Defaults to any present field mask. */</a>
+<span class="sourceLineNo">106</span><a id="line.106">        default @Nonnull Optional&lt;FieldMask&gt; projection() {</a>
+<span class="sourceLineNo">107</span><a id="line.107">            return this.fieldMask();</a>
+<span class="sourceLineNo">108</span><a id="line.108">        }</a>
+<span class="sourceLineNo">109</span><a id="line.109">    }</a>
+<span class="sourceLineNo">110</span><a id="line.110"></a>
+<span class="sourceLineNo">111</span><a id="line.111">    /** Defines Spanner-specific options for all write and mutation operations. */</a>
+<span class="sourceLineNo">112</span><a id="line.112">    interface SpannerWriteOptions extends SpannerOperationOptions, WriteOptions {</a>
+<span class="sourceLineNo">113</span><a id="line.113">        // Nothing yet.</a>
+<span class="sourceLineNo">114</span><a id="line.114">    }</a>
+<span class="sourceLineNo">115</span><a id="line.115"></a>
+<span class="sourceLineNo">116</span><a id="line.116">    /** Defines Spanner-specific fetch options. */</a>
+<span class="sourceLineNo">117</span><a id="line.117">    interface SpannerFetchOptions extends SpannerReadOptions {</a>
+<span class="sourceLineNo">118</span><a id="line.118">        /** Default set of fetch options. */</a>
+<span class="sourceLineNo">119</span><a id="line.119">        SpannerFetchOptions DEFAULTS = new SpannerFetchOptions() {};</a>
+<span class="sourceLineNo">120</span><a id="line.120"></a>
+<span class="sourceLineNo">121</span><a id="line.121">        /** @return Timestamp boundary for single-use reads. */</a>
+<span class="sourceLineNo">122</span><a id="line.122">        default @Nonnull Optional&lt;TimestampBound&gt; timestampBound() {</a>
+<span class="sourceLineNo">123</span><a id="line.123">            return Optional.empty();</a>
+<span class="sourceLineNo">124</span><a id="line.124">        }</a>
+<span class="sourceLineNo">125</span><a id="line.125">    }</a>
+<span class="sourceLineNo">126</span><a id="line.126"></a>
+<span class="sourceLineNo">127</span><a id="line.127">    /** Defines Spanner-specific mutative write options. */</a>
+<span class="sourceLineNo">128</span><a id="line.128">    interface SpannerMutationOptions extends SpannerWriteOptions {</a>
+<span class="sourceLineNo">129</span><a id="line.129">        /** Default set of mutation options. */</a>
+<span class="sourceLineNo">130</span><a id="line.130">        SpannerMutationOptions DEFAULTS = new SpannerMutationOptions() {};</a>
+<span class="sourceLineNo">131</span><a id="line.131">    }</a>
+<span class="sourceLineNo">132</span><a id="line.132"></a>
+<span class="sourceLineNo">133</span><a id="line.133">    /** Defines Spanner-specific mutative delete options. */</a>
+<span class="sourceLineNo">134</span><a id="line.134">    interface SpannerDeleteOptions extends SpannerWriteOptions {</a>
+<span class="sourceLineNo">135</span><a id="line.135">        /** Default set of delete options. */</a>
+<span class="sourceLineNo">136</span><a id="line.136">        SpannerDeleteOptions DEFAULTS = new SpannerDeleteOptions() {};</a>
+<span class="sourceLineNo">137</span><a id="line.137">    }</a>
+<span class="sourceLineNo">138</span><a id="line.138"></a>
+<span class="sourceLineNo">139</span><a id="line.139">    /**</a>
+<span class="sourceLineNo">140</span><a id="line.140">     * Construct a new Spanner driver from scratch.</a>
+<span class="sourceLineNo">141</span><a id="line.141">     *</a>
+<span class="sourceLineNo">142</span><a id="line.142">     * @param baseOptions Base options to apply to the Spanner driver.</a>
+<span class="sourceLineNo">143</span><a id="line.143">     * @param channelProvider Managed gRPC channel to use for Spanner RPCAPI interactions.</a>
+<span class="sourceLineNo">144</span><a id="line.144">     * @param credentialsProvider Transport credentials provider.</a>
+<span class="sourceLineNo">145</span><a id="line.145">     * @param defaultDatabase Default Spanner database to use and interact with.</a>
+<span class="sourceLineNo">146</span><a id="line.146">     * @param callCredentialProvider RPC call credential provider.</a>
+<span class="sourceLineNo">147</span><a id="line.147">     * @param transportOptions Options to apply to the transport layer.</a>
+<span class="sourceLineNo">148</span><a id="line.148">     * @param executorService Executor service to use when executing calls.</a>
+<span class="sourceLineNo">149</span><a id="line.149">     * @param codec Model codec to use with this driver.</a>
+<span class="sourceLineNo">150</span><a id="line.150">     * @param driverSettings Settings for the Spanner driver itself.</a>
+<span class="sourceLineNo">151</span><a id="line.151">     */</a>
+<span class="sourceLineNo">152</span><a id="line.152">    private SpannerDriver(@Nonnull SpannerOptions.Builder baseOptions,</a>
+<span class="sourceLineNo">153</span><a id="line.153">                          @Nonnull TransportChannelProvider channelProvider,</a>
+<span class="sourceLineNo">154</span><a id="line.154">                          @Nonnull DatabaseId defaultDatabase,</a>
+<span class="sourceLineNo">155</span><a id="line.155">                          @Nonnull Optional&lt;CredentialsProvider&gt; credentialsProvider,</a>
+<span class="sourceLineNo">156</span><a id="line.156">                          @Nonnull Optional&lt;SpannerOptions.CallCredentialsProvider&gt; callCredentialProvider,</a>
+<span class="sourceLineNo">157</span><a id="line.157">                          @Nonnull GrpcTransportOptions transportOptions,</a>
+<span class="sourceLineNo">158</span><a id="line.158">                          @Nonnull ListeningScheduledExecutorService executorService,</a>
+<span class="sourceLineNo">159</span><a id="line.159">                          @Nonnull ModelCodec&lt;Model, Mutation, Struct&gt; codec,</a>
+<span class="sourceLineNo">160</span><a id="line.160">                          @Nonnull SpannerDriverSettings driverSettings) {</a>
+<span class="sourceLineNo">161</span><a id="line.161">        this.codec = codec;</a>
+<span class="sourceLineNo">162</span><a id="line.162">        this.defaultDatabase = defaultDatabase;</a>
+<span class="sourceLineNo">163</span><a id="line.163">        this.executorService = executorService;</a>
+<span class="sourceLineNo">164</span><a id="line.164">        this.driverSettings = driverSettings;</a>
+<span class="sourceLineNo">165</span><a id="line.165">        SpannerOptions.Builder options = baseOptions</a>
+<span class="sourceLineNo">166</span><a id="line.166">                .setChannelProvider(channelProvider)</a>
+<span class="sourceLineNo">167</span><a id="line.167">                .setTransportOptions(transportOptions);</a>
+<span class="sourceLineNo">168</span><a id="line.168"></a>
+<span class="sourceLineNo">169</span><a id="line.169">        callCredentialProvider.ifPresent(options::setCallCredentialsProvider);</a>
+<span class="sourceLineNo">170</span><a id="line.170">        credentialsProvider.ifPresent((credentialProvider) -&gt; options</a>
+<span class="sourceLineNo">171</span><a id="line.171">                .getSpannerStubSettingsBuilder()</a>
+<span class="sourceLineNo">172</span><a id="line.172">                .setCredentialsProvider(credentialProvider));</a>
+<span class="sourceLineNo">173</span><a id="line.173"></a>
+<span class="sourceLineNo">174</span><a id="line.174">        if (logging.isDebugEnabled())</a>
+<span class="sourceLineNo">175</span><a id="line.175">            logging.debug(String.format("Initializing Spanner driver with options:\n%s",</a>
+<span class="sourceLineNo">176</span><a id="line.176">                    options.build().getService().getOptions().toString()));</a>
+<span class="sourceLineNo">177</span><a id="line.177">        this.engine = options.build().getService();</a>
+<span class="sourceLineNo">178</span><a id="line.178">    }</a>
+<span class="sourceLineNo">179</span><a id="line.179"></a>
+<span class="sourceLineNo">180</span><a id="line.180">    /** Factory responsible for creating {@link SpannerDriver} instances from injected dependencies. */</a>
+<span class="sourceLineNo">181</span><a id="line.181">    @Factory static final class SpannerDriverFactory {</a>
+<span class="sourceLineNo">182</span><a id="line.182">        private SpannerDriverFactory() { /* Disallow construction. */ }</a>
+<span class="sourceLineNo">183</span><a id="line.183"></a>
+<span class="sourceLineNo">184</span><a id="line.184">        /**</a>
+<span class="sourceLineNo">185</span><a id="line.185">         * Acquire a new instance of the Spanner driver, using the specified configuration settings, and the specified</a>
+<span class="sourceLineNo">186</span><a id="line.186">         * injected channel.</a>
+<span class="sourceLineNo">187</span><a id="line.187">         *</a>
+<span class="sourceLineNo">188</span><a id="line.188">         * @param baseOptions Base options to apply to the Spanner driver.</a>
+<span class="sourceLineNo">189</span><a id="line.189">         * @param spannerChannel Managed gRPC channel provider.</a>
+<span class="sourceLineNo">190</span><a id="line.190">         * @param credentialsProvider Transport credentials provider.</a>
+<span class="sourceLineNo">191</span><a id="line.191">         * @param callCredentialProvider RPC call credential provider.</a>
+<span class="sourceLineNo">192</span><a id="line.192">         * @param transportOptions Options to apply to the Spanner channel.</a>
+<span class="sourceLineNo">193</span><a id="line.193">         * @param executorService Executor service to use when executing calls.</a>
+<span class="sourceLineNo">194</span><a id="line.194">         * @param keyInstance Key model class we are binding this driver to.</a>
+<span class="sourceLineNo">195</span><a id="line.195">         * @param modelInstance Default instance of the model we wish to make a driver for.</a>
+<span class="sourceLineNo">196</span><a id="line.196">         * @param driverSettings Settings for the Spanner driver.</a>
+<span class="sourceLineNo">197</span><a id="line.197">         * @return Spanner driver instance.</a>
+<span class="sourceLineNo">198</span><a id="line.198">         */</a>
+<span class="sourceLineNo">199</span><a id="line.199">        @Context</a>
+<span class="sourceLineNo">200</span><a id="line.200">        @Refreshable</a>
+<span class="sourceLineNo">201</span><a id="line.201">        public static @Nonnull &lt;K extends Message, M extends Message&gt; SpannerDriver&lt;K, M&gt; acquireDriver(</a>
+<span class="sourceLineNo">202</span><a id="line.202">                @Nonnull SpannerOptions.Builder baseOptions,</a>
+<span class="sourceLineNo">203</span><a id="line.203">                @Nonnull DatabaseId defaultDatabase,</a>
+<span class="sourceLineNo">204</span><a id="line.204">                @Nonnull @GoogleAPIChannel(service = GoogleService.SPANNER) TransportChannelProvider spannerChannel,</a>
+<span class="sourceLineNo">205</span><a id="line.205">                @Nonnull Optional&lt;CredentialsProvider&gt; credentialsProvider,</a>
+<span class="sourceLineNo">206</span><a id="line.206">                @Nonnull Optional&lt;SpannerOptions.CallCredentialsProvider&gt; callCredentialProvider,</a>
+<span class="sourceLineNo">207</span><a id="line.207">                @Nonnull GrpcTransportOptions transportOptions,</a>
+<span class="sourceLineNo">208</span><a id="line.208">                @Nonnull ListeningScheduledExecutorService executorService,</a>
+<span class="sourceLineNo">209</span><a id="line.209">                @SuppressWarnings("unused") @Nonnull K keyInstance,</a>
+<span class="sourceLineNo">210</span><a id="line.210">                @Nonnull M modelInstance,</a>
+<span class="sourceLineNo">211</span><a id="line.211">                @Nonnull SpannerDriverSettings driverSettings) {</a>
+<span class="sourceLineNo">212</span><a id="line.212">            return new SpannerDriver&lt;&gt;(</a>
+<span class="sourceLineNo">213</span><a id="line.213">                baseOptions,</a>
+<span class="sourceLineNo">214</span><a id="line.214">                spannerChannel,</a>
+<span class="sourceLineNo">215</span><a id="line.215">                defaultDatabase,</a>
+<span class="sourceLineNo">216</span><a id="line.216">                credentialsProvider,</a>
+<span class="sourceLineNo">217</span><a id="line.217">                callCredentialProvider,</a>
+<span class="sourceLineNo">218</span><a id="line.218">                transportOptions,</a>
+<span class="sourceLineNo">219</span><a id="line.219">                executorService,</a>
+<span class="sourceLineNo">220</span><a id="line.220">                SpannerCodec.forModel(</a>
+<span class="sourceLineNo">221</span><a id="line.221">                    modelInstance,</a>
+<span class="sourceLineNo">222</span><a id="line.222">                    SpannerMutationSerializer.forModel(</a>
+<span class="sourceLineNo">223</span><a id="line.223">                        modelInstance,</a>
+<span class="sourceLineNo">224</span><a id="line.224">                        driverSettings</a>
+<span class="sourceLineNo">225</span><a id="line.225">                    ),</a>
+<span class="sourceLineNo">226</span><a id="line.226">                    SpannerStructDeserializer.forModel(</a>
+<span class="sourceLineNo">227</span><a id="line.227">                        modelInstance,</a>
+<span class="sourceLineNo">228</span><a id="line.228">                        driverSettings</a>
+<span class="sourceLineNo">229</span><a id="line.229">                    )</a>
+<span class="sourceLineNo">230</span><a id="line.230">                ),</a>
+<span class="sourceLineNo">231</span><a id="line.231">                driverSettings</a>
+<span class="sourceLineNo">232</span><a id="line.232">            );</a>
+<span class="sourceLineNo">233</span><a id="line.233">        }</a>
+<span class="sourceLineNo">234</span><a id="line.234">    }</a>
+<span class="sourceLineNo">235</span><a id="line.235"></a>
+<span class="sourceLineNo">236</span><a id="line.236">    /** @inheritDoc */</a>
+<span class="sourceLineNo">237</span><a id="line.237">    @Override</a>
+<span class="sourceLineNo">238</span><a id="line.238">    public @Nonnull ListeningScheduledExecutorService executorService() {</a>
+<span class="sourceLineNo">239</span><a id="line.239">        return executorService;</a>
+<span class="sourceLineNo">240</span><a id="line.240">    }</a>
+<span class="sourceLineNo">241</span><a id="line.241"></a>
+<span class="sourceLineNo">242</span><a id="line.242">    /** @inheritDoc */</a>
+<span class="sourceLineNo">243</span><a id="line.243">    @Override</a>
+<span class="sourceLineNo">244</span><a id="line.244">    public @Nonnull ModelCodec&lt;Model, Mutation, Struct&gt; codec() {</a>
+<span class="sourceLineNo">245</span><a id="line.245">        return codec;</a>
+<span class="sourceLineNo">246</span><a id="line.246">    }</a>
+<span class="sourceLineNo">247</span><a id="line.247"></a>
+<span class="sourceLineNo">248</span><a id="line.248">    /** @inheritDoc */</a>
+<span class="sourceLineNo">249</span><a id="line.249">    @Override</a>
+<span class="sourceLineNo">250</span><a id="line.250">    public @Nonnull ReactiveFuture&lt;Optional&lt;Model&gt;&gt; retrieve(@Nonnull Key key,</a>
+<span class="sourceLineNo">251</span><a id="line.251">                                                             @Nonnull FetchOptions options) {</a>
+<span class="sourceLineNo">252</span><a id="line.252">        // null check all inputs</a>
+<span class="sourceLineNo">253</span><a id="line.253">        Objects.requireNonNull(key, "Cannot fetch model with `null` for key.");</a>
+<span class="sourceLineNo">254</span><a id="line.254">        Objects.requireNonNull(options, "Cannot fetch model without `options`.");</a>
+<span class="sourceLineNo">255</span><a id="line.255">        enforceRole(key, DatapointType.OBJECT_KEY);</a>
+<span class="sourceLineNo">256</span><a id="line.256">        var keyId = id(key).orElseThrow(() -&gt;</a>
+<span class="sourceLineNo">257</span><a id="line.257">            new IllegalArgumentException("Cannot fetch model with empty key."));</a>
+<span class="sourceLineNo">258</span><a id="line.258"></a>
+<span class="sourceLineNo">259</span><a id="line.259">        // resolve the table where we should look for this entity</a>
+<span class="sourceLineNo">260</span><a id="line.260">        var table = resolveTableName(key);</a>
+<span class="sourceLineNo">261</span><a id="line.261"></a>
+<span class="sourceLineNo">262</span><a id="line.262">        // next, resolve the executor, database we should operate on, and corresponding client</a>
+<span class="sourceLineNo">263</span><a id="line.263">        ListeningScheduledExecutorService exec = options.executorService().orElseGet(this::executorService);</a>
+<span class="sourceLineNo">264</span><a id="line.264">        SpannerFetchOptions spannerOpts;</a>
+<span class="sourceLineNo">265</span><a id="line.265"></a>
+<span class="sourceLineNo">266</span><a id="line.266">        if (options.getClass().isAssignableFrom(SpannerFetchOptions.class)) {</a>
+<span class="sourceLineNo">267</span><a id="line.267">            spannerOpts = ((SpannerFetchOptions) options);</a>
+<span class="sourceLineNo">268</span><a id="line.268">        } else {</a>
+<span class="sourceLineNo">269</span><a id="line.269">            spannerOpts = SpannerFetchOptions.DEFAULTS;</a>
+<span class="sourceLineNo">270</span><a id="line.270">        }</a>
+<span class="sourceLineNo">271</span><a id="line.271"></a>
+<span class="sourceLineNo">272</span><a id="line.272">        DatabaseId db = spannerOpts.databaseId().orElse(defaultDatabase);</a>
+<span class="sourceLineNo">273</span><a id="line.273">        var client = engine.getDatabaseClient(db);</a>
+<span class="sourceLineNo">274</span><a id="line.274">        boolean transactional = spannerOpts.transactional().isPresent() &amp;&amp; spannerOpts.transactional().get();</a>
+<span class="sourceLineNo">275</span><a id="line.275"></a>
+<span class="sourceLineNo">276</span><a id="line.276">        // with the DB client in hand, resolve the raw Spanner result</a>
+<span class="sourceLineNo">277</span><a id="line.277">        ReadContext context;</a>
+<span class="sourceLineNo">278</span><a id="line.278">        if (spannerOpts.timestampBound().isPresent()) {</a>
+<span class="sourceLineNo">279</span><a id="line.279">            if (transactional) {</a>
+<span class="sourceLineNo">280</span><a id="line.280">                context = client.readOnlyTransaction(spannerOpts.timestampBound().get());</a>
+<span class="sourceLineNo">281</span><a id="line.281">            } else {</a>
+<span class="sourceLineNo">282</span><a id="line.282">                context = client.singleUse(spannerOpts.timestampBound().get());</a>
+<span class="sourceLineNo">283</span><a id="line.283">            }</a>
+<span class="sourceLineNo">284</span><a id="line.284">        } else {</a>
+<span class="sourceLineNo">285</span><a id="line.285">            if (transactional) {</a>
+<span class="sourceLineNo">286</span><a id="line.286">                context = client.readOnlyTransaction();</a>
+<span class="sourceLineNo">287</span><a id="line.287">            } else {</a>
+<span class="sourceLineNo">288</span><a id="line.288">                context = client.singleUse();</a>
+<span class="sourceLineNo">289</span><a id="line.289">            }</a>
+<span class="sourceLineNo">290</span><a id="line.290">        }</a>
+<span class="sourceLineNo">291</span><a id="line.291"></a>
+<span class="sourceLineNo">292</span><a id="line.292">        // calculate the fields we should read from Spanner. because Spanner is a SQL-style DB with tables, we must</a>
+<span class="sourceLineNo">293</span><a id="line.293">        // enumerate each field we wish to load into the result set. this set of fields can either be specified via a</a>
+<span class="sourceLineNo">294</span><a id="line.294">        // field mask attached to the call options, or by generating a set of fields from the top-level model.</a>
+<span class="sourceLineNo">295</span><a id="line.295">        List&lt;String&gt; fieldsToRead;</a>
+<span class="sourceLineNo">296</span><a id="line.296">        if (spannerOpts.projection().isPresent()) {</a>
+<span class="sourceLineNo">297</span><a id="line.297">            fieldsToRead = FieldMaskUtil.normalize(spannerOpts.projection().get())</a>
+<span class="sourceLineNo">298</span><a id="line.298">                    .getPathsList();</a>
+<span class="sourceLineNo">299</span><a id="line.299">        } else {</a>
+<span class="sourceLineNo">300</span><a id="line.300">            fieldsToRead = calculateDefaultFields(</a>
+<span class="sourceLineNo">301</span><a id="line.301">                this.codec().instance().getDescriptorForType(),</a>
+<span class="sourceLineNo">302</span><a id="line.302">                driverSettings</a>
+<span class="sourceLineNo">303</span><a id="line.303">            );</a>
+<span class="sourceLineNo">304</span><a id="line.304">        }</a>
+<span class="sourceLineNo">305</span><a id="line.305"></a>
+<span class="sourceLineNo">306</span><a id="line.306">        var op = wrap(context.readRowAsync(</a>
+<span class="sourceLineNo">307</span><a id="line.307">            table,</a>
+<span class="sourceLineNo">308</span><a id="line.308">            com.google.cloud.spanner.Key.of(id(key).orElseThrow()),</a>
+<span class="sourceLineNo">309</span><a id="line.309">            fieldsToRead</a>
+<span class="sourceLineNo">310</span><a id="line.310">        ));</a>
+<span class="sourceLineNo">311</span><a id="line.311"></a>
+<span class="sourceLineNo">312</span><a id="line.312">        return wrap(transformAsync(withTimeout(op, 120, TimeUnit.SECONDS, exec), (result) -&gt; {</a>
+<span class="sourceLineNo">313</span><a id="line.313">            if (result == null) {</a>
+<span class="sourceLineNo">314</span><a id="line.314">                if (logging.isDebugEnabled())</a>
+<span class="sourceLineNo">315</span><a id="line.315">                    logging.debug("Query option result was `null`. Returning empty result.");</a>
+<span class="sourceLineNo">316</span><a id="line.316">                return immediateFuture(Optional.empty());</a>
+<span class="sourceLineNo">317</span><a id="line.317"></a>
+<span class="sourceLineNo">318</span><a id="line.318">            } else {</a>
+<span class="sourceLineNo">319</span><a id="line.319">                if (logging.isDebugEnabled())</a>
+<span class="sourceLineNo">320</span><a id="line.320">                    logging.debug("Received non-null `Struct` result from Spanner. Deserializing...");</a>
+<span class="sourceLineNo">321</span><a id="line.321"></a>
+<span class="sourceLineNo">322</span><a id="line.322">                // deserialize the model</a>
+<span class="sourceLineNo">323</span><a id="line.323">                var deserialized = codec.deserialize(result);</a>
+<span class="sourceLineNo">324</span><a id="line.324">                if (logging.isDebugEnabled())</a>
+<span class="sourceLineNo">325</span><a id="line.325">                    logging.debug(format(</a>
+<span class="sourceLineNo">326</span><a id="line.326">                        "Found and deserialized model at ID '%s' from Spanner. Record follows:\n%s",</a>
+<span class="sourceLineNo">327</span><a id="line.327">                        keyId,</a>
+<span class="sourceLineNo">328</span><a id="line.328">                        deserialized));</a>
+<span class="sourceLineNo">329</span><a id="line.329"></a>
+<span class="sourceLineNo">330</span><a id="line.330">                return immediateFuture(Optional.of(</a>
+<span class="sourceLineNo">331</span><a id="line.331">                    spliceKey(applyMask(deserialized, options), Optional.of(key))</a>
+<span class="sourceLineNo">332</span><a id="line.332">                ));</a>
+<span class="sourceLineNo">333</span><a id="line.333">            }</a>
+<span class="sourceLineNo">334</span><a id="line.334">        }, exec));</a>
+<span class="sourceLineNo">335</span><a id="line.335">    }</a>
+<span class="sourceLineNo">336</span><a id="line.336"></a>
+<span class="sourceLineNo">337</span><a id="line.337">    /** @inheritDoc */</a>
+<span class="sourceLineNo">338</span><a id="line.338">    @Override</a>
+<span class="sourceLineNo">339</span><a id="line.339">    public @Nonnull ReactiveFuture&lt;Model&gt; persist(@Nullable Key key,</a>
+<span class="sourceLineNo">340</span><a id="line.340">                                                  @Nonnull Model model,</a>
+<span class="sourceLineNo">341</span><a id="line.341">                                                  @Nonnull WriteOptions options) {</a>
+<span class="sourceLineNo">342</span><a id="line.342">        // enforce model constraints</a>
+<span class="sourceLineNo">343</span><a id="line.343">        Objects.requireNonNull(key, "Cannot write model with `null` for key.");</a>
+<span class="sourceLineNo">344</span><a id="line.344">        Objects.requireNonNull(model, "Cannot write model which is, itself, `null`.");</a>
+<span class="sourceLineNo">345</span><a id="line.345">        Objects.requireNonNull(options, "Cannot write model without `options`.");</a>
+<span class="sourceLineNo">346</span><a id="line.346">        enforceRole(key, DatapointType.OBJECT_KEY);</a>
+<span class="sourceLineNo">347</span><a id="line.347"></a>
+<span class="sourceLineNo">348</span><a id="line.348">        // resolve executor</a>
+<span class="sourceLineNo">349</span><a id="line.349">        ListeningScheduledExecutorService exec = options.executorService().orElseGet(this::executorService);</a>
+<span class="sourceLineNo">350</span><a id="line.350"></a>
+<span class="sourceLineNo">351</span><a id="line.351">        // resolve existing ID, if any. if none can be resolved, generate one, and splice it into the key, and then</a>
+<span class="sourceLineNo">352</span><a id="line.352">        // likewise splice the key into the model. if an explicit ID is present, it is assumed that it is mounted</a>
+<span class="sourceLineNo">353</span><a id="line.353">        // correctly on the model.</a>
+<span class="sourceLineNo">354</span><a id="line.354">        Optional&lt;Object&gt; existingId = id(key);</a>
+<span class="sourceLineNo">355</span><a id="line.355">        Object modelId = existingId.orElseGet(() -&gt; this.generateId(model));</a>
+<span class="sourceLineNo">356</span><a id="line.356"></a>
+<span class="sourceLineNo">357</span><a id="line.357">        if (existingId.isEmpty()) {</a>
+<span class="sourceLineNo">358</span><a id="line.358">            spliceKey(</a>
+<span class="sourceLineNo">359</span><a id="line.359">                model,</a>
+<span class="sourceLineNo">360</span><a id="line.360">                Optional.of(spliceId(</a>
+<span class="sourceLineNo">361</span><a id="line.361">                    key,</a>
+<span class="sourceLineNo">362</span><a id="line.362">                    Optional.of(modelId)</a>
+<span class="sourceLineNo">363</span><a id="line.363">                ))</a>
+<span class="sourceLineNo">364</span><a id="line.364">            );</a>
+<span class="sourceLineNo">365</span><a id="line.365">        }</a>
+<span class="sourceLineNo">366</span><a id="line.366"></a>
+<span class="sourceLineNo">367</span><a id="line.367">        try {</a>
+<span class="sourceLineNo">368</span><a id="line.368">            // resolve extended spanner mutation options</a>
+<span class="sourceLineNo">369</span><a id="line.369">            SpannerMutationOptions spannerOpts;</a>
+<span class="sourceLineNo">370</span><a id="line.370">            if (options.getClass().isAssignableFrom(SpannerMutationOptions.class)) {</a>
+<span class="sourceLineNo">371</span><a id="line.371">                spannerOpts = ((SpannerMutationOptions) options);</a>
+<span class="sourceLineNo">372</span><a id="line.372">            } else {</a>
+<span class="sourceLineNo">373</span><a id="line.373">                spannerOpts = SpannerMutationOptions.DEFAULTS;</a>
+<span class="sourceLineNo">374</span><a id="line.374">            }</a>
+<span class="sourceLineNo">375</span><a id="line.375"></a>
+<span class="sourceLineNo">376</span><a id="line.376">            // resolve the table where we should look for this entity</a>
+<span class="sourceLineNo">377</span><a id="line.377">            var table = resolveTableName(key);</a>
+<span class="sourceLineNo">378</span><a id="line.378">            DatabaseId db = spannerOpts.databaseId().orElse(defaultDatabase);</a>
+<span class="sourceLineNo">379</span><a id="line.379">            var client = engine.getDatabaseClient(db);</a>
+<span class="sourceLineNo">380</span><a id="line.380">            boolean transactional = spannerOpts.transactional().isPresent() ?</a>
+<span class="sourceLineNo">381</span><a id="line.381">                    spannerOpts.transactional().get() :</a>
+<span class="sourceLineNo">382</span><a id="line.382">                    options.transactional().orElse(false);</a>
+<span class="sourceLineNo">383</span><a id="line.383"></a>
+<span class="sourceLineNo">384</span><a id="line.384">            var writeMode = spannerOpts.writeMode().isPresent() ?</a>
+<span class="sourceLineNo">385</span><a id="line.385">                    spannerOpts.writeMode().get() :</a>
+<span class="sourceLineNo">386</span><a id="line.386">                    options.writeMode().orElse(WriteOptions.WriteDisposition.BLIND);</a>
+<span class="sourceLineNo">387</span><a id="line.387"></a>
+<span class="sourceLineNo">388</span><a id="line.388">            if (logging.isDebugEnabled())</a>
+<span class="sourceLineNo">389</span><a id="line.389">                logging.debug("Mode '{}' determined for Spanner write.", writeMode.name());</a>
+<span class="sourceLineNo">390</span><a id="line.390"></a>
+<span class="sourceLineNo">391</span><a id="line.391">            Mutation.WriteBuilder mutation;</a>
+<span class="sourceLineNo">392</span><a id="line.392">            switch (writeMode) {</a>
+<span class="sourceLineNo">393</span><a id="line.393">                case BLIND: mutation = Mutation.newInsertOrUpdateBuilder(table); break;</a>
+<span class="sourceLineNo">394</span><a id="line.394">                case MUST_EXIST: mutation = Mutation.newUpdateBuilder(table); break;</a>
+<span class="sourceLineNo">395</span><a id="line.395">                case MUST_NOT_EXIST: mutation = Mutation.newInsertBuilder(table); break;</a>
+<span class="sourceLineNo">396</span><a id="line.396">                default: mutation = Mutation.newReplaceBuilder(table); break;</a>
+<span class="sourceLineNo">397</span><a id="line.397">            }</a>
+<span class="sourceLineNo">398</span><a id="line.398"></a>
+<span class="sourceLineNo">399</span><a id="line.399">            if (codec instanceof SpannerCodec) {</a>
+<span class="sourceLineNo">400</span><a id="line.400">                if (logging.isTraceEnabled())</a>
+<span class="sourceLineNo">401</span><a id="line.401">                    logging.trace("Serializing model to Spanner `Mutation`: {}", model.toString());</a>
+<span class="sourceLineNo">402</span><a id="line.402"></a>
+<span class="sourceLineNo">403</span><a id="line.403">                // fill in the mutation</a>
+<span class="sourceLineNo">404</span><a id="line.404">                var serialized = ((SpannerCodec&lt;Model&gt;) codec).serialize(mutation, model);</a>
+<span class="sourceLineNo">405</span><a id="line.405"></a>
+<span class="sourceLineNo">406</span><a id="line.406">                return wrap(exec.submit(() -&gt; {</a>
+<span class="sourceLineNo">407</span><a id="line.407">                    if (transactional) {</a>
+<span class="sourceLineNo">408</span><a id="line.408">                        // @TODO(sgammon): support for write transactions</a>
+<span class="sourceLineNo">409</span><a id="line.409">                        throw new IllegalStateException("Write transactions are not supported yet.");</a>
+<span class="sourceLineNo">410</span><a id="line.410"></a>
+<span class="sourceLineNo">411</span><a id="line.411">                    } else {</a>
+<span class="sourceLineNo">412</span><a id="line.412">                        // it's time to actually write the model</a>
+<span class="sourceLineNo">413</span><a id="line.413">                        var write = client.writeAtLeastOnce(Collections.singleton(serialized));</a>
+<span class="sourceLineNo">414</span><a id="line.414">                        Objects.requireNonNull(write, "write result from Spanner should never be null");</a>
+<span class="sourceLineNo">415</span><a id="line.415">                        return model;</a>
+<span class="sourceLineNo">416</span><a id="line.416"></a>
+<span class="sourceLineNo">417</span><a id="line.417">                    }</a>
+<span class="sourceLineNo">418</span><a id="line.418">                }));</a>
+<span class="sourceLineNo">419</span><a id="line.419"></a>
+<span class="sourceLineNo">420</span><a id="line.420">            } else {</a>
+<span class="sourceLineNo">421</span><a id="line.421">                throw new IllegalStateException("Cannot serialize Spanner model without `SpannerCodec`.");</a>
+<span class="sourceLineNo">422</span><a id="line.422">            }</a>
+<span class="sourceLineNo">423</span><a id="line.423"></a>
+<span class="sourceLineNo">424</span><a id="line.424">        } catch (IOException ioe) {</a>
+<span class="sourceLineNo">425</span><a id="line.425">            throw new IllegalStateException(ioe);</a>
+<span class="sourceLineNo">426</span><a id="line.426">        }</a>
+<span class="sourceLineNo">427</span><a id="line.427">    }</a>
+<span class="sourceLineNo">428</span><a id="line.428"></a>
+<span class="sourceLineNo">429</span><a id="line.429">    /** @inheritDoc */</a>
+<span class="sourceLineNo">430</span><a id="line.430">    @Override</a>
+<span class="sourceLineNo">431</span><a id="line.431">    public @Nonnull ReactiveFuture&lt;Key&gt; delete(@Nonnull Key key,</a>
+<span class="sourceLineNo">432</span><a id="line.432">                                               @Nonnull DeleteOptions options) {</a>
+<span class="sourceLineNo">433</span><a id="line.433">        Objects.requireNonNull(key, "cannot delete null key from Spanner");</a>
+<span class="sourceLineNo">434</span><a id="line.434">        Objects.requireNonNull(options, "cannot delete without valid Spanner options");</a>
+<span class="sourceLineNo">435</span><a id="line.435">        enforceRole(key, DatapointType.OBJECT_KEY);</a>
+<span class="sourceLineNo">436</span><a id="line.436">        Object keyId = id(key).orElseThrow(() -&gt;</a>
+<span class="sourceLineNo">437</span><a id="line.437">                new IllegalArgumentException("Cannot delete key with empty or missing ID."));</a>
+<span class="sourceLineNo">438</span><a id="line.438"></a>
+<span class="sourceLineNo">439</span><a id="line.439">        // prep for an async delete action</a>
+<span class="sourceLineNo">440</span><a id="line.440">        ListeningScheduledExecutorService exec = options.executorService().orElseGet(this::executorService);</a>
+<span class="sourceLineNo">441</span><a id="line.441"></a>
+<span class="sourceLineNo">442</span><a id="line.442">        // resolve extended spanner mutation options</a>
+<span class="sourceLineNo">443</span><a id="line.443">        SpannerDeleteOptions spannerOpts;</a>
+<span class="sourceLineNo">444</span><a id="line.444">        if (options.getClass().isAssignableFrom(SpannerDeleteOptions.class)) {</a>
+<span class="sourceLineNo">445</span><a id="line.445">            spannerOpts = ((SpannerDeleteOptions) options);</a>
+<span class="sourceLineNo">446</span><a id="line.446">        } else {</a>
+<span class="sourceLineNo">447</span><a id="line.447">            spannerOpts = SpannerDeleteOptions.DEFAULTS;</a>
+<span class="sourceLineNo">448</span><a id="line.448">        }</a>
+<span class="sourceLineNo">449</span><a id="line.449"></a>
+<span class="sourceLineNo">450</span><a id="line.450">        // next, resolve the table we should work with, and any override DB</a>
+<span class="sourceLineNo">451</span><a id="line.451">        var table = resolveTableName(key);</a>
+<span class="sourceLineNo">452</span><a id="line.452">        DatabaseId db = spannerOpts.databaseId().orElse(defaultDatabase);</a>
+<span class="sourceLineNo">453</span><a id="line.453">        var client = engine.getDatabaseClient(db);</a>
+<span class="sourceLineNo">454</span><a id="line.454">        boolean transactional = spannerOpts.transactional().isPresent() ?</a>
+<span class="sourceLineNo">455</span><a id="line.455">                spannerOpts.transactional().get() :</a>
+<span class="sourceLineNo">456</span><a id="line.456">                options.transactional().orElse(false);</a>
+<span class="sourceLineNo">457</span><a id="line.457"></a>
+<span class="sourceLineNo">458</span><a id="line.458">        // prep the delete operation and fire it off</a>
+<span class="sourceLineNo">459</span><a id="line.459">        var deleteOperation = Mutation.delete(table, com.google.cloud.spanner.Key.of(keyId));</a>
+<span class="sourceLineNo">460</span><a id="line.460">        if (logging.isDebugEnabled())</a>
+<span class="sourceLineNo">461</span><a id="line.461">            logging.debug("Deleting model at ID `{}` in table `{}`.", keyId, table);</a>
+<span class="sourceLineNo">462</span><a id="line.462">        return wrap(exec.submit(() -&gt; {</a>
+<span class="sourceLineNo">463</span><a id="line.463">            if (transactional) {</a>
+<span class="sourceLineNo">464</span><a id="line.464">                // @TODO(sgammon): support for delete transactions</a>
+<span class="sourceLineNo">465</span><a id="line.465">                throw new IllegalStateException("Write transactions are not supported yet.");</a>
+<span class="sourceLineNo">466</span><a id="line.466">            } else {</a>
+<span class="sourceLineNo">467</span><a id="line.467">                var result = client.write(Arrays.asList(deleteOperation));</a>
+<span class="sourceLineNo">468</span><a id="line.468">                Objects.requireNonNull(result, "delete result from Spanner should never be null");</a>
+<span class="sourceLineNo">469</span><a id="line.469">                return key;</a>
+<span class="sourceLineNo">470</span><a id="line.470">            }</a>
+<span class="sourceLineNo">471</span><a id="line.471">        }));</a>
+<span class="sourceLineNo">472</span><a id="line.472">    }</a>
+<span class="sourceLineNo">473</span><a id="line.473">}</a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</main>
+</body>
+</html>

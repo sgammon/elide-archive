@@ -1,0 +1,208 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<main role="main">
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span><a id="line.1">package gust.backend.model;</a>
+<span class="sourceLineNo">002</span><a id="line.2"></a>
+<span class="sourceLineNo">003</span><a id="line.3">import com.google.firestore.v1.Value;</a>
+<span class="sourceLineNo">004</span><a id="line.4">import com.google.protobuf.Message;</a>
+<span class="sourceLineNo">005</span><a id="line.5">import javax.annotation.Nonnull;</a>
+<span class="sourceLineNo">006</span><a id="line.6">import java.util.*;</a>
+<span class="sourceLineNo">007</span><a id="line.7"></a>
+<span class="sourceLineNo">008</span><a id="line.8"></a>
+<span class="sourceLineNo">009</span><a id="line.9">/** Describes a model which has been serialized into a backing map of keys and properties. */</a>
+<span class="sourceLineNo">010</span><a id="line.10">public final class SerializedModel implements Map&lt;String, Value&gt; {</a>
+<span class="sourceLineNo">011</span><a id="line.11">  /** Raw serialized property data for the backing message. */</a>
+<span class="sourceLineNo">012</span><a id="line.12">  private final @Nonnull SortedMap&lt;String, Value&gt; data;</a>
+<span class="sourceLineNo">013</span><a id="line.13"></a>
+<span class="sourceLineNo">014</span><a id="line.14">  /** Original model (message) that we serialized into `data`. */</a>
+<span class="sourceLineNo">015</span><a id="line.15">  private final @Nonnull Optional&lt;Message&gt; message;</a>
+<span class="sourceLineNo">016</span><a id="line.16"></a>
+<span class="sourceLineNo">017</span><a id="line.17">  /**</a>
+<span class="sourceLineNo">018</span><a id="line.18">   * Create a serialized model object from scratch.</a>
+<span class="sourceLineNo">019</span><a id="line.19">   *</a>
+<span class="sourceLineNo">020</span><a id="line.20">   * @param data Serialized key-value pairs for the model.</a>
+<span class="sourceLineNo">021</span><a id="line.21">   * @param message Original model message instance.</a>
+<span class="sourceLineNo">022</span><a id="line.22">   */</a>
+<span class="sourceLineNo">023</span><a id="line.23">  SerializedModel(@Nonnull SortedMap&lt;String, Value&gt; data,</a>
+<span class="sourceLineNo">024</span><a id="line.24">                  @Nonnull Optional&lt;Message&gt; message) {</a>
+<span class="sourceLineNo">025</span><a id="line.25">    this.data = data;</a>
+<span class="sourceLineNo">026</span><a id="line.26">    this.message = message;</a>
+<span class="sourceLineNo">027</span><a id="line.27">  }</a>
+<span class="sourceLineNo">028</span><a id="line.28"></a>
+<span class="sourceLineNo">029</span><a id="line.29">  /**</a>
+<span class="sourceLineNo">030</span><a id="line.30">   * Create an empty serialized model, for use as a container.</a>
+<span class="sourceLineNo">031</span><a id="line.31">   *</a>
+<span class="sourceLineNo">032</span><a id="line.32">   * @return Empty serialized model.</a>
+<span class="sourceLineNo">033</span><a id="line.33">   */</a>
+<span class="sourceLineNo">034</span><a id="line.34">  public static @Nonnull SerializedModel factory() {</a>
+<span class="sourceLineNo">035</span><a id="line.35">    return factory(new TreeMap&lt;&gt;());</a>
+<span class="sourceLineNo">036</span><a id="line.36">  }</a>
+<span class="sourceLineNo">037</span><a id="line.37"></a>
+<span class="sourceLineNo">038</span><a id="line.38">  /**</a>
+<span class="sourceLineNo">039</span><a id="line.39">   * Create a serialized model, pre-filled with the provided backing data.</a>
+<span class="sourceLineNo">040</span><a id="line.40">   *</a>
+<span class="sourceLineNo">041</span><a id="line.41">   * @param data Data to pre-fill the serialized model with.</a>
+<span class="sourceLineNo">042</span><a id="line.42">   * @return Serialized model, pre-filled with the specified data.</a>
+<span class="sourceLineNo">043</span><a id="line.43">   */</a>
+<span class="sourceLineNo">044</span><a id="line.44">  public static @Nonnull SerializedModel factory(@Nonnull SortedMap&lt;String, Value&gt; data) {</a>
+<span class="sourceLineNo">045</span><a id="line.45">    return new SerializedModel(data, Optional.empty());</a>
+<span class="sourceLineNo">046</span><a id="line.46">  }</a>
+<span class="sourceLineNo">047</span><a id="line.47"></a>
+<span class="sourceLineNo">048</span><a id="line.48">  /**</a>
+<span class="sourceLineNo">049</span><a id="line.49">   * Create a serialized model, pre-filled with the provided backing data.</a>
+<span class="sourceLineNo">050</span><a id="line.50">   *</a>
+<span class="sourceLineNo">051</span><a id="line.51">   * @param data Data to pre-fill the serialized model with.</a>
+<span class="sourceLineNo">052</span><a id="line.52">   * @param proto Message instance to wrap, for which `data` is provided.</a>
+<span class="sourceLineNo">053</span><a id="line.53">   * @return Serialized model, pre-filled with the specified data.</a>
+<span class="sourceLineNo">054</span><a id="line.54">   */</a>
+<span class="sourceLineNo">055</span><a id="line.55">  public static @Nonnull SerializedModel wrap(@Nonnull SortedMap&lt;String, Value&gt; data,</a>
+<span class="sourceLineNo">056</span><a id="line.56">                                              @Nonnull Message proto) {</a>
+<span class="sourceLineNo">057</span><a id="line.57">    return new SerializedModel(data, Optional.of(proto));</a>
+<span class="sourceLineNo">058</span><a id="line.58">  }</a>
+<span class="sourceLineNo">059</span><a id="line.59"></a>
+<span class="sourceLineNo">060</span><a id="line.60">  // -- Getters -- //</a>
+<span class="sourceLineNo">061</span><a id="line.61"></a>
+<span class="sourceLineNo">062</span><a id="line.62">  /** @return Underlying data for this serialized model instance. */</a>
+<span class="sourceLineNo">063</span><a id="line.63">  @Nonnull public SortedMap&lt;String, Value&gt; getData() {</a>
+<span class="sourceLineNo">064</span><a id="line.64">    return data;</a>
+<span class="sourceLineNo">065</span><a id="line.65">  }</a>
+<span class="sourceLineNo">066</span><a id="line.66"></a>
+<span class="sourceLineNo">067</span><a id="line.67">  /** @return Message instance which spawned this serialized model. */</a>
+<span class="sourceLineNo">068</span><a id="line.68">  @Nonnull</a>
+<span class="sourceLineNo">069</span><a id="line.69">  public Optional&lt;Message&gt; getMessage() {</a>
+<span class="sourceLineNo">070</span><a id="line.70">    return message;</a>
+<span class="sourceLineNo">071</span><a id="line.71">  }</a>
+<span class="sourceLineNo">072</span><a id="line.72"></a>
+<span class="sourceLineNo">073</span><a id="line.73">  // -- Interface: Map -- //</a>
+<span class="sourceLineNo">074</span><a id="line.74"></a>
+<span class="sourceLineNo">075</span><a id="line.75">  /** @inheritDoc */</a>
+<span class="sourceLineNo">076</span><a id="line.76">  @Override public int size() {</a>
+<span class="sourceLineNo">077</span><a id="line.77">    return data.size();</a>
+<span class="sourceLineNo">078</span><a id="line.78">  }</a>
+<span class="sourceLineNo">079</span><a id="line.79"></a>
+<span class="sourceLineNo">080</span><a id="line.80">  /** @inheritDoc */</a>
+<span class="sourceLineNo">081</span><a id="line.81">  @Override public boolean isEmpty() {</a>
+<span class="sourceLineNo">082</span><a id="line.82">    return data.isEmpty();</a>
+<span class="sourceLineNo">083</span><a id="line.83">  }</a>
+<span class="sourceLineNo">084</span><a id="line.84"></a>
+<span class="sourceLineNo">085</span><a id="line.85">  /** @inheritDoc */</a>
+<span class="sourceLineNo">086</span><a id="line.86">  @Override public boolean containsKey(Object key) {</a>
+<span class="sourceLineNo">087</span><a id="line.87">    return data.containsKey(key);</a>
+<span class="sourceLineNo">088</span><a id="line.88">  }</a>
+<span class="sourceLineNo">089</span><a id="line.89"></a>
+<span class="sourceLineNo">090</span><a id="line.90">  /** @inheritDoc */</a>
+<span class="sourceLineNo">091</span><a id="line.91">  @Override public Value get(Object key) {</a>
+<span class="sourceLineNo">092</span><a id="line.92">    return data.get(key);</a>
+<span class="sourceLineNo">093</span><a id="line.93">  }</a>
+<span class="sourceLineNo">094</span><a id="line.94"></a>
+<span class="sourceLineNo">095</span><a id="line.95">  /** @inheritDoc */</a>
+<span class="sourceLineNo">096</span><a id="line.96">  @Override public Value put(String key, Value value) {</a>
+<span class="sourceLineNo">097</span><a id="line.97">    return data.put(key, value);</a>
+<span class="sourceLineNo">098</span><a id="line.98">  }</a>
+<span class="sourceLineNo">099</span><a id="line.99"></a>
+<span class="sourceLineNo">100</span><a id="line.100">  /** @inheritDoc */</a>
+<span class="sourceLineNo">101</span><a id="line.101">  @Override public Value remove(Object key) {</a>
+<span class="sourceLineNo">102</span><a id="line.102">    return data.remove(key);</a>
+<span class="sourceLineNo">103</span><a id="line.103">  }</a>
+<span class="sourceLineNo">104</span><a id="line.104"></a>
+<span class="sourceLineNo">105</span><a id="line.105">  /** @inheritDoc */</a>
+<span class="sourceLineNo">106</span><a id="line.106">  @Override public boolean containsValue(Object value) {</a>
+<span class="sourceLineNo">107</span><a id="line.107">    return data.containsValue(value);</a>
+<span class="sourceLineNo">108</span><a id="line.108">  }</a>
+<span class="sourceLineNo">109</span><a id="line.109"></a>
+<span class="sourceLineNo">110</span><a id="line.110">  /** @inheritDoc */</a>
+<span class="sourceLineNo">111</span><a id="line.111">  @Override public void putAll(Map&lt;? extends String, ? extends Value&gt; map) {</a>
+<span class="sourceLineNo">112</span><a id="line.112">    data.putAll(map);</a>
+<span class="sourceLineNo">113</span><a id="line.113">  }</a>
+<span class="sourceLineNo">114</span><a id="line.114"></a>
+<span class="sourceLineNo">115</span><a id="line.115">  /** @inheritDoc */</a>
+<span class="sourceLineNo">116</span><a id="line.116">  @Override public void clear() {</a>
+<span class="sourceLineNo">117</span><a id="line.117">    data.clear();</a>
+<span class="sourceLineNo">118</span><a id="line.118">  }</a>
+<span class="sourceLineNo">119</span><a id="line.119"></a>
+<span class="sourceLineNo">120</span><a id="line.120">  /** @inheritDoc */</a>
+<span class="sourceLineNo">121</span><a id="line.121">  @Override public Set&lt;String&gt; keySet() {</a>
+<span class="sourceLineNo">122</span><a id="line.122">    return data.keySet();</a>
+<span class="sourceLineNo">123</span><a id="line.123">  }</a>
+<span class="sourceLineNo">124</span><a id="line.124"></a>
+<span class="sourceLineNo">125</span><a id="line.125">  /** @inheritDoc */</a>
+<span class="sourceLineNo">126</span><a id="line.126">  @Override public Collection&lt;Value&gt; values() {</a>
+<span class="sourceLineNo">127</span><a id="line.127">    return data.values();</a>
+<span class="sourceLineNo">128</span><a id="line.128">  }</a>
+<span class="sourceLineNo">129</span><a id="line.129"></a>
+<span class="sourceLineNo">130</span><a id="line.130">  /** @inheritDoc */</a>
+<span class="sourceLineNo">131</span><a id="line.131">  @Override public Set&lt;Entry&lt;String, Value&gt;&gt; entrySet() {</a>
+<span class="sourceLineNo">132</span><a id="line.132">    return data.entrySet();</a>
+<span class="sourceLineNo">133</span><a id="line.133">  }</a>
+<span class="sourceLineNo">134</span><a id="line.134">}</a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</main>
+</body>
+</html>
