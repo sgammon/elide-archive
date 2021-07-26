@@ -153,7 +153,8 @@ public final class SpannerUtil {
      * @param settings Settings for the Spanner driver.
      * @return Expected name of the field when expressed as a column in Spanner.
      */
-    public static int resolveStringColumnSize(@Nonnull Optional<SpannerFieldOptions> spannerOpts,
+    public static int resolveStringColumnSize(@Nonnull Descriptors.FieldDescriptor field,
+                                              @Nonnull Optional<SpannerFieldOptions> spannerOpts,
                                               @Nonnull Optional<TableFieldOptions> columnOpts,
                                               @Nonnull SpannerDriverSettings settings) {
         if (spannerOpts.isPresent()) {
@@ -167,6 +168,9 @@ public final class SpannerUtil {
             if (columnOptsUnwrapped.getSize() > 0) {
                 return columnOptsUnwrapped.getSize();
             }
+        }
+        if (field.getType() == Descriptors.FieldDescriptor.Type.ENUM) {
+            return 32;  // special case: string ENUM fields should have a sensible default
         }
         return settings.defaultStringColumnSize();
     }

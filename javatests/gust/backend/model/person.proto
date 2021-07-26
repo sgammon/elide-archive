@@ -137,5 +137,7 @@ message TypeBuffet {
   float float_field = 15;
   double double_field = 16;
   SampleEnumeration enum_field = 17;
-  repeated string labels = 18;
+  repeated string labels = 18 [
+    (core.spanner).size = 240
+  ];
 }

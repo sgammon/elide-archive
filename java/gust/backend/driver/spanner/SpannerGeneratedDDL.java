@@ -201,8 +201,11 @@ public final class SpannerGeneratedDDL {
             var spannerOpts = spannerOpts(fieldPointer);
             var fieldName = resolveColumnName(fieldPointer, spannerOpts, columnOpts, settings);
             var fieldType = resolveColumnType(fieldPointer, spannerOpts, columnOpts, settings);
-            var fieldSize = fieldType.getCode() == Type.Code.STRING ?
-                    resolveStringColumnSize(spannerOpts, columnOpts, settings) :
+            Type innerType = fieldPointer.getField().isRepeated() ?
+                    fieldType.getArrayElementType() :
+                    fieldType;
+            var fieldSize = innerType.getCode() == Type.Code.STRING ?
+                    resolveStringColumnSize(fieldPointer.getField(), spannerOpts, columnOpts, settings) :
                     -1;
 
             return new ColumnSpec(
@@ -235,7 +238,7 @@ public final class SpannerGeneratedDDL {
             var columnOpts = columnOpts(idField);
             int stringKeySize = -1;
             if (keyType.getCode() == Type.Code.STRING) {
-                stringKeySize = resolveStringColumnSize(spannerOpts, columnOpts, settings);
+                stringKeySize = resolveStringColumnSize(keyField.getField(), spannerOpts, columnOpts, settings);
             }
 
             return new ColumnSpec(
@@ -260,14 +263,32 @@ public final class SpannerGeneratedDDL {
             // prepare field statement
             var buf = new StringBuilder();
 
+            // calculate field type designation first
+            String fieldType;
+            Type.Code innerType = this.field.isRepeated() ?
+                    this.type.getArrayElementType().getCode() :
+                    this.type.getCode();
+
+            String innerTypeSpec = innerType == Type.Code.STRING ? format(
+                "STRING(%s)",
+                this.length
+            ) : this.type.getCode().name();
+
+            if (this.type.getCode() == Type.Code.ARRAY) {
+                // it's a repeated field
+                fieldType = format(
+                    "ARRAY<%s>",
+                    innerTypeSpec
+                );
+            } else {
+                // it's a singular field. make sure to cover the special case for strings.
+                fieldType = innerTypeSpec;
+            }
+
             buf.append(format(
                 "%s %s",
                 this.name,
-                // special case: string fields have a length
-                this.type.getCode() == Type.Code.STRING ? format(
-                    "STRING(%s)",
-                    this.length
-                ) : this.type.getCode().name()
+                fieldType
             ));
 
             // prepare field options

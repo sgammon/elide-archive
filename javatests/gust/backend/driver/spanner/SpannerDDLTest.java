@@ -120,8 +120,8 @@ public final class SpannerDDLTest {
                 "BytesField BYTES, " +
                 "FloatField FLOAT64, " +
                 "DoubleField FLOAT64, " +
-                "EnumField STRING(2048), " +
-                "Labels ARRAY" +
+                "EnumField STRING(32), " +
+                "Labels ARRAY<STRING(240)>" +
             ") PRIMARY KEY (ID ASC)"
         );
 
