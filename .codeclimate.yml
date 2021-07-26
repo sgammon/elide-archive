@@ -36,6 +36,11 @@ checks:
     config:
       threshold: 5
 
+exclude_patterns:
+- "docs/**.*"
+- "tests/**.*"
+- "*tests/**.*"
+
 plugins:
   bandit:
     enabled: true
