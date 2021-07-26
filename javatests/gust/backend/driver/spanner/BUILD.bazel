@@ -44,6 +44,9 @@ _COMMON_DEPS = [
     maven("org.testcontainers:junit-jupiter"),
     maven("org.testcontainers:gcloud"),
     maven("org.slf4j:slf4j-api"),
+    maven("com.google.truth:truth"),
+    maven("com.google.truth.extensions:truth-proto-extension"),
+    maven("com.google.truth.extensions:truth-java8-extension"),
 ]
 
 java_test(

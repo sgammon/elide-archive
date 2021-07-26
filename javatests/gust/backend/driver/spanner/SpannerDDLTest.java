@@ -8,6 +8,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static gust.backend.driver.spanner.SpannerGeneratedDDL.*;
+import static com.google.common.truth.Truth.assertWithMessage;
 
 
 /** Tests for DDL utilities related to Spanner. */
@@ -48,8 +49,9 @@ public final class SpannerDDLTest {
         );
 
         generatorAssertions(generator, "People");
-        assertEquals(expectedBasicCreate, generator.getGeneratedStatement().toString(),
-                "generated DDL statement should match expected output");
+        assertWithMessage("generated DDL statement should match expected output")
+                .that(generator.getGeneratedStatement().toString())
+                .isEqualTo(expectedBasicCreate);
     }
 
     @Test public void testGeneratePersonDDLInterleaved() {
@@ -71,8 +73,9 @@ public final class SpannerDDLTest {
         );
 
         generatorAssertions(generator, "People");
-        assertEquals(expectedInterleavedCreate, generator.getGeneratedStatement().toString(),
-                "generated DDL statement should match expected output");
+        assertWithMessage("generated DDL statement should match expected output")
+                .that(generator.getGeneratedStatement().toString())
+                .isEqualTo(expectedInterleavedCreate);
     }
 
     @Test public void testGeneratePersonDescendingKey() {
@@ -92,8 +95,9 @@ public final class SpannerDDLTest {
         );
 
         generatorAssertions(generator, "People");
-        assertEquals(expectedInterleavedCreate, generator.getGeneratedStatement().toString(),
-                "generated DDL statement should match expected output");
+        assertWithMessage("generated DDL statement should match expected output")
+                .that(generator.getGeneratedStatement().toString())
+                .isEqualTo(expectedInterleavedCreate);
     }
 
     @Test public void testGenerateTypeBuffet() {
@@ -103,7 +107,7 @@ public final class SpannerDDLTest {
         ).build();
 
         var expectedBuffetTable = (
-            "CREATE TABLE TypeExample (" +
+            "CREATE TABLE TypeExamples (" +
                 "ID INT64 NOT NULL, " +
                 "IntNormal INT64, " +
                 "IntDouble INT64, " +
@@ -117,7 +121,7 @@ public final class SpannerDDLTest {
                 "SfixedDouble INT64, " +
                 "StringField STRING(2048), " +
                 "BoolField BOOL, " +
-                "BytesField BYTES, " +
+                "BytesField BYTES(2048), " +
                 "FloatField FLOAT64, " +
                 "DoubleField FLOAT64, " +
                 "EnumField STRING(32), " +
@@ -125,8 +129,9 @@ public final class SpannerDDLTest {
             ") PRIMARY KEY (ID ASC)"
         );
 
-        generatorAssertions(generator, "TypeExample");
-        assertEquals(expectedBuffetTable, generator.getGeneratedStatement().toString(),
-                "generated DDL statement should match expected output");
+        generatorAssertions(generator, "TypeExamples");
+        assertWithMessage("generated DDL statement should match expected output")
+                .that(generator.getGeneratedStatement().toString())
+                .isEqualTo(expectedBuffetTable);
     }
 }

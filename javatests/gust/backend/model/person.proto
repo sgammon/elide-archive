@@ -96,7 +96,7 @@ message EnrollEvent {
 
 // Sets up an example of every type.
 message TypeBuffet {
-  option (core.table).name = "TypeExample";
+  option (core.table).name = "TypeExamples";
 
   // Sample type key.
   message SampleKey {

@@ -142,21 +142,21 @@ public final class SpannerUtil {
     }
 
     /**
-     * Given a model field pointer which translates to a string column in Spanner, determine the size that should be
-     * used when declaring the string column.
+     * Given a model field pointer which translates to a `STRING` or `BYTES` column in Spanner, determine the size that
+     * should be used when declaring the string column.
      *
-     * <p>If an explicit string column size is specified via model annotations, that prevails. If not, the default size
-     * value is used.</p>
+     * <p>If an explicit column size is specified via model annotations, that prevails. If not, the default size value
+     * is used.</p>
      *
      * @param spannerOpts Spanner-specific options on the field.
      * @param columnOpts Column-generic options on the field.
      * @param settings Settings for the Spanner driver.
      * @return Expected name of the field when expressed as a column in Spanner.
      */
-    public static int resolveStringColumnSize(@Nonnull Descriptors.FieldDescriptor field,
-                                              @Nonnull Optional<SpannerFieldOptions> spannerOpts,
-                                              @Nonnull Optional<TableFieldOptions> columnOpts,
-                                              @Nonnull SpannerDriverSettings settings) {
+    public static int resolveColumnSize(@Nonnull Descriptors.FieldDescriptor field,
+                                        @Nonnull Optional<SpannerFieldOptions> spannerOpts,
+                                        @Nonnull Optional<TableFieldOptions> columnOpts,
+                                        @Nonnull SpannerDriverSettings settings) {
         if (spannerOpts.isPresent()) {
             var spannerOptsUnwrapped = spannerOpts.get();
             if (spannerOptsUnwrapped.getSize() > 0) {
@@ -172,7 +172,7 @@ public final class SpannerUtil {
         if (field.getType() == Descriptors.FieldDescriptor.Type.ENUM) {
             return 32;  // special case: string ENUM fields should have a sensible default
         }
-        return settings.defaultStringColumnSize();
+        return settings.defaultColumnSize();
     }
 
     /**

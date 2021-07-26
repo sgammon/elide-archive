@@ -17,7 +17,6 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.testcontainers.containers.*;
@@ -28,7 +27,6 @@ import org.testcontainers.utility.DockerImageName;
 
 import javax.annotation.Nonnull;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
@@ -139,14 +137,39 @@ public final class SpannerAdapterTest extends GenericPersistenceAdapterTest<
                     "ContactInfo STRING(1024)" +
                 ") PRIMARY KEY (Key)"
             );
+            var typeExamplesDdlStatement = (
+                "CREATE TABLE TypeExamples (" +
+                    "ID INT64 NOT NULL, " +
+                    "IntNormal INT64, " +
+                    "IntDouble INT64, " +
+                    "UintNormal INT64, " +
+                    "UintDouble INT64, " +
+                    "SintNormal INT64, " +
+                    "SintDouble INT64, " +
+                    "FixedNormal INT64, " +
+                    "FixedDouble INT64, " +
+                    "SfixedNormal INT64, " +
+                    "SfixedDouble INT64, " +
+                    "StringField STRING(2048), " +
+                    "BoolField BOOL, " +
+                    "BytesField BYTES(2048), " +
+                    "FloatField FLOAT64, " +
+                    "DoubleField FLOAT64, " +
+                    "EnumField STRING(32), " +
+                    "Labels ARRAY<STRING(240)>" +
+                ") PRIMARY KEY (ID ASC)"
+            );
 
             // step two: initialize a new database in the instance
-            logging.info("Creating emulated test database with DDL statement: \n{}", peopleTableDdlStatement);
+            logging.info("Creating emulated test database `People` with DDL statement: \n{}",
+                    peopleTableDdlStatement);
+            logging.info("Creating emulated test database `TypeExamples` with DDL statement: \n{}",
+                    typeExamplesDdlStatement);
             DatabaseAdminClient dbAdminClient = client.getDatabaseAdminClient();
             dbAdminClient.createDatabase(
-                    INSTANCE_ID,
-                    DATABASE_ID,
-                    Collections.singletonList(peopleTableDdlStatement)
+                INSTANCE_ID,
+                DATABASE_ID,
+                Arrays.asList(peopleTableDdlStatement, typeExamplesDdlStatement)
             ).get();
 
             logging.info("Verifying new database...");

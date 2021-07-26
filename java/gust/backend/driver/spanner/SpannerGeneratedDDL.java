@@ -204,8 +204,8 @@ public final class SpannerGeneratedDDL {
             Type innerType = fieldPointer.getField().isRepeated() ?
                     fieldType.getArrayElementType() :
                     fieldType;
-            var fieldSize = innerType.getCode() == Type.Code.STRING ?
-                    resolveStringColumnSize(fieldPointer.getField(), spannerOpts, columnOpts, settings) :
+            var fieldSize = innerType.getCode() == Type.Code.STRING || innerType.getCode() == Type.Code.BYTES ?
+                    resolveColumnSize(fieldPointer.getField(), spannerOpts, columnOpts, settings) :
                     -1;
 
             return new ColumnSpec(
@@ -236,15 +236,16 @@ public final class SpannerGeneratedDDL {
             var keyType = resolveKeyType(idField);
             var spannerOpts = spannerOpts(idField);
             var columnOpts = columnOpts(idField);
-            int stringKeySize = -1;
-            if (keyType.getCode() == Type.Code.STRING) {
-                stringKeySize = resolveStringColumnSize(keyField.getField(), spannerOpts, columnOpts, settings);
+            int columnSize = -1;
+            if (keyType.getCode() == Type.Code.STRING ||
+                keyType.getCode() == Type.Code.BYTES) {
+                columnSize = resolveColumnSize(keyField.getField(), spannerOpts, columnOpts, settings);
             }
 
             return new ColumnSpec(
                 keyName,
                 keyType,
-                stringKeySize,
+                columnSize,
                 Optional.of(true),  // primary keys are always set to `NOT NULL`.
                 Optional.empty(),  // primary keys do not support expressions
                 Optional.empty(),
@@ -269,11 +270,16 @@ public final class SpannerGeneratedDDL {
                     this.type.getArrayElementType().getCode() :
                     this.type.getCode();
 
-            String innerTypeSpec = innerType == Type.Code.STRING ? format(
-                "STRING(%s)",
-                this.length
-            ) : this.type.getCode().name();
-
+            String innerTypeSpec;
+            if (innerType == Type.Code.STRING || innerType == Type.Code.BYTES) {
+                innerTypeSpec = format(
+                    "%s(%s)",
+                    innerType.name(),
+                    this.length
+                );
+            } else {
+                innerTypeSpec = innerType.name();
+            }
             if (this.type.getCode() == Type.Code.ARRAY) {
                 // it's a repeated field
                 fieldType = format(
