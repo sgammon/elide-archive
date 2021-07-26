@@ -141,7 +141,7 @@ build:labs --experimental_inmemory_dotd_files
 build:labs --experimental_inmemory_jdeps_files
 build:labs --experimental_delay_virtual_input_materialization
 build:labs --experimental_enable_docker_sandbox
-build:labs --experimental_sandbox_async_tree_delete_idle_threads=auto
+build:labs --experimental_sandbox_async_tree_delete_idle_threads=0
 build:labs --experimental_stream_log_file_uploads
 
 #build:labs --experimental_use_validation_aspect
