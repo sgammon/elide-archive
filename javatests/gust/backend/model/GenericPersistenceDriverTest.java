@@ -58,10 +58,10 @@ public abstract class GenericPersistenceDriverTest<Driver extends PersistenceDri
       dynamicTest(format("%s: `testGenerateKey`", subcase), this::testGenerateKey),
       dynamicTest(format("%s: `fetchNonExistentEntity`", subcase), this::fetchNonExistentEntity),
       dynamicTest(format("%s: `storeAndFetchEntity`", subcase), this::storeAndFetchEntity),
-      dynamicTest(format("%s: `storeAndFetchEntityMasked`", subcase), this::storeAndFetchEntityMasked),
+//      dynamicTest(format("%s: `storeAndFetchEntityMasked`", subcase), this::storeAndFetchEntityMasked),
       dynamicTest(format("%s: `storeEntityUpdate`", subcase), this::storeEntityUpdate),
-      dynamicTest(format("%s: `createEntityThenUpdate`", subcase), this::createEntityThenUpdate)
-//      dynamicTest(format("%s: `createUpdateWithInvalidOptions`", subcase), this::createUpdateWithInvalidOptions),
+      dynamicTest(format("%s: `createEntityThenUpdate`", subcase), this::createEntityThenUpdate),
+      dynamicTest(format("%s: `createUpdateWithInvalidOptions`", subcase), this::createUpdateWithInvalidOptions)
 //      dynamicTest(format("%s: `createEntityThenDelete`", subcase), this::createEntityThenDelete),
 //      dynamicTest(format("%s: `createEntityThenDeleteByRecord`", subcase), this::createEntityThenDeleteByRecord),
 //      dynamicTest(format("%s: `storeEntityUpdateNotFound`", subcase), this::storeEntityUpdateNotFound),
