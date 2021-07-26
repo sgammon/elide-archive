@@ -28,7 +28,7 @@ public interface SpannerDriverSettings {
         /** Default value: Whether to preserve proto field names (`true`) or use JSON names (`false`, default). */
         public static final Boolean DEFAULT_PRESERVE_FIELD_NAMES = false;
 
-        /** Default value: Whether to generate Spanner style names with initial capitals (i.e. `Name` instead of `name`). */
+        /** Default value: Whether to generate Spanner style names with initial capitals. */
         public static final Boolean DEFAULT_CAPITALIZED_NAMES = true;
 
         /** Default value: Whether to treat enumeration instances as numbers (`true`) or strings (`false`, default). */

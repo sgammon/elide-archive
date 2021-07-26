@@ -45,6 +45,8 @@ plugins:
     config:
       file: "tools/checkstyle.xml"
     checks:
+      com.puppycrawl.tools.checkstyle.checks.coding.VariableDeclarationUsageDistanceCheck:
+        enabled: false
       com.puppycrawl.tools.checkstyle.checks.naming.ClassTypeParameterNameCheck:
         enabled: false
       com.puppycrawl.tools.checkstyle.checks.naming.MethodTypeParameterNameCheck:
@@ -127,6 +129,8 @@ plugins:
   sonar-java:
     enabled: true
     checks:
+      squid:S00107:
+        enabled: false
       squid:S3358:
         enabled: false
       squid:S3776:

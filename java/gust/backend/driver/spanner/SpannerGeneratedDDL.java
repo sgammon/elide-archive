@@ -28,7 +28,7 @@ public final class SpannerGeneratedDDL {
          *
          * @return Rendered statement.
          */
-        @Nonnull StringBuffer render();
+        @Nonnull StringBuilder render();
     }
 
     /** Sort direction settings which can apply to columns. */
@@ -79,8 +79,8 @@ public final class SpannerGeneratedDDL {
 
         /** @inheritDoc */
         @Override
-        public @Nonnull StringBuffer render() {
-            return (new StringBuffer()).append(format(
+        public @Nonnull StringBuilder render() {
+            return (new StringBuilder()).append(format(
                 "CONSTRAINT %s CHECK ( %s )",
                 this.name,
                 this.expression
@@ -131,8 +131,8 @@ public final class SpannerGeneratedDDL {
 
         /** @inheritDoc */
         @Override
-        public @Nonnull StringBuffer render() {
-            var buf = new StringBuffer(format(
+        public @Nonnull StringBuilder render() {
+            var buf = new StringBuilder(format(
                 "INTERLEAVE IN PARENT %s",
                 this.parent
             ));
@@ -256,9 +256,9 @@ public final class SpannerGeneratedDDL {
          * @return Rendered column spec statement.
          */
         @Override
-        public @Nonnull StringBuffer render() {
+        public @Nonnull StringBuilder render() {
             // prepare field statement
-            var buf = new StringBuffer();
+            var buf = new StringBuilder();
 
             buf.append(format(
                 "%s %s",
@@ -305,7 +305,7 @@ public final class SpannerGeneratedDDL {
      * DDL as a string.</p>
      */
     @SuppressWarnings("unused")
-    public final static class Builder {
+    public static final class Builder {
         /** Base model on which this builder will operate. Immutable. */
         final @Nonnull Descriptor model;
 
@@ -395,12 +395,12 @@ public final class SpannerGeneratedDDL {
          * @return Rendered definitions of columns and table constraints.
          */
         @Nonnull String renderColumnStatementsAndConstraints() {
-            var columns = renderColumnStatements();
+            var columnList = renderColumnStatements();
             if (this.tableConstraints.isPresent()) {
                 var constraints = renderConstraintStatements();
-                return format("%s, %s", columns, constraints);
+                return format("%s, %s", columnList, constraints);
             }
-            return columns;
+            return columnList;
         }
 
         /**
@@ -421,10 +421,10 @@ public final class SpannerGeneratedDDL {
          *
          * @return Rendered DDL statement, according to local object settings.
          */
-        @Nonnull StringBuffer renderCreateDDLStatement() {
-            var builder = new StringBuffer();
-            var buf = new ArrayList<StringBuffer>();
-            buf.add(new StringBuffer(format(
+        @Nonnull StringBuilder renderCreateDDLStatement() {
+            var builder = new StringBuilder();
+            var buf = new ArrayList<StringBuilder>();
+            buf.add(new StringBuilder(format(
                 "CREATE TABLE %s (%s) PRIMARY KEY (%s)",
                 this.tableName,
                 this.renderColumnStatementsAndConstraints(),
@@ -446,7 +446,6 @@ public final class SpannerGeneratedDDL {
          * @return Immutable DDL statement container.
          */
         public @Nonnull SpannerGeneratedDDL build() {
-            var tableName = resolveTableName(model);
             var fields = forEachField(
                 model,
                 Optional.of(onlySpannerEligibleFields(settings))
@@ -582,7 +581,7 @@ public final class SpannerGeneratedDDL {
     private final @Nonnull List<ColumnSpec> columns;
 
     /** Holds the generated query in a string buffer. */
-    private final @Nonnull StringBuffer generatedStatement;
+    private final @Nonnull StringBuilder generatedStatement;
 
     /**
      * Private constructor.
@@ -595,7 +594,7 @@ public final class SpannerGeneratedDDL {
     private SpannerGeneratedDDL(@Nonnull String tableName,
                                 @Nonnull List<ColumnSpec> columns,
                                 @Nonnull Descriptor model,
-                                @Nonnull StringBuffer generatedStatement) {
+                                @Nonnull StringBuilder generatedStatement) {
         this.tableName = tableName;
         this.columns = columns;
         this.generatedStatement = generatedStatement;
@@ -615,6 +614,25 @@ public final class SpannerGeneratedDDL {
         return generateTableDDL(
             instance.getDescriptorForType(),
             settings.orElse(SpannerDriverSettings.DEFAULTS)
+        );
+    }
+
+    /**
+     * Given a model definition, produce a generated DDL statement which creates a backing table in Spanner implementing
+     * that model's properties.
+     *
+     * @param model Model schema to generate a table statement for.
+     * @return Generated DDL statement object.
+     */
+    public static @Nonnull SpannerGeneratedDDL.Builder generateTableDDL(
+            @Nonnull Descriptor model,
+            @Nonnull SpannerDriverSettings settings) {
+        return new SpannerGeneratedDDL.Builder(
+            model,
+            resolveTableName(model),
+            resolveKeyColumn(keyField(model).orElseThrow(), settings),
+            resolveDefaultColumns(model, settings),
+            settings
         );
     }
 
@@ -650,25 +668,6 @@ public final class SpannerGeneratedDDL {
         return Collections.unmodifiableList(fieldSet);
     }
 
-    /**
-     * Given a model definition, produce a generated DDL statement which creates a backing table in Spanner implementing
-     * that model's properties.
-     *
-     * @param model Model schema to generate a table statement for.
-     * @return Generated DDL statement object.
-     */
-    public static @Nonnull SpannerGeneratedDDL.Builder generateTableDDL(
-            @Nonnull Descriptor model,
-            @Nonnull SpannerDriverSettings settings) {
-        return new SpannerGeneratedDDL.Builder(
-            model,
-            resolveTableName(model),
-            resolveKeyColumn(keyField(model).orElseThrow(), settings),
-            resolveDefaultColumns(model, settings),
-            settings
-        );
-    }
-
     // -- Accessors -- //
 
     /** @return Model for which this object generates a table create statement. */
@@ -687,7 +686,7 @@ public final class SpannerGeneratedDDL {
     }
 
     /** @return Rendered generated DDL statement. */
-    public @Nonnull StringBuffer getGeneratedStatement() {
+    public @Nonnull StringBuilder getGeneratedStatement() {
         return generatedStatement;
     }
 
