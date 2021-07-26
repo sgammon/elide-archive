@@ -233,55 +233,53 @@ public final class SpannerStructDeserializer<Model extends Message> implements M
                     if (fieldPointer.getField().getType() == Descriptors.FieldDescriptor.Type.MESSAGE &&
                         (spannerOpts.isPresent() && spannerOpts.get().getType() == SpannerOptions.SpannerType.JSON ||
                          columnOpts.isPresent() && columnOpts.get().getSptype() == SpannerOptions.SpannerType.JSON)) {
-                        if (repeated) {
-                            // decode as a list of JSON-encoded model instances.
-                            var encodedModels = columnValue.getStringArray();
-                            var modelResults = new ArrayList<>(encodedModels.size());
-                            var modelIndex = 0;
-                            for (var encodedModel : encodedModels) {
-                                try {
+                        int modelIndex = 0;
+                        try {
+                            if (repeated) {
+                                // decode as a list of JSON-encoded model instances.
+                                var encodedModels = columnValue.getStringArray();
+                                var modelResults = new ArrayList<>(encodedModels.size());
+                                for (var encodedModel : encodedModels) {
                                     var subBuilder = target.newBuilderForField(fieldPointer.getField());
                                     defaultJsonParser.merge(encodedModel, subBuilder);
                                     modelResults.add(subBuilder.build());
                                     modelIndex++;
-
-                                } catch (InvalidProtocolBufferException invalidProtoException) {
-                                    logging.error(String.format(
-                                        "Failed to deserialize JSON model at path '%s', at index %s.",
-                                        fieldPointer.getField().getFullName(),
-                                        modelIndex
-                                    ), invalidProtoException);
-
-                                    throw new IllegalStateException(invalidProtoException);
                                 }
-                            }
 
-                            // mount set of models on the target proto
-                            spliceBuilder(
-                                target,
-                                fieldPointer,
-                                Optional.of(modelResults)
-                            );
+                                // mount set of models on the target proto
+                                spliceBuilder(
+                                        target,
+                                        fieldPointer,
+                                        Optional.of(modelResults)
+                                );
 
-                        } else {
-                            // decode as a singular JSON-encoded model instance.
-                            var encodedModel = columnValue.getString();
-                            try {
+                            } else {
+                                // decode as a singular JSON-encoded model instance.
+                                var encodedModel = columnValue.getString();
                                 var subBuilder = target.newBuilderForField(fieldPointer.getField());
                                 defaultJsonParser.merge(encodedModel, subBuilder);
                                 spliceBuilder(
-                                    target,
-                                    fieldPointer,
-                                    Optional.of(subBuilder.build())
+                                        target,
+                                        fieldPointer,
+                                        Optional.of(subBuilder.build())
                                 );
-                            } catch (InvalidProtocolBufferException invalidProtoException) {
-                                logging.error(String.format(
-                                    "Failed to deserialize JSON model at path '%s'.",
-                                    fieldPointer.getField().getFullName()
-                                ), invalidProtoException);
-
-                                throw new RuntimeException(invalidProtoException);
                             }
+
+                        } catch (InvalidProtocolBufferException invalidProtoException) {
+                            if (repeated) {
+                                logging.error(String.format(
+                                        "Failed to deserialize JSON model at path '%s', at index %s.",
+                                        fieldPointer.getField().getFullName(),
+                                        modelIndex
+                                ), invalidProtoException);
+                            } else {
+                                logging.error(String.format(
+                                        "Failed to deserialize JSON model at path '%s'.",
+                                        fieldPointer.getField().getFullName()
+                                ), invalidProtoException);
+                            }
+
+                            throw new IllegalStateException(invalidProtoException);
                         }
                     } else {
                         spliceBuilder(
