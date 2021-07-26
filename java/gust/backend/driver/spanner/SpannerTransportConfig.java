@@ -20,4 +20,5 @@ package gust.backend.driver.spanner;
  * @see SpannerDriverSettings Main settings object which provides driver access to this transport configuration.
  */
 public final class SpannerTransportConfig {
+    private SpannerTransportConfig() { /* Disallow construction. */ }
 }
