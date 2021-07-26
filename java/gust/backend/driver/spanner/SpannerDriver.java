@@ -249,24 +249,13 @@ public final class SpannerDriver<Key extends Message, Model extends Message>
         id(key).orElseThrow(() -> new IllegalArgumentException("Cannot fetch model with empty key."));
 
         // resolve the table where we should look for this entity
-        var table = modelAnnotation(
-            key,
-            Datamodel.table,
-            true
-        ).orElseThrow(() -> new IllegalArgumentException(
-            "Must annotate key model '" + key.getDescriptorForType().getFullName() + "' with table name to use " +
-            "with Spanner."
-        )).getName();
-
-        if (table.isBlank() || table.isEmpty())
-            throw new IllegalArgumentException(
-                "Empty table name for key '" + key.getDescriptorForType().getFullName() + "'.");
+        var table = resolveTableName(key);
 
         // next, resolve the executor, database we should operate on, and corresponding client
         ListeningScheduledExecutorService exec = options.executorService().orElseGet(this::executorService);
         SpannerFetchOptions spannerOpts;
 
-        if (options instanceof SpannerFetchOptions) {
+        if (options.getClass().isAssignableFrom(SpannerFetchOptions.class)) {
             spannerOpts = ((SpannerFetchOptions) options);
         } else {
             spannerOpts = SpannerFetchOptions.DEFAULTS;
@@ -451,6 +440,9 @@ public final class SpannerDriver<Key extends Message, Model extends Message>
     @Override
     public @Nonnull ReactiveFuture<Key> delete(@Nonnull Key key,
                                                @Nonnull DeleteOptions options) {
+        Objects.requireNonNull(key, "cannot delete null key from Spanner");
+        Objects.requireNonNull(options, "cannot delete without valid Spanner options");
+
         // @TODO(sgammon): implement concrete driver methods
         throw new IllegalStateException("Not yet implemented.");
     }

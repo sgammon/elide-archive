@@ -132,6 +132,16 @@ java_library(
 )
 
 java_library(
+    name = "SpannerGeneratedDDL",
+    srcs = ["SpannerGeneratedDDL.java"],
+    deps = [
+        ":SpannerDriverSettings",
+        ":SpannerUtil",
+        javaproto("//gust/core:datamodel"),
+    ] + _COMMON_DEPS,
+)
+
+java_library(
     name = "SpannerManager",
     srcs = ["SpannerManager.java"],
     deps = [

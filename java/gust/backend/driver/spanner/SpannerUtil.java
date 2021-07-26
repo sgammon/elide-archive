@@ -83,6 +83,38 @@ public final class SpannerUtil {
     }
 
     /**
+     * Given a schema-driven model or key object, determine the table name that should be used in Spanner. All keys and
+     * objects used with Spanner must have such annotations or use generated defaults. This method variant operates from
+     * a full message instance.
+     *
+     * @see #resolveTableName(Descriptors.Descriptor) For the wrapped version of this message.
+     * @param message Message type to resolve a table name for.
+     * @return Resolved table name, from annotations, or calculated as a default.
+     */
+    public static @Nonnull String resolveTableName(@Nonnull Message message) {
+        return resolveTableName(
+            message.getDescriptorForType()
+        );
+    }
+
+    /**
+     * Given a schema-driven model or key object, determine the table name that should be used in Spanner. All keys and
+     * objects used with Spanner must have such annotations or use generated defaults.
+     *
+     * @param message Message type to resolve a table name for.
+     * @return Resolved table name, from annotations, or calculated as a default.
+     */
+    public static @Nonnull String resolveTableName(@Nonnull Descriptors.Descriptor message) {
+        return modelAnnotation(
+            message,
+            Datamodel.table,
+            true
+        ).orElseThrow(() -> new IllegalArgumentException(
+            "Must annotate key or object model '" + message.getFullName() + "' with table name to use with Spanner."
+        )).getName();
+    }
+
+    /**
      * For a given key field pointer, resolve the column type which should be used for the primary key in Spanner,
      * according to the annotation structure present on the key.
      *
@@ -92,14 +124,51 @@ public final class SpannerUtil {
      */
     public static @Nonnull Type resolveKeyType(@Nonnull FieldPointer idField) {
         // resolve the expected key column type. validate it on the way.
-        if (idField.getField().getType() == Descriptors.FieldDescriptor.Type.STRING) {
+        if (idField.getField().isRepeated()) {
+            throw new IllegalStateException(
+                String.format(
+                    "Unsupported key field type: '%s'. Keys cannot be repeated.",
+                    idField.getField().getType().name()));
+        } else if (idField.getField().getType() == Descriptors.FieldDescriptor.Type.STRING) {
             return Type.string();
-        } else if (idField.getField().getType() == Descriptors.FieldDescriptor.Type.INT64) {
+        } else if (
+            idField.getField().getType() == Descriptors.FieldDescriptor.Type.UINT64 ||
+            idField.getField().getType() == Descriptors.FieldDescriptor.Type.FIXED64) {
             return Type.int64();
         } else {
             throw new IllegalStateException(
                 String.format("Unsupported key field type: '%s'.", idField.getField().getType().name()));
         }
+    }
+
+    /**
+     * Given a model field pointer which translates to a string column in Spanner, determine the size that should be
+     * used when declaring the string column.
+     *
+     * <p>If an explicit string column size is specified via model annotations, that prevails. If not, the default size
+     * value is used.</p>
+     *
+     * @param spannerOpts Spanner-specific options on the field.
+     * @param columnOpts Column-generic options on the field.
+     * @param settings Settings for the Spanner driver.
+     * @return Expected name of the field when expressed as a column in Spanner.
+     */
+    public static int resolveStringColumnSize(@Nonnull Optional<SpannerFieldOptions> spannerOpts,
+                                              @Nonnull Optional<TableFieldOptions> columnOpts,
+                                              @Nonnull SpannerDriverSettings settings) {
+        if (spannerOpts.isPresent()) {
+            var spannerOptsUnwrapped = spannerOpts.get();
+            if (spannerOptsUnwrapped.getSize() > 0) {
+                return spannerOptsUnwrapped.getSize();
+            }
+        }
+        if (columnOpts.isPresent()) {
+            var columnOptsUnwrapped = columnOpts.get();
+            if (columnOptsUnwrapped.getSize() > 0) {
+                return columnOptsUnwrapped.getSize();
+            }
+        }
+        return settings.defaultStringColumnSize();
     }
 
     /**
@@ -158,13 +227,29 @@ public final class SpannerUtil {
                                                     @Nonnull Optional<TableFieldOptions> columnOpts,
                                                     @Nonnull SpannerDriverSettings settings) {
         // resolve the expected column name in Spanner.
-        var columnName = spannerOpts.isPresent() && !spannerOpts.get().getColumn().isBlank() ?
-                 spannerOpts.get().getColumn() :
-               columnOpts.isPresent() && !columnOpts.get().getName().isBlank() ?
-                 columnOpts.get().getName() :
-               settings.preserveFieldNames() ?
-                 field.getName() :
-               field.getJsonName();
+        String columnName;
+        if (spannerOpts.isPresent() && !spannerOpts.get().getColumn().isBlank()) {
+            columnName = spannerOpts.get().getColumn();
+        } else if (columnOpts.isPresent() && !columnOpts.get().getName().isBlank()) {
+            columnName = columnOpts.get().getName();
+        } else {
+            // generate a default name
+            if (settings.preserveFieldNames()) {
+                columnName = field.getName();
+            } else {
+                // use JSON field names
+                if (settings.defaultCapitalizedNames()) {
+                    columnName = String.format(
+                        "%s%s",
+                        field.getJsonName().substring(0, 1).toUpperCase(),
+                        field.getJsonName().substring(1)
+                    );
+                } else {
+                    // use unmodified JSON names
+                    columnName = field.getJsonName();
+                }
+            }
+        }
 
         if (logging.isTraceEnabled())
             logging.trace("Resolved column name for field '{}': '{}'",
@@ -225,8 +310,8 @@ public final class SpannerUtil {
         ));
         if (logging.isTraceEnabled())
             logging.trace("Resolved column value for field '{}': '{}'",
-                    fieldPointer.getName(),
-                    columnValue.toString());
+                fieldPointer.getName(),
+                columnValue.toString());
         return columnValue;
     }
 
@@ -268,8 +353,8 @@ public final class SpannerUtil {
     public static @Nonnull List<String> calculateDefaultFields(@Nonnull Descriptors.Descriptor descriptor,
                                                                @Nonnull SpannerDriverSettings driverSettings) {
         return forEachField(
-                descriptor,
-                Optional.of(onlySpannerEligibleFields(driverSettings))
+            descriptor,
+            Optional.of(onlySpannerEligibleFields(driverSettings))
         ).map((fieldPointer) -> resolveColumnName(fieldPointer,
             fieldAnnotation(fieldPointer.getField(), Datamodel.spanner),
             fieldAnnotation(fieldPointer.getField(), Datamodel.column),
@@ -427,7 +512,26 @@ public final class SpannerUtil {
      */
     public static @Nonnull Type resolveDefaultType(@Nonnull FieldPointer pointer,
                                                    @Nonnull SpannerDriverSettings settings) {
-        switch (pointer.getField().getType()) {
+        return resolveDefaultType(
+            pointer,
+            pointer.getField().getType(),
+            settings
+        );
+    }
+
+    /**
+     * Resolve a default Spanner type for the provided field `pointer`. This selects a sensible default when no
+     * explicit type annotations are present for a Spanner column's type.
+     *
+     * @param pointer Field pointer to resolve a Spanner type for.
+     * @param protoType Protocol Buffer type to resolve.
+     * @param settings Settings for the Spanner driver.
+     * @return Resolved normalized Spanner type.
+     */
+    public static @Nonnull Type resolveDefaultType(@Nonnull FieldPointer pointer,
+                                                   @Nonnull Descriptors.FieldDescriptor.Type protoType,
+                                                   @Nonnull SpannerDriverSettings settings) {
+        switch (protoType) {
             case DOUBLE:
             case FLOAT:
                 return maybeWrapType(pointer, Type.float64());
@@ -450,7 +554,7 @@ public final class SpannerUtil {
             case BYTES: return maybeWrapType(pointer, Type.bytes());
             case ENUM:
                 return settings.enumsAsNumbers() ?
-                    maybeWrapType(pointer, Type.numeric()) :
+                    maybeWrapType(pointer, Type.int64()) :
                     maybeWrapType(pointer, Type.string());
 
             case MESSAGE:

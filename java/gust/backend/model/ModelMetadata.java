@@ -115,6 +115,22 @@ public final class ModelMetadata {
       this.depth = CharMatcher.is('.').countIn(path);
     }
 
+    /**
+     * Wrap the field at the specified name on the provided model.
+     *
+     * @param model Descriptor for a protocol buffer model.
+     * @param name Name of a field to get from the provided buffer model.
+     * @return Field pointer wrapping the provided information.
+     */
+    public static @Nonnull FieldPointer fieldAtName(@Nonnull Descriptor model,
+                                                    @Nonnull String name) {
+      return new FieldPointer(
+          model,
+          name,
+          model.findFieldByName(name)
+      );
+    }
+
     /** {@inheritDoc} */
     @Override
     public boolean equals(Object o) {

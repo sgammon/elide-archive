@@ -36,6 +36,9 @@ public interface SpannerDriverSettings {
 
         /** Default value: Whether to perform runtime deserialization checks (`true`, default) or not (`false`). */
         public static final Boolean DEFAULT_CHECK_EXPECTED_TYPES = true;
+
+        /** Default size for string column fields with no explicit setting. */
+        private static final int DEFAULT_STRING_COLUMN_SIZE = 2048;
     }
 
     /** Default set of configured settings for the Spanner driver. */
@@ -59,5 +62,10 @@ public interface SpannerDriverSettings {
     /** @return Whether to perform runtime deserialization checks (defaults to `true`). */
     default @Nonnull Boolean checkExpectedTypes() {
         return DefaultSettings.DEFAULT_CHECK_EXPECTED_TYPES;
+    }
+
+    /** @return Default size to use for string columns that don't otherwise specify a size via annotations. */
+    default @Nonnull int defaultStringColumnSize() {
+        return DefaultSettings.DEFAULT_STRING_COLUMN_SIZE;
     }
 }
