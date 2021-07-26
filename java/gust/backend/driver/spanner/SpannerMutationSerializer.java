@@ -121,17 +121,6 @@ public final class SpannerMutationSerializer<Model extends Message> implements M
         }
     }
 
-    /**
-     *
-     *
-     * @param field
-     * @param valueBinder
-     * @param columnType
-     * @param rawValue
-     * @param spannerOpts
-     * @param columnOpts
-     * @param <Primitive>
-     */
     @SuppressWarnings("unchecked")
     <Primitive> void bindValueTyped(@Nonnull Descriptors.FieldDescriptor field,
                                     @Nonnull ValueBinder<Primitive> valueBinder,
