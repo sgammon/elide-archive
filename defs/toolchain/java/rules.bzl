@@ -164,7 +164,6 @@ INJECTED_CONTROLLER_EXPORTS = [
 ]
 
 _JVM_APP_DEBUG_FLAGS = [
-    "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:%s" % _JVM_DEBUG_PORT,
     "-Dgust.debug=true",
     "-Dgust.mode=debug",
 ]
@@ -244,9 +243,17 @@ def _jdk_binary(name,
                 jvm_flags = [],
                 resource_jars = [],
                 tags = [],
+                suspend_debug = False,
                 **kwargs):
 
     """ Generate a JDK binary, with built-in support for Kotlin. """
+
+    debugger_support = [
+        "-agentlib:jdwp=transport=dt_socket,server=y,suspend=%s,address=*:%s" % (
+            (suspend_debug and "y") or "n",
+            _JVM_DEBUG_PORT
+        ),
+    ]
 
     if len(srcs) > 0 and srcs[0].endswith(".kt"):
         # process as kotlin
@@ -258,11 +265,10 @@ def _jdk_binary(name,
             data = data + INJECTED_LIBRARIES,
             resource_jars = resource_jars + INJECTED_RESOURCE_JARS,
             jvm_flags = select({
-               "@gust//defs/config:live_reload": ["-DLIVE_RELOAD=enabled"] + INJECTED_JVM_FLAGS + jvm_flags,
-               "//conditions:default": INJECTED_JVM_FLAGS + jvm_flags,
-            }) + select({
+               "@gust//defs/config:live_reload": (
+                   ["-DLIVE_RELOAD=enabled"] + INJECTED_JVM_FLAGS + jvm_flags + debugger_support),
                "@gust//defs/config:release": _JVM_APP_RELEASE_FLAGS,
-               "@gust//defs/config:debug": _JVM_APP_DEBUG_FLAGS,
+               "//conditions:default": (INJECTED_JVM_FLAGS + jvm_flags + debugger_support),
             }),
             tags = [
                 "ibazel_live_reload",
@@ -282,11 +288,11 @@ def _jdk_binary(name,
             resource_jars = resource_jars + INJECTED_RESOURCE_JARS,
             jvm_flags = select({
                "@gust//defs/config:live_reload": ["-DLIVE_RELOAD=enabled"] + INJECTED_JVM_FLAGS + jvm_flags,
-               "//conditions:default": INJECTED_JVM_FLAGS + jvm_flags,
+               "//conditions:default": INJECTED_JVM_FLAGS + jvm_flags + debugger_support,
             }) + select({
                "@gust//defs/config:release": _JVM_APP_RELEASE_FLAGS,
                "@gust//defs/config:debug": _JVM_APP_DEBUG_FLAGS,
-               "//conditions:default": _JVM_APP_DEBUG_FLAGS,
+               "//conditions:default": _JVM_APP_DEBUG_FLAGS + debugger_support,
             }),
             tags = [
                 "ibazel_live_reload",
@@ -474,6 +480,7 @@ def _micronaut_application(name,
                            css_modules = {},
                            classpath_resources = [],
                            enable_renaming = False,
+                           suspend_debug = False,
                            **kwargs):
 
     """ Wraps a regular JDK application with injected Micronaut dependencies and plugins. """
@@ -704,6 +711,7 @@ def _micronaut_application(name,
         main_class = main_class or "gust.backend.Application",
         jvm_flags = computed_jvm_flags,
         tags = (tags or []),
+        suspend_debug = suspend_debug,
         **kwargs
     )
 
