@@ -39,6 +39,7 @@ _COMMON_DEPS = [
     "//java/gust/backend/runtime:runtime",
     maven("com.google.guava:guava"),
     maven("com.google.protobuf:protobuf-java"),
+    maven("com.google.api.grpc:proto-google-common-protos"),
     maven("com.google.cloud:google-cloud-spanner"),
     maven("org.testcontainers:testcontainers"),
     maven("org.testcontainers:junit-jupiter"),
@@ -102,6 +103,21 @@ java_test(
         "//java/gust/backend/driver/spanner:SpannerTransportConfig",
         "//java/gust/backend/driver/spanner:SpannerAdapter",
         javaproto("//javatests/gust/backend/model:person"),
+    ] + _COMMON_DEPS,
+)
+
+java_test(
+    name = "SpannerTemporalConverterTest",
+    srcs = ["SpannerTemporalConverterTest.java"],
+    classpath_resources = [
+        "//javatests:logback.xml",
+    ],
+    test_package = "gust.backend.driver.spanner",
+    deps = [
+        "//java/gust/backend/driver/spanner:SpannerTemporalConverter",
+        javaproto("//javatests/gust/backend/model:person"),
+        maven("com.google.cloud:google-cloud-core"),
+        maven("com.google.api.grpc:proto-google-common-protos"),
     ] + _COMMON_DEPS,
 )
 

@@ -262,8 +262,7 @@ public final class SpannerMutationSerializer<Model extends Message> implements M
         }
 
         // virtualize the key property, when encountered
-        if (matchFieldAnnotation(field, FieldType.KEY) ||
-            matchFieldAnnotation(field, FieldType.ID)) {
+        if (matchFieldAnnotation(field, FieldType.KEY)) {
             this.collapseRowKey(fieldPointer, instance, target);
             return;
         }

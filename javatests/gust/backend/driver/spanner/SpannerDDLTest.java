@@ -137,7 +137,9 @@ public final class SpannerDDLTest {
                 "FloatField FLOAT64, " +
                 "DoubleField FLOAT64, " +
                 "EnumField STRING(32), " +
-                "Labels ARRAY<STRING(240)>" +
+                "Labels ARRAY<STRING(240)>, " +
+                "Timestamp TIMESTAMP, " +
+                "Date DATE" +
             ") PRIMARY KEY (ID ASC)"
         );
 

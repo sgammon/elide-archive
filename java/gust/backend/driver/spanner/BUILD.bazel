@@ -41,6 +41,7 @@ _COMMON_DEPS = [
     maven("io.micronaut:micronaut-context"),
     maven("org.reactivestreams:reactive-streams"),
     maven("javax.validation:validation-api"),
+    maven("com.google.api.grpc:proto-google-common-protos"),
 ]
 
 java_library(
@@ -158,6 +159,7 @@ java_library(
     deps = [
         ":SpannerUtil",
         ":SpannerDriverSettings",
+        ":SpannerTemporalConverter",
         "@com_google_protobuf//java/util",
         "//java/gust/backend/model:ModelDeflateException",
         "//java/gust/backend/model:ModelSerializer",
@@ -171,10 +173,19 @@ java_library(
     deps = [
         ":SpannerUtil",
         ":SpannerDriverSettings",
+        ":SpannerTemporalConverter",
         "@com_google_protobuf//java/util",
         "//java/gust/backend/model:ModelDeserializer",
         "//java/gust/backend/model:ModelInflateException",
         javaproto("//gust/core:datamodel"),
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "SpannerTemporalConverter",
+    srcs = ["SpannerTemporalConverter.java"],
+    deps = [
+        # None yet.
     ] + _COMMON_DEPS,
 )
 

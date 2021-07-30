@@ -17,6 +17,8 @@ import com.google.cloud.spanner.Type;
 import com.google.cloud.spanner.Value;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.Message;
+import com.google.protobuf.Timestamp;
+import com.google.type.Date;
 import gust.backend.runtime.Logging;
 import org.slf4j.Logger;
 import tools.elide.core.*;
@@ -562,10 +564,22 @@ public final class SpannerUtil {
                     maybeWrapType(pointer, Type.string());
 
             case MESSAGE:
-                return maybeWrapType(pointer, Type.struct(generateStruct(
-                    pointer.getField().getMessageType(),
-                    settings
-                )));
+                var messageType = pointer.getField().getMessageType();
+                if (Timestamp.getDescriptor().getFullName().equals(messageType.getFullName())) {
+                    // `TIMESTAMP` records should always be expressed as type `TIMESTAMP`.
+                    return maybeWrapType(pointer, Type.timestamp());
+
+                } else if (Date.getDescriptor().getFullName().equals(messageType.getFullName())) {
+                    // `DATE` records should always be expressed as type `DATE`.
+                    return maybeWrapType(pointer, Type.date());
+
+                } else {
+                    // any other type should fallback to being wrapped as a `STRUCT`.
+                    return maybeWrapType(pointer, Type.struct(generateStruct(
+                        pointer.getField().getMessageType(),
+                        settings
+                    )));
+                }
 
             case GROUP:
             default:

@@ -22,6 +22,9 @@ option java_outer_classname = "PersonRecord";
 
 import "gust/core/datamodel.proto";
 
+import "google/protobuf/timestamp.proto";
+import "google/type/date.proto";
+
 
 // Proto for dependency testing.
 message Person {
@@ -140,4 +143,7 @@ message TypeBuffet {
   repeated string labels = 18 [
     (core.spanner).size = 240
   ];
+
+  google.protobuf.Timestamp timestamp = 19;
+  google.type.Date date = 20;
 }

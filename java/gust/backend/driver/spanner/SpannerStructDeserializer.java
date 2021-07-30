@@ -19,7 +19,9 @@ import com.google.cloud.spanner.Value;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
+import com.google.protobuf.Timestamp;
 import com.google.protobuf.util.JsonFormat;
+import com.google.type.Date;
 import gust.backend.model.ModelDeserializer;
 import gust.backend.model.ModelInflateException;
 import gust.backend.model.ModelMetadata;
@@ -34,8 +36,11 @@ import javax.annotation.concurrent.ThreadSafe;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static gust.backend.driver.spanner.SpannerTemporalConverter.*;
 import static gust.backend.driver.spanner.SpannerUtil.*;
 import static gust.backend.model.ModelMetadata.*;
+
+import static java.lang.String.format;
 
 
 /**
@@ -117,7 +122,7 @@ public final class SpannerStructDeserializer<Model extends Message> implements M
         } else if (keyType.getCode() == Type.Code.INT64) {
             spliceIdBuilder(keyBuilder, Optional.of(value.getInt64()));
         } else {
-            throw new IllegalStateException(String.format("Unsupported key type: '%s'.", keyType.getCode().name()));
+            throw new IllegalStateException(format("Unsupported key type: '%s'.", keyType.getCode().name()));
         }
 
         // splice the key into the model
@@ -267,13 +272,13 @@ public final class SpannerStructDeserializer<Model extends Message> implements M
 
                         } catch (InvalidProtocolBufferException invalidProtoException) {
                             if (repeated) {
-                                logging.error(String.format(
+                                logging.error(format(
                                         "Failed to deserialize JSON model at path '%s', at index %s.",
                                         fieldPointer.getField().getFullName(),
                                         modelIndex
                                 ), invalidProtoException);
                             } else {
-                                logging.error(String.format(
+                                logging.error(format(
                                         "Failed to deserialize JSON model at path '%s'.",
                                         fieldPointer.getField().getFullName()
                                 ), invalidProtoException);
@@ -303,12 +308,94 @@ public final class SpannerStructDeserializer<Model extends Message> implements M
                     throw new IllegalStateException("NUMERIC fields are not supported yet.");
 
                 case TIMESTAMP:
-                    // @TODO(sgammon): implement TIMESTAMP support
-                    throw new IllegalStateException("TIMESTAMP fields are not supported yet.");
+                    // extract timestamp value
+                    var timestampValue = columnValue.getTimestamp();
+
+                    switch (field.getType()) {
+                        case UINT64:
+                        case FIXED64:
+                            // we're being asked to put a Google Cloud timestamp record into an unsigned integer field,
+                            // with a `long`-style size. this is the only possible safe native conversion.
+                            spliceBuilder(
+                                target,
+                                fieldPointer,
+                                Optional.of((timestampValue.getSeconds() * 1000) + timestampValue.getNanos())
+                            );
+                            break;
+
+                        case STRING:
+                            // we're being asked to put a Google Cloud timestamp record into a string field. in this
+                            // case, the adapter leverages any date options or otherwise defaults to ISO8601.
+                            spliceBuilder(
+                                target,
+                                fieldPointer,
+                                Optional.of(timestampValue.toString())
+                            );
+                            break;
+
+                        case MESSAGE:
+                            // if we have a sub-message in the same spot as a timestamp, it's worth checking to see if
+                            // it's a native Google Cloud timestamp, in which case we can just use it. otherwise, if we
+                            // encounter a standard PB timestamp, we need to convert.
+                            if (Timestamp.getDescriptor().getFullName().equals(field.getMessageType().getFullName())) {
+                                spliceBuilder(
+                                    target,
+                                    fieldPointer,
+                                    Optional.of(protoTimestampFromCloud(timestampValue))
+                                );
+                                break;
+                            }
+
+                            // any other sub-message type represents an illegal state.
+                            throw new IllegalStateException(
+                                "Cannot convert Spanner TIMESTAMP value to unsupported sub-message type " +
+                                "'" + field.getMessageType().getFullName() + "'."
+                            );
+
+                        default:
+                            // any other expressed field represents an illegal state.
+                            throw new IllegalStateException(
+                                "Cannot convert Spanner TIMESTAMP value to proto-type '" + field.getType().name() + "'."
+                            );
+                    }
 
                 case DATE:
-                    // @TODO(sgammon): implement DATE support
-                    throw new IllegalStateException("DATE fields are not supported yet.");
+                    // extract date value
+                    var dateValue = columnValue.getDate();
+                    if (field.getType() == Descriptors.FieldDescriptor.Type.STRING) {
+                        // we're being asked to put a Google Cloud structured date record into a string field. in
+                        // this case, the adapter leverages any date options or otherwise defaults to ISO8601.
+                        spliceBuilder(
+                                target,
+                                fieldPointer,
+                                Optional.of(format(
+                                        "%s/%s/%s",
+                                        dateValue.getYear(),
+                                        dateValue.getMonth(),
+                                        dateValue.getDayOfMonth()
+                                ))
+                        );
+                    } else if (field.getType() == Descriptors.FieldDescriptor.Type.MESSAGE &&
+                            Date.getDescriptor().getFullName().equals(field.getMessageType().getFullName())) {
+                        // if we have a sub-message in the same spot as a date, we need to convert to a standard
+                        // proto date, which is the only supported target here.
+                        spliceBuilder(
+                            target,
+                            fieldPointer,
+                            Optional.of(protoDateFromCloud(dateValue))
+                        );
+                        break;
+                    } else if (field.getType() == Descriptors.FieldDescriptor.Type.MESSAGE) {
+                        throw new IllegalStateException(
+                            "Cannot convert Spanner DATE value to unsupported sub-message type " +
+                            "'" + field.getMessageType().getFullName() + "'."
+                        );
+                    } else  {
+                        // any other expressed field represents an illegal state.
+                        throw new IllegalStateException(
+                            "Cannot convert Spanner DATE value to proto-type '" + field.getType().name() + "'."
+                        );
+                    }
 
                 case ARRAY:
                     throw new IllegalStateException(
