@@ -61,6 +61,7 @@ message PersonKey {
   // Unique record ID.
   string id = 1 [
     (core.field).type = ID,
+    (core.spanner).column = "ID",
     (core.spanner).size = 240
   ];
 }

@@ -54,10 +54,10 @@ public final class SpannerDDLTest {
 
         var expectedBasicCreate = (
             "CREATE TABLE People (" +
-                "Key STRING(240) NOT NULL, " +
+                "ID STRING(240) NOT NULL, " +
                 "Name STRING(1024), " +
                 "ContactInfo STRING(2048)" +
-            ") PRIMARY KEY (Key ASC)"
+            ") PRIMARY KEY (ID ASC)"
         );
 
         generatorAssertions(generator, "People");
@@ -76,11 +76,11 @@ public final class SpannerDDLTest {
 
         var expectedInterleavedCreate = (
             "CREATE TABLE People (" +
-                "Key STRING(240) NOT NULL, " +
+                "ID STRING(240) NOT NULL, " +
                 "Name STRING(1024), " +
                 "ContactInfo STRING(2048)" +
             ") " +
-                "PRIMARY KEY (Key ASC), " +
+                "PRIMARY KEY (ID ASC), " +
                 "INTERLEAVE IN PARENT ContactList"
         );
 
@@ -99,11 +99,11 @@ public final class SpannerDDLTest {
 
         var expectedInterleavedCreate = (
             "CREATE TABLE People (" +
-                "Key STRING(240) NOT NULL, " +
+                "ID STRING(240) NOT NULL, " +
                 "Name STRING(1024), " +
                 "ContactInfo STRING(2048)" +
             ") " +
-                "PRIMARY KEY (Key DESC)"
+                "PRIMARY KEY (ID DESC)"
         );
 
         generatorAssertions(generator, "People");
