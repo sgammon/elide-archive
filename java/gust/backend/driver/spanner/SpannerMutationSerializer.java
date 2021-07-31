@@ -109,7 +109,7 @@ public final class SpannerMutationSerializer<Model extends Message> implements M
                         @Nonnull Mutation.WriteBuilder target) {
         var idField = idField(instance).orElseThrow();
         var id = id(instance).orElseThrow();
-        var column = resolveKeyColumn(keyField, driverSettings);
+        var column = resolveKeyColumn(idField, driverSettings);
         var valueBinder = target.set(column);
         var type = resolveKeyType(idField);
 
