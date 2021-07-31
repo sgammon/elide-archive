@@ -307,7 +307,8 @@ public final class SpannerMutationSerializer<Model extends Message> implements M
         var field = fieldPointer.getField();
         var fieldValue = pluck(instance, fieldPointer.getName());
 
-        if (!instance.hasField(field) || fieldValue.getValue().isEmpty()) {
+        if (!field.isRepeated() && !instance.hasField(field) || fieldValue.getValue().isEmpty() ||
+            field.isRepeated() && instance.getRepeatedFieldCount(field) < 1) {
             // field has no value. skip, but log about it.
             if (logging.isTraceEnabled())
                 logging.trace(
@@ -319,7 +320,7 @@ public final class SpannerMutationSerializer<Model extends Message> implements M
         }
 
         // virtualize the key property, when encountered
-        if (matchFieldAnnotation(field, FieldType.KEY)) {
+        if (!field.isRepeated() && matchFieldAnnotation(field, FieldType.KEY)) {
             this.collapseRowKey(fieldPointer, instance, target);
             return;
         }
