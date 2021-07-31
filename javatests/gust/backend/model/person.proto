@@ -33,8 +33,7 @@ message Person {
 
   // Unique record ID.
   PersonKey key = 1 [
-    (core.field).type = KEY,
-    (core.column).name = "Key"
+    (core.field).type = KEY
   ];
 
   // Salutation name.
@@ -110,7 +109,8 @@ message TypeBuffet {
     uint64 id = 1 [
       (core.field).type = ID,
       (core.spanner).size = 240,
-      (core.spanner).type = INT64
+      (core.spanner).type = INT64,
+      (core.spanner).column = "ID"
     ];
   }
 
@@ -121,8 +121,7 @@ message TypeBuffet {
 
   // Unique record ID.
   SampleKey key = 1 [
-    (core.field).type = KEY,
-    (core.spanner).column = "ID"
+    (core.field).type = KEY
   ];
 
   int32 int_normal = 2;

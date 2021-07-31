@@ -69,24 +69,24 @@ public final class SpannerUtil {
      * according to the annotation structure present on the key.
      *
      * @see #resolveKeyType(FieldPointer) To resolve the primary key column type.
-     * @param keyField Resolved field pointer to a given model's key field.
+     * @param idField Resolved field pointer to a given model's ID field.
      * @param driverSettings Settings for the Spanner driver.
      * @return Name of the column we should use for the primary key.
      */
-    public static @Nonnull String resolveKeyColumn(@Nonnull FieldPointer keyField,
+    public static @Nonnull String resolveKeyColumn(@Nonnull FieldPointer idField,
                                                    @Nonnull SpannerDriverSettings driverSettings) {
-        var fieldAnnos = fieldAnnotation(keyField.getField(), Datamodel.field);
+        var fieldAnnos = fieldAnnotation(idField.getField(), Datamodel.field);
         if (fieldAnnos.orElseThrow().getType() != FieldType.ID) {
             throw new IllegalStateException(
-                "Cannot use non-ID field as key column: '" + keyField.getField().getFullName() + "'."
+                "Cannot use non-ID field as key column: '" + idField.getField().getFullName() + "'."
             );
         }
 
         // resolve key field and column name corresponding to that key field
         return resolveColumnName(
-            keyField,
-            spannerOpts(keyField),
-            columnOpts(keyField),
+            idField,
+            spannerOpts(idField),
+            columnOpts(idField),
             driverSettings
         );
     }
@@ -368,11 +368,22 @@ public final class SpannerUtil {
         return forEachField(
             descriptor,
             Optional.of(onlySpannerEligibleFields(driverSettings))
-        ).map((fieldPointer) -> resolveColumnName(fieldPointer,
-            fieldAnnotation(fieldPointer.getField(), Datamodel.spanner),
-            fieldAnnotation(fieldPointer.getField(), Datamodel.column),
-            driverSettings
-        )).collect(Collectors.toUnmodifiableList());
+        ).map((fieldPointer) -> {
+            var fieldOpts = fieldAnnotation(fieldPointer.getField(), Datamodel.field);
+            if (fieldOpts.orElse(FieldPersistenceOptions.getDefaultInstance()).getType() == FieldType.KEY) {
+                // this is an ID field, so skip it outright because the key will inject it.
+                return null;
+            } else if (fieldOpts.orElse(FieldPersistenceOptions.getDefaultInstance()).getType() == FieldType.KEY) {
+                // this is a key field, so skip it and instead inject the ID field.
+                return resolveKeyColumn(idField(descriptor).orElseThrow(), driverSettings);
+            } else {
+                return resolveColumnName(fieldPointer,
+                    fieldAnnotation(fieldPointer.getField(), Datamodel.spanner),
+                    fieldAnnotation(fieldPointer.getField(), Datamodel.column),
+                    driverSettings
+                );
+            }
+        }).filter(Objects::nonNull).collect(Collectors.toUnmodifiableList());
     }
 
     /**
@@ -398,6 +409,11 @@ public final class SpannerUtil {
         return forEachField(
             descriptor,
             Optional.of(onlySpannerEligibleFields(driverSettings))
+        ).filter((fieldPointer) ->
+            // don't ever include `KEY` fields in structs
+            fieldAnnotation(fieldPointer.getField(), Datamodel.field).orElse(
+                FieldPersistenceOptions.getDefaultInstance()
+            ).getType() != FieldType.KEY
         ).map((fieldPointer) -> {
             var spannerOpts = fieldAnnotation(fieldPointer.getField(), Datamodel.spanner);
             var columnOpts = fieldAnnotation(fieldPointer.getField(), Datamodel.column);
@@ -581,6 +597,14 @@ public final class SpannerUtil {
                     return maybeWrapType(pointer, Type.date());
 
                 } else {
+                    // special case: if this is a key field, we should treat it like it's actually the key's ID field.
+                    if (fieldAnnotation(pointer.getField(), Datamodel.field).orElse(
+                        FieldPersistenceOptions.getDefaultInstance()
+                    ).getType().equals(FieldType.KEY)) {
+                        // it's a key field, so instead, resolve the model's ID field and add that.
+                        return resolveKeyType(idField(pointer.getBase()).orElseThrow());
+                    }
+
                     // any other type should fallback to being wrapped as a `STRUCT`.
                     return maybeWrapType(pointer, Type.struct(generateStruct(
                         pointer.getField().getMessageType(),
