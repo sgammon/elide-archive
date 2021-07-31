@@ -149,6 +149,7 @@ java_library(
         ":SpannerAdapter",
         ":SpannerDriver",
         ":SpannerDriverSettings",
+        "//java/gust/backend/model:CacheDriver",
         "//java/gust/backend/model:DatabaseManager",
     ] + _COMMON_DEPS,
 )

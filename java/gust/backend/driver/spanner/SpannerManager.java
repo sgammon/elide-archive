@@ -13,7 +13,11 @@
 package gust.backend.driver.spanner;
 
 import com.google.cloud.spanner.DatabaseId;
+import com.google.cloud.spanner.SpannerOptions;
+import com.google.common.util.concurrent.ListeningScheduledExecutorService;
+import com.google.protobuf.Empty;
 import com.google.protobuf.Message;
+import gust.backend.model.CacheDriver;
 import gust.backend.model.DatabaseManager;
 import gust.backend.runtime.Logging;
 import io.micronaut.context.annotation.Factory;
@@ -45,7 +49,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @see SpannerAdapter `SpannerAdapter`, which manages cache/transaction state
  */
 @Immutable @ThreadSafe @Refreshable
-@SuppressWarnings("rawtypes")
+@SuppressWarnings({"UnstableApiUsage", "rawtypes"})
 public final class SpannerManager
         implements DatabaseManager<SpannerAdapter, SpannerDriver>, Closeable, AutoCloseable {
     private static final @Nonnull Logger logging = Logging.logger(SpannerManager.class);
@@ -128,9 +132,95 @@ public final class SpannerManager
         /** Required/immutable: Main Spanner database this manager will interact with. */
         private final @Nonnull DatabaseId database;
 
+        /** Optional cache driver to use when caching reads. */
+        private @Nonnull Optional<CacheDriver<Message, Message>> cache = Optional.empty();
+
+        /** Default set of driver settings to use when spawning adapters. */
+        private @Nonnull Optional<SpannerDriverSettings> settings = Optional.empty();
+
+        /** Base set of options to use when spawning Spanner clients via this manager. */
+        private @Nonnull Optional<SpannerOptions.Builder> options = Optional.empty();
+
+        /** Custom executor to use for adapters spawned via this builder. */
+        private @Nonnull Optional<ListeningScheduledExecutorService> executor = Optional.empty();
+
         /** Private constructor. */
         Builder(@Nonnull DatabaseId database) {
             this.database = database;
+        }
+
+        // -- Builder Getters -- //
+
+        /** @return Spanner database which the target manager will be bound to. */
+        public @Nonnull DatabaseId getDatabase() {
+            return database;
+        }
+
+        /** @return Cache adapter, if any, to apply when acquiring adapters/drivers through the target manager. */
+        public @Nonnull Optional<CacheDriver<Message, Message>> getCache() {
+            return cache;
+        }
+
+        /** @return Custom driver settings to apply when acquiring adapters/drivers through the target manager. */
+        public @Nonnull Optional<SpannerDriverSettings> getSettings() {
+            return settings;
+        }
+
+        /** @return Base set of Spanner options to apply when spawning Spanner clients from this manager. */
+        public @Nonnull Optional<SpannerOptions.Builder> getOptions() {
+            return options;
+        }
+
+        /** @return Custom executor to apply when acquiring adapters/drivers through the target manager. */
+        public @Nonnull Optional<ListeningScheduledExecutorService> getExecutor() {
+            return executor;
+        }
+
+        // -- Builder Setters -- //
+
+        /**
+         * Set the cache for the target configured Spanner manager.
+         *
+         * @param cache Cache to employ, or none if {@link Optional#empty()}.
+         * @return Self, for chainability.
+         */
+        public @Nonnull Builder setCache(@Nonnull Optional<CacheDriver<Message, Message>> cache) {
+            this.cache = cache;
+            return this;
+        }
+
+        /**
+         * Set the main driver settings to use when spawning adapters in the target configured Spanner manager.
+         *
+         * @param settings Driver settings to apply.
+         * @return Self, for chainability.
+         */
+        public @Nonnull Builder setSettings(@Nonnull Optional<SpannerDriverSettings> settings) {
+            this.settings = settings;
+            return this;
+        }
+
+        /**
+         * Set the base package of Spanner client options to use when spawning new clients via the target configured
+         * Spanner manager.
+         *
+         * @param options Spanner client options to apply, or none if {@link Optional#empty()}.
+         * @return Self, for chainability.
+         */
+        public @Nonnull Builder setOptions(@Nonnull Optional<SpannerOptions.Builder> options) {
+            this.options = options;
+            return this;
+        }
+
+        /**
+         * Set the executor used by adapters and drivers spawned by this manager.
+         *
+         * @param executor Executor to use when spawning adapters and drivers.
+         * @return Self, for chainability.
+         */
+        public @Nonnull Builder setExecutor(@Nonnull Optional<ListeningScheduledExecutorService> executor) {
+            this.executor = executor;
+            return this;
         }
 
         /**
@@ -143,7 +233,11 @@ public final class SpannerManager
             var assignedId = configuredManagers.size();
             var manager = new ConfiguredSpannerManager(
                 assignedId,
-                database
+                database,
+                cache,
+                options,
+                executor,
+                settings
             );
 
             try {
@@ -182,6 +276,18 @@ public final class SpannerManager
         /** Database we should interact with. */
         private final @Nonnull DatabaseId database;
 
+        /** Settings to apply to Spanner clients derived from this manager. */
+        private final @Nonnull Optional<SpannerOptions.Builder> baseOptions;
+
+        /** Settings to apply to spawned adapters/drivers. */
+        private final @Nonnull Optional<SpannerDriverSettings> settings;
+
+        /** Custom executor service to apply, if any, to spawned adapters/drivers from this manager. */
+        private final @Nonnull Optional<ListeningScheduledExecutorService> executorService;
+
+        /** Cache to apply, if any, when reading cacheable models. */
+        private final @Nonnull Optional<CacheDriver<Message, Message>> cache;
+
         /** Whether this configured manager has closed, in which case it cannot spawn adapters or operations. */
         private final @Nonnull AtomicBoolean closed = new AtomicBoolean(false);
 
@@ -193,12 +299,39 @@ public final class SpannerManager
          *
          * @param id Assigned ID for this manager.
          * @param database Database we should bind the resulting Spanner manager to.
+         * @param cache Optional cache adapter to apply to this one.
+         * @param baseOptions Base Spanner driver option set to apply.
+         * @param executorService Optional custom executor service to use.
+         * @param settings Settings to apply when spawning adapters with this manager.
          */
         ConfiguredSpannerManager(int id,
-                                 @Nonnull DatabaseId database) {
+                                 @Nonnull DatabaseId database,
+                                 @Nonnull Optional<CacheDriver<Message, Message>> cache,
+                                 @Nonnull Optional<SpannerOptions.Builder> baseOptions,
+                                 @Nonnull Optional<ListeningScheduledExecutorService> executorService,
+                                 @Nonnull Optional<SpannerDriverSettings> settings) {
             this.database = Objects.requireNonNull(database);
             this.adapterCache = new ConcurrentSkipListMap<>();
+            this.executorService = executorService;
+            this.baseOptions = baseOptions;
+            this.settings = settings;
+            this.cache = cache;
             this.id = id;
+        }
+
+        /**
+         * Acquire a generic adapter instance designed to work with all {@link Message}-inheriting model types.
+         *
+         * <p>Adapter instances and backing drivers acquired via this route are not guaranteed to be new, which in most
+         * a performance benefit with negligible costs. Since adapters and drivers are required to be threadsafe, they
+         * can be re-used safely with no internal state involved.</p>
+         *
+         * @see #adapter(Message, Message)
+         * @return Generic Spanner adapter instance.
+         */
+        @Factory
+        public @Nonnull SpannerAdapter<Message, Message> generic() {
+            return adapter(Empty.getDefaultInstance(), Empty.getDefaultInstance());
         }
 
         /**
@@ -206,7 +339,7 @@ public final class SpannerManager
          * schema-driven {@link Message} classes.
          *
          * <p>Adapters and backing drivers acquired via this route are not guaranteed to be new, which in most cases is
-         * a performance benefit with ignorable costs. Since adapters and drivers are required to be threadsafe, they
+         * a performance benefit with negligible costs. Since adapters and drivers are required to be threadsafe, they
          * can be re-used safely with no internal state involved.</p>
          *
          * <p>Alternatively, drivers/adapters can also be acquired directly, via methods like
@@ -245,10 +378,14 @@ public final class SpannerManager
                     logging.info("No cached adapter. Spawning new one for fingerprint '{}'...", modelFingerprint);
 
                 // spawn a new adapter, place it in the cache
-                var adapter = SpannerAdapter.acquire(
+                SpannerAdapter<Key, Model> adapter = (SpannerAdapter<Key, Model>)SpannerAdapter.acquire(
                     keyInstance,
                     modelInstance,
-                    database
+                    database,
+                    executorService,
+                    settings,
+                    baseOptions,
+                    cache
                 );
                 adapterCache.put(modelFingerprint, adapter);
                 return adapter;
@@ -305,6 +442,18 @@ public final class SpannerManager
                 adapterCache.clear();
                 configuredManagers.remove(this.id);  // deregister self
             }
+        }
+
+        // -- Configured Manager: Getters -- //
+
+        /** @return Settings for this configured manager. */
+        public @Nonnull SpannerDriverSettings getSettings() {
+            return settings.orElse(SpannerDriverSettings.DEFAULTS);
+        }
+
+        /** @return Cache applied to reads, if any. */
+        public @Nonnull Optional<CacheDriver<Message, Message>> getCache() {
+            return cache;
         }
     }
 }
