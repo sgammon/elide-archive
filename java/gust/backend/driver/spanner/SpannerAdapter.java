@@ -15,10 +15,7 @@ package gust.backend.driver.spanner;
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.cloud.grpc.GrpcTransportOptions;
-import com.google.cloud.spanner.DatabaseId;
-import com.google.cloud.spanner.Mutation;
-import com.google.cloud.spanner.SpannerOptions;
-import com.google.cloud.spanner.Struct;
+import com.google.cloud.spanner.*;
 import com.google.cloud.spanner.v1.stub.SpannerStubSettings;
 import com.google.common.util.concurrent.ListeningScheduledExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
@@ -34,7 +31,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
 import javax.annotation.concurrent.ThreadSafe;
 import java.io.Closeable;
-import java.io.IOException;
 import java.util.Optional;
 import java.util.concurrent.Executors;
 
@@ -249,6 +245,56 @@ public final class SpannerAdapter<Key extends Message, Model extends Message>
             messageInstance,
             SpannerDriverSettings.DEFAULTS,
             Optional.empty()
+        );
+    }
+
+    /**
+     * Create or acquire a {@link SpannerAdapter} and matching {@link SpannerDriver} for the provided generated model
+     * key and object structures, working against the provided Spanner {@link DatabaseId}.
+     *
+     * <p>This method variant is a balanced invocation which allows invoking code to control <i>most</i> settings,
+     * without coupling too tightly to Google SDKs.</p>
+     *
+     * @see #acquire(Message, Message, DatabaseId, ListeningScheduledExecutorService) For an option which lets invoking
+     *      code specify a background executor for RPC transmission and followup.
+     * @see #acquire(Message, Message, DatabaseId, SpannerOptions.Builder, ListeningScheduledExecutorService) Variant of
+     *      this same method which offers control of the {@link SpannerOptions} used to spawn RPC clients.
+     * @see #acquire(SpannerOptions.Builder, DatabaseId, TransportChannelProvider, Optional, Optional,
+     *      GrpcTransportOptions, ListeningScheduledExecutorService, Message, Message, SpannerDriverSettings, Optional)
+     *      Full control over creation of the Spanner adapter and driver.
+     * @param keyInstance Generated key {@link Message} structure, for which the adapter should be specialized.
+     * @param messageInstance Generated object {@link Message} structure, for which the adapter should be specialized.
+     * @param defaultDatabase Default Spanner database to use when interacting with this adapter. This value may be
+     *                        overridden on an individual operation basis via specifying custom
+     *                        {@link SpannerDriver.SpannerOperationOptions} and descendents.
+     * @param executorService Executor service to use for primary RPC execution and related followup.
+     * @param driverSettings Custom driver settings to apply. {@link SpannerDriverSettings#DEFAULTS} is a good start.
+     * @param <K> Model key structure for which the resulting adapter should be specialized.
+     * @param <M> Model object structure for which the resulting adapter should be specialized.
+     * @return Spanner adapter instance, specialized to the provided model and key {@link Message}s.
+     */
+    public static @Nonnull <K extends Message, M extends Message> SpannerAdapter<K, M> acquire(
+            @Nonnull K keyInstance,
+            @Nonnull M messageInstance,
+            @Nonnull DatabaseId defaultDatabase,
+            @Nonnull Optional<ListeningScheduledExecutorService> executorService,
+            @Nonnull Optional<SpannerDriverSettings> driverSettings,
+            @Nonnull Optional<SpannerOptions.Builder> baseOptions,
+            @Nonnull Optional<CacheDriver<K, M>> cacheDriver) {
+        return acquire(
+            baseOptions.orElse(SpannerOptions.newBuilder()),
+            defaultDatabase,
+            SpannerStubSettings.defaultTransportChannelProvider(),
+            Optional.of(SpannerStubSettings.defaultCredentialsProviderBuilder().build()),
+            Optional.empty(),
+            GrpcTransportOptions.newBuilder().build(),
+            executorService.orElseGet(() -> MoreExecutors.listeningDecorator(
+                Executors.newScheduledThreadPool(3)
+            )),
+            keyInstance,
+            messageInstance,
+            driverSettings.orElse(SpannerDriverSettings.DEFAULTS),
+            cacheDriver
         );
     }
 
