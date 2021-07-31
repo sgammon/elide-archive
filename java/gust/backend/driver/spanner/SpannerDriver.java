@@ -89,7 +89,7 @@ public final class SpannerDriver<Key extends Message, Model extends Message>
     private final @Nonnull SpannerDriverSettings driverSettings;
 
     /** Cloud Spanner client engine. */
-    private final @Nonnull Spanner engine;
+    final @Nonnull Spanner engine;
 
     /** Defines generic Spanner operation-specific options. */
     interface SpannerOperationOptions extends OperationOptions {

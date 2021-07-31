@@ -438,4 +438,15 @@ public final class SpannerAdapter<Key extends Message, Model extends Message>
     public @Nonnull ListeningScheduledExecutorService executorService() {
         return driver.executorService();
     }
+
+    // -- Spanner: Extended API -- //
+
+    /**
+     * Acquire the Spanner for Java client powering this adapter.
+     *
+     * @return Spanner client for Java.
+     */
+    public @Nonnull Spanner spanner() {
+        return ((SpannerDriver<Key, Model>)engine()).engine;
+    }
 }
