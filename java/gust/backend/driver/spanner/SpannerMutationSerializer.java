@@ -159,7 +159,11 @@ public final class SpannerMutationSerializer<Model extends Message> implements M
                     if (repeated) {
                         valueBinder.toInt64Array((Iterable<Long>) rawValue);
                     } else {
-                        valueBinder.to((Long) rawValue);
+                        if (rawValue instanceof Long) {
+                            valueBinder.to((Long) rawValue);
+                        } else {
+                            valueBinder.to((Integer) rawValue);
+                        }
                     }
                 }
                 break;
