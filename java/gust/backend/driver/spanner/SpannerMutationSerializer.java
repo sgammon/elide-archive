@@ -323,6 +323,10 @@ public final class SpannerMutationSerializer<Model extends Message> implements M
         if (!field.isRepeated() && matchFieldAnnotation(field, FieldType.KEY)) {
             this.collapseRowKey(fieldPointer, instance, target);
             return;
+        } else if (field.isRepeated() && matchFieldAnnotation(field, FieldType.KEY)) {
+            throw new IllegalStateException(
+                "Cannot make `KEY` field repeated (on model '" + field.getMessageType().getFullName() + "'."
+            );
         }
 
         // resolve any column or spanner options
