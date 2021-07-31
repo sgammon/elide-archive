@@ -147,10 +147,20 @@ public final class SpannerMutationSerializer<Model extends Message> implements M
                 break;
 
             case INT64:
-                if (repeated) {
-                    valueBinder.toInt64Array((Iterable<Long>)rawValue);
+                // we need to check if it's an ENUM, and if ENUMs-as-strings is off. if both of these conditions
+                // match, we need to resolve the enumerated instance and assign that instead.
+                if (field.getType() == Descriptors.FieldDescriptor.Type.ENUM &&
+                    driverSettings.enumsAsNumbers()) {
+                    var descriptor = (Descriptors.EnumValueDescriptor)rawValue;
+                    valueBinder.to(descriptor.getNumber());
+
                 } else {
-                    valueBinder.to((Long)rawValue);
+                    // otherwise, we should treat it as a native numeric type, repeated or singular.
+                    if (repeated) {
+                        valueBinder.toInt64Array((Iterable<Long>) rawValue);
+                    } else {
+                        valueBinder.to((Long) rawValue);
+                    }
                 }
                 break;
 
@@ -184,11 +194,21 @@ public final class SpannerMutationSerializer<Model extends Message> implements M
                         throw new IllegalStateException(ipbe);
                     }
                 } else {
-                    // it's not a JSON field, so serialize it as a string (either singular or repeated).
-                    if (repeated) {
-                        valueBinder.toStringArray((Iterable<String>)rawValue);
+                    // we need to check if it's an ENUM, and if ENUMs-as-strings is on. if both of these conditions
+                    // match, we need to resolve the enumerated instance and assign that instead.
+                    if (field.getType() == Descriptors.FieldDescriptor.Type.ENUM &&
+                        !driverSettings.enumsAsNumbers()) {
+                        var descriptor = (Descriptors.EnumValueDescriptor)rawValue;
+                        valueBinder.to(descriptor.getName());
+
                     } else {
-                        valueBinder.to((String)rawValue);
+                        // it's not a JSON field or an enum, or enum serialization as strings isn't on, so serialize it
+                        // as a regular string value (either singular or repeated).
+                        if (repeated) {
+                            valueBinder.toStringArray((Iterable<String>)rawValue);
+                        } else {
+                            valueBinder.to((String)rawValue);
+                        }
                     }
                 }
                 break;
