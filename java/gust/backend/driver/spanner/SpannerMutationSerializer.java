@@ -13,6 +13,8 @@
 package gust.backend.driver.spanner;
 
 import com.google.cloud.ByteArray;
+import com.google.cloud.Date;
+import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.*;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.protobuf.ByteString;
@@ -211,19 +213,54 @@ public final class SpannerMutationSerializer<Model extends Message> implements M
                 ));
 
             case TIMESTAMP:
-                // @TODO(sgammon): support for 'TIMESTAMP' complex types
-                throw new IllegalStateException("Type 'TIMESTAMP' is not yet supported for use with Spanner.");
+                if (com.google.protobuf.Timestamp.getDescriptor()
+                        .getFullName()
+                        .equals(field.getMessageType().getFullName())) {
+                    if (repeated) {
+                        var arr = new LinkedList<Timestamp>();
+                        for (var ts : (Iterable<com.google.protobuf.Timestamp>) rawValue) {
+                            arr.add(SpannerTemporalConverter.cloudTimestampFromProto(ts));
+                        }
+                        valueBinder.toTimestampArray(arr);
+                    } else {
+                        valueBinder.to(SpannerTemporalConverter.cloudTimestampFromProto(
+                                ((com.google.protobuf.Timestamp)rawValue)));
+                    }
+                    break;
+                }
+
+                // any sub-message type other than `Timestamp` is invalid.
+                throw new IllegalStateException(
+                        "Type 'TIMESTAMP' is not yet supported for use with record " +
+                        "'" + field.getMessageType().getFullName() + "'.");
 
             case DATE:
-                // @TODO(sgammon): support for 'DATE' complex types
-                throw new IllegalStateException("Type 'DATE' is not yet supported for use with Spanner.");
+                if (com.google.type.Date.getDescriptor()
+                    .getFullName()
+                    .equals(field.getMessageType().getFullName())) {
+                    if (repeated) {
+                        var arr = new LinkedList<Date>();
+                        for (var date : (Iterable<com.google.type.Date>) rawValue) {
+                            arr.add(SpannerTemporalConverter.cloudDateFromProto(date));
+                        }
+                        valueBinder.toDateArray(arr);
+                    } else {
+                        valueBinder.to(SpannerTemporalConverter.cloudDateFromProto(
+                                ((com.google.type.Date)rawValue)));
+                    }
+                    break;
+                }
+
+                // any sub-message type other than `Date` is invalid.
+                throw new IllegalStateException(
+                        "Type 'DATE' is not yet supported for use with record " +
+                        "'" + field.getMessageType().getFullName() + "'.");
 
             case NUMERIC:
                 // @TODO(sgammon): support for 'NUMERIC' complex types
                 throw new IllegalStateException("Type 'NUMERIC' is not yet supported for use with Spanner.");
 
-            case ARRAY:
-                throw new IllegalStateException("Illegal array received for flattened serialization.");
+            case ARRAY: throw new IllegalStateException("Illegal array received for flattened serialization.");
         }
     }
 
