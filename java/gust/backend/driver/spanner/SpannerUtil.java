@@ -75,6 +75,13 @@ public final class SpannerUtil {
      */
     public static @Nonnull String resolveKeyColumn(@Nonnull FieldPointer keyField,
                                                    @Nonnull SpannerDriverSettings driverSettings) {
+        var fieldAnnos = fieldAnnotation(keyField.getField(), Datamodel.field);
+        if (fieldAnnos.orElseThrow().getType() != FieldType.ID) {
+            throw new IllegalStateException(
+                "Cannot use non-ID field as key column: '" + keyField.getField().getFullName() + "'."
+            );
+        }
+
         // resolve key field and column name corresponding to that key field
         return resolveColumnName(
             keyField,
