@@ -244,7 +244,7 @@ public final class SpannerGeneratedDDL {
                                                     @Nonnull FieldPointer keyField,
                                                     @Nonnull SpannerDriverSettings settings) {
             var idField = idField(model).orElseThrow();
-            var keyName = resolveKeyColumn(keyField, settings);
+            var keyName = resolveKeyColumn(idField, settings);
             var keyType = resolveKeyType(idField);
             var spannerOpts = spannerOpts(idField);
             var columnOpts = columnOpts(idField);
@@ -684,7 +684,7 @@ public final class SpannerGeneratedDDL {
         return new SpannerGeneratedDDL.Builder(
             model,
             resolveTableName(model),
-            resolveKeyColumn(keyField(model).orElseThrow(), settings),
+            resolveKeyColumn(idField(model).orElseThrow(), settings),
             resolveDefaultColumns(model, settings),
             settings
         );
