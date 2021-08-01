@@ -185,6 +185,43 @@ public final class SpannerUtil {
     }
 
     /**
+     * Given a resolved field pointer resolve the expected/configured column name in Spanner for a given typed model
+     * field. If no specialized Spanner or table column annotations are present, fallback to a calculated default name.
+     *
+     * @see #resolveColumnName(Descriptors.FieldDescriptor, Optional, Optional, SpannerDriverSettings) For the full
+     *      un-sugared version of this method.
+     * @param field Pre-resolved model field descriptor.
+     * @return Expected name of the field when expressed as a column in Spanner.
+     */
+    public static @Nonnull String resolveColumnName(@Nonnull Descriptors.FieldDescriptor field) {
+        return resolveColumnName(
+            field,
+            SpannerDriverSettings.DEFAULTS
+        );
+    }
+
+    /**
+     * Given a resolved field pointer resolve the expected/configured column name in Spanner for a given typed model
+     * field. If no specialized Spanner or table column annotations are present, fallback to a calculated default name.
+     * Apply any active driver settings as well.
+     *
+     * @see #resolveColumnName(Descriptors.FieldDescriptor, Optional, Optional, SpannerDriverSettings) For the full
+     *      un-sugared version of this method.
+     * @param field Pre-resolved model field descriptor.
+     * @param settings Settings for the Spanner driver.
+     * @return Expected name of the field when expressed as a column in Spanner.
+     */
+    public static @Nonnull String resolveColumnName(@Nonnull Descriptors.FieldDescriptor field,
+                                                    @Nonnull SpannerDriverSettings settings) {
+        return resolveColumnName(
+            field,
+            spannerOpts(field),
+            columnOpts(field),
+            settings
+        );
+    }
+
+    /**
      * Given a resolved field pointer and set of annotations, resolve the expected/configured column name in Spanner for
      * a given typed model field. If no specialized Spanner or table column annotations are present, fallback to a
      * calculated default name.

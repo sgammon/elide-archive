@@ -338,5 +338,14 @@ public final class SpannerUtilTest {
             ),
             "turning off `defaultCapitalizedNames` should result in standard ProtoJSON field naming"
         );
+
+        // naked defaults should result in a completely default field name
+        assertEquals(
+            "DoubleField",
+            resolveColumnName(
+                singularField.getField()
+            ),
+            "completely default field name should be expected form"
+        );
     }
 }
