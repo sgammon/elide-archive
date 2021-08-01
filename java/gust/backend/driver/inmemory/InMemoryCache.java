@@ -76,7 +76,7 @@ public final class InMemoryCache<K extends Message, M extends Message> implement
    * @param <M> Generic model type managed by this cache.
    * @return Instance of the acquired cache engine.
    */
-  static @Nonnull <K extends Message, M extends Message> InMemoryCache<K, M> acquire() {
+  public static @Nonnull <K extends Message, M extends Message> InMemoryCache<K, M> acquire() {
     return new InMemoryCache<>();
   }
 
