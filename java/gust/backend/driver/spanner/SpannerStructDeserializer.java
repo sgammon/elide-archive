@@ -89,7 +89,7 @@ public final class SpannerStructDeserializer<Model extends Message> implements M
      * @return Snapshot deserializer instance.
      */
     @SuppressWarnings("SameParameterValue")
-    static <M extends Message> SpannerStructDeserializer<M> forModel(
+    public static <M extends Message> SpannerStructDeserializer<M> forModel(
             @Nonnull M instance,
             @Nonnull SpannerDriverSettings driverSettings) {
         return new SpannerStructDeserializer<>(
