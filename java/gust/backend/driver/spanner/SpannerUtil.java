@@ -20,6 +20,7 @@ import com.google.protobuf.Message;
 import com.google.protobuf.Timestamp;
 import com.google.type.Date;
 import gust.backend.runtime.Logging;
+import gust.util.Pair;
 import org.slf4j.Logger;
 import tools.elide.core.*;
 
@@ -27,6 +28,7 @@ import javax.annotation.Nonnull;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static gust.backend.model.ModelMetadata.*;
 
@@ -394,14 +396,16 @@ public final class SpannerUtil {
     }
 
     /**
-     * Calculate a default projection of Spanner columns, as configured on the provided default model instance.
+     * Calculate a default projection of Spanner columns, as configured on the provided default model instance. Results
+     * are returned as a stream of fields paired to their column counterparts.
      *
      * @param descriptor Default model schema to generate a default set of Spanner columns from.
      * @param driverSettings Settings for the Spanner driver.
      * @return Default list of Spanner columns.
      */
-    public static @Nonnull List<String> calculateDefaultFields(@Nonnull Descriptors.Descriptor descriptor,
-                                                               @Nonnull SpannerDriverSettings driverSettings) {
+    public static @Nonnull Stream<Pair<String, String>> calculateDefaultFieldStream(
+            @Nonnull Descriptors.Descriptor descriptor,
+            @Nonnull SpannerDriverSettings driverSettings) {
         return forEachField(
             descriptor,
             Optional.of(onlySpannerEligibleFields(driverSettings))
@@ -412,15 +416,36 @@ public final class SpannerUtil {
                 return null;
             } else if (fieldOpts.orElse(FieldPersistenceOptions.getDefaultInstance()).getType() == FieldType.KEY) {
                 // this is a key field, so skip it and instead inject the ID field.
-                return resolveKeyColumn(idField(descriptor).orElseThrow(), driverSettings);
+                return Pair.of(
+                    fieldPointer.getName(),
+                    resolveKeyColumn(idField(descriptor).orElseThrow(), driverSettings)
+                );
             } else {
-                return resolveColumnName(fieldPointer,
-                    fieldAnnotation(fieldPointer.getField(), Datamodel.spanner),
-                    fieldAnnotation(fieldPointer.getField(), Datamodel.column),
-                    driverSettings
+                return Pair.of(
+                    fieldPointer.getName(),
+                    resolveColumnName(fieldPointer,
+                        fieldAnnotation(fieldPointer.getField(), Datamodel.spanner),
+                        fieldAnnotation(fieldPointer.getField(), Datamodel.column),
+                        driverSettings
+                    )
                 );
             }
-        }).filter(Objects::nonNull).collect(Collectors.toUnmodifiableList());
+        }).filter(Objects::nonNull);
+    }
+
+    /**
+     * Calculate a default projection of Spanner columns, as configured on the provided default model instance.
+     *
+     * @param descriptor Default model schema to generate a default set of Spanner columns from.
+     * @param driverSettings Settings for the Spanner driver.
+     * @return Default list of Spanner columns.
+     */
+    public static @Nonnull List<String> calculateDefaultFields(@Nonnull Descriptors.Descriptor descriptor,
+                                                               @Nonnull SpannerDriverSettings driverSettings) {
+        return calculateDefaultFieldStream(
+            descriptor,
+            driverSettings
+        ).map(Pair::getValue).collect(Collectors.toUnmodifiableList());
     }
 
     /**

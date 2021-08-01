@@ -204,6 +204,7 @@ java_library(
     srcs = ["SpannerUtil.java"],
     deps = [
         ":SpannerDriverSettings",
+        "//java/gust/util:Pair",
         javaproto("//gust/core:datamodel"),
     ] + _COMMON_DEPS,
 )
