@@ -104,7 +104,6 @@ public final class SpannerStructDeserializer<Model extends Message> implements M
      * <p>The provided field pointer is used to fill in the primary key ID pulled from a given Spanner row result. That
      * ID is spliced into the key record, which is then spliced into the target builder.</p>
      *
-     * @param fieldPointer Resolved field pointer.
      * @param target Target message builder.
      * @param value Resolved value for the ID.
      */
@@ -154,21 +153,22 @@ public final class SpannerStructDeserializer<Model extends Message> implements M
         // resolve any generic column options and spanner extension options
         var columnOpts = columnOpts(fieldPointer);
         var spannerOpts = spannerOpts(fieldPointer);
+        var columnName = resolveColumnName(fieldPointer.getField(), driverSettings);
 
-        // resolve the expected column index
-        var columnValue = resolveColumnValue(
-            source,
-            fieldPointer,
-            spannerOpts,
-            columnOpts,
-            driverSettings
-        );
-
-        if (columnValue.isNull()) {
+        if (source.isNull(columnName)) {
             if (logging.isTraceEnabled())
                 logging.trace("Resolved column value for field '{}' was NULL. Skipping.",
                     fieldPointer.getName());
         } else {
+            // resolve the expected column index
+            var columnValue = resolveColumnValue(
+                source,
+                fieldPointer,
+                spannerOpts,
+                columnOpts,
+                driverSettings
+            );
+
             // first up, check to see if this is a key or ID field, and decode it properly if so
             var field = fieldPointer.getField();
             if (matchFieldAnnotation(field, FieldType.ID)) {
