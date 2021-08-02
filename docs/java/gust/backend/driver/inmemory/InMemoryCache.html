@@ -6,6 +6,7 @@
 <title>InMemoryCache</title>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF8">
 <meta name="keywords" content="gust.backend.driver.inmemory.InMemoryCache class">
+<meta name="keywords" content="acquire()">
 <meta name="keywords" content="put()">
 <meta name="keywords" content="fetch()">
 <meta name="keywords" content="evict()">
@@ -31,8 +32,8 @@
     catch(err) {
     }
 //-->
-var data = {"i0":10,"i1":10,"i2":10,"i3":10};
-var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
+var data = {"i0":9,"i1":10,"i2":10,"i3":10,"i4":10};
+var tabs = {65535:["t0","All Methods"],1:["t1","Static Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
 var tableTab = "tableTab";
@@ -189,13 +190,21 @@ implements <a href="../../model/CacheDriver.html" title="interface in gust.backe
 </a>
 <h3>Method Summary</h3>
 <table class="memberSummary">
-<caption><span id="t0" class="activeTableTab"><span>All Methods</span><span class="tabEnd">&nbsp;</span></span><span id="t2" class="tableTab"><span><a href="javascript:show(2);">Instance Methods</a></span><span class="tabEnd">&nbsp;</span></span><span id="t4" class="tableTab"><span><a href="javascript:show(8);">Concrete Methods</a></span><span class="tabEnd">&nbsp;</span></span></caption>
+<caption><span id="t0" class="activeTableTab"><span>All Methods</span><span class="tabEnd">&nbsp;</span></span><span id="t1" class="tableTab"><span><a href="javascript:show(1);">Static Methods</a></span><span class="tabEnd">&nbsp;</span></span><span id="t2" class="tableTab"><span><a href="javascript:show(2);">Instance Methods</a></span><span class="tabEnd">&nbsp;</span></span><span id="t4" class="tableTab"><span><a href="javascript:show(8);">Concrete Methods</a></span><span class="tabEnd">&nbsp;</span></span></caption>
 <tr>
 <th class="colFirst" scope="col">Modifier and Type</th>
 <th class="colSecond" scope="col">Method</th>
 <th class="colLast" scope="col">Description</th>
 </tr>
 <tr id="i0" class="altColor">
+<td class="colFirst"><code>static &lt;K extends com.google.protobuf.Message,&#8203;M extends com.google.protobuf.Message&gt;<br><a href="InMemoryCache.html" title="class in gust.backend.driver.inmemory">InMemoryCache</a>&lt;K,&#8203;M&gt;</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#acquire()">acquire</a></span>()</code></th>
+<td class="colLast">
+<div class="block">Acquire an instance of the in-memory caching driver, generalized to support the provided key type <code>K</code> and
+ model instance type <code>M</code>.</div>
+</td>
+</tr>
+<tr id="i1" class="rowColor">
 <td class="colFirst"><code><a href="../../runtime/ReactiveFuture.html" title="class in gust.backend.runtime">ReactiveFuture</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#evict(K,com.google.common.util.concurrent.ListeningScheduledExecutorService)">evict</a></span>&#8203;(<a href="InMemoryCache.html" title="type parameter in InMemoryCache">K</a>&nbsp;key,
      com.google.common.util.concurrent.ListeningScheduledExecutorService&nbsp;executor)</code></th>
@@ -203,7 +212,7 @@ implements <a href="../../model/CacheDriver.html" title="interface in gust.backe
 <div class="block">Force-evict any cached record at the provided <code>key</code> in the cache managed by this driver.</div>
 </td>
 </tr>
-<tr id="i1" class="rowColor">
+<tr id="i2" class="altColor">
 <td class="colFirst"><code><a href="../../runtime/ReactiveFuture.html" title="class in gust.backend.runtime">ReactiveFuture</a>&lt;java.util.Optional&lt;<a href="InMemoryCache.html" title="type parameter in InMemoryCache">M</a>&gt;&gt;</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#fetch(K,gust.backend.model.FetchOptions,com.google.common.util.concurrent.ListeningScheduledExecutorService)">fetch</a></span>&#8203;(<a href="InMemoryCache.html" title="type parameter in InMemoryCache">K</a>&nbsp;key,
      <a href="../../model/FetchOptions.html" title="interface in gust.backend.model">FetchOptions</a>&nbsp;options,
@@ -213,14 +222,14 @@ implements <a href="../../model/CacheDriver.html" title="interface in gust.backe
  to <code>options</code> and making use of <code>executor</code>.</div>
 </td>
 </tr>
-<tr id="i2" class="altColor">
+<tr id="i3" class="rowColor">
 <td class="colFirst"><code><a href="../../runtime/ReactiveFuture.html" title="class in gust.backend.runtime">ReactiveFuture</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#flush(com.google.common.util.concurrent.ListeningScheduledExecutorService)">flush</a></span>&#8203;(com.google.common.util.concurrent.ListeningScheduledExecutorService&nbsp;executor)</code></th>
 <td class="colLast">
 <div class="block">Flush the entire cache managed by this driver.</div>
 </td>
 </tr>
-<tr id="i3" class="rowColor">
+<tr id="i4" class="altColor">
 <td class="colFirst"><code><a href="../../runtime/ReactiveFuture.html" title="class in gust.backend.runtime">ReactiveFuture</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#put(com.google.protobuf.Message,com.google.protobuf.Message,com.google.common.util.concurrent.ListeningScheduledExecutorService)">put</a></span>&#8203;(com.google.protobuf.Message&nbsp;key,
    com.google.protobuf.Message&nbsp;model,
@@ -280,6 +289,25 @@ implements <a href="../../model/CacheDriver.html" title="interface in gust.backe
 <!--   -->
 </a>
 <h3>Method Detail</h3>
+<a id="acquire()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>acquire</h4>
+<pre class="methodSignature">@Nonnull
+public static&nbsp;&lt;K extends com.google.protobuf.Message,&#8203;M extends com.google.protobuf.Message&gt;&nbsp;<a href="InMemoryCache.html" title="class in gust.backend.driver.inmemory">InMemoryCache</a>&lt;K,&#8203;M&gt;&nbsp;<a href="../../../../src-html/gust/backend/driver/inmemory/InMemoryCache.html#line.79">acquire</a>()</pre>
+<div class="block">Acquire an instance of the in-memory caching driver, generalized to support the provided key type <code>K</code> and
+ model instance type <code>M</code>.</div>
+<dl>
+<dt><span class="paramLabel">Type Parameters:</span></dt>
+<dd><code>K</code> - Generic type for the key associated with model type <code>M</code>.</dd>
+<dd><code>M</code> - Generic model type managed by this cache.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Instance of the acquired cache engine.</dd>
+</dl>
+</li>
+</ul>
 <a id="put(com.google.protobuf.Message,com.google.protobuf.Message,com.google.common.util.concurrent.ListeningScheduledExecutorService)">
 <!--   -->
 </a>

@@ -22,299 +22,450 @@
 <span class="sourceLineNo">013</span><a id="line.13">package gust.backend.driver.spanner;</a>
 <span class="sourceLineNo">014</span><a id="line.14"></a>
 <span class="sourceLineNo">015</span><a id="line.15">import com.google.cloud.spanner.DatabaseId;</a>
-<span class="sourceLineNo">016</span><a id="line.16">import com.google.protobuf.Message;</a>
-<span class="sourceLineNo">017</span><a id="line.17">import gust.backend.model.DatabaseManager;</a>
-<span class="sourceLineNo">018</span><a id="line.18">import gust.backend.runtime.Logging;</a>
-<span class="sourceLineNo">019</span><a id="line.19">import io.micronaut.context.annotation.Factory;</a>
-<span class="sourceLineNo">020</span><a id="line.20">import io.micronaut.runtime.context.scope.Refreshable;</a>
-<span class="sourceLineNo">021</span><a id="line.21">import org.slf4j.Logger;</a>
-<span class="sourceLineNo">022</span><a id="line.22"></a>
-<span class="sourceLineNo">023</span><a id="line.23">import javax.annotation.Nonnull;</a>
-<span class="sourceLineNo">024</span><a id="line.24">import javax.annotation.Nullable;</a>
-<span class="sourceLineNo">025</span><a id="line.25">import javax.annotation.concurrent.Immutable;</a>
-<span class="sourceLineNo">026</span><a id="line.26">import javax.annotation.concurrent.ThreadSafe;</a>
-<span class="sourceLineNo">027</span><a id="line.27">import java.io.Closeable;</a>
-<span class="sourceLineNo">028</span><a id="line.28">import java.lang.ref.WeakReference;</a>
-<span class="sourceLineNo">029</span><a id="line.29">import java.util.*;</a>
-<span class="sourceLineNo">030</span><a id="line.30">import java.util.concurrent.ConcurrentMap;</a>
-<span class="sourceLineNo">031</span><a id="line.31">import java.util.concurrent.ConcurrentSkipListMap;</a>
-<span class="sourceLineNo">032</span><a id="line.32">import java.util.concurrent.atomic.AtomicBoolean;</a>
-<span class="sourceLineNo">033</span><a id="line.33"></a>
-<span class="sourceLineNo">034</span><a id="line.34"></a>
-<span class="sourceLineNo">035</span><a id="line.35">/**</a>
-<span class="sourceLineNo">036</span><a id="line.36"> * Main adapter manager interface for interaction between Gust/Elide apps and Google Cloud Spanner, enabling seamless</a>
-<span class="sourceLineNo">037</span><a id="line.37"> * persistence for generated {@link Message}-driven models.</a>
-<span class="sourceLineNo">038</span><a id="line.38"> *</a>
-<span class="sourceLineNo">039</span><a id="line.39"> * &lt;p&gt;This {@link DatabaseManager} implementation is backed by a customized {@link SpannerDriver} and</a>
-<span class="sourceLineNo">040</span><a id="line.40"> * {@link SpannerAdapter} which manage remote database interactions and cache/transaction state, respectively. While</a>
-<span class="sourceLineNo">041</span><a id="line.41"> * these objects may be acquired directly, `SpannerManager` has the added benefit of a generic singleton pattern which</a>
-<span class="sourceLineNo">042</span><a id="line.42"> * saves re-cycling of the adapter and driver objects.&lt;/p&gt;</a>
-<span class="sourceLineNo">043</span><a id="line.43"> *</a>
-<span class="sourceLineNo">044</span><a id="line.44"> * @see SpannerDriver `SpannerDriver`, the main driver for interacting with Cloud Spanner</a>
-<span class="sourceLineNo">045</span><a id="line.45"> * @see SpannerAdapter `SpannerAdapter`, which manages cache/transaction state</a>
-<span class="sourceLineNo">046</span><a id="line.46"> */</a>
-<span class="sourceLineNo">047</span><a id="line.47">@Immutable @ThreadSafe @Refreshable</a>
-<span class="sourceLineNo">048</span><a id="line.48">@SuppressWarnings("rawtypes")</a>
-<span class="sourceLineNo">049</span><a id="line.49">public final class SpannerManager</a>
-<span class="sourceLineNo">050</span><a id="line.50">        implements DatabaseManager&lt;SpannerAdapter, SpannerDriver&gt;, Closeable, AutoCloseable {</a>
-<span class="sourceLineNo">051</span><a id="line.51">    private static final @Nonnull Logger logging = Logging.logger(SpannerManager.class);</a>
-<span class="sourceLineNo">052</span><a id="line.52"></a>
-<span class="sourceLineNo">053</span><a id="line.53">    /** Keeps track of configured managers spawned by this manager. */</a>
-<span class="sourceLineNo">054</span><a id="line.54">    private final @Nonnull ConcurrentMap&lt;Integer, WeakReference&lt;ConfiguredSpannerManager&gt;&gt; configuredManagers;</a>
-<span class="sourceLineNo">055</span><a id="line.55"></a>
-<span class="sourceLineNo">056</span><a id="line.56">    /** Spanner manager singleton container. */</a>
-<span class="sourceLineNo">057</span><a id="line.57">    private static final class SpannerManagerSingleton {</a>
-<span class="sourceLineNo">058</span><a id="line.58">        // Global singleton.</a>
-<span class="sourceLineNo">059</span><a id="line.59">        static volatile @Nullable SpannerManager __singleton = null;</a>
-<span class="sourceLineNo">060</span><a id="line.60">    }</a>
-<span class="sourceLineNo">061</span><a id="line.61"></a>
-<span class="sourceLineNo">062</span><a id="line.62">    /**</a>
-<span class="sourceLineNo">063</span><a id="line.63">     * Default constructor.</a>
-<span class="sourceLineNo">064</span><a id="line.64">     */</a>
-<span class="sourceLineNo">065</span><a id="line.65">    private SpannerManager() {</a>
-<span class="sourceLineNo">066</span><a id="line.66">        configuredManagers = new ConcurrentSkipListMap&lt;&gt;();</a>
-<span class="sourceLineNo">067</span><a id="line.67">    }</a>
-<span class="sourceLineNo">068</span><a id="line.68"></a>
-<span class="sourceLineNo">069</span><a id="line.69">    /**</a>
-<span class="sourceLineNo">070</span><a id="line.70">     * Returns the full set of known configured Spanner managers, JVM-wide. This is mostly useful as a utility to shut</a>
-<span class="sourceLineNo">071</span><a id="line.71">     * down connections globally when needed (for instance, during testing).</a>
-<span class="sourceLineNo">072</span><a id="line.72">     *</a>
-<span class="sourceLineNo">073</span><a id="line.73">     * @return Unmodifiable list of weak references to all known-active managers.</a>
-<span class="sourceLineNo">074</span><a id="line.74">     */</a>
-<span class="sourceLineNo">075</span><a id="line.75">    public static @Nonnull Collection&lt;WeakReference&lt;ConfiguredSpannerManager&gt;&gt; allManagers() {</a>
-<span class="sourceLineNo">076</span><a id="line.76">        var target = acquire();</a>
-<span class="sourceLineNo">077</span><a id="line.77">        if (logging.isTraceEnabled())</a>
-<span class="sourceLineNo">078</span><a id="line.78">            logging.trace(</a>
-<span class="sourceLineNo">079</span><a id="line.79">                "All `SpannerManager` instances requested. Total to return: {}.",</a>
-<span class="sourceLineNo">080</span><a id="line.80">                target.configuredManagers.size());</a>
-<span class="sourceLineNo">081</span><a id="line.81">        return Collections.unmodifiableCollection(target.configuredManagers.values());</a>
-<span class="sourceLineNo">082</span><a id="line.82">    }</a>
-<span class="sourceLineNo">083</span><a id="line.83"></a>
-<span class="sourceLineNo">084</span><a id="line.84">    /**</a>
-<span class="sourceLineNo">085</span><a id="line.85">     * Acquire a singleton instance of the Spanner manager, which can be used safely across threads to interact with</a>
-<span class="sourceLineNo">086</span><a id="line.86">     * Google Cloud Spanner, driven by {@link Message}-generated models.</a>
-<span class="sourceLineNo">087</span><a id="line.87">     *</a>
-<span class="sourceLineNo">088</span><a id="line.88">     * &lt;p&gt;The manager can then be used to request instances of {@link SpannerAdapter} specialized to a given model.</a>
-<span class="sourceLineNo">089</span><a id="line.89">     * Adapter instances acquired in this way are not guaranteed to be new, and are safe to use across threads.&lt;/p&gt;</a>
-<span class="sourceLineNo">090</span><a id="line.90">     *</a>
-<span class="sourceLineNo">091</span><a id="line.91">     * @return Singleton instance of the Spanner manager.</a>
-<span class="sourceLineNo">092</span><a id="line.92">     */</a>
-<span class="sourceLineNo">093</span><a id="line.93">    @Factory</a>
-<span class="sourceLineNo">094</span><a id="line.94">    public static @Nonnull SpannerManager acquire() {</a>
-<span class="sourceLineNo">095</span><a id="line.95">        var singleton = SpannerManagerSingleton.__singleton;</a>
-<span class="sourceLineNo">096</span><a id="line.96">        if (singleton == null) {</a>
-<span class="sourceLineNo">097</span><a id="line.97">            singleton = new SpannerManager();</a>
-<span class="sourceLineNo">098</span><a id="line.98">            SpannerManagerSingleton.__singleton = singleton;</a>
-<span class="sourceLineNo">099</span><a id="line.99">            if (logging.isTraceEnabled())</a>
-<span class="sourceLineNo">100</span><a id="line.100">                logging.trace("Acquired fresh singleton for `SpannerManager` request.");</a>
-<span class="sourceLineNo">101</span><a id="line.101">        }</a>
-<span class="sourceLineNo">102</span><a id="line.102">        if (logging.isTraceEnabled())</a>
-<span class="sourceLineNo">103</span><a id="line.103">            logging.trace("Acquired recycled singleton for `SpannerManager` request.");</a>
-<span class="sourceLineNo">104</span><a id="line.104">        return singleton;</a>
-<span class="sourceLineNo">105</span><a id="line.105">    }</a>
-<span class="sourceLineNo">106</span><a id="line.106"></a>
-<span class="sourceLineNo">107</span><a id="line.107">    /**</a>
-<span class="sourceLineNo">108</span><a id="line.108">     * Close all active Spanner connections tracked or controlled by this manager.</a>
-<span class="sourceLineNo">109</span><a id="line.109">     *</a>
-<span class="sourceLineNo">110</span><a id="line.110">     * @throws RuntimeException If the underlying connections raise IO exceptions.</a>
-<span class="sourceLineNo">111</span><a id="line.111">     */</a>
-<span class="sourceLineNo">112</span><a id="line.112">    @Override</a>
-<span class="sourceLineNo">113</span><a id="line.113">    public void close() {</a>
-<span class="sourceLineNo">114</span><a id="line.114">        if (logging.isInfoEnabled())</a>
-<span class="sourceLineNo">115</span><a id="line.115">            logging.info("Shutting down all active `SpannerManager` instances...");</a>
-<span class="sourceLineNo">116</span><a id="line.116">        allManagers().forEach((manager) -&gt; {</a>
-<span class="sourceLineNo">117</span><a id="line.117">            var target = manager.get();</a>
-<span class="sourceLineNo">118</span><a id="line.118">            if (target != null) {</a>
-<span class="sourceLineNo">119</span><a id="line.119">                target.close();</a>
-<span class="sourceLineNo">120</span><a id="line.120">            }</a>
-<span class="sourceLineNo">121</span><a id="line.121">        });</a>
-<span class="sourceLineNo">122</span><a id="line.122">    }</a>
-<span class="sourceLineNo">123</span><a id="line.123"></a>
-<span class="sourceLineNo">124</span><a id="line.124">    /** Intermediate builder which can gather settings for an eventually-immutable {@link ConfiguredSpannerManager}. */</a>
-<span class="sourceLineNo">125</span><a id="line.125">    public final class Builder {</a>
-<span class="sourceLineNo">126</span><a id="line.126">        /** Required/immutable: Main Spanner database this manager will interact with. */</a>
-<span class="sourceLineNo">127</span><a id="line.127">        private final @Nonnull DatabaseId database;</a>
-<span class="sourceLineNo">128</span><a id="line.128"></a>
-<span class="sourceLineNo">129</span><a id="line.129">        /** Private constructor. */</a>
-<span class="sourceLineNo">130</span><a id="line.130">        Builder(@Nonnull DatabaseId database) {</a>
-<span class="sourceLineNo">131</span><a id="line.131">            this.database = database;</a>
-<span class="sourceLineNo">132</span><a id="line.132">        }</a>
-<span class="sourceLineNo">133</span><a id="line.133"></a>
-<span class="sourceLineNo">134</span><a id="line.134">        /**</a>
-<span class="sourceLineNo">135</span><a id="line.135">         * Build this builder into a configured and immutable {@link ConfiguredSpannerManager} instance, capable of</a>
-<span class="sourceLineNo">136</span><a id="line.136">         * producing managed {@link SpannerAdapter}s specialized to {@link Message} instances.</a>
-<span class="sourceLineNo">137</span><a id="line.137">         *</a>
-<span class="sourceLineNo">138</span><a id="line.138">         * @return Configured and immutable Spanner manager.</a>
-<span class="sourceLineNo">139</span><a id="line.139">         */</a>
-<span class="sourceLineNo">140</span><a id="line.140">        public @Nonnull ConfiguredSpannerManager build() {</a>
-<span class="sourceLineNo">141</span><a id="line.141">            var assignedId = configuredManagers.size();</a>
-<span class="sourceLineNo">142</span><a id="line.142">            var manager = new ConfiguredSpannerManager(</a>
-<span class="sourceLineNo">143</span><a id="line.143">                assignedId,</a>
-<span class="sourceLineNo">144</span><a id="line.144">                database</a>
-<span class="sourceLineNo">145</span><a id="line.145">            );</a>
+<span class="sourceLineNo">016</span><a id="line.16">import com.google.cloud.spanner.SpannerOptions;</a>
+<span class="sourceLineNo">017</span><a id="line.17">import com.google.common.util.concurrent.ListeningScheduledExecutorService;</a>
+<span class="sourceLineNo">018</span><a id="line.18">import com.google.protobuf.Empty;</a>
+<span class="sourceLineNo">019</span><a id="line.19">import com.google.protobuf.Message;</a>
+<span class="sourceLineNo">020</span><a id="line.20">import gust.backend.model.CacheDriver;</a>
+<span class="sourceLineNo">021</span><a id="line.21">import gust.backend.model.DatabaseManager;</a>
+<span class="sourceLineNo">022</span><a id="line.22">import gust.backend.runtime.Logging;</a>
+<span class="sourceLineNo">023</span><a id="line.23">import io.micronaut.context.annotation.Factory;</a>
+<span class="sourceLineNo">024</span><a id="line.24">import io.micronaut.runtime.context.scope.Refreshable;</a>
+<span class="sourceLineNo">025</span><a id="line.25">import org.slf4j.Logger;</a>
+<span class="sourceLineNo">026</span><a id="line.26"></a>
+<span class="sourceLineNo">027</span><a id="line.27">import javax.annotation.Nonnull;</a>
+<span class="sourceLineNo">028</span><a id="line.28">import javax.annotation.Nullable;</a>
+<span class="sourceLineNo">029</span><a id="line.29">import javax.annotation.concurrent.Immutable;</a>
+<span class="sourceLineNo">030</span><a id="line.30">import javax.annotation.concurrent.ThreadSafe;</a>
+<span class="sourceLineNo">031</span><a id="line.31">import java.io.Closeable;</a>
+<span class="sourceLineNo">032</span><a id="line.32">import java.lang.ref.WeakReference;</a>
+<span class="sourceLineNo">033</span><a id="line.33">import java.util.*;</a>
+<span class="sourceLineNo">034</span><a id="line.34">import java.util.concurrent.ConcurrentMap;</a>
+<span class="sourceLineNo">035</span><a id="line.35">import java.util.concurrent.ConcurrentSkipListMap;</a>
+<span class="sourceLineNo">036</span><a id="line.36">import java.util.concurrent.atomic.AtomicBoolean;</a>
+<span class="sourceLineNo">037</span><a id="line.37"></a>
+<span class="sourceLineNo">038</span><a id="line.38"></a>
+<span class="sourceLineNo">039</span><a id="line.39">/**</a>
+<span class="sourceLineNo">040</span><a id="line.40"> * Main adapter manager interface for interaction between Gust/Elide apps and Google Cloud Spanner, enabling seamless</a>
+<span class="sourceLineNo">041</span><a id="line.41"> * persistence for generated {@link Message}-driven models.</a>
+<span class="sourceLineNo">042</span><a id="line.42"> *</a>
+<span class="sourceLineNo">043</span><a id="line.43"> * &lt;p&gt;This {@link DatabaseManager} implementation is backed by a customized {@link SpannerDriver} and</a>
+<span class="sourceLineNo">044</span><a id="line.44"> * {@link SpannerAdapter} which manage remote database interactions and cache/transaction state, respectively. While</a>
+<span class="sourceLineNo">045</span><a id="line.45"> * these objects may be acquired directly, `SpannerManager` has the added benefit of a generic singleton pattern which</a>
+<span class="sourceLineNo">046</span><a id="line.46"> * saves re-cycling of the adapter and driver objects.&lt;/p&gt;</a>
+<span class="sourceLineNo">047</span><a id="line.47"> *</a>
+<span class="sourceLineNo">048</span><a id="line.48"> * @see SpannerDriver `SpannerDriver`, the main driver for interacting with Cloud Spanner</a>
+<span class="sourceLineNo">049</span><a id="line.49"> * @see SpannerAdapter `SpannerAdapter`, which manages cache/transaction state</a>
+<span class="sourceLineNo">050</span><a id="line.50"> */</a>
+<span class="sourceLineNo">051</span><a id="line.51">@Immutable @ThreadSafe @Refreshable</a>
+<span class="sourceLineNo">052</span><a id="line.52">@SuppressWarnings({"UnstableApiUsage", "rawtypes"})</a>
+<span class="sourceLineNo">053</span><a id="line.53">public final class SpannerManager</a>
+<span class="sourceLineNo">054</span><a id="line.54">        implements DatabaseManager&lt;SpannerAdapter, SpannerDriver&gt;, Closeable, AutoCloseable {</a>
+<span class="sourceLineNo">055</span><a id="line.55">    private static final @Nonnull Logger logging = Logging.logger(SpannerManager.class);</a>
+<span class="sourceLineNo">056</span><a id="line.56"></a>
+<span class="sourceLineNo">057</span><a id="line.57">    /** Keeps track of configured managers spawned by this manager. */</a>
+<span class="sourceLineNo">058</span><a id="line.58">    private final @Nonnull ConcurrentMap&lt;Integer, WeakReference&lt;ConfiguredSpannerManager&gt;&gt; configuredManagers;</a>
+<span class="sourceLineNo">059</span><a id="line.59"></a>
+<span class="sourceLineNo">060</span><a id="line.60">    /** Spanner manager singleton container. */</a>
+<span class="sourceLineNo">061</span><a id="line.61">    private static final class SpannerManagerSingleton {</a>
+<span class="sourceLineNo">062</span><a id="line.62">        private SpannerManagerSingleton() { /* Disallow construction. */ }</a>
+<span class="sourceLineNo">063</span><a id="line.63"></a>
+<span class="sourceLineNo">064</span><a id="line.64">        // Global singleton.</a>
+<span class="sourceLineNo">065</span><a id="line.65">        static volatile @Nullable SpannerManager __singleton = null;</a>
+<span class="sourceLineNo">066</span><a id="line.66">    }</a>
+<span class="sourceLineNo">067</span><a id="line.67"></a>
+<span class="sourceLineNo">068</span><a id="line.68">    /**</a>
+<span class="sourceLineNo">069</span><a id="line.69">     * Default constructor.</a>
+<span class="sourceLineNo">070</span><a id="line.70">     */</a>
+<span class="sourceLineNo">071</span><a id="line.71">    private SpannerManager() {</a>
+<span class="sourceLineNo">072</span><a id="line.72">        configuredManagers = new ConcurrentSkipListMap&lt;&gt;();</a>
+<span class="sourceLineNo">073</span><a id="line.73">    }</a>
+<span class="sourceLineNo">074</span><a id="line.74"></a>
+<span class="sourceLineNo">075</span><a id="line.75">    /**</a>
+<span class="sourceLineNo">076</span><a id="line.76">     * Returns the full set of known configured Spanner managers, JVM-wide. This is mostly useful as a utility to shut</a>
+<span class="sourceLineNo">077</span><a id="line.77">     * down connections globally when needed (for instance, during testing).</a>
+<span class="sourceLineNo">078</span><a id="line.78">     *</a>
+<span class="sourceLineNo">079</span><a id="line.79">     * @return Unmodifiable list of weak references to all known-active managers.</a>
+<span class="sourceLineNo">080</span><a id="line.80">     */</a>
+<span class="sourceLineNo">081</span><a id="line.81">    public static @Nonnull Collection&lt;WeakReference&lt;ConfiguredSpannerManager&gt;&gt; allManagers() {</a>
+<span class="sourceLineNo">082</span><a id="line.82">        var target = acquire();</a>
+<span class="sourceLineNo">083</span><a id="line.83">        if (logging.isTraceEnabled())</a>
+<span class="sourceLineNo">084</span><a id="line.84">            logging.trace(</a>
+<span class="sourceLineNo">085</span><a id="line.85">                "All `SpannerManager` instances requested. Total to return: {}.",</a>
+<span class="sourceLineNo">086</span><a id="line.86">                target.configuredManagers.size());</a>
+<span class="sourceLineNo">087</span><a id="line.87">        return Collections.unmodifiableCollection(target.configuredManagers.values());</a>
+<span class="sourceLineNo">088</span><a id="line.88">    }</a>
+<span class="sourceLineNo">089</span><a id="line.89"></a>
+<span class="sourceLineNo">090</span><a id="line.90">    /**</a>
+<span class="sourceLineNo">091</span><a id="line.91">     * Acquire a singleton instance of the Spanner manager, which can be used safely across threads to interact with</a>
+<span class="sourceLineNo">092</span><a id="line.92">     * Google Cloud Spanner, driven by {@link Message}-generated models.</a>
+<span class="sourceLineNo">093</span><a id="line.93">     *</a>
+<span class="sourceLineNo">094</span><a id="line.94">     * &lt;p&gt;The manager can then be used to request instances of {@link SpannerAdapter} specialized to a given model.</a>
+<span class="sourceLineNo">095</span><a id="line.95">     * Adapter instances acquired in this way are not guaranteed to be new, and are safe to use across threads.&lt;/p&gt;</a>
+<span class="sourceLineNo">096</span><a id="line.96">     *</a>
+<span class="sourceLineNo">097</span><a id="line.97">     * @return Singleton instance of the Spanner manager.</a>
+<span class="sourceLineNo">098</span><a id="line.98">     */</a>
+<span class="sourceLineNo">099</span><a id="line.99">    @Factory</a>
+<span class="sourceLineNo">100</span><a id="line.100">    public static @Nonnull SpannerManager acquire() {</a>
+<span class="sourceLineNo">101</span><a id="line.101">        var singleton = SpannerManagerSingleton.__singleton;</a>
+<span class="sourceLineNo">102</span><a id="line.102">        if (singleton == null) {</a>
+<span class="sourceLineNo">103</span><a id="line.103">            singleton = new SpannerManager();</a>
+<span class="sourceLineNo">104</span><a id="line.104">            SpannerManagerSingleton.__singleton = singleton;</a>
+<span class="sourceLineNo">105</span><a id="line.105">            if (logging.isTraceEnabled())</a>
+<span class="sourceLineNo">106</span><a id="line.106">                logging.trace("Acquired fresh singleton for `SpannerManager` request.");</a>
+<span class="sourceLineNo">107</span><a id="line.107">        }</a>
+<span class="sourceLineNo">108</span><a id="line.108">        if (logging.isTraceEnabled())</a>
+<span class="sourceLineNo">109</span><a id="line.109">            logging.trace("Acquired recycled singleton for `SpannerManager` request.");</a>
+<span class="sourceLineNo">110</span><a id="line.110">        return singleton;</a>
+<span class="sourceLineNo">111</span><a id="line.111">    }</a>
+<span class="sourceLineNo">112</span><a id="line.112"></a>
+<span class="sourceLineNo">113</span><a id="line.113">    /**</a>
+<span class="sourceLineNo">114</span><a id="line.114">     * Close all active Spanner connections tracked or controlled by this manager.</a>
+<span class="sourceLineNo">115</span><a id="line.115">     *</a>
+<span class="sourceLineNo">116</span><a id="line.116">     * @throws RuntimeException If the underlying connections raise IO exceptions.</a>
+<span class="sourceLineNo">117</span><a id="line.117">     */</a>
+<span class="sourceLineNo">118</span><a id="line.118">    @Override</a>
+<span class="sourceLineNo">119</span><a id="line.119">    public void close() {</a>
+<span class="sourceLineNo">120</span><a id="line.120">        if (logging.isInfoEnabled())</a>
+<span class="sourceLineNo">121</span><a id="line.121">            logging.info("Shutting down all active `SpannerManager` instances...");</a>
+<span class="sourceLineNo">122</span><a id="line.122">        allManagers().forEach((manager) -&gt; {</a>
+<span class="sourceLineNo">123</span><a id="line.123">            var target = manager.get();</a>
+<span class="sourceLineNo">124</span><a id="line.124">            if (target != null) {</a>
+<span class="sourceLineNo">125</span><a id="line.125">                target.close();</a>
+<span class="sourceLineNo">126</span><a id="line.126">            }</a>
+<span class="sourceLineNo">127</span><a id="line.127">        });</a>
+<span class="sourceLineNo">128</span><a id="line.128">    }</a>
+<span class="sourceLineNo">129</span><a id="line.129"></a>
+<span class="sourceLineNo">130</span><a id="line.130">    /** Intermediate builder which can gather settings for an eventually-immutable {@link ConfiguredSpannerManager}. */</a>
+<span class="sourceLineNo">131</span><a id="line.131">    public final class Builder {</a>
+<span class="sourceLineNo">132</span><a id="line.132">        /** Required/immutable: Main Spanner database this manager will interact with. */</a>
+<span class="sourceLineNo">133</span><a id="line.133">        private final @Nonnull DatabaseId database;</a>
+<span class="sourceLineNo">134</span><a id="line.134"></a>
+<span class="sourceLineNo">135</span><a id="line.135">        /** Optional cache driver to use when caching reads. */</a>
+<span class="sourceLineNo">136</span><a id="line.136">        private @Nonnull Optional&lt;CacheDriver&lt;Message, Message&gt;&gt; cache = Optional.empty();</a>
+<span class="sourceLineNo">137</span><a id="line.137"></a>
+<span class="sourceLineNo">138</span><a id="line.138">        /** Default set of driver settings to use when spawning adapters. */</a>
+<span class="sourceLineNo">139</span><a id="line.139">        private @Nonnull Optional&lt;SpannerDriverSettings&gt; settings = Optional.empty();</a>
+<span class="sourceLineNo">140</span><a id="line.140"></a>
+<span class="sourceLineNo">141</span><a id="line.141">        /** Base set of options to use when spawning Spanner clients via this manager. */</a>
+<span class="sourceLineNo">142</span><a id="line.142">        private @Nonnull Optional&lt;SpannerOptions.Builder&gt; options = Optional.empty();</a>
+<span class="sourceLineNo">143</span><a id="line.143"></a>
+<span class="sourceLineNo">144</span><a id="line.144">        /** Custom executor to use for adapters spawned via this builder. */</a>
+<span class="sourceLineNo">145</span><a id="line.145">        private @Nonnull Optional&lt;ListeningScheduledExecutorService&gt; executor = Optional.empty();</a>
 <span class="sourceLineNo">146</span><a id="line.146"></a>
-<span class="sourceLineNo">147</span><a id="line.147">            try {</a>
-<span class="sourceLineNo">148</span><a id="line.148">                configuredManagers.put(</a>
-<span class="sourceLineNo">149</span><a id="line.149">                    assignedId,</a>
-<span class="sourceLineNo">150</span><a id="line.150">                    new WeakReference&lt;&gt;(manager)</a>
-<span class="sourceLineNo">151</span><a id="line.151">                );</a>
-<span class="sourceLineNo">152</span><a id="line.152">                return manager;</a>
-<span class="sourceLineNo">153</span><a id="line.153">            } finally {</a>
-<span class="sourceLineNo">154</span><a id="line.154">                WeakReference.reachabilityFence(manager);</a>
-<span class="sourceLineNo">155</span><a id="line.155">            }</a>
-<span class="sourceLineNo">156</span><a id="line.156">        }</a>
-<span class="sourceLineNo">157</span><a id="line.157">    }</a>
+<span class="sourceLineNo">147</span><a id="line.147">        /** Private constructor. */</a>
+<span class="sourceLineNo">148</span><a id="line.148">        Builder(@Nonnull DatabaseId database) {</a>
+<span class="sourceLineNo">149</span><a id="line.149">            this.database = database;</a>
+<span class="sourceLineNo">150</span><a id="line.150">        }</a>
+<span class="sourceLineNo">151</span><a id="line.151"></a>
+<span class="sourceLineNo">152</span><a id="line.152">        // -- Builder Getters -- //</a>
+<span class="sourceLineNo">153</span><a id="line.153"></a>
+<span class="sourceLineNo">154</span><a id="line.154">        /** @return Spanner database which the target manager will be bound to. */</a>
+<span class="sourceLineNo">155</span><a id="line.155">        public @Nonnull DatabaseId getDatabase() {</a>
+<span class="sourceLineNo">156</span><a id="line.156">            return database;</a>
+<span class="sourceLineNo">157</span><a id="line.157">        }</a>
 <span class="sourceLineNo">158</span><a id="line.158"></a>
-<span class="sourceLineNo">159</span><a id="line.159">    /**</a>
-<span class="sourceLineNo">160</span><a id="line.160">     * Configure a vanilla Spanner manager instance for a given database.</a>
-<span class="sourceLineNo">161</span><a id="line.161">     *</a>
-<span class="sourceLineNo">162</span><a id="line.162">     * @param database Spanner database.</a>
-<span class="sourceLineNo">163</span><a id="line.163">     * @return Spanner manager builder.</a>
-<span class="sourceLineNo">164</span><a id="line.164">     */</a>
-<span class="sourceLineNo">165</span><a id="line.165">    public @Nonnull Builder configureForDatabase(@Nonnull DatabaseId database) {</a>
-<span class="sourceLineNo">166</span><a id="line.166">        return new Builder(database);</a>
-<span class="sourceLineNo">167</span><a id="line.167">    }</a>
+<span class="sourceLineNo">159</span><a id="line.159">        /** @return Cache adapter, if any, to apply when acquiring adapters/drivers through the target manager. */</a>
+<span class="sourceLineNo">160</span><a id="line.160">        public @Nonnull Optional&lt;CacheDriver&lt;Message, Message&gt;&gt; getCache() {</a>
+<span class="sourceLineNo">161</span><a id="line.161">            return cache;</a>
+<span class="sourceLineNo">162</span><a id="line.162">        }</a>
+<span class="sourceLineNo">163</span><a id="line.163"></a>
+<span class="sourceLineNo">164</span><a id="line.164">        /** @return Custom driver settings to apply when acquiring adapters/drivers through the target manager. */</a>
+<span class="sourceLineNo">165</span><a id="line.165">        public @Nonnull Optional&lt;SpannerDriverSettings&gt; getSettings() {</a>
+<span class="sourceLineNo">166</span><a id="line.166">            return settings;</a>
+<span class="sourceLineNo">167</span><a id="line.167">        }</a>
 <span class="sourceLineNo">168</span><a id="line.168"></a>
-<span class="sourceLineNo">169</span><a id="line.169">    /**</a>
-<span class="sourceLineNo">170</span><a id="line.170">     * Represents a configured version of a central {@link SpannerManager}, which has been sealed for immutable use at</a>
-<span class="sourceLineNo">171</span><a id="line.171">     * runtime. Once built via {@link Builder}, fields on a configured manager cannot change.</a>
-<span class="sourceLineNo">172</span><a id="line.172">     */</a>
-<span class="sourceLineNo">173</span><a id="line.173">    @Immutable @ThreadSafe @Refreshable</a>
-<span class="sourceLineNo">174</span><a id="line.174">    public final class ConfiguredSpannerManager implements</a>
-<span class="sourceLineNo">175</span><a id="line.175">            DatabaseManager&lt;SpannerAdapter, SpannerDriver&gt;, Closeable, AutoCloseable {</a>
-<span class="sourceLineNo">176</span><a id="line.176">        /** Main cache of adapters generated for concrete models. */</a>
-<span class="sourceLineNo">177</span><a id="line.177">        private final @Nonnull ConcurrentMap&lt;Integer,</a>
-<span class="sourceLineNo">178</span><a id="line.178">                SpannerAdapter&lt;? extends Message, ? extends Message&gt;&gt; adapterCache;</a>
-<span class="sourceLineNo">179</span><a id="line.179"></a>
-<span class="sourceLineNo">180</span><a id="line.180">        /** Database we should interact with. */</a>
-<span class="sourceLineNo">181</span><a id="line.181">        private final @Nonnull DatabaseId database;</a>
-<span class="sourceLineNo">182</span><a id="line.182"></a>
-<span class="sourceLineNo">183</span><a id="line.183">        /** Whether this configured manager has closed, in which case it cannot spawn adapters or operations. */</a>
-<span class="sourceLineNo">184</span><a id="line.184">        private final @Nonnull AtomicBoolean closed = new AtomicBoolean(false);</a>
-<span class="sourceLineNo">185</span><a id="line.185"></a>
-<span class="sourceLineNo">186</span><a id="line.186">        /** ID assigned to this configured Spanner manager. */</a>
-<span class="sourceLineNo">187</span><a id="line.187">        private final int id;</a>
-<span class="sourceLineNo">188</span><a id="line.188"></a>
-<span class="sourceLineNo">189</span><a id="line.189">        /**</a>
-<span class="sourceLineNo">190</span><a id="line.190">         * Package-private constructor.</a>
-<span class="sourceLineNo">191</span><a id="line.191">         *</a>
-<span class="sourceLineNo">192</span><a id="line.192">         * @param id Assigned ID for this manager.</a>
-<span class="sourceLineNo">193</span><a id="line.193">         * @param database Database we should bind the resulting Spanner manager to.</a>
-<span class="sourceLineNo">194</span><a id="line.194">         */</a>
-<span class="sourceLineNo">195</span><a id="line.195">        ConfiguredSpannerManager(int id,</a>
-<span class="sourceLineNo">196</span><a id="line.196">                                 @Nonnull DatabaseId database) {</a>
-<span class="sourceLineNo">197</span><a id="line.197">            this.database = Objects.requireNonNull(database);</a>
-<span class="sourceLineNo">198</span><a id="line.198">            this.adapterCache = new ConcurrentSkipListMap&lt;&gt;();</a>
-<span class="sourceLineNo">199</span><a id="line.199">            this.id = id;</a>
-<span class="sourceLineNo">200</span><a id="line.200">        }</a>
-<span class="sourceLineNo">201</span><a id="line.201"></a>
-<span class="sourceLineNo">202</span><a id="line.202">        /**</a>
-<span class="sourceLineNo">203</span><a id="line.203">         * Acquire a typed adapter instance specialized to the provided key and model types, which should derive from</a>
-<span class="sourceLineNo">204</span><a id="line.204">         * schema-driven {@link Message} classes.</a>
-<span class="sourceLineNo">205</span><a id="line.205">         *</a>
-<span class="sourceLineNo">206</span><a id="line.206">         * &lt;p&gt;Adapters and backing drivers acquired via this route are not guaranteed to be new, which in most cases is</a>
-<span class="sourceLineNo">207</span><a id="line.207">         * a performance benefit with ignorable costs. Since adapters and drivers are required to be threadsafe, they</a>
-<span class="sourceLineNo">208</span><a id="line.208">         * can be re-used safely with no internal state involved.&lt;/p&gt;</a>
-<span class="sourceLineNo">209</span><a id="line.209">         *</a>
-<span class="sourceLineNo">210</span><a id="line.210">         * &lt;p&gt;Alternatively, drivers/adapters can also be acquired directly, via methods like</a>
-<span class="sourceLineNo">211</span><a id="line.211">         * {@link SpannerAdapter#acquire(Message, Message, DatabaseId)} and friends.&lt;/p&gt;</a>
-<span class="sourceLineNo">212</span><a id="line.212">         *</a>
-<span class="sourceLineNo">213</span><a id="line.213">         * @param keyInstance Model key instance for which a specialized adapter should be returned.</a>
-<span class="sourceLineNo">214</span><a id="line.214">         * @param modelInstance Model object instance for which a specialized adapter should be returned.</a>
-<span class="sourceLineNo">215</span><a id="line.215">         * @param &lt;Key&gt; Key type to which the adapter will be specialized.</a>
-<span class="sourceLineNo">216</span><a id="line.216">         * @param &lt;Model&gt; Model type to which the adapter will be specialized.</a>
-<span class="sourceLineNo">217</span><a id="line.217">         * @throws IllegalArgumentException If the provided key or model instance is not duly marked as a key.</a>
-<span class="sourceLineNo">218</span><a id="line.218">         * @throws IllegalStateException If the provided key or model instance is not duly marked with a table name.</a>
-<span class="sourceLineNo">219</span><a id="line.219">         * @return New or recycled model adapter instance for the provided key and model types.</a>
+<span class="sourceLineNo">169</span><a id="line.169">        /** @return Base set of Spanner options to apply when spawning Spanner clients from this manager. */</a>
+<span class="sourceLineNo">170</span><a id="line.170">        public @Nonnull Optional&lt;SpannerOptions.Builder&gt; getOptions() {</a>
+<span class="sourceLineNo">171</span><a id="line.171">            return options;</a>
+<span class="sourceLineNo">172</span><a id="line.172">        }</a>
+<span class="sourceLineNo">173</span><a id="line.173"></a>
+<span class="sourceLineNo">174</span><a id="line.174">        /** @return Custom executor to apply when acquiring adapters/drivers through the target manager. */</a>
+<span class="sourceLineNo">175</span><a id="line.175">        public @Nonnull Optional&lt;ListeningScheduledExecutorService&gt; getExecutor() {</a>
+<span class="sourceLineNo">176</span><a id="line.176">            return executor;</a>
+<span class="sourceLineNo">177</span><a id="line.177">        }</a>
+<span class="sourceLineNo">178</span><a id="line.178"></a>
+<span class="sourceLineNo">179</span><a id="line.179">        // -- Builder Setters -- //</a>
+<span class="sourceLineNo">180</span><a id="line.180"></a>
+<span class="sourceLineNo">181</span><a id="line.181">        /**</a>
+<span class="sourceLineNo">182</span><a id="line.182">         * Set the cache for the target configured Spanner manager.</a>
+<span class="sourceLineNo">183</span><a id="line.183">         *</a>
+<span class="sourceLineNo">184</span><a id="line.184">         * @param cache Cache to employ, or none if {@link Optional#empty()}.</a>
+<span class="sourceLineNo">185</span><a id="line.185">         * @return Self, for chainability.</a>
+<span class="sourceLineNo">186</span><a id="line.186">         */</a>
+<span class="sourceLineNo">187</span><a id="line.187">        public @Nonnull Builder setCache(@Nonnull Optional&lt;CacheDriver&lt;Message, Message&gt;&gt; cache) {</a>
+<span class="sourceLineNo">188</span><a id="line.188">            this.cache = cache;</a>
+<span class="sourceLineNo">189</span><a id="line.189">            return this;</a>
+<span class="sourceLineNo">190</span><a id="line.190">        }</a>
+<span class="sourceLineNo">191</span><a id="line.191"></a>
+<span class="sourceLineNo">192</span><a id="line.192">        /**</a>
+<span class="sourceLineNo">193</span><a id="line.193">         * Set the main driver settings to use when spawning adapters in the target configured Spanner manager.</a>
+<span class="sourceLineNo">194</span><a id="line.194">         *</a>
+<span class="sourceLineNo">195</span><a id="line.195">         * @param settings Driver settings to apply.</a>
+<span class="sourceLineNo">196</span><a id="line.196">         * @return Self, for chainability.</a>
+<span class="sourceLineNo">197</span><a id="line.197">         */</a>
+<span class="sourceLineNo">198</span><a id="line.198">        public @Nonnull Builder setSettings(@Nonnull Optional&lt;SpannerDriverSettings&gt; settings) {</a>
+<span class="sourceLineNo">199</span><a id="line.199">            this.settings = settings;</a>
+<span class="sourceLineNo">200</span><a id="line.200">            return this;</a>
+<span class="sourceLineNo">201</span><a id="line.201">        }</a>
+<span class="sourceLineNo">202</span><a id="line.202"></a>
+<span class="sourceLineNo">203</span><a id="line.203">        /**</a>
+<span class="sourceLineNo">204</span><a id="line.204">         * Set the base package of Spanner client options to use when spawning new clients via the target configured</a>
+<span class="sourceLineNo">205</span><a id="line.205">         * Spanner manager.</a>
+<span class="sourceLineNo">206</span><a id="line.206">         *</a>
+<span class="sourceLineNo">207</span><a id="line.207">         * @param options Spanner client options to apply, or none if {@link Optional#empty()}.</a>
+<span class="sourceLineNo">208</span><a id="line.208">         * @return Self, for chainability.</a>
+<span class="sourceLineNo">209</span><a id="line.209">         */</a>
+<span class="sourceLineNo">210</span><a id="line.210">        public @Nonnull Builder setOptions(@Nonnull Optional&lt;SpannerOptions.Builder&gt; options) {</a>
+<span class="sourceLineNo">211</span><a id="line.211">            this.options = options;</a>
+<span class="sourceLineNo">212</span><a id="line.212">            return this;</a>
+<span class="sourceLineNo">213</span><a id="line.213">        }</a>
+<span class="sourceLineNo">214</span><a id="line.214"></a>
+<span class="sourceLineNo">215</span><a id="line.215">        /**</a>
+<span class="sourceLineNo">216</span><a id="line.216">         * Set the executor used by adapters and drivers spawned by this manager.</a>
+<span class="sourceLineNo">217</span><a id="line.217">         *</a>
+<span class="sourceLineNo">218</span><a id="line.218">         * @param executor Executor to use when spawning adapters and drivers.</a>
+<span class="sourceLineNo">219</span><a id="line.219">         * @return Self, for chainability.</a>
 <span class="sourceLineNo">220</span><a id="line.220">         */</a>
-<span class="sourceLineNo">221</span><a id="line.221">        @Factory</a>
-<span class="sourceLineNo">222</span><a id="line.222">        @SuppressWarnings("unchecked")</a>
-<span class="sourceLineNo">223</span><a id="line.223">        public @Nonnull &lt;Key extends Message, Model extends Message&gt; SpannerAdapter&lt;Key, Model&gt; adapter(</a>
-<span class="sourceLineNo">224</span><a id="line.224">                @Nonnull Key keyInstance,</a>
-<span class="sourceLineNo">225</span><a id="line.225">                @Nonnull Model modelInstance) {</a>
-<span class="sourceLineNo">226</span><a id="line.226">            Objects.requireNonNull(keyInstance);</a>
-<span class="sourceLineNo">227</span><a id="line.227">            Objects.requireNonNull(modelInstance);</a>
-<span class="sourceLineNo">228</span><a id="line.228">            if (this.getClosed())</a>
-<span class="sourceLineNo">229</span><a id="line.229">                throw new IllegalStateException("Cannot spawn adapters with a closed manager.");</a>
-<span class="sourceLineNo">230</span><a id="line.230">            if (logging.isDebugEnabled())</a>
-<span class="sourceLineNo">231</span><a id="line.231">                logging.info("Acquiring `SpannerAdapter` for model '{}' (key: '{}').",</a>
-<span class="sourceLineNo">232</span><a id="line.232">                        modelInstance.getDescriptorForType().getFullName(),</a>
-<span class="sourceLineNo">233</span><a id="line.233">                        keyInstance.getDescriptorForType().getFullName());</a>
-<span class="sourceLineNo">234</span><a id="line.234"></a>
-<span class="sourceLineNo">235</span><a id="line.235">            var modelFingerprint = keyInstance.getDescriptorForType().getFullName().concat(</a>
-<span class="sourceLineNo">236</span><a id="line.236">                modelInstance.getDescriptorForType().getFullName()</a>
-<span class="sourceLineNo">237</span><a id="line.237">            ).hashCode();</a>
-<span class="sourceLineNo">238</span><a id="line.238">            if (logging.isTraceEnabled())</a>
-<span class="sourceLineNo">239</span><a id="line.239">                logging.info("Model fingerprint for desired adapter: {}.", modelFingerprint);</a>
-<span class="sourceLineNo">240</span><a id="line.240"></a>
-<span class="sourceLineNo">241</span><a id="line.241">            if (!adapterCache.containsKey(modelFingerprint)) {</a>
-<span class="sourceLineNo">242</span><a id="line.242">                if (logging.isTraceEnabled())</a>
-<span class="sourceLineNo">243</span><a id="line.243">                    logging.info("No cached adapter. Spawning new one for fingerprint '{}'...", modelFingerprint);</a>
-<span class="sourceLineNo">244</span><a id="line.244"></a>
-<span class="sourceLineNo">245</span><a id="line.245">                // spawn a new adapter, place it in the cache</a>
-<span class="sourceLineNo">246</span><a id="line.246">                var adapter = SpannerAdapter.acquire(</a>
-<span class="sourceLineNo">247</span><a id="line.247">                    keyInstance,</a>
-<span class="sourceLineNo">248</span><a id="line.248">                    modelInstance,</a>
-<span class="sourceLineNo">249</span><a id="line.249">                    database</a>
-<span class="sourceLineNo">250</span><a id="line.250">                );</a>
-<span class="sourceLineNo">251</span><a id="line.251">                adapterCache.put(modelFingerprint, adapter);</a>
-<span class="sourceLineNo">252</span><a id="line.252">                return adapter;</a>
-<span class="sourceLineNo">253</span><a id="line.253">            } else if (logging.isTraceEnabled()) {</a>
-<span class="sourceLineNo">254</span><a id="line.254">                logging.info("Cached adapter found for fingerprint '{}'. Returning.", modelFingerprint);</a>
-<span class="sourceLineNo">255</span><a id="line.255">            }</a>
-<span class="sourceLineNo">256</span><a id="line.256">            return (SpannerAdapter&lt;Key, Model&gt;)adapterCache.get(modelFingerprint);</a>
-<span class="sourceLineNo">257</span><a id="line.257">        }</a>
-<span class="sourceLineNo">258</span><a id="line.258"></a>
-<span class="sourceLineNo">259</span><a id="line.259">        /** @return Database bound to this manager. */</a>
-<span class="sourceLineNo">260</span><a id="line.260">        public @Nonnull DatabaseId getDatabase() {</a>
-<span class="sourceLineNo">261</span><a id="line.261">            return database;</a>
-<span class="sourceLineNo">262</span><a id="line.262">        }</a>
-<span class="sourceLineNo">263</span><a id="line.263"></a>
-<span class="sourceLineNo">264</span><a id="line.264">        /** @return Closed/open state of this manager. */</a>
-<span class="sourceLineNo">265</span><a id="line.265">        public boolean getClosed() {</a>
-<span class="sourceLineNo">266</span><a id="line.266">            return closed.get();</a>
-<span class="sourceLineNo">267</span><a id="line.267">        }</a>
-<span class="sourceLineNo">268</span><a id="line.268"></a>
-<span class="sourceLineNo">269</span><a id="line.269">        /**</a>
-<span class="sourceLineNo">270</span><a id="line.270">         * Returns the full set of known configured Spanner managers, JVM-wide. This is mostly useful as a utility to</a>
-<span class="sourceLineNo">271</span><a id="line.271">         * shut down connections globally when needed (for instance, during testing).</a>
-<span class="sourceLineNo">272</span><a id="line.272">         *</a>
-<span class="sourceLineNo">273</span><a id="line.273">         * @return Unmodifiable list of weak references to all known-active managers.</a>
-<span class="sourceLineNo">274</span><a id="line.274">         */</a>
-<span class="sourceLineNo">275</span><a id="line.275">        public @Nonnull Collection&lt;SpannerAdapter&gt; allAdapters() {</a>
-<span class="sourceLineNo">276</span><a id="line.276">            if (logging.isTraceEnabled())</a>
-<span class="sourceLineNo">277</span><a id="line.277">                logging.trace("All adapters requested from 'SpannerManager' at ID '{}'. Total: {}.",</a>
-<span class="sourceLineNo">278</span><a id="line.278">                        this.id,</a>
-<span class="sourceLineNo">279</span><a id="line.279">                        this.adapterCache.size());</a>
-<span class="sourceLineNo">280</span><a id="line.280">            return Collections.unmodifiableCollection(this.adapterCache.values());</a>
-<span class="sourceLineNo">281</span><a id="line.281">        }</a>
-<span class="sourceLineNo">282</span><a id="line.282"></a>
-<span class="sourceLineNo">283</span><a id="line.283">        /**</a>
-<span class="sourceLineNo">284</span><a id="line.284">         * Close all active Spanner connections tracked or controlled by this configured manager.</a>
-<span class="sourceLineNo">285</span><a id="line.285">         *</a>
-<span class="sourceLineNo">286</span><a id="line.286">         * @throws RuntimeException If the underlying connections raise IO exceptions.</a>
-<span class="sourceLineNo">287</span><a id="line.287">         */</a>
-<span class="sourceLineNo">288</span><a id="line.288">        @Override</a>
-<span class="sourceLineNo">289</span><a id="line.289">        public void close() {</a>
-<span class="sourceLineNo">290</span><a id="line.290">            if (logging.isTraceEnabled())</a>
-<span class="sourceLineNo">291</span><a id="line.291">                logging.trace("Close requested for `SpannerManager` at ID '{}'.", this.id);</a>
-<span class="sourceLineNo">292</span><a id="line.292">            if (this.getClosed()) {</a>
-<span class="sourceLineNo">293</span><a id="line.293">                if (logging.isDebugEnabled())</a>
-<span class="sourceLineNo">294</span><a id="line.294">                    logging.debug("Close requested, but but `SpannerManager` at ID '{}' is already closed.", this.id);</a>
-<span class="sourceLineNo">295</span><a id="line.295">                return;</a>
-<span class="sourceLineNo">296</span><a id="line.296">            }</a>
-<span class="sourceLineNo">297</span><a id="line.297">            try {</a>
-<span class="sourceLineNo">298</span><a id="line.298">                if (logging.isInfoEnabled())</a>
-<span class="sourceLineNo">299</span><a id="line.299">                    logging.info("Closing `SpannerManager` at ID '{}'.", this.id);</a>
-<span class="sourceLineNo">300</span><a id="line.300">                closed.compareAndSet(false, true);</a>
-<span class="sourceLineNo">301</span><a id="line.301">                allAdapters().forEach(SpannerAdapter::close);</a>
-<span class="sourceLineNo">302</span><a id="line.302">            } finally {</a>
-<span class="sourceLineNo">303</span><a id="line.303">                adapterCache.clear();</a>
-<span class="sourceLineNo">304</span><a id="line.304">                configuredManagers.remove(this.id);  // deregister self</a>
-<span class="sourceLineNo">305</span><a id="line.305">            }</a>
-<span class="sourceLineNo">306</span><a id="line.306">        }</a>
-<span class="sourceLineNo">307</span><a id="line.307">    }</a>
-<span class="sourceLineNo">308</span><a id="line.308">}</a>
+<span class="sourceLineNo">221</span><a id="line.221">        public @Nonnull Builder setExecutor(@Nonnull Optional&lt;ListeningScheduledExecutorService&gt; executor) {</a>
+<span class="sourceLineNo">222</span><a id="line.222">            this.executor = executor;</a>
+<span class="sourceLineNo">223</span><a id="line.223">            return this;</a>
+<span class="sourceLineNo">224</span><a id="line.224">        }</a>
+<span class="sourceLineNo">225</span><a id="line.225"></a>
+<span class="sourceLineNo">226</span><a id="line.226">        /**</a>
+<span class="sourceLineNo">227</span><a id="line.227">         * Build this builder into a configured and immutable {@link ConfiguredSpannerManager} instance, capable of</a>
+<span class="sourceLineNo">228</span><a id="line.228">         * producing managed {@link SpannerAdapter}s specialized to {@link Message} instances.</a>
+<span class="sourceLineNo">229</span><a id="line.229">         *</a>
+<span class="sourceLineNo">230</span><a id="line.230">         * @return Configured and immutable Spanner manager.</a>
+<span class="sourceLineNo">231</span><a id="line.231">         */</a>
+<span class="sourceLineNo">232</span><a id="line.232">        public @Nonnull ConfiguredSpannerManager build() {</a>
+<span class="sourceLineNo">233</span><a id="line.233">            var assignedId = configuredManagers.size();</a>
+<span class="sourceLineNo">234</span><a id="line.234">            var manager = new ConfiguredSpannerManager(</a>
+<span class="sourceLineNo">235</span><a id="line.235">                assignedId,</a>
+<span class="sourceLineNo">236</span><a id="line.236">                database,</a>
+<span class="sourceLineNo">237</span><a id="line.237">                cache,</a>
+<span class="sourceLineNo">238</span><a id="line.238">                options,</a>
+<span class="sourceLineNo">239</span><a id="line.239">                executor,</a>
+<span class="sourceLineNo">240</span><a id="line.240">                settings</a>
+<span class="sourceLineNo">241</span><a id="line.241">            );</a>
+<span class="sourceLineNo">242</span><a id="line.242"></a>
+<span class="sourceLineNo">243</span><a id="line.243">            try {</a>
+<span class="sourceLineNo">244</span><a id="line.244">                configuredManagers.put(</a>
+<span class="sourceLineNo">245</span><a id="line.245">                    assignedId,</a>
+<span class="sourceLineNo">246</span><a id="line.246">                    new WeakReference&lt;&gt;(manager)</a>
+<span class="sourceLineNo">247</span><a id="line.247">                );</a>
+<span class="sourceLineNo">248</span><a id="line.248">                return manager;</a>
+<span class="sourceLineNo">249</span><a id="line.249">            } finally {</a>
+<span class="sourceLineNo">250</span><a id="line.250">                WeakReference.reachabilityFence(manager);</a>
+<span class="sourceLineNo">251</span><a id="line.251">            }</a>
+<span class="sourceLineNo">252</span><a id="line.252">        }</a>
+<span class="sourceLineNo">253</span><a id="line.253">    }</a>
+<span class="sourceLineNo">254</span><a id="line.254"></a>
+<span class="sourceLineNo">255</span><a id="line.255">    /**</a>
+<span class="sourceLineNo">256</span><a id="line.256">     * Configure a vanilla Spanner manager instance for a given database.</a>
+<span class="sourceLineNo">257</span><a id="line.257">     *</a>
+<span class="sourceLineNo">258</span><a id="line.258">     * @param database Spanner database.</a>
+<span class="sourceLineNo">259</span><a id="line.259">     * @return Spanner manager builder.</a>
+<span class="sourceLineNo">260</span><a id="line.260">     */</a>
+<span class="sourceLineNo">261</span><a id="line.261">    public @Nonnull Builder configureForDatabase(@Nonnull DatabaseId database) {</a>
+<span class="sourceLineNo">262</span><a id="line.262">        return new Builder(database);</a>
+<span class="sourceLineNo">263</span><a id="line.263">    }</a>
+<span class="sourceLineNo">264</span><a id="line.264"></a>
+<span class="sourceLineNo">265</span><a id="line.265">    /**</a>
+<span class="sourceLineNo">266</span><a id="line.266">     * Represents a configured version of a central {@link SpannerManager}, which has been sealed for immutable use at</a>
+<span class="sourceLineNo">267</span><a id="line.267">     * runtime. Once built via {@link Builder}, fields on a configured manager cannot change.</a>
+<span class="sourceLineNo">268</span><a id="line.268">     */</a>
+<span class="sourceLineNo">269</span><a id="line.269">    @Immutable @ThreadSafe @Refreshable</a>
+<span class="sourceLineNo">270</span><a id="line.270">    public final class ConfiguredSpannerManager implements</a>
+<span class="sourceLineNo">271</span><a id="line.271">            DatabaseManager&lt;SpannerAdapter, SpannerDriver&gt;, Closeable, AutoCloseable {</a>
+<span class="sourceLineNo">272</span><a id="line.272">        /** Main cache of adapters generated for concrete models. */</a>
+<span class="sourceLineNo">273</span><a id="line.273">        private final @Nonnull ConcurrentMap&lt;Integer,</a>
+<span class="sourceLineNo">274</span><a id="line.274">                SpannerAdapter&lt;? extends Message, ? extends Message&gt;&gt; adapterCache;</a>
+<span class="sourceLineNo">275</span><a id="line.275"></a>
+<span class="sourceLineNo">276</span><a id="line.276">        /** Database we should interact with. */</a>
+<span class="sourceLineNo">277</span><a id="line.277">        private final @Nonnull DatabaseId database;</a>
+<span class="sourceLineNo">278</span><a id="line.278"></a>
+<span class="sourceLineNo">279</span><a id="line.279">        /** Settings to apply to Spanner clients derived from this manager. */</a>
+<span class="sourceLineNo">280</span><a id="line.280">        private final @Nonnull Optional&lt;SpannerOptions.Builder&gt; baseOptions;</a>
+<span class="sourceLineNo">281</span><a id="line.281"></a>
+<span class="sourceLineNo">282</span><a id="line.282">        /** Settings to apply to spawned adapters/drivers. */</a>
+<span class="sourceLineNo">283</span><a id="line.283">        private final @Nonnull Optional&lt;SpannerDriverSettings&gt; settings;</a>
+<span class="sourceLineNo">284</span><a id="line.284"></a>
+<span class="sourceLineNo">285</span><a id="line.285">        /** Custom executor service to apply, if any, to spawned adapters/drivers from this manager. */</a>
+<span class="sourceLineNo">286</span><a id="line.286">        private final @Nonnull Optional&lt;ListeningScheduledExecutorService&gt; executorService;</a>
+<span class="sourceLineNo">287</span><a id="line.287"></a>
+<span class="sourceLineNo">288</span><a id="line.288">        /** Cache to apply, if any, when reading cacheable models. */</a>
+<span class="sourceLineNo">289</span><a id="line.289">        private final @Nonnull Optional&lt;CacheDriver&lt;Message, Message&gt;&gt; cache;</a>
+<span class="sourceLineNo">290</span><a id="line.290"></a>
+<span class="sourceLineNo">291</span><a id="line.291">        /** Whether this configured manager has closed, in which case it cannot spawn adapters or operations. */</a>
+<span class="sourceLineNo">292</span><a id="line.292">        private final @Nonnull AtomicBoolean closed = new AtomicBoolean(false);</a>
+<span class="sourceLineNo">293</span><a id="line.293"></a>
+<span class="sourceLineNo">294</span><a id="line.294">        /** ID assigned to this configured Spanner manager. */</a>
+<span class="sourceLineNo">295</span><a id="line.295">        private final int id;</a>
+<span class="sourceLineNo">296</span><a id="line.296"></a>
+<span class="sourceLineNo">297</span><a id="line.297">        /**</a>
+<span class="sourceLineNo">298</span><a id="line.298">         * Package-private constructor.</a>
+<span class="sourceLineNo">299</span><a id="line.299">         *</a>
+<span class="sourceLineNo">300</span><a id="line.300">         * @param id Assigned ID for this manager.</a>
+<span class="sourceLineNo">301</span><a id="line.301">         * @param database Database we should bind the resulting Spanner manager to.</a>
+<span class="sourceLineNo">302</span><a id="line.302">         * @param cache Optional cache adapter to apply to this one.</a>
+<span class="sourceLineNo">303</span><a id="line.303">         * @param baseOptions Base Spanner driver option set to apply.</a>
+<span class="sourceLineNo">304</span><a id="line.304">         * @param executorService Optional custom executor service to use.</a>
+<span class="sourceLineNo">305</span><a id="line.305">         * @param settings Settings to apply when spawning adapters with this manager.</a>
+<span class="sourceLineNo">306</span><a id="line.306">         */</a>
+<span class="sourceLineNo">307</span><a id="line.307">        ConfiguredSpannerManager(int id,</a>
+<span class="sourceLineNo">308</span><a id="line.308">                                 @Nonnull DatabaseId database,</a>
+<span class="sourceLineNo">309</span><a id="line.309">                                 @Nonnull Optional&lt;CacheDriver&lt;Message, Message&gt;&gt; cache,</a>
+<span class="sourceLineNo">310</span><a id="line.310">                                 @Nonnull Optional&lt;SpannerOptions.Builder&gt; baseOptions,</a>
+<span class="sourceLineNo">311</span><a id="line.311">                                 @Nonnull Optional&lt;ListeningScheduledExecutorService&gt; executorService,</a>
+<span class="sourceLineNo">312</span><a id="line.312">                                 @Nonnull Optional&lt;SpannerDriverSettings&gt; settings) {</a>
+<span class="sourceLineNo">313</span><a id="line.313">            this.database = Objects.requireNonNull(database);</a>
+<span class="sourceLineNo">314</span><a id="line.314">            this.adapterCache = new ConcurrentSkipListMap&lt;&gt;();</a>
+<span class="sourceLineNo">315</span><a id="line.315">            this.executorService = executorService;</a>
+<span class="sourceLineNo">316</span><a id="line.316">            this.baseOptions = baseOptions;</a>
+<span class="sourceLineNo">317</span><a id="line.317">            this.settings = settings;</a>
+<span class="sourceLineNo">318</span><a id="line.318">            this.cache = cache;</a>
+<span class="sourceLineNo">319</span><a id="line.319">            this.id = id;</a>
+<span class="sourceLineNo">320</span><a id="line.320">        }</a>
+<span class="sourceLineNo">321</span><a id="line.321"></a>
+<span class="sourceLineNo">322</span><a id="line.322">        /**</a>
+<span class="sourceLineNo">323</span><a id="line.323">         * Acquire a generic adapter instance designed to work with all {@link Message}-inheriting model types.</a>
+<span class="sourceLineNo">324</span><a id="line.324">         *</a>
+<span class="sourceLineNo">325</span><a id="line.325">         * &lt;p&gt;Adapter instances and backing drivers acquired via this route are not guaranteed to be new, which in most</a>
+<span class="sourceLineNo">326</span><a id="line.326">         * a performance benefit with negligible costs. Since adapters and drivers are required to be threadsafe, they</a>
+<span class="sourceLineNo">327</span><a id="line.327">         * can be re-used safely with no internal state involved.&lt;/p&gt;</a>
+<span class="sourceLineNo">328</span><a id="line.328">         *</a>
+<span class="sourceLineNo">329</span><a id="line.329">         * @see #adapter(Message, Message)</a>
+<span class="sourceLineNo">330</span><a id="line.330">         * @return Generic Spanner adapter instance.</a>
+<span class="sourceLineNo">331</span><a id="line.331">         */</a>
+<span class="sourceLineNo">332</span><a id="line.332">        @Factory</a>
+<span class="sourceLineNo">333</span><a id="line.333">        public @Nonnull SpannerAdapter&lt;Message, Message&gt; generic() {</a>
+<span class="sourceLineNo">334</span><a id="line.334">            return adapter(Empty.getDefaultInstance(), Empty.getDefaultInstance());</a>
+<span class="sourceLineNo">335</span><a id="line.335">        }</a>
+<span class="sourceLineNo">336</span><a id="line.336"></a>
+<span class="sourceLineNo">337</span><a id="line.337">        /**</a>
+<span class="sourceLineNo">338</span><a id="line.338">         * Acquire a typed adapter instance specialized to the provided key and model types, which should derive from</a>
+<span class="sourceLineNo">339</span><a id="line.339">         * schema-driven {@link Message} classes.</a>
+<span class="sourceLineNo">340</span><a id="line.340">         *</a>
+<span class="sourceLineNo">341</span><a id="line.341">         * &lt;p&gt;Adapters and backing drivers acquired via this route are not guaranteed to be new, which in most cases is</a>
+<span class="sourceLineNo">342</span><a id="line.342">         * a performance benefit with negligible costs. Since adapters and drivers are required to be threadsafe, they</a>
+<span class="sourceLineNo">343</span><a id="line.343">         * can be re-used safely with no internal state involved.&lt;/p&gt;</a>
+<span class="sourceLineNo">344</span><a id="line.344">         *</a>
+<span class="sourceLineNo">345</span><a id="line.345">         * &lt;p&gt;Alternatively, drivers/adapters can also be acquired directly, via methods like</a>
+<span class="sourceLineNo">346</span><a id="line.346">         * {@link SpannerAdapter#acquire(Message, Message, DatabaseId)} and friends.&lt;/p&gt;</a>
+<span class="sourceLineNo">347</span><a id="line.347">         *</a>
+<span class="sourceLineNo">348</span><a id="line.348">         * @param keyInstance Model key instance for which a specialized adapter should be returned.</a>
+<span class="sourceLineNo">349</span><a id="line.349">         * @param modelInstance Model object instance for which a specialized adapter should be returned.</a>
+<span class="sourceLineNo">350</span><a id="line.350">         * @param &lt;Key&gt; Key type to which the adapter will be specialized.</a>
+<span class="sourceLineNo">351</span><a id="line.351">         * @param &lt;Model&gt; Model type to which the adapter will be specialized.</a>
+<span class="sourceLineNo">352</span><a id="line.352">         * @throws IllegalArgumentException If the provided key or model instance is not duly marked as a key.</a>
+<span class="sourceLineNo">353</span><a id="line.353">         * @throws IllegalStateException If the provided key or model instance is not duly marked with a table name.</a>
+<span class="sourceLineNo">354</span><a id="line.354">         * @return New or recycled model adapter instance for the provided key and model types.</a>
+<span class="sourceLineNo">355</span><a id="line.355">         */</a>
+<span class="sourceLineNo">356</span><a id="line.356">        @Factory</a>
+<span class="sourceLineNo">357</span><a id="line.357">        @SuppressWarnings("unchecked")</a>
+<span class="sourceLineNo">358</span><a id="line.358">        public @Nonnull &lt;Key extends Message, Model extends Message&gt; SpannerAdapter&lt;Key, Model&gt; adapter(</a>
+<span class="sourceLineNo">359</span><a id="line.359">                @Nonnull Key keyInstance,</a>
+<span class="sourceLineNo">360</span><a id="line.360">                @Nonnull Model modelInstance) {</a>
+<span class="sourceLineNo">361</span><a id="line.361">            Objects.requireNonNull(keyInstance);</a>
+<span class="sourceLineNo">362</span><a id="line.362">            Objects.requireNonNull(modelInstance);</a>
+<span class="sourceLineNo">363</span><a id="line.363">            if (this.getClosed())</a>
+<span class="sourceLineNo">364</span><a id="line.364">                throw new IllegalStateException("Cannot spawn adapters with a closed manager.");</a>
+<span class="sourceLineNo">365</span><a id="line.365">            if (logging.isDebugEnabled())</a>
+<span class="sourceLineNo">366</span><a id="line.366">                logging.info("Acquiring `SpannerAdapter` for model '{}' (key: '{}').",</a>
+<span class="sourceLineNo">367</span><a id="line.367">                        modelInstance.getDescriptorForType().getFullName(),</a>
+<span class="sourceLineNo">368</span><a id="line.368">                        keyInstance.getDescriptorForType().getFullName());</a>
+<span class="sourceLineNo">369</span><a id="line.369"></a>
+<span class="sourceLineNo">370</span><a id="line.370">            var modelFingerprint = keyInstance.getDescriptorForType().getFullName().concat(</a>
+<span class="sourceLineNo">371</span><a id="line.371">                modelInstance.getDescriptorForType().getFullName()</a>
+<span class="sourceLineNo">372</span><a id="line.372">            ).hashCode();</a>
+<span class="sourceLineNo">373</span><a id="line.373">            if (logging.isTraceEnabled())</a>
+<span class="sourceLineNo">374</span><a id="line.374">                logging.info("Model fingerprint for desired adapter: {}.", modelFingerprint);</a>
+<span class="sourceLineNo">375</span><a id="line.375"></a>
+<span class="sourceLineNo">376</span><a id="line.376">            if (!adapterCache.containsKey(modelFingerprint)) {</a>
+<span class="sourceLineNo">377</span><a id="line.377">                if (logging.isTraceEnabled())</a>
+<span class="sourceLineNo">378</span><a id="line.378">                    logging.info("No cached adapter. Spawning new one for fingerprint '{}'...", modelFingerprint);</a>
+<span class="sourceLineNo">379</span><a id="line.379"></a>
+<span class="sourceLineNo">380</span><a id="line.380">                // spawn a new adapter, place it in the cache</a>
+<span class="sourceLineNo">381</span><a id="line.381">                SpannerAdapter&lt;Key, Model&gt; adapter = (SpannerAdapter&lt;Key, Model&gt;)SpannerAdapter.acquire(</a>
+<span class="sourceLineNo">382</span><a id="line.382">                    keyInstance,</a>
+<span class="sourceLineNo">383</span><a id="line.383">                    modelInstance,</a>
+<span class="sourceLineNo">384</span><a id="line.384">                    database,</a>
+<span class="sourceLineNo">385</span><a id="line.385">                    executorService,</a>
+<span class="sourceLineNo">386</span><a id="line.386">                    settings,</a>
+<span class="sourceLineNo">387</span><a id="line.387">                    baseOptions,</a>
+<span class="sourceLineNo">388</span><a id="line.388">                    cache</a>
+<span class="sourceLineNo">389</span><a id="line.389">                );</a>
+<span class="sourceLineNo">390</span><a id="line.390">                adapterCache.put(modelFingerprint, adapter);</a>
+<span class="sourceLineNo">391</span><a id="line.391">                return adapter;</a>
+<span class="sourceLineNo">392</span><a id="line.392">            } else if (logging.isTraceEnabled()) {</a>
+<span class="sourceLineNo">393</span><a id="line.393">                logging.info("Cached adapter found for fingerprint '{}'. Returning.", modelFingerprint);</a>
+<span class="sourceLineNo">394</span><a id="line.394">            }</a>
+<span class="sourceLineNo">395</span><a id="line.395">            return (SpannerAdapter&lt;Key, Model&gt;)adapterCache.get(modelFingerprint);</a>
+<span class="sourceLineNo">396</span><a id="line.396">        }</a>
+<span class="sourceLineNo">397</span><a id="line.397"></a>
+<span class="sourceLineNo">398</span><a id="line.398">        /** @return Database bound to this manager. */</a>
+<span class="sourceLineNo">399</span><a id="line.399">        public @Nonnull DatabaseId getDatabase() {</a>
+<span class="sourceLineNo">400</span><a id="line.400">            return database;</a>
+<span class="sourceLineNo">401</span><a id="line.401">        }</a>
+<span class="sourceLineNo">402</span><a id="line.402"></a>
+<span class="sourceLineNo">403</span><a id="line.403">        /** @return Closed/open state of this manager. */</a>
+<span class="sourceLineNo">404</span><a id="line.404">        public boolean getClosed() {</a>
+<span class="sourceLineNo">405</span><a id="line.405">            return closed.get();</a>
+<span class="sourceLineNo">406</span><a id="line.406">        }</a>
+<span class="sourceLineNo">407</span><a id="line.407"></a>
+<span class="sourceLineNo">408</span><a id="line.408">        /**</a>
+<span class="sourceLineNo">409</span><a id="line.409">         * Returns the full set of known configured Spanner managers, JVM-wide. This is mostly useful as a utility to</a>
+<span class="sourceLineNo">410</span><a id="line.410">         * shut down connections globally when needed (for instance, during testing).</a>
+<span class="sourceLineNo">411</span><a id="line.411">         *</a>
+<span class="sourceLineNo">412</span><a id="line.412">         * @return Unmodifiable list of weak references to all known-active managers.</a>
+<span class="sourceLineNo">413</span><a id="line.413">         */</a>
+<span class="sourceLineNo">414</span><a id="line.414">        public @Nonnull Collection&lt;SpannerAdapter&gt; allAdapters() {</a>
+<span class="sourceLineNo">415</span><a id="line.415">            if (logging.isTraceEnabled())</a>
+<span class="sourceLineNo">416</span><a id="line.416">                logging.trace("All adapters requested from 'SpannerManager' at ID '{}'. Total: {}.",</a>
+<span class="sourceLineNo">417</span><a id="line.417">                        this.id,</a>
+<span class="sourceLineNo">418</span><a id="line.418">                        this.adapterCache.size());</a>
+<span class="sourceLineNo">419</span><a id="line.419">            return Collections.unmodifiableCollection(this.adapterCache.values());</a>
+<span class="sourceLineNo">420</span><a id="line.420">        }</a>
+<span class="sourceLineNo">421</span><a id="line.421"></a>
+<span class="sourceLineNo">422</span><a id="line.422">        /**</a>
+<span class="sourceLineNo">423</span><a id="line.423">         * Close all active Spanner connections tracked or controlled by this configured manager.</a>
+<span class="sourceLineNo">424</span><a id="line.424">         *</a>
+<span class="sourceLineNo">425</span><a id="line.425">         * @throws RuntimeException If the underlying connections raise IO exceptions.</a>
+<span class="sourceLineNo">426</span><a id="line.426">         */</a>
+<span class="sourceLineNo">427</span><a id="line.427">        @Override</a>
+<span class="sourceLineNo">428</span><a id="line.428">        public void close() {</a>
+<span class="sourceLineNo">429</span><a id="line.429">            if (logging.isTraceEnabled())</a>
+<span class="sourceLineNo">430</span><a id="line.430">                logging.trace("Close requested for `SpannerManager` at ID '{}'.", this.id);</a>
+<span class="sourceLineNo">431</span><a id="line.431">            if (this.getClosed()) {</a>
+<span class="sourceLineNo">432</span><a id="line.432">                if (logging.isDebugEnabled())</a>
+<span class="sourceLineNo">433</span><a id="line.433">                    logging.debug("Close requested, but but `SpannerManager` at ID '{}' is already closed.", this.id);</a>
+<span class="sourceLineNo">434</span><a id="line.434">                return;</a>
+<span class="sourceLineNo">435</span><a id="line.435">            }</a>
+<span class="sourceLineNo">436</span><a id="line.436">            try {</a>
+<span class="sourceLineNo">437</span><a id="line.437">                if (logging.isInfoEnabled())</a>
+<span class="sourceLineNo">438</span><a id="line.438">                    logging.info("Closing `SpannerManager` at ID '{}'.", this.id);</a>
+<span class="sourceLineNo">439</span><a id="line.439">                closed.compareAndSet(false, true);</a>
+<span class="sourceLineNo">440</span><a id="line.440">                allAdapters().forEach(SpannerAdapter::close);</a>
+<span class="sourceLineNo">441</span><a id="line.441">            } finally {</a>
+<span class="sourceLineNo">442</span><a id="line.442">                adapterCache.clear();</a>
+<span class="sourceLineNo">443</span><a id="line.443">                configuredManagers.remove(this.id);  // deregister self</a>
+<span class="sourceLineNo">444</span><a id="line.444">            }</a>
+<span class="sourceLineNo">445</span><a id="line.445">        }</a>
+<span class="sourceLineNo">446</span><a id="line.446"></a>
+<span class="sourceLineNo">447</span><a id="line.447">        // -- Configured Manager: Getters -- //</a>
+<span class="sourceLineNo">448</span><a id="line.448"></a>
+<span class="sourceLineNo">449</span><a id="line.449">        /** @return Settings for this configured manager. */</a>
+<span class="sourceLineNo">450</span><a id="line.450">        public @Nonnull SpannerDriverSettings getSettings() {</a>
+<span class="sourceLineNo">451</span><a id="line.451">            return settings.orElse(SpannerDriverSettings.DEFAULTS);</a>
+<span class="sourceLineNo">452</span><a id="line.452">        }</a>
+<span class="sourceLineNo">453</span><a id="line.453"></a>
+<span class="sourceLineNo">454</span><a id="line.454">        /** @return Cache applied to reads, if any. */</a>
+<span class="sourceLineNo">455</span><a id="line.455">        public @Nonnull Optional&lt;CacheDriver&lt;Message, Message&gt;&gt; getCache() {</a>
+<span class="sourceLineNo">456</span><a id="line.456">            return cache;</a>
+<span class="sourceLineNo">457</span><a id="line.457">        }</a>
+<span class="sourceLineNo">458</span><a id="line.458">    }</a>
+<span class="sourceLineNo">459</span><a id="line.459">}</a>
 
 
 

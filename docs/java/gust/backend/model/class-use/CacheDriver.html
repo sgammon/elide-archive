@@ -260,6 +260,16 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <div class="block">Return the cache driver in use for this particular model adapter.</div>
 </td>
 </tr>
+<tr class="rowColor">
+<td class="colFirst"><code>java.util.Optional&lt;<a href="../CacheDriver.html" title="interface in gust.backend.model">CacheDriver</a>&lt;com.google.protobuf.Message,&#8203;com.google.protobuf.Message&gt;&gt;</code></td>
+<th class="colSecond" scope="row"><span class="typeNameLabel">SpannerManager.Builder.</span><code><span class="memberNameLink"><a href="../../driver/spanner/SpannerManager.Builder.html#getCache()">getCache</a></span>()</code></th>
+<td class="colLast">&nbsp;</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>java.util.Optional&lt;<a href="../CacheDriver.html" title="interface in gust.backend.model">CacheDriver</a>&lt;com.google.protobuf.Message,&#8203;com.google.protobuf.Message&gt;&gt;</code></td>
+<th class="colSecond" scope="row"><span class="typeNameLabel">SpannerManager.ConfiguredSpannerManager.</span><code><span class="memberNameLink"><a href="../../driver/spanner/SpannerManager.ConfiguredSpannerManager.html#getCache()">getCache</a></span>()</code></th>
+<td class="colLast">&nbsp;</td>
+</tr>
 </tbody>
 </table>
 <table class="useSummary">
@@ -277,6 +287,13 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <td class="colLast">
 <div class="block">Create or resolve a <a href="../../driver/spanner/SpannerAdapter.html" title="class in gust.backend.driver.spanner"><code>SpannerAdapter</code></a> for the pre-fabricated <a href="../../driver/spanner/SpannerDriver.html" title="class in gust.backend.driver.spanner"><code>SpannerDriver</code></a>, optionally using the
  provided <a href="../CacheDriver.html" title="interface in gust.backend.model"><code>CacheDriver</code></a>, if present.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code><a href="../../driver/spanner/SpannerManager.Builder.html" title="class in gust.backend.driver.spanner">SpannerManager.Builder</a></code></td>
+<th class="colSecond" scope="row"><span class="typeNameLabel">SpannerManager.Builder.</span><code><span class="memberNameLink"><a href="../../driver/spanner/SpannerManager.Builder.html#setCache(java.util.Optional)">setCache</a></span>&#8203;(java.util.Optional&lt;<a href="../CacheDriver.html" title="interface in gust.backend.model">CacheDriver</a>&lt;com.google.protobuf.Message,&#8203;com.google.protobuf.Message&gt;&gt;&nbsp;cache)</code></th>
+<td class="colLast">
+<div class="block">Set the cache for the target configured Spanner manager.</div>
 </td>
 </tr>
 </tbody>

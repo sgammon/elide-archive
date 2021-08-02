@@ -14,6 +14,7 @@
 <meta name="keywords" content="resolveColumnIndex()">
 <meta name="keywords" content="resolveColumnValue()">
 <meta name="keywords" content="resolveColumnType()">
+<meta name="keywords" content="calculateDefaultFieldStream()">
 <meta name="keywords" content="calculateDefaultFields()">
 <meta name="keywords" content="generateStruct()">
 <meta name="keywords" content="onlySpannerEligibleFields()">
@@ -43,7 +44,7 @@
     catch(err) {
     }
 //-->
-var data = {"i0":9,"i1":9,"i2":9,"i3":9,"i4":9,"i5":9,"i6":9,"i7":9,"i8":9,"i9":9,"i10":9,"i11":9,"i12":9,"i13":9,"i14":9,"i15":9,"i16":9,"i17":9,"i18":9,"i19":9,"i20":9,"i21":9};
+var data = {"i0":9,"i1":9,"i2":9,"i3":9,"i4":9,"i5":9,"i6":9,"i7":9,"i8":9,"i9":9,"i10":9,"i11":9,"i12":9,"i13":9,"i14":9,"i15":9,"i16":9,"i17":9,"i18":9,"i19":9,"i20":9,"i21":9,"i22":9,"i23":9,"i24":9};
 var tabs = {65535:["t0","All Methods"],1:["t1","Static Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -148,7 +149,7 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <ul class="blockList">
 <li class="blockList">
 <hr>
-<pre>public final class <a href="../../../../src-html/gust/backend/driver/spanner/SpannerUtil.html#line.36">SpannerUtil</a>
+<pre>public final class <a href="../../../../src-html/gust/backend/driver/spanner/SpannerUtil.html#line.40">SpannerUtil</a>
 extends java.lang.Object</pre>
 <div class="block">Provides utilities related to operations with Spanner, including tools for resolving column names and types from
  models and annotations, and producing default sets of columns for DDL statements.</div>
@@ -181,6 +182,14 @@ extends java.lang.Object</pre>
 </td>
 </tr>
 <tr id="i1" class="rowColor">
+<td class="colFirst"><code>static java.util.stream.Stream&lt;<a href="../../../util/Pair.html" title="class in gust.util">Pair</a>&lt;java.lang.String,&#8203;java.lang.String&gt;&gt;</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#calculateDefaultFieldStream(com.google.protobuf.Descriptors.Descriptor,gust.backend.driver.spanner.SpannerDriverSettings)">calculateDefaultFieldStream</a></span>&#8203;(com.google.protobuf.Descriptors.Descriptor&nbsp;descriptor,
+                           <a href="SpannerDriverSettings.html" title="interface in gust.backend.driver.spanner">SpannerDriverSettings</a>&nbsp;driverSettings)</code></th>
+<td class="colLast">
+<div class="block">Calculate a default projection of Spanner columns, as configured on the provided default model instance.</div>
+</td>
+</tr>
+<tr id="i2" class="altColor">
 <td class="colFirst"><code>static java.util.Optional&lt;tools.elide.core.TableFieldOptions&gt;</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#columnOpts(com.google.protobuf.Descriptors.FieldDescriptor)">columnOpts</a></span>&#8203;(com.google.protobuf.Descriptors.FieldDescriptor&nbsp;field)</code></th>
 <td class="colLast">
@@ -188,14 +197,14 @@ extends java.lang.Object</pre>
  with Spanner, resolve any present column-generic options and annotations via <code>TableFieldOptions</code>.</div>
 </td>
 </tr>
-<tr id="i2" class="altColor">
+<tr id="i3" class="rowColor">
 <td class="colFirst"><code>static java.util.Optional&lt;tools.elide.core.TableFieldOptions&gt;</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#columnOpts(gust.backend.model.ModelMetadata.FieldPointer)">columnOpts</a></span>&#8203;(<a href="../../model/ModelMetadata.FieldPointer.html" title="class in gust.backend.model">ModelMetadata.FieldPointer</a>&nbsp;fieldPointer)</code></th>
 <td class="colLast">
 <div class="block">Given a pre-resolved <a href="../../model/ModelMetadata.FieldPointer.html" title="class in gust.backend.model"><code>ModelMetadata.FieldPointer</code></a>, resolve any present <code>TableFieldOptions</code>.</div>
 </td>
 </tr>
-<tr id="i3" class="rowColor">
+<tr id="i4" class="altColor">
 <td class="colFirst"><code>static java.util.Collection&lt;com.google.cloud.spanner.Type.StructField&gt;</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#generateStruct(com.google.protobuf.Descriptors.Descriptor,gust.backend.driver.spanner.SpannerDriverSettings)">generateStruct</a></span>&#8203;(com.google.protobuf.Descriptors.Descriptor&nbsp;descriptor,
               <a href="SpannerDriverSettings.html" title="interface in gust.backend.driver.spanner">SpannerDriverSettings</a>&nbsp;driverSettings)</code></th>
@@ -203,7 +212,7 @@ extends java.lang.Object</pre>
 <div class="block">Calculate a default projection of Spanner columns, as configured on the provided default model instance.</div>
 </td>
 </tr>
-<tr id="i4" class="altColor">
+<tr id="i5" class="rowColor">
 <td class="colFirst"><code>static com.google.cloud.spanner.Type</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#maybeWrapType(gust.backend.model.ModelMetadata.FieldPointer,com.google.cloud.spanner.Type)">maybeWrapType</a></span>&#8203;(<a href="../../model/ModelMetadata.FieldPointer.html" title="class in gust.backend.model">ModelMetadata.FieldPointer</a>&nbsp;field,
              com.google.cloud.spanner.Type&nbsp;inner)</code></th>
@@ -211,7 +220,7 @@ extends java.lang.Object</pre>
 <div class="block">If a concrete type is marked as repeated, wrap it in an array type.</div>
 </td>
 </tr>
-<tr id="i5" class="rowColor">
+<tr id="i6" class="altColor">
 <td class="colFirst"><code>static java.util.function.Predicate&lt;<a href="../../model/ModelMetadata.FieldPointer.html" title="class in gust.backend.model">ModelMetadata.FieldPointer</a>&gt;</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#onlySpannerEligibleFields(gust.backend.driver.spanner.SpannerDriverSettings)">onlySpannerEligibleFields</a></span>&#8203;(<a href="SpannerDriverSettings.html" title="interface in gust.backend.driver.spanner">SpannerDriverSettings</a>&nbsp;settings)</code></th>
 <td class="colLast">
@@ -219,7 +228,7 @@ extends java.lang.Object</pre>
  for interaction with Spanner.</div>
 </td>
 </tr>
-<tr id="i6" class="altColor">
+<tr id="i7" class="rowColor">
 <td class="colFirst"><code>static java.util.function.Predicate&lt;<a href="../../model/ModelMetadata.FieldPointer.html" title="class in gust.backend.model">ModelMetadata.FieldPointer</a>&gt;</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#onlySpannerEligibleFields(java.util.SortedSet,gust.backend.driver.spanner.SpannerDriverSettings)">onlySpannerEligibleFields</a></span>&#8203;(java.util.SortedSet&lt;java.lang.String&gt;&nbsp;eligibleFields,
                          <a href="SpannerDriverSettings.html" title="interface in gust.backend.driver.spanner">SpannerDriverSettings</a>&nbsp;settings)</code></th>
@@ -229,7 +238,7 @@ extends java.lang.Object</pre>
  instance, in the case of a known property projection).</div>
 </td>
 </tr>
-<tr id="i7" class="rowColor">
+<tr id="i8" class="altColor">
 <td class="colFirst"><code>static int</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#resolveColumnIndex(com.google.cloud.spanner.Struct,gust.backend.model.ModelMetadata.FieldPointer,java.lang.String)">resolveColumnIndex</a></span>&#8203;(com.google.cloud.spanner.Struct&nbsp;source,
                   <a href="../../model/ModelMetadata.FieldPointer.html" title="class in gust.backend.model">ModelMetadata.FieldPointer</a>&nbsp;fieldPointer,
@@ -239,7 +248,24 @@ extends java.lang.Object</pre>
  present, with a pre-resolved column name, return the numeric column index.</div>
 </td>
 </tr>
-<tr id="i8" class="altColor">
+<tr id="i9" class="rowColor">
+<td class="colFirst"><code>static java.lang.String</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#resolveColumnName(com.google.protobuf.Descriptors.FieldDescriptor)">resolveColumnName</a></span>&#8203;(com.google.protobuf.Descriptors.FieldDescriptor&nbsp;field)</code></th>
+<td class="colLast">
+<div class="block">Given a resolved field pointer resolve the expected/configured column name in Spanner for a given typed model
+ field.</div>
+</td>
+</tr>
+<tr id="i10" class="altColor">
+<td class="colFirst"><code>static java.lang.String</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#resolveColumnName(com.google.protobuf.Descriptors.FieldDescriptor,gust.backend.driver.spanner.SpannerDriverSettings)">resolveColumnName</a></span>&#8203;(com.google.protobuf.Descriptors.FieldDescriptor&nbsp;field,
+                 <a href="SpannerDriverSettings.html" title="interface in gust.backend.driver.spanner">SpannerDriverSettings</a>&nbsp;settings)</code></th>
+<td class="colLast">
+<div class="block">Given a resolved field pointer resolve the expected/configured column name in Spanner for a given typed model
+ field.</div>
+</td>
+</tr>
+<tr id="i11" class="rowColor">
 <td class="colFirst"><code>static java.lang.String</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#resolveColumnName(com.google.protobuf.Descriptors.FieldDescriptor,java.util.Optional,java.util.Optional,gust.backend.driver.spanner.SpannerDriverSettings)">resolveColumnName</a></span>&#8203;(com.google.protobuf.Descriptors.FieldDescriptor&nbsp;field,
                  java.util.Optional&lt;tools.elide.core.SpannerFieldOptions&gt;&nbsp;spannerOpts,
@@ -250,7 +276,7 @@ extends java.lang.Object</pre>
  name in Spanner for a given typed model field.</div>
 </td>
 </tr>
-<tr id="i9" class="rowColor">
+<tr id="i12" class="altColor">
 <td class="colFirst"><code>static java.lang.String</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#resolveColumnName(gust.backend.model.ModelMetadata.FieldPointer,java.util.Optional,java.util.Optional,gust.backend.driver.spanner.SpannerDriverSettings)">resolveColumnName</a></span>&#8203;(<a href="../../model/ModelMetadata.FieldPointer.html" title="class in gust.backend.model">ModelMetadata.FieldPointer</a>&nbsp;fieldPointer,
                  java.util.Optional&lt;tools.elide.core.SpannerFieldOptions&gt;&nbsp;spannerOpts,
@@ -261,7 +287,7 @@ extends java.lang.Object</pre>
  a given typed model field.</div>
 </td>
 </tr>
-<tr id="i10" class="altColor">
+<tr id="i13" class="rowColor">
 <td class="colFirst"><code>static int</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#resolveColumnSize(com.google.protobuf.Descriptors.FieldDescriptor,java.util.Optional,java.util.Optional,gust.backend.driver.spanner.SpannerDriverSettings)">resolveColumnSize</a></span>&#8203;(com.google.protobuf.Descriptors.FieldDescriptor&nbsp;field,
                  java.util.Optional&lt;tools.elide.core.SpannerFieldOptions&gt;&nbsp;spannerOpts,
@@ -272,7 +298,7 @@ extends java.lang.Object</pre>
  should be used when declaring the string column.</div>
 </td>
 </tr>
-<tr id="i11" class="rowColor">
+<tr id="i14" class="altColor">
 <td class="colFirst"><code>static com.google.cloud.spanner.Type</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#resolveColumnType(gust.backend.model.ModelMetadata.FieldPointer,java.util.Optional,java.util.Optional,gust.backend.driver.spanner.SpannerDriverSettings)">resolveColumnType</a></span>&#8203;(<a href="../../model/ModelMetadata.FieldPointer.html" title="class in gust.backend.model">ModelMetadata.FieldPointer</a>&nbsp;fieldPointer,
                  java.util.Optional&lt;tools.elide.core.SpannerFieldOptions&gt;&nbsp;spannerOpts,
@@ -284,7 +310,7 @@ extends java.lang.Object</pre>
  annotations on the model field.</div>
 </td>
 </tr>
-<tr id="i12" class="altColor">
+<tr id="i15" class="rowColor">
 <td class="colFirst"><code>static com.google.cloud.spanner.Value</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#resolveColumnValue(com.google.cloud.spanner.Struct,gust.backend.model.ModelMetadata.FieldPointer,java.util.Optional,java.util.Optional,gust.backend.driver.spanner.SpannerDriverSettings)">resolveColumnValue</a></span>&#8203;(com.google.cloud.spanner.Struct&nbsp;source,
                   <a href="../../model/ModelMetadata.FieldPointer.html" title="class in gust.backend.model">ModelMetadata.FieldPointer</a>&nbsp;fieldPointer,
@@ -296,7 +322,7 @@ extends java.lang.Object</pre>
  present, resolve any present <code>Value</code>.</div>
 </td>
 </tr>
-<tr id="i13" class="rowColor">
+<tr id="i16" class="altColor">
 <td class="colFirst"><code>static com.google.cloud.spanner.Type</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#resolveDefaultType(gust.backend.model.ModelMetadata.FieldPointer,com.google.protobuf.Descriptors.FieldDescriptor.Type,gust.backend.driver.spanner.SpannerDriverSettings)">resolveDefaultType</a></span>&#8203;(<a href="../../model/ModelMetadata.FieldPointer.html" title="class in gust.backend.model">ModelMetadata.FieldPointer</a>&nbsp;pointer,
                   com.google.protobuf.Descriptors.FieldDescriptor.Type&nbsp;protoType,
@@ -305,7 +331,7 @@ extends java.lang.Object</pre>
 <div class="block">Resolve a default Spanner type for the provided field `pointer`.</div>
 </td>
 </tr>
-<tr id="i14" class="altColor">
+<tr id="i17" class="rowColor">
 <td class="colFirst"><code>static com.google.cloud.spanner.Type</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#resolveDefaultType(gust.backend.model.ModelMetadata.FieldPointer,gust.backend.driver.spanner.SpannerDriverSettings)">resolveDefaultType</a></span>&#8203;(<a href="../../model/ModelMetadata.FieldPointer.html" title="class in gust.backend.model">ModelMetadata.FieldPointer</a>&nbsp;pointer,
                   <a href="SpannerDriverSettings.html" title="interface in gust.backend.driver.spanner">SpannerDriverSettings</a>&nbsp;settings)</code></th>
@@ -313,16 +339,16 @@ extends java.lang.Object</pre>
 <div class="block">Resolve a default Spanner type for the provided field `pointer`.</div>
 </td>
 </tr>
-<tr id="i15" class="rowColor">
+<tr id="i18" class="altColor">
 <td class="colFirst"><code>static java.lang.String</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#resolveKeyColumn(gust.backend.model.ModelMetadata.FieldPointer,gust.backend.driver.spanner.SpannerDriverSettings)">resolveKeyColumn</a></span>&#8203;(<a href="../../model/ModelMetadata.FieldPointer.html" title="class in gust.backend.model">ModelMetadata.FieldPointer</a>&nbsp;keyField,
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#resolveKeyColumn(gust.backend.model.ModelMetadata.FieldPointer,gust.backend.driver.spanner.SpannerDriverSettings)">resolveKeyColumn</a></span>&#8203;(<a href="../../model/ModelMetadata.FieldPointer.html" title="class in gust.backend.model">ModelMetadata.FieldPointer</a>&nbsp;idField,
                 <a href="SpannerDriverSettings.html" title="interface in gust.backend.driver.spanner">SpannerDriverSettings</a>&nbsp;driverSettings)</code></th>
 <td class="colLast">
 <div class="block">For a given key field pointer, resolve the column name which should be used for the primary key in Spanner,
  according to the annotation structure present on the key.</div>
 </td>
 </tr>
-<tr id="i16" class="altColor">
+<tr id="i19" class="rowColor">
 <td class="colFirst"><code>static com.google.cloud.spanner.Type</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#resolveKeyType(gust.backend.model.ModelMetadata.FieldPointer)">resolveKeyType</a></span>&#8203;(<a href="../../model/ModelMetadata.FieldPointer.html" title="class in gust.backend.model">ModelMetadata.FieldPointer</a>&nbsp;idField)</code></th>
 <td class="colLast">
@@ -330,21 +356,21 @@ extends java.lang.Object</pre>
  according to the annotation structure present on the key.</div>
 </td>
 </tr>
-<tr id="i17" class="rowColor">
+<tr id="i20" class="altColor">
 <td class="colFirst"><code>static java.lang.String</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#resolveTableName(com.google.protobuf.Descriptors.Descriptor)">resolveTableName</a></span>&#8203;(com.google.protobuf.Descriptors.Descriptor&nbsp;message)</code></th>
 <td class="colLast">
 <div class="block">Given a schema-driven model or key object, determine the table name that should be used in Spanner.</div>
 </td>
 </tr>
-<tr id="i18" class="altColor">
+<tr id="i21" class="rowColor">
 <td class="colFirst"><code>static java.lang.String</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#resolveTableName(com.google.protobuf.Message)">resolveTableName</a></span>&#8203;(com.google.protobuf.Message&nbsp;message)</code></th>
 <td class="colLast">
 <div class="block">Given a schema-driven model or key object, determine the table name that should be used in Spanner.</div>
 </td>
 </tr>
-<tr id="i19" class="rowColor">
+<tr id="i22" class="altColor">
 <td class="colFirst"><code>static com.google.cloud.spanner.Type</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#resolveType(gust.backend.model.ModelMetadata.FieldPointer,tools.elide.core.SpannerOptions.SpannerType)">resolveType</a></span>&#8203;(<a href="../../model/ModelMetadata.FieldPointer.html" title="class in gust.backend.model">ModelMetadata.FieldPointer</a>&nbsp;pointer,
            tools.elide.core.SpannerOptions.SpannerType&nbsp;spannerType)</code></th>
@@ -352,7 +378,7 @@ extends java.lang.Object</pre>
 <div class="block">Resolve a normalized Spanner type for the provided field `pointer`, with the explicit provided `spannerType`.</div>
 </td>
 </tr>
-<tr id="i20" class="altColor">
+<tr id="i23" class="rowColor">
 <td class="colFirst"><code>static java.util.Optional&lt;tools.elide.core.SpannerFieldOptions&gt;</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#spannerOpts(com.google.protobuf.Descriptors.FieldDescriptor)">spannerOpts</a></span>&#8203;(com.google.protobuf.Descriptors.FieldDescriptor&nbsp;field)</code></th>
 <td class="colLast">
@@ -360,7 +386,7 @@ extends java.lang.Object</pre>
  with Spanner, resolve any present Spanner-specific options and annotations via <code>SpannerFieldOptions</code>.</div>
 </td>
 </tr>
-<tr id="i21" class="rowColor">
+<tr id="i24" class="altColor">
 <td class="colFirst"><code>static java.util.Optional&lt;tools.elide.core.SpannerFieldOptions&gt;</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#spannerOpts(gust.backend.model.ModelMetadata.FieldPointer)">spannerOpts</a></span>&#8203;(<a href="../../model/ModelMetadata.FieldPointer.html" title="class in gust.backend.model">ModelMetadata.FieldPointer</a>&nbsp;fieldPointer)</code></th>
 <td class="colLast">
@@ -398,15 +424,15 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>resolveKeyColumn</h4>
 <pre class="methodSignature">@Nonnull
-public static&nbsp;java.lang.String&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerUtil.html#line.74">resolveKeyColumn</a>&#8203;(@Nonnull
-                                                <a href="../../model/ModelMetadata.FieldPointer.html" title="class in gust.backend.model">ModelMetadata.FieldPointer</a>&nbsp;keyField,
+public static&nbsp;java.lang.String&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerUtil.html#line.78">resolveKeyColumn</a>&#8203;(@Nonnull
+                                                <a href="../../model/ModelMetadata.FieldPointer.html" title="class in gust.backend.model">ModelMetadata.FieldPointer</a>&nbsp;idField,
                                                 @Nonnull
                                                 <a href="SpannerDriverSettings.html" title="interface in gust.backend.driver.spanner">SpannerDriverSettings</a>&nbsp;driverSettings)</pre>
 <div class="block">For a given key field pointer, resolve the column name which should be used for the primary key in Spanner,
  according to the annotation structure present on the key.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>keyField</code> - Resolved field pointer to a given model's key field.</dd>
+<dd><code>idField</code> - Resolved field pointer to a given model's ID field.</dd>
 <dd><code>driverSettings</code> - Settings for the Spanner driver.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>Name of the column we should use for the primary key.</dd>
@@ -422,7 +448,7 @@ public static&nbsp;java.lang.String&nbsp;<a href="../../../../src-html/gust/back
 <li class="blockList">
 <h4>resolveTableName</h4>
 <pre class="methodSignature">@Nonnull
-public static&nbsp;java.lang.String&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerUtil.html#line.94">resolveTableName</a>&#8203;(@Nonnull
+public static&nbsp;java.lang.String&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerUtil.html#line.105">resolveTableName</a>&#8203;(@Nonnull
                                                 com.google.protobuf.Message&nbsp;message)</pre>
 <div class="block">Given a schema-driven model or key object, determine the table name that should be used in Spanner. All keys and
  objects used with Spanner must have such annotations or use generated defaults. This method variant operates from
@@ -444,7 +470,7 @@ public static&nbsp;java.lang.String&nbsp;<a href="../../../../src-html/gust/back
 <li class="blockList">
 <h4>resolveTableName</h4>
 <pre class="methodSignature">@Nonnull
-public static&nbsp;java.lang.String&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerUtil.html#line.107">resolveTableName</a>&#8203;(@Nonnull
+public static&nbsp;java.lang.String&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerUtil.html#line.118">resolveTableName</a>&#8203;(@Nonnull
                                                 com.google.protobuf.Descriptors.Descriptor&nbsp;message)</pre>
 <div class="block">Given a schema-driven model or key object, determine the table name that should be used in Spanner. All keys and
  objects used with Spanner must have such annotations or use generated defaults.</div>
@@ -463,7 +489,7 @@ public static&nbsp;java.lang.String&nbsp;<a href="../../../../src-html/gust/back
 <li class="blockList">
 <h4>resolveKeyType</h4>
 <pre class="methodSignature">@Nonnull
-public static&nbsp;com.google.cloud.spanner.Type&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerUtil.html#line.125">resolveKeyType</a>&#8203;(@Nonnull
+public static&nbsp;com.google.cloud.spanner.Type&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerUtil.html#line.136">resolveKeyType</a>&#8203;(@Nonnull
                                                            <a href="../../model/ModelMetadata.FieldPointer.html" title="class in gust.backend.model">ModelMetadata.FieldPointer</a>&nbsp;idField)</pre>
 <div class="block">For a given key field pointer, resolve the column type which should be used for the primary key in Spanner,
  according to the annotation structure present on the key.</div>
@@ -483,7 +509,7 @@ public static&nbsp;com.google.cloud.spanner.Type&nbsp;<a href="../../../../src-h
 <ul class="blockList">
 <li class="blockList">
 <h4>resolveColumnSize</h4>
-<pre class="methodSignature">public static&nbsp;int&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerUtil.html#line.156">resolveColumnSize</a>&#8203;(@Nonnull
+<pre class="methodSignature">public static&nbsp;int&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerUtil.html#line.167">resolveColumnSize</a>&#8203;(@Nonnull
                                     com.google.protobuf.Descriptors.FieldDescriptor&nbsp;field,
                                     @Nonnull
                                     java.util.Optional&lt;tools.elide.core.SpannerFieldOptions&gt;&nbsp;spannerOpts,
@@ -506,6 +532,54 @@ public static&nbsp;com.google.cloud.spanner.Type&nbsp;<a href="../../../../src-h
 </dl>
 </li>
 </ul>
+<a id="resolveColumnName(com.google.protobuf.Descriptors.FieldDescriptor)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>resolveColumnName</h4>
+<pre class="methodSignature">@Nonnull
+public static&nbsp;java.lang.String&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerUtil.html#line.198">resolveColumnName</a>&#8203;(@Nonnull
+                                                 com.google.protobuf.Descriptors.FieldDescriptor&nbsp;field)</pre>
+<div class="block">Given a resolved field pointer resolve the expected/configured column name in Spanner for a given typed model
+ field. If no specialized Spanner or table column annotations are present, fallback to a calculated default name.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>field</code> - Pre-resolved model field descriptor.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Expected name of the field when expressed as a column in Spanner.</dd>
+<dt><span class="seeLabel">See Also:</span></dt>
+<dd><a href="#resolveColumnName(com.google.protobuf.Descriptors.FieldDescriptor,java.util.Optional,java.util.Optional,gust.backend.driver.spanner.SpannerDriverSettings)"><code>For the full
+      un-sugared version of this method.</code></a></dd>
+</dl>
+</li>
+</ul>
+<a id="resolveColumnName(com.google.protobuf.Descriptors.FieldDescriptor,gust.backend.driver.spanner.SpannerDriverSettings)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>resolveColumnName</h4>
+<pre class="methodSignature">@Nonnull
+public static&nbsp;java.lang.String&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerUtil.html#line.216">resolveColumnName</a>&#8203;(@Nonnull
+                                                 com.google.protobuf.Descriptors.FieldDescriptor&nbsp;field,
+                                                 @Nonnull
+                                                 <a href="SpannerDriverSettings.html" title="interface in gust.backend.driver.spanner">SpannerDriverSettings</a>&nbsp;settings)</pre>
+<div class="block">Given a resolved field pointer resolve the expected/configured column name in Spanner for a given typed model
+ field. If no specialized Spanner or table column annotations are present, fallback to a calculated default name.
+ Apply any active driver settings as well.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>field</code> - Pre-resolved model field descriptor.</dd>
+<dd><code>settings</code> - Settings for the Spanner driver.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Expected name of the field when expressed as a column in Spanner.</dd>
+<dt><span class="seeLabel">See Also:</span></dt>
+<dd><a href="#resolveColumnName(com.google.protobuf.Descriptors.FieldDescriptor,java.util.Optional,java.util.Optional,gust.backend.driver.spanner.SpannerDriverSettings)"><code>For the full
+      un-sugared version of this method.</code></a></dd>
+</dl>
+</li>
+</ul>
 <a id="resolveColumnName(gust.backend.model.ModelMetadata.FieldPointer,java.util.Optional,java.util.Optional,gust.backend.driver.spanner.SpannerDriverSettings)">
 <!--   -->
 </a>
@@ -513,7 +587,7 @@ public static&nbsp;com.google.cloud.spanner.Type&nbsp;<a href="../../../../src-h
 <li class="blockList">
 <h4>resolveColumnName</h4>
 <pre class="methodSignature">@Nonnull
-public static&nbsp;java.lang.String&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerUtil.html#line.191">resolveColumnName</a>&#8203;(@Nonnull
+public static&nbsp;java.lang.String&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerUtil.html#line.239">resolveColumnName</a>&#8203;(@Nonnull
                                                  <a href="../../model/ModelMetadata.FieldPointer.html" title="class in gust.backend.model">ModelMetadata.FieldPointer</a>&nbsp;fieldPointer,
                                                  @Nonnull
                                                  java.util.Optional&lt;tools.elide.core.SpannerFieldOptions&gt;&nbsp;spannerOpts,
@@ -545,7 +619,7 @@ public static&nbsp;java.lang.String&nbsp;<a href="../../../../src-html/gust/back
 <li class="blockList">
 <h4>resolveColumnName</h4>
 <pre class="methodSignature">@Nonnull
-public static&nbsp;java.lang.String&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerUtil.html#line.229">resolveColumnName</a>&#8203;(@Nonnull
+public static&nbsp;java.lang.String&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerUtil.html#line.277">resolveColumnName</a>&#8203;(@Nonnull
                                                  com.google.protobuf.Descriptors.FieldDescriptor&nbsp;field,
                                                  @Nonnull
                                                  java.util.Optional&lt;tools.elide.core.SpannerFieldOptions&gt;&nbsp;spannerOpts,
@@ -589,7 +663,7 @@ public static&nbsp;java.lang.String&nbsp;<a href="../../../../src-html/gust/back
 <ul class="blockList">
 <li class="blockList">
 <h4>resolveColumnIndex</h4>
-<pre class="methodSignature">public static&nbsp;int&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerUtil.html#line.274">resolveColumnIndex</a>&#8203;(@Nonnull
+<pre class="methodSignature">public static&nbsp;int&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerUtil.html#line.322">resolveColumnIndex</a>&#8203;(@Nonnull
                                      com.google.cloud.spanner.Struct&nbsp;source,
                                      @Nonnull
                                      <a href="../../model/ModelMetadata.FieldPointer.html" title="class in gust.backend.model">ModelMetadata.FieldPointer</a>&nbsp;fieldPointer,
@@ -614,7 +688,7 @@ public static&nbsp;java.lang.String&nbsp;<a href="../../../../src-html/gust/back
 <li class="blockList">
 <h4>resolveColumnValue</h4>
 <pre class="methodSignature">@Nonnull
-public static&nbsp;com.google.cloud.spanner.Value&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerUtil.html#line.300">resolveColumnValue</a>&#8203;(@Nonnull
+public static&nbsp;com.google.cloud.spanner.Value&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerUtil.html#line.348">resolveColumnValue</a>&#8203;(@Nonnull
                                                                 com.google.cloud.spanner.Struct&nbsp;source,
                                                                 @Nonnull
                                                                 <a href="../../model/ModelMetadata.FieldPointer.html" title="class in gust.backend.model">ModelMetadata.FieldPointer</a>&nbsp;fieldPointer,
@@ -650,7 +724,7 @@ public static&nbsp;com.google.cloud.spanner.Value&nbsp;<a href="../../../../src-
 <li class="blockList">
 <h4>resolveColumnType</h4>
 <pre class="methodSignature">@Nonnull
-public static&nbsp;com.google.cloud.spanner.Type&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerUtil.html#line.338">resolveColumnType</a>&#8203;(@Nonnull
+public static&nbsp;com.google.cloud.spanner.Type&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerUtil.html#line.386">resolveColumnType</a>&#8203;(@Nonnull
                                                               <a href="../../model/ModelMetadata.FieldPointer.html" title="class in gust.backend.model">ModelMetadata.FieldPointer</a>&nbsp;fieldPointer,
                                                               @Nonnull
                                                               java.util.Optional&lt;tools.elide.core.SpannerFieldOptions&gt;&nbsp;spannerOpts,
@@ -678,6 +752,28 @@ public static&nbsp;com.google.cloud.spanner.Type&nbsp;<a href="../../../../src-h
 </dl>
 </li>
 </ul>
+<a id="calculateDefaultFieldStream(com.google.protobuf.Descriptors.Descriptor,gust.backend.driver.spanner.SpannerDriverSettings)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>calculateDefaultFieldStream</h4>
+<pre class="methodSignature">@Nonnull
+public static&nbsp;java.util.stream.Stream&lt;<a href="../../../util/Pair.html" title="class in gust.util">Pair</a>&lt;java.lang.String,&#8203;java.lang.String&gt;&gt;&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerUtil.html#line.406">calculateDefaultFieldStream</a>&#8203;(@Nonnull
+                                                                                                                 com.google.protobuf.Descriptors.Descriptor&nbsp;descriptor,
+                                                                                                                 @Nonnull
+                                                                                                                 <a href="SpannerDriverSettings.html" title="interface in gust.backend.driver.spanner">SpannerDriverSettings</a>&nbsp;driverSettings)</pre>
+<div class="block">Calculate a default projection of Spanner columns, as configured on the provided default model instance. Results
+ are returned as a stream of fields paired to their column counterparts.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>descriptor</code> - Default model schema to generate a default set of Spanner columns from.</dd>
+<dd><code>driverSettings</code> - Settings for the Spanner driver.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Default list of Spanner columns.</dd>
+</dl>
+</li>
+</ul>
 <a id="calculateDefaultFields(com.google.protobuf.Descriptors.Descriptor,gust.backend.driver.spanner.SpannerDriverSettings)">
 <!--   -->
 </a>
@@ -685,7 +781,7 @@ public static&nbsp;com.google.cloud.spanner.Type&nbsp;<a href="../../../../src-h
 <li class="blockList">
 <h4>calculateDefaultFields</h4>
 <pre class="methodSignature">@Nonnull
-public static&nbsp;java.util.List&lt;java.lang.String&gt;&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerUtil.html#line.357">calculateDefaultFields</a>&#8203;(@Nonnull
+public static&nbsp;java.util.List&lt;java.lang.String&gt;&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerUtil.html#line.443">calculateDefaultFields</a>&#8203;(@Nonnull
                                                                       com.google.protobuf.Descriptors.Descriptor&nbsp;descriptor,
                                                                       @Nonnull
                                                                       <a href="SpannerDriverSettings.html" title="interface in gust.backend.driver.spanner">SpannerDriverSettings</a>&nbsp;driverSettings)</pre>
@@ -706,7 +802,7 @@ public static&nbsp;java.util.List&lt;java.lang.String&gt;&nbsp;<a href="../../..
 <li class="blockList">
 <h4>generateStruct</h4>
 <pre class="methodSignature">@Nonnull
-public static&nbsp;java.util.Collection&lt;com.google.cloud.spanner.Type.StructField&gt;&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerUtil.html#line.387">generateStruct</a>&#8203;(@Nonnull
+public static&nbsp;java.util.Collection&lt;com.google.cloud.spanner.Type.StructField&gt;&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerUtil.html#line.469">generateStruct</a>&#8203;(@Nonnull
                                                                                              com.google.protobuf.Descriptors.Descriptor&nbsp;descriptor,
                                                                                              @Nonnull
                                                                                              <a href="SpannerDriverSettings.html" title="interface in gust.backend.driver.spanner">SpannerDriverSettings</a>&nbsp;driverSettings)</pre>
@@ -739,7 +835,7 @@ public static&nbsp;java.util.Collection&lt;com.google.cloud.spanner.Type.StructF
 <li class="blockList">
 <h4>onlySpannerEligibleFields</h4>
 <pre class="methodSignature">@Nonnull
-public static&nbsp;java.util.function.Predicate&lt;<a href="../../model/ModelMetadata.FieldPointer.html" title="class in gust.backend.model">ModelMetadata.FieldPointer</a>&gt;&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerUtil.html#line.431">onlySpannerEligibleFields</a>&#8203;(@Nonnull
+public static&nbsp;java.util.function.Predicate&lt;<a href="../../model/ModelMetadata.FieldPointer.html" title="class in gust.backend.model">ModelMetadata.FieldPointer</a>&gt;&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerUtil.html#line.518">onlySpannerEligibleFields</a>&#8203;(@Nonnull
                                                                                                  java.util.SortedSet&lt;java.lang.String&gt;&nbsp;eligibleFields,
                                                                                                  @Nonnull
                                                                                                  <a href="SpannerDriverSettings.html" title="interface in gust.backend.driver.spanner">SpannerDriverSettings</a>&nbsp;settings)</pre>
@@ -774,7 +870,7 @@ public static&nbsp;java.util.function.Predicate&lt;<a href="../../model/ModelMet
 <li class="blockList">
 <h4>onlySpannerEligibleFields</h4>
 <pre class="methodSignature">@Nonnull
-public static&nbsp;java.util.function.Predicate&lt;<a href="../../model/ModelMetadata.FieldPointer.html" title="class in gust.backend.model">ModelMetadata.FieldPointer</a>&gt;&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerUtil.html#line.466">onlySpannerEligibleFields</a>&#8203;(@Nonnull
+public static&nbsp;java.util.function.Predicate&lt;<a href="../../model/ModelMetadata.FieldPointer.html" title="class in gust.backend.model">ModelMetadata.FieldPointer</a>&gt;&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerUtil.html#line.553">onlySpannerEligibleFields</a>&#8203;(@Nonnull
                                                                                                  <a href="SpannerDriverSettings.html" title="interface in gust.backend.driver.spanner">SpannerDriverSettings</a>&nbsp;settings)</pre>
 <div class="block">Return a <code>Predicate</code> implementation which operates on <a href="../../model/ModelMetadata.FieldPointer.html" title="class in gust.backend.model"><code>ModelMetadata.FieldPointer</code></a> objects to determine eligibility
  for interaction with Spanner.
@@ -800,7 +896,7 @@ public static&nbsp;java.util.function.Predicate&lt;<a href="../../model/ModelMet
 <li class="blockList">
 <h4>maybeWrapType</h4>
 <pre class="methodSignature">@Nonnull
-public static&nbsp;com.google.cloud.spanner.Type&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerUtil.html#line.477">maybeWrapType</a>&#8203;(@Nonnull
+public static&nbsp;com.google.cloud.spanner.Type&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerUtil.html#line.564">maybeWrapType</a>&#8203;(@Nonnull
                                                           <a href="../../model/ModelMetadata.FieldPointer.html" title="class in gust.backend.model">ModelMetadata.FieldPointer</a>&nbsp;field,
                                                           @Nonnull
                                                           com.google.cloud.spanner.Type&nbsp;inner)</pre>
@@ -821,7 +917,7 @@ public static&nbsp;com.google.cloud.spanner.Type&nbsp;<a href="../../../../src-h
 <li class="blockList">
 <h4>resolveType</h4>
 <pre class="methodSignature">@Nonnull
-public static&nbsp;com.google.cloud.spanner.Type&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerUtil.html#line.493">resolveType</a>&#8203;(@Nonnull
+public static&nbsp;com.google.cloud.spanner.Type&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerUtil.html#line.580">resolveType</a>&#8203;(@Nonnull
                                                         <a href="../../model/ModelMetadata.FieldPointer.html" title="class in gust.backend.model">ModelMetadata.FieldPointer</a>&nbsp;pointer,
                                                         @Nonnull
                                                         tools.elide.core.SpannerOptions.SpannerType&nbsp;spannerType)</pre>
@@ -843,7 +939,7 @@ public static&nbsp;com.google.cloud.spanner.Type&nbsp;<a href="../../../../src-h
 <li class="blockList">
 <h4>resolveDefaultType</h4>
 <pre class="methodSignature">@Nonnull
-public static&nbsp;com.google.cloud.spanner.Type&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerUtil.html#line.517">resolveDefaultType</a>&#8203;(@Nonnull
+public static&nbsp;com.google.cloud.spanner.Type&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerUtil.html#line.604">resolveDefaultType</a>&#8203;(@Nonnull
                                                                <a href="../../model/ModelMetadata.FieldPointer.html" title="class in gust.backend.model">ModelMetadata.FieldPointer</a>&nbsp;pointer,
                                                                @Nonnull
                                                                <a href="SpannerDriverSettings.html" title="interface in gust.backend.driver.spanner">SpannerDriverSettings</a>&nbsp;settings)</pre>
@@ -865,7 +961,7 @@ public static&nbsp;com.google.cloud.spanner.Type&nbsp;<a href="../../../../src-h
 <li class="blockList">
 <h4>resolveDefaultType</h4>
 <pre class="methodSignature">@Nonnull
-public static&nbsp;com.google.cloud.spanner.Type&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerUtil.html#line.535">resolveDefaultType</a>&#8203;(@Nonnull
+public static&nbsp;com.google.cloud.spanner.Type&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerUtil.html#line.622">resolveDefaultType</a>&#8203;(@Nonnull
                                                                <a href="../../model/ModelMetadata.FieldPointer.html" title="class in gust.backend.model">ModelMetadata.FieldPointer</a>&nbsp;pointer,
                                                                @Nonnull
                                                                com.google.protobuf.Descriptors.FieldDescriptor.Type&nbsp;protoType,
@@ -890,7 +986,7 @@ public static&nbsp;com.google.cloud.spanner.Type&nbsp;<a href="../../../../src-h
 <li class="blockList">
 <h4>columnOpts</h4>
 <pre class="methodSignature">@Nonnull
-public static&nbsp;java.util.Optional&lt;tools.elide.core.TableFieldOptions&gt;&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerUtil.html#line.587">columnOpts</a>&#8203;(@Nonnull
+public static&nbsp;java.util.Optional&lt;tools.elide.core.TableFieldOptions&gt;&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerUtil.html#line.694">columnOpts</a>&#8203;(@Nonnull
                                                                                 <a href="../../model/ModelMetadata.FieldPointer.html" title="class in gust.backend.model">ModelMetadata.FieldPointer</a>&nbsp;fieldPointer)</pre>
 <div class="block">Given a pre-resolved <a href="../../model/ModelMetadata.FieldPointer.html" title="class in gust.backend.model"><code>ModelMetadata.FieldPointer</code></a>, resolve any present <code>TableFieldOptions</code>.</div>
 <dl>
@@ -911,7 +1007,7 @@ public static&nbsp;java.util.Optional&lt;tools.elide.core.TableFieldOptions&gt;&
 <li class="blockList">
 <h4>columnOpts</h4>
 <pre class="methodSignature">@Nonnull
-public static&nbsp;java.util.Optional&lt;tools.elide.core.TableFieldOptions&gt;&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerUtil.html#line.606">columnOpts</a>&#8203;(@Nonnull
+public static&nbsp;java.util.Optional&lt;tools.elide.core.TableFieldOptions&gt;&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerUtil.html#line.713">columnOpts</a>&#8203;(@Nonnull
                                                                                 com.google.protobuf.Descriptors.FieldDescriptor&nbsp;field)</pre>
 <div class="block">Given a resolved Protocol Buffer <code>Descriptors.FieldDescriptor</code> which is considered eligible for interaction
  with Spanner, resolve any present column-generic options and annotations via <code>TableFieldOptions</code>.
@@ -939,7 +1035,7 @@ public static&nbsp;java.util.Optional&lt;tools.elide.core.TableFieldOptions&gt;&
 <li class="blockList">
 <h4>spannerOpts</h4>
 <pre class="methodSignature">@Nonnull
-public static&nbsp;java.util.Optional&lt;tools.elide.core.SpannerFieldOptions&gt;&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerUtil.html#line.632">spannerOpts</a>&#8203;(@Nonnull
+public static&nbsp;java.util.Optional&lt;tools.elide.core.SpannerFieldOptions&gt;&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerUtil.html#line.739">spannerOpts</a>&#8203;(@Nonnull
                                                                                    <a href="../../model/ModelMetadata.FieldPointer.html" title="class in gust.backend.model">ModelMetadata.FieldPointer</a>&nbsp;fieldPointer)</pre>
 <div class="block">Given a pre-resolved <a href="../../model/ModelMetadata.FieldPointer.html" title="class in gust.backend.model"><code>ModelMetadata.FieldPointer</code></a>, resolve any present <code>SpannerFieldOptions</code>.</div>
 <dl>
@@ -960,7 +1056,7 @@ public static&nbsp;java.util.Optional&lt;tools.elide.core.SpannerFieldOptions&gt
 <li class="blockList">
 <h4>spannerOpts</h4>
 <pre class="methodSignature">@Nonnull
-public static&nbsp;java.util.Optional&lt;tools.elide.core.SpannerFieldOptions&gt;&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerUtil.html#line.649">spannerOpts</a>&#8203;(@Nonnull
+public static&nbsp;java.util.Optional&lt;tools.elide.core.SpannerFieldOptions&gt;&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerUtil.html#line.756">spannerOpts</a>&#8203;(@Nonnull
                                                                                    com.google.protobuf.Descriptors.FieldDescriptor&nbsp;field)</pre>
 <div class="block">Given a resolved Protocol Buffer <code>Descriptors.FieldDescriptor</code> which is considered eligible for interaction
  with Spanner, resolve any present Spanner-specific options and annotations via <code>SpannerFieldOptions</code>.

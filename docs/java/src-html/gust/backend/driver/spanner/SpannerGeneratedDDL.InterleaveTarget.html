@@ -253,7 +253,7 @@
 <span class="sourceLineNo">244</span><a id="line.244">                                                    @Nonnull FieldPointer keyField,</a>
 <span class="sourceLineNo">245</span><a id="line.245">                                                    @Nonnull SpannerDriverSettings settings) {</a>
 <span class="sourceLineNo">246</span><a id="line.246">            var idField = idField(model).orElseThrow();</a>
-<span class="sourceLineNo">247</span><a id="line.247">            var keyName = resolveKeyColumn(keyField, settings);</a>
+<span class="sourceLineNo">247</span><a id="line.247">            var keyName = resolveKeyColumn(idField, settings);</a>
 <span class="sourceLineNo">248</span><a id="line.248">            var keyType = resolveKeyType(idField);</a>
 <span class="sourceLineNo">249</span><a id="line.249">            var spannerOpts = spannerOpts(idField);</a>
 <span class="sourceLineNo">250</span><a id="line.250">            var columnOpts = columnOpts(idField);</a>
@@ -693,7 +693,7 @@
 <span class="sourceLineNo">684</span><a id="line.684">        return new SpannerGeneratedDDL.Builder(</a>
 <span class="sourceLineNo">685</span><a id="line.685">            model,</a>
 <span class="sourceLineNo">686</span><a id="line.686">            resolveTableName(model),</a>
-<span class="sourceLineNo">687</span><a id="line.687">            resolveKeyColumn(keyField(model).orElseThrow(), settings),</a>
+<span class="sourceLineNo">687</span><a id="line.687">            resolveKeyColumn(idField(model).orElseThrow(), settings),</a>
 <span class="sourceLineNo">688</span><a id="line.688">            resolveDefaultColumns(model, settings),</a>
 <span class="sourceLineNo">689</span><a id="line.689">            settings</a>
 <span class="sourceLineNo">690</span><a id="line.690">        );</a>

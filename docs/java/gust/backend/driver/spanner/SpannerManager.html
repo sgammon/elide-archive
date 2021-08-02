@@ -143,7 +143,7 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <pre>@Immutable
 @ThreadSafe
 @Refreshable
-public final class <a href="../../../../src-html/gust/backend/driver/spanner/SpannerManager.html#line.47">SpannerManager</a>
+public final class <a href="../../../../src-html/gust/backend/driver/spanner/SpannerManager.html#line.51">SpannerManager</a>
 extends java.lang.Object
 implements <a href="../../model/DatabaseManager.html" title="interface in gust.backend.model">DatabaseManager</a>&lt;<a href="SpannerAdapter.html" title="class in gust.backend.driver.spanner">SpannerAdapter</a>,&#8203;<a href="SpannerDriver.html" title="class in gust.backend.driver.spanner">SpannerDriver</a>&gt;, java.io.Closeable, java.lang.AutoCloseable</pre>
 <div class="block">Main adapter manager interface for interaction between Gust/Elide apps and Google Cloud Spanner, enabling seamless
@@ -271,7 +271,7 @@ implements <a href="../../model/DatabaseManager.html" title="interface in gust.b
 <li class="blockList">
 <h4>allManagers</h4>
 <pre class="methodSignature">@Nonnull
-public static&nbsp;java.util.Collection&lt;java.lang.ref.WeakReference&lt;<a href="SpannerManager.ConfiguredSpannerManager.html" title="class in gust.backend.driver.spanner">SpannerManager.ConfiguredSpannerManager</a>&gt;&gt;&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerManager.html#line.75">allManagers</a>()</pre>
+public static&nbsp;java.util.Collection&lt;java.lang.ref.WeakReference&lt;<a href="SpannerManager.ConfiguredSpannerManager.html" title="class in gust.backend.driver.spanner">SpannerManager.ConfiguredSpannerManager</a>&gt;&gt;&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerManager.html#line.81">allManagers</a>()</pre>
 <div class="block">Returns the full set of known configured Spanner managers, JVM-wide. This is mostly useful as a utility to shut
  down connections globally when needed (for instance, during testing).</div>
 <dl>
@@ -288,7 +288,7 @@ public static&nbsp;java.util.Collection&lt;java.lang.ref.WeakReference&lt;<a hre
 <h4>acquire</h4>
 <pre class="methodSignature">@Factory
 @Nonnull
-public static&nbsp;<a href="SpannerManager.html" title="class in gust.backend.driver.spanner">SpannerManager</a>&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerManager.html#line.93">acquire</a>()</pre>
+public static&nbsp;<a href="SpannerManager.html" title="class in gust.backend.driver.spanner">SpannerManager</a>&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerManager.html#line.99">acquire</a>()</pre>
 <div class="block">Acquire a singleton instance of the Spanner manager, which can be used safely across threads to interact with
  Google Cloud Spanner, driven by <code>Message</code>-generated models.
 
@@ -306,7 +306,7 @@ public static&nbsp;<a href="SpannerManager.html" title="class in gust.backend.dr
 <ul class="blockList">
 <li class="blockList">
 <h4>close</h4>
-<pre class="methodSignature">public&nbsp;void&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerManager.html#line.112">close</a>()</pre>
+<pre class="methodSignature">public&nbsp;void&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerManager.html#line.118">close</a>()</pre>
 <div class="block">Close all active Spanner connections tracked or controlled by this manager.</div>
 <dl>
 <dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
@@ -325,7 +325,7 @@ public static&nbsp;<a href="SpannerManager.html" title="class in gust.backend.dr
 <li class="blockList">
 <h4>configureForDatabase</h4>
 <pre class="methodSignature">@Nonnull
-public&nbsp;<a href="SpannerManager.Builder.html" title="class in gust.backend.driver.spanner">SpannerManager.Builder</a>&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerManager.html#line.165">configureForDatabase</a>&#8203;(@Nonnull
+public&nbsp;<a href="SpannerManager.Builder.html" title="class in gust.backend.driver.spanner">SpannerManager.Builder</a>&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerManager.html#line.261">configureForDatabase</a>&#8203;(@Nonnull
                                                    com.google.cloud.spanner.DatabaseId&nbsp;database)</pre>
 <div class="block">Configure a vanilla Spanner manager instance for a given database.</div>
 <dl>

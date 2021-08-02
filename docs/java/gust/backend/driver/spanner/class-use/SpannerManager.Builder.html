@@ -136,6 +136,35 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <div class="block">Configure a vanilla Spanner manager instance for a given database.</div>
 </td>
 </tr>
+<tr class="rowColor">
+<td class="colFirst"><code><a href="../SpannerManager.Builder.html" title="class in gust.backend.driver.spanner">SpannerManager.Builder</a></code></td>
+<th class="colSecond" scope="row"><span class="typeNameLabel">SpannerManager.Builder.</span><code><span class="memberNameLink"><a href="../SpannerManager.Builder.html#setCache(java.util.Optional)">setCache</a></span>&#8203;(java.util.Optional&lt;<a href="../../../model/CacheDriver.html" title="interface in gust.backend.model">CacheDriver</a>&lt;com.google.protobuf.Message,&#8203;com.google.protobuf.Message&gt;&gt;&nbsp;cache)</code></th>
+<td class="colLast">
+<div class="block">Set the cache for the target configured Spanner manager.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code><a href="../SpannerManager.Builder.html" title="class in gust.backend.driver.spanner">SpannerManager.Builder</a></code></td>
+<th class="colSecond" scope="row"><span class="typeNameLabel">SpannerManager.Builder.</span><code><span class="memberNameLink"><a href="../SpannerManager.Builder.html#setExecutor(java.util.Optional)">setExecutor</a></span>&#8203;(java.util.Optional&lt;com.google.common.util.concurrent.ListeningScheduledExecutorService&gt;&nbsp;executor)</code></th>
+<td class="colLast">
+<div class="block">Set the executor used by adapters and drivers spawned by this manager.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code><a href="../SpannerManager.Builder.html" title="class in gust.backend.driver.spanner">SpannerManager.Builder</a></code></td>
+<th class="colSecond" scope="row"><span class="typeNameLabel">SpannerManager.Builder.</span><code><span class="memberNameLink"><a href="../SpannerManager.Builder.html#setOptions(java.util.Optional)">setOptions</a></span>&#8203;(java.util.Optional&lt;com.google.cloud.spanner.SpannerOptions.Builder&gt;&nbsp;options)</code></th>
+<td class="colLast">
+<div class="block">Set the base package of Spanner client options to use when spawning new clients via the target configured
+ Spanner manager.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code><a href="../SpannerManager.Builder.html" title="class in gust.backend.driver.spanner">SpannerManager.Builder</a></code></td>
+<th class="colSecond" scope="row"><span class="typeNameLabel">SpannerManager.Builder.</span><code><span class="memberNameLink"><a href="../SpannerManager.Builder.html#setSettings(java.util.Optional)">setSettings</a></span>&#8203;(java.util.Optional&lt;<a href="../SpannerDriverSettings.html" title="interface in gust.backend.driver.spanner">SpannerDriverSettings</a>&gt;&nbsp;settings)</code></th>
+<td class="colLast">
+<div class="block">Set the main driver settings to use when spawning adapters in the target configured Spanner manager.</div>
+</td>
+</tr>
 </tbody>
 </table>
 </section>

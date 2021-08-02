@@ -6,6 +6,15 @@
 <title>SpannerManager.Builder</title>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF8">
 <meta name="keywords" content="gust.backend.driver.spanner.SpannerManager.Builder class">
+<meta name="keywords" content="getDatabase()">
+<meta name="keywords" content="getCache()">
+<meta name="keywords" content="getSettings()">
+<meta name="keywords" content="getOptions()">
+<meta name="keywords" content="getExecutor()">
+<meta name="keywords" content="setCache()">
+<meta name="keywords" content="setSettings()">
+<meta name="keywords" content="setOptions()">
+<meta name="keywords" content="setExecutor()">
 <meta name="keywords" content="build()">
 <link rel="stylesheet" type="text/css" href="../../../../stylesheet.css" title="Style">
 <link rel="stylesheet" type="text/css" href="../../../../jquery/jquery-ui.css" title="Style">
@@ -28,7 +37,7 @@
     catch(err) {
     }
 //-->
-var data = {"i0":10};
+var data = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -137,7 +146,7 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <dd><a href="SpannerManager.html" title="class in gust.backend.driver.spanner">SpannerManager</a></dd>
 </dl>
 <hr>
-<pre>public final class <a href="../../../../src-html/gust/backend/driver/spanner/SpannerManager.html#line.125">SpannerManager.Builder</a>
+<pre>public final class <a href="../../../../src-html/gust/backend/driver/spanner/SpannerManager.html#line.131">SpannerManager.Builder</a>
 extends java.lang.Object</pre>
 <div class="block">Intermediate builder which can gather settings for an eventually-immutable <a href="SpannerManager.ConfiguredSpannerManager.html" title="class in gust.backend.driver.spanner"><code>SpannerManager.ConfiguredSpannerManager</code></a>.</div>
 </li>
@@ -168,6 +177,60 @@ extends java.lang.Object</pre>
  producing managed <a href="SpannerAdapter.html" title="class in gust.backend.driver.spanner"><code>SpannerAdapter</code></a>s specialized to <code>Message</code> instances.</div>
 </td>
 </tr>
+<tr id="i1" class="rowColor">
+<td class="colFirst"><code>java.util.Optional&lt;<a href="../../model/CacheDriver.html" title="interface in gust.backend.model">CacheDriver</a>&lt;com.google.protobuf.Message,&#8203;com.google.protobuf.Message&gt;&gt;</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getCache()">getCache</a></span>()</code></th>
+<td class="colLast">&nbsp;</td>
+</tr>
+<tr id="i2" class="altColor">
+<td class="colFirst"><code>com.google.cloud.spanner.DatabaseId</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getDatabase()">getDatabase</a></span>()</code></th>
+<td class="colLast">&nbsp;</td>
+</tr>
+<tr id="i3" class="rowColor">
+<td class="colFirst"><code>java.util.Optional&lt;com.google.common.util.concurrent.ListeningScheduledExecutorService&gt;</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getExecutor()">getExecutor</a></span>()</code></th>
+<td class="colLast">&nbsp;</td>
+</tr>
+<tr id="i4" class="altColor">
+<td class="colFirst"><code>java.util.Optional&lt;com.google.cloud.spanner.SpannerOptions.Builder&gt;</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getOptions()">getOptions</a></span>()</code></th>
+<td class="colLast">&nbsp;</td>
+</tr>
+<tr id="i5" class="rowColor">
+<td class="colFirst"><code>java.util.Optional&lt;<a href="SpannerDriverSettings.html" title="interface in gust.backend.driver.spanner">SpannerDriverSettings</a>&gt;</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getSettings()">getSettings</a></span>()</code></th>
+<td class="colLast">&nbsp;</td>
+</tr>
+<tr id="i6" class="altColor">
+<td class="colFirst"><code><a href="SpannerManager.Builder.html" title="class in gust.backend.driver.spanner">SpannerManager.Builder</a></code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setCache(java.util.Optional)">setCache</a></span>&#8203;(java.util.Optional&lt;<a href="../../model/CacheDriver.html" title="interface in gust.backend.model">CacheDriver</a>&lt;com.google.protobuf.Message,&#8203;com.google.protobuf.Message&gt;&gt;&nbsp;cache)</code></th>
+<td class="colLast">
+<div class="block">Set the cache for the target configured Spanner manager.</div>
+</td>
+</tr>
+<tr id="i7" class="rowColor">
+<td class="colFirst"><code><a href="SpannerManager.Builder.html" title="class in gust.backend.driver.spanner">SpannerManager.Builder</a></code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setExecutor(java.util.Optional)">setExecutor</a></span>&#8203;(java.util.Optional&lt;com.google.common.util.concurrent.ListeningScheduledExecutorService&gt;&nbsp;executor)</code></th>
+<td class="colLast">
+<div class="block">Set the executor used by adapters and drivers spawned by this manager.</div>
+</td>
+</tr>
+<tr id="i8" class="altColor">
+<td class="colFirst"><code><a href="SpannerManager.Builder.html" title="class in gust.backend.driver.spanner">SpannerManager.Builder</a></code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setOptions(java.util.Optional)">setOptions</a></span>&#8203;(java.util.Optional&lt;com.google.cloud.spanner.SpannerOptions.Builder&gt;&nbsp;options)</code></th>
+<td class="colLast">
+<div class="block">Set the base package of Spanner client options to use when spawning new clients via the target configured
+ Spanner manager.</div>
+</td>
+</tr>
+<tr id="i9" class="rowColor">
+<td class="colFirst"><code><a href="SpannerManager.Builder.html" title="class in gust.backend.driver.spanner">SpannerManager.Builder</a></code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setSettings(java.util.Optional)">setSettings</a></span>&#8203;(java.util.Optional&lt;<a href="SpannerDriverSettings.html" title="interface in gust.backend.driver.spanner">SpannerDriverSettings</a>&gt;&nbsp;settings)</code></th>
+<td class="colLast">
+<div class="block">Set the main driver settings to use when spawning adapters in the target configured Spanner manager.</div>
+</td>
+</tr>
 </table>
 <ul class="blockList">
 <li class="blockList"><a id="methods.inherited.from.class.java.lang.Object">
@@ -192,6 +255,149 @@ extends java.lang.Object</pre>
 <!--   -->
 </a>
 <h3>Method Detail</h3>
+<a id="getDatabase()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getDatabase</h4>
+<pre class="methodSignature">@Nonnull
+public&nbsp;com.google.cloud.spanner.DatabaseId&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerManager.Builder.html#line.155">getDatabase</a>()</pre>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Spanner database which the target manager will be bound to.</dd>
+</dl>
+</li>
+</ul>
+<a id="getCache()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getCache</h4>
+<pre class="methodSignature">@Nonnull
+public&nbsp;java.util.Optional&lt;<a href="../../model/CacheDriver.html" title="interface in gust.backend.model">CacheDriver</a>&lt;com.google.protobuf.Message,&#8203;com.google.protobuf.Message&gt;&gt;&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerManager.Builder.html#line.160">getCache</a>()</pre>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Cache adapter, if any, to apply when acquiring adapters/drivers through the target manager.</dd>
+</dl>
+</li>
+</ul>
+<a id="getSettings()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getSettings</h4>
+<pre class="methodSignature">@Nonnull
+public&nbsp;java.util.Optional&lt;<a href="SpannerDriverSettings.html" title="interface in gust.backend.driver.spanner">SpannerDriverSettings</a>&gt;&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerManager.Builder.html#line.165">getSettings</a>()</pre>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Custom driver settings to apply when acquiring adapters/drivers through the target manager.</dd>
+</dl>
+</li>
+</ul>
+<a id="getOptions()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getOptions</h4>
+<pre class="methodSignature">@Nonnull
+public&nbsp;java.util.Optional&lt;com.google.cloud.spanner.SpannerOptions.Builder&gt;&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerManager.Builder.html#line.170">getOptions</a>()</pre>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Base set of Spanner options to apply when spawning Spanner clients from this manager.</dd>
+</dl>
+</li>
+</ul>
+<a id="getExecutor()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getExecutor</h4>
+<pre class="methodSignature">@Nonnull
+public&nbsp;java.util.Optional&lt;com.google.common.util.concurrent.ListeningScheduledExecutorService&gt;&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerManager.Builder.html#line.175">getExecutor</a>()</pre>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Custom executor to apply when acquiring adapters/drivers through the target manager.</dd>
+</dl>
+</li>
+</ul>
+<a id="setCache(java.util.Optional)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>setCache</h4>
+<pre class="methodSignature">@Nonnull
+public&nbsp;<a href="SpannerManager.Builder.html" title="class in gust.backend.driver.spanner">SpannerManager.Builder</a>&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerManager.Builder.html#line.187">setCache</a>&#8203;(@Nonnull
+                                       java.util.Optional&lt;<a href="../../model/CacheDriver.html" title="interface in gust.backend.model">CacheDriver</a>&lt;com.google.protobuf.Message,&#8203;com.google.protobuf.Message&gt;&gt;&nbsp;cache)</pre>
+<div class="block">Set the cache for the target configured Spanner manager.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>cache</code> - Cache to employ, or none if <code>Optional.empty()</code>.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Self, for chainability.</dd>
+</dl>
+</li>
+</ul>
+<a id="setSettings(java.util.Optional)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>setSettings</h4>
+<pre class="methodSignature">@Nonnull
+public&nbsp;<a href="SpannerManager.Builder.html" title="class in gust.backend.driver.spanner">SpannerManager.Builder</a>&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerManager.Builder.html#line.198">setSettings</a>&#8203;(@Nonnull
+                                          java.util.Optional&lt;<a href="SpannerDriverSettings.html" title="interface in gust.backend.driver.spanner">SpannerDriverSettings</a>&gt;&nbsp;settings)</pre>
+<div class="block">Set the main driver settings to use when spawning adapters in the target configured Spanner manager.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>settings</code> - Driver settings to apply.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Self, for chainability.</dd>
+</dl>
+</li>
+</ul>
+<a id="setOptions(java.util.Optional)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>setOptions</h4>
+<pre class="methodSignature">@Nonnull
+public&nbsp;<a href="SpannerManager.Builder.html" title="class in gust.backend.driver.spanner">SpannerManager.Builder</a>&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerManager.Builder.html#line.210">setOptions</a>&#8203;(@Nonnull
+                                         java.util.Optional&lt;com.google.cloud.spanner.SpannerOptions.Builder&gt;&nbsp;options)</pre>
+<div class="block">Set the base package of Spanner client options to use when spawning new clients via the target configured
+ Spanner manager.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>options</code> - Spanner client options to apply, or none if <code>Optional.empty()</code>.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Self, for chainability.</dd>
+</dl>
+</li>
+</ul>
+<a id="setExecutor(java.util.Optional)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>setExecutor</h4>
+<pre class="methodSignature">@Nonnull
+public&nbsp;<a href="SpannerManager.Builder.html" title="class in gust.backend.driver.spanner">SpannerManager.Builder</a>&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerManager.Builder.html#line.221">setExecutor</a>&#8203;(@Nonnull
+                                          java.util.Optional&lt;com.google.common.util.concurrent.ListeningScheduledExecutorService&gt;&nbsp;executor)</pre>
+<div class="block">Set the executor used by adapters and drivers spawned by this manager.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>executor</code> - Executor to use when spawning adapters and drivers.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Self, for chainability.</dd>
+</dl>
+</li>
+</ul>
 <a id="build()">
 <!--   -->
 </a>
@@ -199,7 +405,7 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>build</h4>
 <pre class="methodSignature">@Nonnull
-public&nbsp;<a href="SpannerManager.ConfiguredSpannerManager.html" title="class in gust.backend.driver.spanner">SpannerManager.ConfiguredSpannerManager</a>&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerManager.Builder.html#line.140">build</a>()</pre>
+public&nbsp;<a href="SpannerManager.ConfiguredSpannerManager.html" title="class in gust.backend.driver.spanner">SpannerManager.ConfiguredSpannerManager</a>&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerManager.Builder.html#line.232">build</a>()</pre>
 <div class="block">Build this builder into a configured and immutable <a href="SpannerManager.ConfiguredSpannerManager.html" title="class in gust.backend.driver.spanner"><code>SpannerManager.ConfiguredSpannerManager</code></a> instance, capable of
  producing managed <a href="SpannerAdapter.html" title="class in gust.backend.driver.spanner"><code>SpannerAdapter</code></a>s specialized to <code>Message</code> instances.</div>
 <dl>

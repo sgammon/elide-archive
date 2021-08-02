@@ -111,6 +111,11 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="gust/backend/runtime/ReactiveFuture.CompletableFuturePublisher.html#acceptEitherAsync(java.util.concurrent.CompletionStage,java.util.function.Consumer,java.util.concurrent.Executor)">acceptEitherAsync(CompletionStage&lt;? extends T&gt;, Consumer&lt;? super T&gt;, Executor)</a></span> - Method in class gust.backend.runtime.<a href="gust/backend/runtime/ReactiveFuture.CompletableFuturePublisher.html" title="class in gust.backend.runtime">ReactiveFuture.CompletableFuturePublisher</a></dt>
 <dd>&nbsp;</dd>
+<dt><span class="memberNameLink"><a href="gust/backend/driver/inmemory/InMemoryCache.html#acquire()">acquire()</a></span> - Static method in class gust.backend.driver.inmemory.<a href="gust/backend/driver/inmemory/InMemoryCache.html" title="class in gust.backend.driver.inmemory">InMemoryCache</a></dt>
+<dd>
+<div class="block">Acquire an instance of the in-memory caching driver, generalized to support the provided key type <code>K</code> and
+ model instance type <code>M</code>.</div>
+</dd>
 <dt><span class="memberNameLink"><a href="gust/backend/driver/spanner/SpannerManager.html#acquire()">acquire()</a></span> - Static method in class gust.backend.driver.spanner.<a href="gust/backend/driver/spanner/SpannerManager.html" title="class in gust.backend.driver.spanner">SpannerManager</a></dt>
 <dd>
 <div class="block">Acquire a singleton instance of the Spanner manager, which can be used safely across threads to interact with
@@ -154,6 +159,11 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
  key and object structures, working against the provided Spanner <code>DatabaseId</code>.</div>
 </dd>
 <dt><span class="memberNameLink"><a href="gust/backend/driver/spanner/SpannerAdapter.html#acquire(K,M,com.google.cloud.spanner.DatabaseId,com.google.common.util.concurrent.ListeningScheduledExecutorService)">acquire(K, M, DatabaseId, ListeningScheduledExecutorService)</a></span> - Static method in class gust.backend.driver.spanner.<a href="gust/backend/driver/spanner/SpannerAdapter.html" title="class in gust.backend.driver.spanner">SpannerAdapter</a></dt>
+<dd>
+<div class="block">Create or acquire a <a href="gust/backend/driver/spanner/SpannerAdapter.html" title="class in gust.backend.driver.spanner"><code>SpannerAdapter</code></a> and matching <a href="gust/backend/driver/spanner/SpannerDriver.html" title="class in gust.backend.driver.spanner"><code>SpannerDriver</code></a> for the provided generated model
+ key and object structures, working against the provided Spanner <code>DatabaseId</code>.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="gust/backend/driver/spanner/SpannerAdapter.html#acquire(K,M,com.google.cloud.spanner.DatabaseId,java.util.Optional,java.util.Optional,java.util.Optional,java.util.Optional)">acquire(K, M, DatabaseId, Optional&lt;ListeningScheduledExecutorService&gt;, Optional&lt;SpannerDriverSettings&gt;, Optional&lt;SpannerOptions.Builder&gt;, Optional&lt;CacheDriver&lt;K, M&gt;&gt;)</a></span> - Static method in class gust.backend.driver.spanner.<a href="gust/backend/driver/spanner/SpannerAdapter.html" title="class in gust.backend.driver.spanner">SpannerAdapter</a></dt>
 <dd>
 <div class="block">Create or acquire a <a href="gust/backend/driver/spanner/SpannerAdapter.html" title="class in gust.backend.driver.spanner"><code>SpannerAdapter</code></a> and matching <a href="gust/backend/driver/spanner/SpannerDriver.html" title="class in gust.backend.driver.spanner"><code>SpannerDriver</code></a> for the provided generated model
  key and object structures, working against the provided Spanner <code>DatabaseId</code>.</div>
@@ -506,6 +516,10 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <dd>
 <div class="block">Calculate a default projection of Spanner columns, as configured on the provided default model instance.</div>
 </dd>
+<dt><span class="memberNameLink"><a href="gust/backend/driver/spanner/SpannerUtil.html#calculateDefaultFieldStream(com.google.protobuf.Descriptors.Descriptor,gust.backend.driver.spanner.SpannerDriverSettings)">calculateDefaultFieldStream(Descriptors.Descriptor, SpannerDriverSettings)</a></span> - Static method in class gust.backend.driver.spanner.<a href="gust/backend/driver/spanner/SpannerUtil.html" title="class in gust.backend.driver.spanner">SpannerUtil</a></dt>
+<dd>
+<div class="block">Calculate a default projection of Spanner columns, as configured on the provided default model instance.</div>
+</dd>
 <dt><span class="memberNameLink"><a href="gust/backend/runtime/ReactiveFuture.CompletableFuturePublisher.CompletableFutureSubscription.html#cancel()">cancel()</a></span> - Method in class gust.backend.runtime.<a href="gust/backend/runtime/ReactiveFuture.CompletableFuturePublisher.CompletableFutureSubscription.html" title="class in gust.backend.runtime">ReactiveFuture.CompletableFuturePublisher.CompletableFutureSubscription</a></dt>
 <dd>
 <div class="block">Request the publisher to stop sending data and clean up resources.</div>
@@ -617,6 +631,14 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <dt><span class="memberNameLink"><a href="gust/backend/PageContextManager.html#close()">close()</a></span> - Method in class gust.backend.<a href="gust/backend/PageContextManager.html" title="class in gust.backend">PageContextManager</a></dt>
 <dd>
 <div class="block">Closes this stream and releases any system resources associated with it.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="gust/backend/driver/spanner/SpannerTemporalConverter.html#cloudDateFromProto(com.google.type.Date)">cloudDateFromProto(Date)</a></span> - Static method in class gust.backend.driver.spanner.<a href="gust/backend/driver/spanner/SpannerTemporalConverter.html" title="class in gust.backend.driver.spanner">SpannerTemporalConverter</a></dt>
+<dd>
+<div class="block">Convert a regular/standard Protocol Buffers date into a Google Cloud date without loss of resolution.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="gust/backend/driver/spanner/SpannerTemporalConverter.html#cloudTimestampFromProto(com.google.protobuf.Timestamp)">cloudTimestampFromProto(Timestamp)</a></span> - Static method in class gust.backend.driver.spanner.<a href="gust/backend/driver/spanner/SpannerTemporalConverter.html" title="class in gust.backend.driver.spanner">SpannerTemporalConverter</a></dt>
+<dd>
+<div class="block">Convert a regular/standard Protocol Buffers timestamp into a Google Cloud timestamp without loss of resolution.</div>
 </dd>
 <dt><span class="memberNameLink"><a href="gust/backend/driver/firestore/FirestoreAdapter.html#codec()">codec()</a></span> - Method in class gust.backend.driver.firestore.<a href="gust/backend/driver/firestore/FirestoreAdapter.html" title="class in gust.backend.driver.firestore">FirestoreAdapter</a></dt>
 <dd>
@@ -1486,6 +1508,10 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <div class="block">Create a Spanner message codec which adapts the provided builder to a Spanner <code>Mutation</code> and back with
  default codecs and custom settings.</div>
 </dd>
+<dt><span class="memberNameLink"><a href="gust/backend/driver/spanner/SpannerStructDeserializer.html#forModel(M,gust.backend.driver.spanner.SpannerDriverSettings)">forModel(M, SpannerDriverSettings)</a></span> - Static method in class gust.backend.driver.spanner.<a href="gust/backend/driver/spanner/SpannerStructDeserializer.html" title="class in gust.backend.driver.spanner">SpannerStructDeserializer</a></dt>
+<dd>
+<div class="block">Construct a <code>Struct</code> deserializer for the provided <b>instance</b>.</div>
+</dd>
 <dt><span class="memberNameLink"><a href="gust/backend/model/ProtoModelCodec.html#forModel(M,gust.backend.model.EncodingMode)">forModel(M, EncodingMode)</a></span> - Static method in class gust.backend.model.<a href="gust/backend/model/ProtoModelCodec.html" title="class in gust.backend.model">ProtoModelCodec</a></dt>
 <dd>
 <div class="block">Acquire a Protobuf model codec for the provided model instance.</div>
@@ -1625,6 +1651,10 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <div class="block">Given a model definition, produce a generated DDL statement which creates a backing table in Spanner implementing
  that model's properties.</div>
 </dd>
+<dt><span class="memberNameLink"><a href="gust/backend/driver/spanner/SpannerManager.ConfiguredSpannerManager.html#generic()">generic()</a></span> - Method in class gust.backend.driver.spanner.<a href="gust/backend/driver/spanner/SpannerManager.ConfiguredSpannerManager.html" title="class in gust.backend.driver.spanner">SpannerManager.ConfiguredSpannerManager</a></dt>
+<dd>
+<div class="block">Acquire a generic adapter instance designed to work with all <code>Message</code>-inheriting model types.</div>
+</dd>
 <dt><span class="memberNameLink"><a href="gust/backend/runtime/ReactiveFuture.CompletableFuturePublisher.html#get()">get()</a></span> - Method in class gust.backend.runtime.<a href="gust/backend/runtime/ReactiveFuture.CompletableFuturePublisher.html" title="class in gust.backend.runtime">ReactiveFuture.CompletableFuturePublisher</a></dt>
 <dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="gust/backend/runtime/ReactiveFuture.html#get()">get()</a></span> - Method in class gust.backend.runtime.<a href="gust/backend/runtime/ReactiveFuture.html" title="class in gust.backend.runtime">ReactiveFuture</a></dt>
@@ -1658,6 +1688,10 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="gust/backend/model/CollapsedMessageCodec.html#getBuilder()">getBuilder()</a></span> - Method in class gust.backend.model.<a href="gust/backend/model/CollapsedMessageCodec.html" title="class in gust.backend.model">CollapsedMessageCodec</a></dt>
 <dd>&nbsp;</dd>
+<dt><span class="memberNameLink"><a href="gust/backend/driver/spanner/SpannerManager.Builder.html#getCache()">getCache()</a></span> - Method in class gust.backend.driver.spanner.<a href="gust/backend/driver/spanner/SpannerManager.Builder.html" title="class in gust.backend.driver.spanner">SpannerManager.Builder</a></dt>
+<dd>&nbsp;</dd>
+<dt><span class="memberNameLink"><a href="gust/backend/driver/spanner/SpannerManager.ConfiguredSpannerManager.html#getCache()">getCache()</a></span> - Method in class gust.backend.driver.spanner.<a href="gust/backend/driver/spanner/SpannerManager.ConfiguredSpannerManager.html" title="class in gust.backend.driver.spanner">SpannerManager.ConfiguredSpannerManager</a></dt>
+<dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="gust/backend/PageContextManager.html#getCdnPrefix()">getCdnPrefix()</a></span> - Method in class gust.backend.<a href="gust/backend/PageContextManager.html" title="class in gust.backend">PageContextManager</a></dt>
 <dd>
 <div class="block">Retrieve the currently-configured CDN prefix value, if one exists.</div>
@@ -1684,6 +1718,8 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="gust/backend/model/SerializedModel.html#getData()">getData()</a></span> - Method in class gust.backend.model.<a href="gust/backend/model/SerializedModel.html" title="class in gust.backend.model">SerializedModel</a></dt>
 <dd>&nbsp;</dd>
+<dt><span class="memberNameLink"><a href="gust/backend/driver/spanner/SpannerManager.Builder.html#getDatabase()">getDatabase()</a></span> - Method in class gust.backend.driver.spanner.<a href="gust/backend/driver/spanner/SpannerManager.Builder.html" title="class in gust.backend.driver.spanner">SpannerManager.Builder</a></dt>
+<dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="gust/backend/driver/spanner/SpannerManager.ConfiguredSpannerManager.html#getDatabase()">getDatabase()</a></span> - Method in class gust.backend.driver.spanner.<a href="gust/backend/driver/spanner/SpannerManager.ConfiguredSpannerManager.html" title="class in gust.backend.driver.spanner">SpannerManager.ConfiguredSpannerManager</a></dt>
 <dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="gust/backend/model/EncodedModel.html#getDataMode()">getDataMode()</a></span> - Method in class gust.backend.model.<a href="gust/backend/model/EncodedModel.html" title="class in gust.backend.model">EncodedModel</a></dt>
@@ -1700,6 +1736,8 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <div class="block">Retrieve the current engine running this code.</div>
 </dd>
 <dt><span class="memberNameLink"><a href="gust/backend/runtime/AssetManager.ManagedAssetContent.html#getETag()">getETag()</a></span> - Method in class gust.backend.runtime.<a href="gust/backend/runtime/AssetManager.ManagedAssetContent.html" title="class in gust.backend.runtime">AssetManager.ManagedAssetContent</a></dt>
+<dd>&nbsp;</dd>
+<dt><span class="memberNameLink"><a href="gust/backend/driver/spanner/SpannerManager.Builder.html#getExecutor()">getExecutor()</a></span> - Method in class gust.backend.driver.spanner.<a href="gust/backend/driver/spanner/SpannerManager.Builder.html" title="class in gust.backend.driver.spanner">SpannerManager.Builder</a></dt>
 <dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="gust/backend/transport/GrpcTransportConfig.html#getExtraInterceptors()">getExtraInterceptors()</a></span> - Method in interface gust.backend.transport.<a href="gust/backend/transport/GrpcTransportConfig.html" title="interface in gust.backend.transport">GrpcTransportConfig</a></dt>
 <dd>&nbsp;</dd>
@@ -1807,6 +1845,8 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="gust/backend/driver/spanner/SpannerGeneratedDDL.Builder.html#getOptimizerVersion()">getOptimizerVersion()</a></span> - Method in class gust.backend.driver.spanner.<a href="gust/backend/driver/spanner/SpannerGeneratedDDL.Builder.html" title="class in gust.backend.driver.spanner">SpannerGeneratedDDL.Builder</a></dt>
 <dd>&nbsp;</dd>
+<dt><span class="memberNameLink"><a href="gust/backend/driver/spanner/SpannerManager.Builder.html#getOptions()">getOptions()</a></span> - Method in class gust.backend.driver.spanner.<a href="gust/backend/driver/spanner/SpannerManager.Builder.html" title="class in gust.backend.driver.spanner">SpannerManager.Builder</a></dt>
+<dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="gust/backend/PageContext.html#getPageContext()">getPageContext()</a></span> - Method in class gust.backend.<a href="gust/backend/PageContext.html" title="class in gust.backend">PageContext</a></dt>
 <dd>
 <div class="block">Retrieve serializable server-side-rendered page context, which should be assigned to the render flow bound to this
@@ -1853,6 +1893,10 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <dt><span class="memberNameLink"><a href="gust/backend/model/MissingAnnotatedField.html#getRequiredField()">getRequiredField()</a></span> - Method in exception gust.backend.model.<a href="gust/backend/model/MissingAnnotatedField.html" title="class in gust.backend.model">MissingAnnotatedField</a></dt>
 <dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="gust/backend/driver/spanner/SpannerGeneratedDDL.Builder.html#getSettings()">getSettings()</a></span> - Method in class gust.backend.driver.spanner.<a href="gust/backend/driver/spanner/SpannerGeneratedDDL.Builder.html" title="class in gust.backend.driver.spanner">SpannerGeneratedDDL.Builder</a></dt>
+<dd>&nbsp;</dd>
+<dt><span class="memberNameLink"><a href="gust/backend/driver/spanner/SpannerManager.Builder.html#getSettings()">getSettings()</a></span> - Method in class gust.backend.driver.spanner.<a href="gust/backend/driver/spanner/SpannerManager.Builder.html" title="class in gust.backend.driver.spanner">SpannerManager.Builder</a></dt>
+<dd>&nbsp;</dd>
+<dt><span class="memberNameLink"><a href="gust/backend/driver/spanner/SpannerManager.ConfiguredSpannerManager.html#getSettings()">getSettings()</a></span> - Method in class gust.backend.driver.spanner.<a href="gust/backend/driver/spanner/SpannerManager.ConfiguredSpannerManager.html" title="class in gust.backend.driver.spanner">SpannerManager.ConfiguredSpannerManager</a></dt>
 <dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="gust/backend/runtime/AssetManager.ManagedAssetContent.html#getSize()">getSize()</a></span> - Method in class gust.backend.runtime.<a href="gust/backend/runtime/AssetManager.ManagedAssetContent.html" title="class in gust.backend.runtime">AssetManager.ManagedAssetContent</a></dt>
 <dd>&nbsp;</dd>
@@ -2831,10 +2875,18 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <dd>
 <div class="block">Treat the field mask as a projection, for query purposes only.</div>
 </dd>
+<dt><span class="memberNameLink"><a href="gust/backend/driver/spanner/SpannerTemporalConverter.html#protoDateFromCloud(com.google.cloud.Date)">protoDateFromCloud(Date)</a></span> - Static method in class gust.backend.driver.spanner.<a href="gust/backend/driver/spanner/SpannerTemporalConverter.html" title="class in gust.backend.driver.spanner">SpannerTemporalConverter</a></dt>
+<dd>
+<div class="block">Convert a Google Cloud date into a standard Protocol Buffers date without loss of resolution.</div>
+</dd>
 <dt><a href="gust/backend/model/ProtoModelCodec.html" title="class in gust.backend.model"><span class="typeNameLink">ProtoModelCodec</span></a>&lt;<a href="gust/backend/model/ProtoModelCodec.html" title="type parameter in ProtoModelCodec">Model</a> extends com.google.protobuf.Message&gt; - Class in <a href="gust/backend/model/package-summary.html">gust.backend.model</a></dt>
 <dd>
 <div class="block">Defines a <a href="gust/backend/model/ModelCodec.html" title="interface in gust.backend.model"><code>ModelCodec</code></a> which uses Protobuf serialization to export and import protos to and from from raw
  byte-strings.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="gust/backend/driver/spanner/SpannerTemporalConverter.html#protoTimestampFromCloud(com.google.cloud.Timestamp)">protoTimestampFromCloud(Timestamp)</a></span> - Static method in class gust.backend.driver.spanner.<a href="gust/backend/driver/spanner/SpannerTemporalConverter.html" title="class in gust.backend.driver.spanner">SpannerTemporalConverter</a></dt>
+<dd>
+<div class="block">Convert a Google Cloud timestamp into a standard Protocol Buffers timestamp without loss of resolution.</div>
 </dd>
 <dt><span class="memberNameLink"><a href="gust/backend/TemplateProvider.html#provideCompiledTemplates()">provideCompiledTemplates()</a></span> - Method in class gust.backend.<a href="gust/backend/TemplateProvider.html" title="class in gust.backend">TemplateProvider</a></dt>
 <dd>
@@ -2961,6 +3013,16 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <dd>
 <div class="block">Given a Spanner row result expressed as a <code>Struct</code> and a <a href="gust/backend/model/ModelMetadata.FieldPointer.html" title="class in gust.backend.model"><code>ModelMetadata.FieldPointer</code></a> which is expected to be
  present, with a pre-resolved column name, return the numeric column index.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="gust/backend/driver/spanner/SpannerUtil.html#resolveColumnName(com.google.protobuf.Descriptors.FieldDescriptor)">resolveColumnName(Descriptors.FieldDescriptor)</a></span> - Static method in class gust.backend.driver.spanner.<a href="gust/backend/driver/spanner/SpannerUtil.html" title="class in gust.backend.driver.spanner">SpannerUtil</a></dt>
+<dd>
+<div class="block">Given a resolved field pointer resolve the expected/configured column name in Spanner for a given typed model
+ field.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="gust/backend/driver/spanner/SpannerUtil.html#resolveColumnName(com.google.protobuf.Descriptors.FieldDescriptor,gust.backend.driver.spanner.SpannerDriverSettings)">resolveColumnName(Descriptors.FieldDescriptor, SpannerDriverSettings)</a></span> - Static method in class gust.backend.driver.spanner.<a href="gust/backend/driver/spanner/SpannerUtil.html" title="class in gust.backend.driver.spanner">SpannerUtil</a></dt>
+<dd>
+<div class="block">Given a resolved field pointer resolve the expected/configured column name in Spanner for a given typed model
+ field.</div>
 </dd>
 <dt><span class="memberNameLink"><a href="gust/backend/driver/spanner/SpannerUtil.html#resolveColumnName(com.google.protobuf.Descriptors.FieldDescriptor,java.util.Optional,java.util.Optional,gust.backend.driver.spanner.SpannerDriverSettings)">resolveColumnName(Descriptors.FieldDescriptor, Optional&lt;SpannerFieldOptions&gt;, Optional&lt;TableFieldOptions&gt;, SpannerDriverSettings)</a></span> - Static method in class gust.backend.driver.spanner.<a href="gust/backend/driver/spanner/SpannerUtil.html" title="class in gust.backend.driver.spanner">SpannerUtil</a></dt>
 <dd>
@@ -3165,6 +3227,14 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <dd>
 <div class="block">Service for which this annotation is requesting a <code>ManagedChannel</code> instance.</div>
 </dd>
+<dt><span class="memberNameLink"><a href="gust/backend/driver/spanner/SpannerManager.Builder.html#setCache(java.util.Optional)">setCache(Optional&lt;CacheDriver&lt;Message, Message&gt;&gt;)</a></span> - Method in class gust.backend.driver.spanner.<a href="gust/backend/driver/spanner/SpannerManager.Builder.html" title="class in gust.backend.driver.spanner">SpannerManager.Builder</a></dt>
+<dd>
+<div class="block">Set the cache for the target configured Spanner manager.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="gust/backend/driver/spanner/SpannerManager.Builder.html#setExecutor(java.util.Optional)">setExecutor(Optional&lt;ListeningScheduledExecutorService&gt;)</a></span> - Method in class gust.backend.driver.spanner.<a href="gust/backend/driver/spanner/SpannerManager.Builder.html" title="class in gust.backend.driver.spanner">SpannerManager.Builder</a></dt>
+<dd>
+<div class="block">Set the executor used by adapters and drivers spawned by this manager.</div>
+</dd>
 <dt><span class="memberNameLink"><a href="gust/backend/PageContextManager.html#setFeaturePolicy(java.util.Collection)">setFeaturePolicy(Collection&lt;String&gt;)</a></span> - Method in class gust.backend.<a href="gust/backend/PageContextManager.html" title="class in gust.backend">PageContextManager</a></dt>
 <dd>
 <div class="block">Overwrite the set of `Feature-Policy` entries for the current render flow.</div>
@@ -3213,6 +3283,11 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <dd>
 <div class="block">Set, or clear, the optimizer version to apply when creating this table.</div>
 </dd>
+<dt><span class="memberNameLink"><a href="gust/backend/driver/spanner/SpannerManager.Builder.html#setOptions(java.util.Optional)">setOptions(Optional&lt;SpannerOptions.Builder&gt;)</a></span> - Method in class gust.backend.driver.spanner.<a href="gust/backend/driver/spanner/SpannerManager.Builder.html" title="class in gust.backend.driver.spanner">SpannerManager.Builder</a></dt>
+<dd>
+<div class="block">Set the base package of Spanner client options to use when spawning new clients via the target configured
+ Spanner manager.</div>
+</dd>
 <dt><span class="memberNameLink"><a href="gust/backend/PageContextManager.html#setPrefixes(java.util.Optional)">setPrefixes(Optional&lt;List&lt;Context.RDFPrefix&gt;&gt;)</a></span> - Method in class gust.backend.<a href="gust/backend/PageContextManager.html" title="class in gust.backend">PageContextManager</a></dt>
 <dd>
 <div class="block">Overwrite the full set of RDFa prefixes for the current render flow.</div>
@@ -3234,6 +3309,10 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <dd>
 <div class="block">Sets the scope of the comparison that is used by the differencer when determining which
  fields to compare between the messages.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="gust/backend/driver/spanner/SpannerManager.Builder.html#setSettings(java.util.Optional)">setSettings(Optional&lt;SpannerDriverSettings&gt;)</a></span> - Method in class gust.backend.driver.spanner.<a href="gust/backend/driver/spanner/SpannerManager.Builder.html" title="class in gust.backend.driver.spanner">SpannerManager.Builder</a></dt>
+<dd>
+<div class="block">Set the main driver settings to use when spawning adapters in the target configured Spanner manager.</div>
 </dd>
 <dt><span class="memberNameLink"><a href="gust/backend/driver/spanner/SpannerGeneratedDDL.Builder.html#setTableConstraints(java.util.Optional)">setTableConstraints(Optional&lt;List&lt;SpannerGeneratedDDL.TableConstraint&gt;&gt;)</a></span> - Method in class gust.backend.driver.spanner.<a href="gust/backend/driver/spanner/SpannerGeneratedDDL.Builder.html" title="class in gust.backend.driver.spanner">SpannerGeneratedDDL.Builder</a></dt>
 <dd>
@@ -3263,6 +3342,10 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="gust/backend/model/FetchOptions.html#snapshot()">snapshot()</a></span> - Method in interface gust.backend.model.<a href="gust/backend/model/FetchOptions.html" title="interface in gust.backend.model">FetchOptions</a></dt>
 <dd>&nbsp;</dd>
+<dt><span class="memberNameLink"><a href="gust/backend/driver/spanner/SpannerAdapter.html#spanner()">spanner()</a></span> - Method in class gust.backend.driver.spanner.<a href="gust/backend/driver/spanner/SpannerAdapter.html" title="class in gust.backend.driver.spanner">SpannerAdapter</a></dt>
+<dd>
+<div class="block">Acquire the Spanner for Java client powering this adapter.</div>
+</dd>
 <dt><span class="memberNameLink"><a href="gust/backend/transport/GoogleService.html#SPANNER">SPANNER</a></span> - gust.backend.transport.<a href="gust/backend/transport/GoogleService.html" title="enum in gust.backend.transport">GoogleService</a></dt>
 <dd>
 <div class="block">Google Cloud Firestore (token:</div>
@@ -3350,6 +3433,10 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <dd>
 <div class="block">Implements a specialized de-serializer, capable of converting runtime-inhabited Spanner <code>Struct</code>-records into
  typed <code>Message</code>-derived objects.</div>
+</dd>
+<dt><a href="gust/backend/driver/spanner/SpannerTemporalConverter.html" title="class in gust.backend.driver.spanner"><span class="typeNameLink">SpannerTemporalConverter</span></a> - Class in <a href="gust/backend/driver/spanner/package-summary.html">gust.backend.driver.spanner</a></dt>
+<dd>
+<div class="block">Serialize back and forth between Google Cloud / Protocol Buffer standard TIMESTAMP and DATE records.</div>
 </dd>
 <dt><a href="gust/backend/driver/spanner/SpannerTransportConfig.html" title="class in gust.backend.driver.spanner"><span class="typeNameLink">SpannerTransportConfig</span></a> - Class in <a href="gust/backend/driver/spanner/package-summary.html">gust.backend.driver.spanner</a></dt>
 <dd>

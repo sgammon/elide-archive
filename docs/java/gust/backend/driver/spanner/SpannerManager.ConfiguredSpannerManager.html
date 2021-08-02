@@ -6,11 +6,14 @@
 <title>SpannerManager.ConfiguredSpannerManager</title>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF8">
 <meta name="keywords" content="gust.backend.driver.spanner.SpannerManager.ConfiguredSpannerManager class">
+<meta name="keywords" content="generic()">
 <meta name="keywords" content="adapter()">
 <meta name="keywords" content="getDatabase()">
 <meta name="keywords" content="getClosed()">
 <meta name="keywords" content="allAdapters()">
 <meta name="keywords" content="close()">
+<meta name="keywords" content="getSettings()">
+<meta name="keywords" content="getCache()">
 <link rel="stylesheet" type="text/css" href="../../../../stylesheet.css" title="Style">
 <link rel="stylesheet" type="text/css" href="../../../../jquery/jquery-ui.css" title="Style">
 <script type="text/javascript" src="../../../../script.js"></script>
@@ -32,7 +35,7 @@
     catch(err) {
     }
 //-->
-var data = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10};
+var data = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -148,7 +151,7 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <pre>@Immutable
 @ThreadSafe
 @Refreshable
-public final class <a href="../../../../src-html/gust/backend/driver/spanner/SpannerManager.html#line.173">SpannerManager.ConfiguredSpannerManager</a>
+public final class <a href="../../../../src-html/gust/backend/driver/spanner/SpannerManager.html#line.269">SpannerManager.ConfiguredSpannerManager</a>
 extends java.lang.Object
 implements <a href="../../model/DatabaseManager.html" title="interface in gust.backend.model">DatabaseManager</a>&lt;<a href="SpannerAdapter.html" title="class in gust.backend.driver.spanner">SpannerAdapter</a>,&#8203;<a href="SpannerDriver.html" title="class in gust.backend.driver.spanner">SpannerDriver</a>&gt;, java.io.Closeable, java.lang.AutoCloseable</pre>
 <div class="block">Represents a configured version of a central <a href="SpannerManager.html" title="class in gust.backend.driver.spanner"><code>SpannerManager</code></a>, which has been sealed for immutable use at
@@ -197,13 +200,30 @@ implements <a href="../../model/DatabaseManager.html" title="interface in gust.b
 </td>
 </tr>
 <tr id="i3" class="rowColor">
+<td class="colFirst"><code><a href="SpannerAdapter.html" title="class in gust.backend.driver.spanner">SpannerAdapter</a>&lt;com.google.protobuf.Message,&#8203;com.google.protobuf.Message&gt;</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#generic()">generic</a></span>()</code></th>
+<td class="colLast">
+<div class="block">Acquire a generic adapter instance designed to work with all <code>Message</code>-inheriting model types.</div>
+</td>
+</tr>
+<tr id="i4" class="altColor">
+<td class="colFirst"><code>java.util.Optional&lt;<a href="../../model/CacheDriver.html" title="interface in gust.backend.model">CacheDriver</a>&lt;com.google.protobuf.Message,&#8203;com.google.protobuf.Message&gt;&gt;</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getCache()">getCache</a></span>()</code></th>
+<td class="colLast">&nbsp;</td>
+</tr>
+<tr id="i5" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getClosed()">getClosed</a></span>()</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
-<tr id="i4" class="altColor">
+<tr id="i6" class="altColor">
 <td class="colFirst"><code>com.google.cloud.spanner.DatabaseId</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getDatabase()">getDatabase</a></span>()</code></th>
+<td class="colLast">&nbsp;</td>
+</tr>
+<tr id="i7" class="rowColor">
+<td class="colFirst"><code><a href="SpannerDriverSettings.html" title="interface in gust.backend.driver.spanner">SpannerDriverSettings</a></code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getSettings()">getSettings</a></span>()</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
 </table>
@@ -230,6 +250,28 @@ implements <a href="../../model/DatabaseManager.html" title="interface in gust.b
 <!--   -->
 </a>
 <h3>Method Detail</h3>
+<a id="generic()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>generic</h4>
+<pre class="methodSignature">@Factory
+@Nonnull
+public&nbsp;<a href="SpannerAdapter.html" title="class in gust.backend.driver.spanner">SpannerAdapter</a>&lt;com.google.protobuf.Message,&#8203;com.google.protobuf.Message&gt;&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerManager.ConfiguredSpannerManager.html#line.332">generic</a>()</pre>
+<div class="block">Acquire a generic adapter instance designed to work with all <code>Message</code>-inheriting model types.
+
+ <p>Adapter instances and backing drivers acquired via this route are not guaranteed to be new, which in most
+ a performance benefit with negligible costs. Since adapters and drivers are required to be threadsafe, they
+ can be re-used safely with no internal state involved.</p></div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Generic Spanner adapter instance.</dd>
+<dt><span class="seeLabel">See Also:</span></dt>
+<dd><a href="#adapter(Key,Model)"><code>adapter(Message, Message)</code></a></dd>
+</dl>
+</li>
+</ul>
 <a id="adapter(com.google.protobuf.Message,com.google.protobuf.Message)">
 <!--   -->
 </a><a id="adapter(Key,Model)">
@@ -240,7 +282,7 @@ implements <a href="../../model/DatabaseManager.html" title="interface in gust.b
 <h4>adapter</h4>
 <pre class="methodSignature">@Factory
 @Nonnull
-public&nbsp;&lt;Key extends com.google.protobuf.Message,&#8203;Model extends com.google.protobuf.Message&gt;&nbsp;<a href="SpannerAdapter.html" title="class in gust.backend.driver.spanner">SpannerAdapter</a>&lt;Key,&#8203;Model&gt;&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerManager.ConfiguredSpannerManager.html#line.221">adapter</a>&#8203;(@Nonnull
+public&nbsp;&lt;Key extends com.google.protobuf.Message,&#8203;Model extends com.google.protobuf.Message&gt;&nbsp;<a href="SpannerAdapter.html" title="class in gust.backend.driver.spanner">SpannerAdapter</a>&lt;Key,&#8203;Model&gt;&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerManager.ConfiguredSpannerManager.html#line.356">adapter</a>&#8203;(@Nonnull
                                                                                                                                          Key&nbsp;keyInstance,
                                                                                                                                          @Nonnull
                                                                                                                                          Model&nbsp;modelInstance)</pre>
@@ -248,7 +290,7 @@ public&nbsp;&lt;Key extends com.google.protobuf.Message,&#8203;Model extends com
  schema-driven <code>Message</code> classes.
 
  <p>Adapters and backing drivers acquired via this route are not guaranteed to be new, which in most cases is
- a performance benefit with ignorable costs. Since adapters and drivers are required to be threadsafe, they
+ a performance benefit with negligible costs. Since adapters and drivers are required to be threadsafe, they
  can be re-used safely with no internal state involved.</p>
 
  <p>Alternatively, drivers/adapters can also be acquired directly, via methods like
@@ -275,7 +317,7 @@ public&nbsp;&lt;Key extends com.google.protobuf.Message,&#8203;Model extends com
 <li class="blockList">
 <h4>getDatabase</h4>
 <pre class="methodSignature">@Nonnull
-public&nbsp;com.google.cloud.spanner.DatabaseId&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerManager.ConfiguredSpannerManager.html#line.260">getDatabase</a>()</pre>
+public&nbsp;com.google.cloud.spanner.DatabaseId&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerManager.ConfiguredSpannerManager.html#line.399">getDatabase</a>()</pre>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>Database bound to this manager.</dd>
@@ -288,7 +330,7 @@ public&nbsp;com.google.cloud.spanner.DatabaseId&nbsp;<a href="../../../../src-ht
 <ul class="blockList">
 <li class="blockList">
 <h4>getClosed</h4>
-<pre class="methodSignature">public&nbsp;boolean&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerManager.ConfiguredSpannerManager.html#line.265">getClosed</a>()</pre>
+<pre class="methodSignature">public&nbsp;boolean&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerManager.ConfiguredSpannerManager.html#line.404">getClosed</a>()</pre>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>Closed/open state of this manager.</dd>
@@ -302,7 +344,7 @@ public&nbsp;com.google.cloud.spanner.DatabaseId&nbsp;<a href="../../../../src-ht
 <li class="blockList">
 <h4>allAdapters</h4>
 <pre class="methodSignature">@Nonnull
-public&nbsp;java.util.Collection&lt;<a href="SpannerAdapter.html" title="class in gust.backend.driver.spanner">SpannerAdapter</a>&gt;&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerManager.ConfiguredSpannerManager.html#line.275">allAdapters</a>()</pre>
+public&nbsp;java.util.Collection&lt;<a href="SpannerAdapter.html" title="class in gust.backend.driver.spanner">SpannerAdapter</a>&gt;&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerManager.ConfiguredSpannerManager.html#line.414">allAdapters</a>()</pre>
 <div class="block">Returns the full set of known configured Spanner managers, JVM-wide. This is mostly useful as a utility to
  shut down connections globally when needed (for instance, during testing).</div>
 <dl>
@@ -314,10 +356,10 @@ public&nbsp;java.util.Collection&lt;<a href="SpannerAdapter.html" title="class i
 <a id="close()">
 <!--   -->
 </a>
-<ul class="blockListLast">
+<ul class="blockList">
 <li class="blockList">
 <h4>close</h4>
-<pre class="methodSignature">public&nbsp;void&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerManager.ConfiguredSpannerManager.html#line.288">close</a>()</pre>
+<pre class="methodSignature">public&nbsp;void&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerManager.ConfiguredSpannerManager.html#line.427">close</a>()</pre>
 <div class="block">Close all active Spanner connections tracked or controlled by this configured manager.</div>
 <dl>
 <dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
@@ -326,6 +368,34 @@ public&nbsp;java.util.Collection&lt;<a href="SpannerAdapter.html" title="class i
 <dd><code>close</code>&nbsp;in interface&nbsp;<code>java.io.Closeable</code></dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code>java.lang.RuntimeException</code> - If the underlying connections raise IO exceptions.</dd>
+</dl>
+</li>
+</ul>
+<a id="getSettings()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getSettings</h4>
+<pre class="methodSignature">@Nonnull
+public&nbsp;<a href="SpannerDriverSettings.html" title="interface in gust.backend.driver.spanner">SpannerDriverSettings</a>&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerManager.ConfiguredSpannerManager.html#line.450">getSettings</a>()</pre>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Settings for this configured manager.</dd>
+</dl>
+</li>
+</ul>
+<a id="getCache()">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>getCache</h4>
+<pre class="methodSignature">@Nonnull
+public&nbsp;java.util.Optional&lt;<a href="../../model/CacheDriver.html" title="interface in gust.backend.model">CacheDriver</a>&lt;com.google.protobuf.Message,&#8203;com.google.protobuf.Message&gt;&gt;&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerManager.ConfiguredSpannerManager.html#line.455">getCache</a>()</pre>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Cache applied to reads, if any.</dd>
 </dl>
 </li>
 </ul>
