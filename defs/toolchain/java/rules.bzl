@@ -268,7 +268,8 @@ def _jdk_binary(name,
                "@gust//defs/config:live_reload": (
                    ["-DLIVE_RELOAD=enabled"] + INJECTED_JVM_FLAGS + jvm_flags + debugger_support),
                "@gust//defs/config:release": _JVM_APP_RELEASE_FLAGS,
-               "//conditions:default": (INJECTED_JVM_FLAGS + jvm_flags + debugger_support),
+               "@gust//defs/config:debug": (INJECTED_JVM_FLAGS + jvm_flags + debugger_support),
+               "//conditions:default": (INJECTED_JVM_FLAGS + jvm_flags),
             }),
             tags = [
                 "ibazel_live_reload",
