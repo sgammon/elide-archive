@@ -243,6 +243,7 @@ def _jdk_binary(name,
                 jvm_flags = [],
                 resource_jars = [],
                 tags = [],
+                enable_debug = True,
                 suspend_debug = False,
                 **kwargs):
 
@@ -289,11 +290,11 @@ def _jdk_binary(name,
             resource_jars = resource_jars + INJECTED_RESOURCE_JARS,
             jvm_flags = select({
                "@gust//defs/config:live_reload": ["-DLIVE_RELOAD=enabled"] + INJECTED_JVM_FLAGS + jvm_flags,
-               "//conditions:default": INJECTED_JVM_FLAGS + jvm_flags + debugger_support,
+               "//conditions:default": INJECTED_JVM_FLAGS + jvm_flags,
             }) + select({
                "@gust//defs/config:release": _JVM_APP_RELEASE_FLAGS,
-               "@gust//defs/config:debug": _JVM_APP_DEBUG_FLAGS,
-               "//conditions:default": _JVM_APP_DEBUG_FLAGS + debugger_support,
+               "@gust//defs/config:debug": _JVM_APP_DEBUG_FLAGS + (enable_debug and debugger_support or []),
+               "//conditions:default": _JVM_APP_DEBUG_FLAGS,
             }),
             tags = [
                 "ibazel_live_reload",
@@ -481,6 +482,7 @@ def _micronaut_application(name,
                            css_modules = {},
                            classpath_resources = [],
                            enable_renaming = False,
+                           enable_debug = True,
                            suspend_debug = False,
                            **kwargs):
 
@@ -712,6 +714,7 @@ def _micronaut_application(name,
         main_class = main_class or "gust.backend.Application",
         jvm_flags = computed_jvm_flags,
         tags = (tags or []),
+        enable_debug = enable_debug,
         suspend_debug = suspend_debug,
         **kwargs
     )
