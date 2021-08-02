@@ -108,25 +108,32 @@ public final class SpannerStructDeserializer<Model extends Message> implements M
      * @param target Target message builder.
      * @param value Resolved value for the ID.
      */
-    private void inflateRowKey(@Nonnull ModelMetadata.FieldPointer fieldPointer,
-                               @Nonnull Message.Builder target,
+    private void inflateRowKey(@Nonnull Message.Builder target,
                                @Nonnull Value value) {
-        Objects.requireNonNull(fieldPointer, "cannot inflate Spanner key with no field pointer");
         Objects.requireNonNull(value, "cannot inflate Spanner key from NULL value");
-        var keyBuilder = target.newBuilderForField(fieldPointer.getField());
-        var keyType = resolveKeyType(idField(keyBuilder.getDefaultInstanceForType()).orElseThrow());
+        var baseInstance = target.getDefaultInstanceForType();
+        var keyField = keyField(baseInstance).orElseThrow();
+        var idField = idField(baseInstance).orElseThrow();
+
+        var keyBuilder = target.newBuilderForField(keyField.getField());
+        var keyType = resolveKeyType(idField);
 
         // splice the ID into the key
         if (keyType.getCode() == Type.Code.STRING) {
             spliceIdBuilder(keyBuilder, Optional.of(value.getString()));
         } else if (keyType.getCode() == Type.Code.INT64) {
-            spliceIdBuilder(keyBuilder, Optional.of(value.getInt64()));
+            // special case: stringify if so instructed
+            if (idField.getField().getType().equals(Descriptors.FieldDescriptor.Type.STRING)) {
+                spliceIdBuilder(keyBuilder, Optional.of(String.valueOf(value.getInt64())));
+            } else {
+                spliceIdBuilder(keyBuilder, Optional.of(value.getInt64()));
+            }
         } else {
             throw new IllegalStateException(format("Unsupported key type: '%s'.", keyType.getCode().name()));
         }
 
         // splice the key into the model
-        target.setField(fieldPointer.getField(), keyBuilder.build());
+        target.setField(keyField.getField(), keyBuilder.build());
     }
 
     /**
@@ -164,10 +171,11 @@ public final class SpannerStructDeserializer<Model extends Message> implements M
         } else {
             // first up, check to see if this is a key or ID field, and decode it properly if so
             var field = fieldPointer.getField();
-            if (matchFieldAnnotation(field, FieldType.KEY) ||
-                    matchFieldAnnotation(field, FieldType.ID)) {
-                this.inflateRowKey(fieldPointer, target, columnValue);
+            if (matchFieldAnnotation(field, FieldType.ID)) {
+                this.inflateRowKey(target, columnValue);
                 return;
+            } else if (matchFieldAnnotation(field, FieldType.KEY)) {
+                throw new IllegalStateException("Should not get KEY-type fields in convergence loop.");
             }
 
             // if so directed, check the expected type against the real type indicated by Spanner. if this
@@ -203,7 +211,6 @@ public final class SpannerStructDeserializer<Model extends Message> implements M
             // 1) we have a non-NULL value in Spanner for a given column, with a resolved name and type.
             // 2) the name and type match the proto model, where we also have a resolved proto native type.
             // 3) we are certainly operating on a leaf field.
-
             boolean repeated = columnValue.getType().getCode() == Type.Code.ARRAY;
             Type.Code innerType = repeated ?
                 columnValue.getType().getArrayElementType().getCode() :
@@ -443,7 +450,18 @@ public final class SpannerStructDeserializer<Model extends Message> implements M
 
         forEachField(
             model,
-            Optional.of(onlySpannerEligibleFields(eligibleFields, driverSettings))
+            Optional.of(onlySpannerEligibleFields(eligibleFields, driverSettings)),
+            (pointer) -> {
+                // decide if we should recurse. we should never recurse for `JSON` fields, or for fields marked with
+                // `ignore` on the column or spanner options.
+                var spannerOpts = spannerOpts(pointer);
+                var columnOpts = columnOpts(pointer);
+                return !(
+                    (columnOpts.isPresent() && columnOpts.get().getIgnore()) ||
+                    (spannerOpts.isPresent() && spannerOpts.get().getIgnore()) ||
+                    (spannerOpts.isPresent() && spannerOpts.get().getType().equals(SpannerOptions.SpannerType.JSON))
+                );
+            }
         ).forEach((fieldPointer) -> {
             if (logging.isDebugEnabled()) logging.trace(
                     "Converging eligible column field {}...",

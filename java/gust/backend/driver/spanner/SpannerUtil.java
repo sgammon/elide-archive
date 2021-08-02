@@ -406,10 +406,11 @@ public final class SpannerUtil {
     public static @Nonnull Stream<Pair<String, String>> calculateDefaultFieldStream(
             @Nonnull Descriptors.Descriptor descriptor,
             @Nonnull SpannerDriverSettings driverSettings) {
-        return forEachField(
+        // pluck the ID field first, and then concatenante it to a stream of all other fields.
+        return Stream.concat(Stream.of(idField(descriptor).orElseThrow()), forEachField(
             descriptor,
             Optional.of(onlySpannerEligibleFields(driverSettings))
-        ).map((fieldPointer) -> {
+        )).map((fieldPointer) -> {
             var fieldOpts = fieldAnnotation(fieldPointer.getField(), Datamodel.field);
             if (fieldOpts.orElse(FieldPersistenceOptions.getDefaultInstance()).getType() == FieldType.KEY) {
                 // this is an ID field, so skip it outright because the key will inject it.
