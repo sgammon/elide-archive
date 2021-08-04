@@ -394,6 +394,18 @@ message SpannerFieldOptions {
 
   // Length of this field in the database, when expressed as a string.
   uint32 size = 5;
+
+  // Specifies this column as `NONNULL`, in which case you cannot store `NULL` values in this field.
+  bool nonnull = 6;
+
+  // Expression value for this field. Converts this field into a calculated value.
+  string expression = 7;
+
+  // Specifies the `STORED` option for this field. Only applicable if an `expression` is present.
+  bool stored = 8;
+
+  // Marks a field as a member of a Spanner row's primary key.
+  bool primary_key = 9;
 }
 
 

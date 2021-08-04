@@ -730,6 +730,48 @@ public final class SpannerUtil {
     }
 
     /**
+     * Given a pre-resolved {@link FieldPointer}, resolve any present generic {@link FieldPersistenceOptions}.
+     *
+     * @see #fieldOpts(Descriptors.FieldDescriptor) For the low-level version of this method, which includes a more
+     *      detailed explanation of {@link FieldPersistenceOptions}.
+     * @param fieldPointer Field pointer for which we should resolve any present field-generic options.
+     * @return Set of specified general field options, or {@link Optional#empty()}.
+     */
+    public static @Nonnull Optional<FieldPersistenceOptions> fieldOpts(@Nonnull FieldPointer fieldPointer) {
+        return fieldOpts(fieldPointer.getField());
+    }
+
+    /**
+     * Given a resolved Protocol Buffer {@link Descriptors.FieldDescriptor} which is considered eligible for interaction
+     * with Spanner, resolve any present field-generic options and annotations via {@link FieldPersistenceOptions}.
+     *
+     * <p>To adapt to other persistence engines, model fields may be annotated with {@link FieldPersistenceOptions}. In
+     * all cases, present {@link FieldPersistenceOptions} yield with regard to matchin Spanner-specific fields.</p>
+     *
+     * @see #spannerOpts(Descriptors.FieldDescriptor) Equivalent method for Spanner options
+     * @see #columnOpts(Descriptors.FieldDescriptor) equivalent method for column generic options
+     * @param field Field descriptor for which we should resolve any present {@link FieldPersistenceOptions}.
+     * @return Any present field-generic field options or annotations, or {@link Optional#empty()}.
+     */
+    public static @Nonnull Optional<FieldPersistenceOptions> fieldOpts(@Nonnull Descriptors.FieldDescriptor field) {
+        // resolve field options
+        var fieldOpts = fieldAnnotation(
+            field,
+            Datamodel.field
+        );
+
+        if (fieldOpts.isPresent() && logging.isDebugEnabled())
+            logging.debug("Found generic options for field '{}': \n{}",
+                field.getName(),
+                fieldOpts.toString());
+        else if (fieldOpts.isEmpty() && logging.isDebugEnabled()) {
+            logging.debug("No generic opts for field '{}'. Using defaults.",
+                field.getName());
+        }
+        return fieldOpts;
+    }
+
+    /**
      * Given a pre-resolved {@link FieldPointer}, resolve any present {@link SpannerFieldOptions}.
      *
      * @see #spannerOpts(Descriptors.FieldDescriptor) For the low-level version of this method, which includes a more
@@ -755,7 +797,7 @@ public final class SpannerUtil {
      * @return Any present column-generic field options or annotations, or {@link Optional#empty()}.
      */
     public static @Nonnull Optional<SpannerFieldOptions> spannerOpts(@Nonnull Descriptors.FieldDescriptor field) {
-        // resolve spanner options next, which override any default table options.
+        // resolve spanner options, which override any default table options.
         var spannerOpts = fieldAnnotation(
             field,
             Datamodel.spanner

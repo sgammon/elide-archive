@@ -14,6 +14,8 @@ package gust.backend.driver.spanner;
 
 import com.google.cloud.spanner.Type;
 import com.google.protobuf.Message;
+import com.google.protobuf.Timestamp;
+import tools.elide.core.SpannerFieldOptions;
 
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
@@ -211,6 +213,7 @@ public final class SpannerGeneratedDDL {
                                                       @Nonnull SpannerDriverSettings settings) {
             var columnOpts = columnOpts(fieldPointer);
             var spannerOpts = spannerOpts(fieldPointer);
+            var fieldOpts = fieldOpts(fieldPointer);
             var fieldName = resolveColumnName(fieldPointer, spannerOpts, columnOpts, settings);
             var fieldType = resolveColumnType(fieldPointer, spannerOpts, columnOpts, settings);
             Type innerType = fieldPointer.getField().isRepeated() ?
@@ -220,14 +223,43 @@ public final class SpannerGeneratedDDL {
                     resolveColumnSize(fieldPointer.getField(), spannerOpts, columnOpts, settings) :
                     -1;
 
+            // resolve spanner opts or defaults
+            var resolvedSpannerOpts = spannerOpts.orElse(SpannerFieldOptions.getDefaultInstance());
+            var expression = resolvedSpannerOpts.getExpression().length() > 0 ?
+                    Optional.of(resolvedSpannerOpts.getExpression()) : Optional.<String>empty();
+
+            var commitUpdate = false;
+            var protoType = fieldPointer.getField().getType();
+            if (fieldOpts.isPresent() && fieldOpts.get().getStampUpdate()) {
+                switch (protoType) {
+                    case STRING:
+                    case UINT64:
+                    case FIXED64:
+                        commitUpdate = true;
+                        break;
+
+                    case MESSAGE:
+                        if (fieldPointer.getField().getMessageType().getFullName().equals(
+                            Timestamp.getDescriptor().getFullName())) {
+                            commitUpdate = true;  // we can decode from a `Timestamp` record
+                        }
+                        break;
+
+                    default:
+                        // any other field type represents an illegal state
+                        throw new IllegalStateException(format(
+                            "Cannot place `commit_timestamp` in field of type '%s'", protoType.name()));
+                }
+            }
+
             return new ColumnSpec(
                 fieldName,
                 fieldType,
                 fieldSize,
-                Optional.empty(),  // @TODO(sgammon): value for this
-                Optional.empty(),  // @TODO(sgammon): value for this
-                Optional.empty(),  // @TODO(sgammon): value for this
-                Optional.empty(),  // @TODO(sgammon): value for this
+                Optional.of(resolvedSpannerOpts.getNonnull()),
+                expression,
+                Optional.of(resolvedSpannerOpts.getStored()),
+                Optional.of(commitUpdate),
                 fieldPointer.getField()
             );
         }
