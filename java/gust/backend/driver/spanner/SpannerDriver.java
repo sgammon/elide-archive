@@ -127,6 +127,16 @@ public final class SpannerDriver<Key extends Message, Model extends Message>
     interface SpannerMutationOptions extends SpannerWriteOptions {
         /** Default set of mutation options. */
         SpannerMutationOptions DEFAULTS = new SpannerMutationOptions() {};
+
+        /**
+         * Provides a transaction manger for a delete transaction. To activate transactions, one must also set the
+         * `transactional` configuration setting to `true`.
+         *
+         * @return Optional containing the transaction manager to use for this operation.
+         */
+        default @Nonnull Optional<TransactionContext> transactionContext() {
+            return Optional.empty();
+        }
     }
 
     /** Defines Spanner-specific mutative delete options. */
@@ -403,17 +413,15 @@ public final class SpannerDriver<Key extends Message, Model extends Message>
                 var serialized = ((SpannerCodec<Model>) codec).serialize(mutation, model);
 
                 return wrap(exec.submit(() -> {
-                    if (transactional) {
-                        // @TODO(sgammon): support for write transactions
-                        throw new IllegalStateException("Write transactions are not supported yet.");
-
+                    if (transactional && spannerOpts.transactionContext().isPresent()) {
+                        spannerOpts.transactionContext().get()
+                                .buffer(serialized);
                     } else {
                         // it's time to actually write the model
                         var write = client.writeAtLeastOnce(Collections.singleton(serialized));
                         Objects.requireNonNull(write, "write result from Spanner should never be null");
-                        return model;
-
                     }
+                    return model;
                 }));
 
             } else {
@@ -428,12 +436,19 @@ public final class SpannerDriver<Key extends Message, Model extends Message>
     /** @inheritDoc */
     @Override
     public @Nonnull ReactiveFuture<Key> delete(@Nonnull Key key,
-                                               @Nonnull DeleteOptions options) {
+                                               @Nonnull DeleteOptions baseOptions) {
         Objects.requireNonNull(key, "cannot delete null key from Spanner");
-        Objects.requireNonNull(options, "cannot delete without valid Spanner options");
+        Objects.requireNonNull(baseOptions, "cannot delete without valid Spanner options");
         enforceRole(key, DatapointType.OBJECT_KEY);
         Object keyId = id(key).orElseThrow(() ->
                 new IllegalArgumentException("Cannot delete key with empty or missing ID."));
+
+        SpannerMutationOptions options;
+        if (baseOptions instanceof SpannerMutationOptions) {
+            options = (SpannerMutationOptions) baseOptions;
+        } else {
+            options = SpannerMutationOptions.DEFAULTS;
+        }
 
         // prep for an async delete action
         ListeningScheduledExecutorService exec = options.executorService().orElseGet(this::executorService);
@@ -459,14 +474,13 @@ public final class SpannerDriver<Key extends Message, Model extends Message>
         if (logging.isDebugEnabled())
             logging.debug("Deleting model at ID `{}` in table `{}`.", keyId, table);
         return wrap(exec.submit(() -> {
-            if (transactional) {
-                // @TODO(sgammon): support for delete transactions
-                throw new IllegalStateException("Write transactions are not supported yet.");
+            if (transactional && options.transactionContext().isPresent()) {
+                options.transactionContext().get().buffer(deleteOperation);
             } else {
-                var result = client.write(Arrays.asList(deleteOperation));
+                var result = client.write(Collections.singletonList(deleteOperation));
                 Objects.requireNonNull(result, "delete result from Spanner should never be null");
-                return key;
             }
+            return key;
         }));
     }
 }
