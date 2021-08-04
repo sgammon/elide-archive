@@ -473,8 +473,6 @@ public final class SpannerGeneratedDDL {
             // add interleave target statement, if specified
             this.interleaveTarget.ifPresent(target -> buf.add(target.render()));
 
-//            this.rowDeletionPolicy.ifPresent(target -> buf.add(target.render()));
-
             builder.append(join(", ", buf));
             return builder;
         }

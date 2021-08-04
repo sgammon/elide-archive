@@ -382,6 +382,7 @@ public final class SpannerStructDeserializer<Model extends Message> implements M
                                         dateValue.getDayOfMonth()
                                 ))
                         );
+                        break;
                     } else if (field.getType() == Descriptors.FieldDescriptor.Type.MESSAGE &&
                             Date.getDescriptor().getFullName().equals(field.getMessageType().getFullName())) {
                         // if we have a sub-message in the same spot as a date, we need to convert to a standard

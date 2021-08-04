@@ -412,7 +412,7 @@ public final class SpannerUtil {
             Optional.of(onlySpannerEligibleFields(driverSettings))
         )).map((fieldPointer) -> {
             var fieldOpts = fieldAnnotation(fieldPointer.getField(), Datamodel.field);
-            if (fieldOpts.orElse(FieldPersistenceOptions.getDefaultInstance()).getType() == FieldType.KEY) {
+            if (fieldOpts.orElse(FieldPersistenceOptions.getDefaultInstance()).getType() == FieldType.ID) {
                 // this is an ID field, so skip it outright because the key will inject it.
                 return null;
             } else if (fieldOpts.orElse(FieldPersistenceOptions.getDefaultInstance()).getType() == FieldType.KEY) {
