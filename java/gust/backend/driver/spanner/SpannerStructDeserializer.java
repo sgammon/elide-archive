@@ -311,8 +311,21 @@ public final class SpannerStructDeserializer<Model extends Message> implements M
                     break;
 
                 case NUMERIC:
-                    // @TODO(sgammon): implement NUMERIC support
-                    throw new IllegalStateException("NUMERIC fields are not supported yet.");
+                    if (field.getType() == Descriptors.FieldDescriptor.Type.STRING) {
+                        // grab the string value and splice
+                        spliceBuilder(
+                            target,
+                            fieldPointer,
+                            Optional.of(repeated ? columnValue.getStringArray() : columnValue.getString())
+                        );
+                        break;
+                    }
+
+                    // throw illegal state
+                    throw new IllegalStateException(
+                        "NUMERIC fields must be expressed as proto-strings, in exponent notation if necessary. For " +
+                        "more information, please see the Cloud Spanner documentation regarding NUMERIC types: " +
+                        "https://cloud.google.com/spanner/docs/working-with-numerics");
 
                 case TIMESTAMP:
                     // extract timestamp value

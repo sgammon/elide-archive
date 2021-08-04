@@ -143,7 +143,10 @@ message TypeBuffet {
   repeated string labels = 18 [
     (core.spanner).size = 240
   ];
+  string spanner_numeric_field = 19 [
+    (core.spanner).type = NUMERIC
+  ];
 
-  google.protobuf.Timestamp timestamp = 19;
-  google.type.Date date = 20;
+  google.protobuf.Timestamp timestamp = 20;
+  google.type.Date date = 21;
 }

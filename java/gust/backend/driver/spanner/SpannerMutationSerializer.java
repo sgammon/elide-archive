@@ -281,8 +281,21 @@ public final class SpannerMutationSerializer<Model extends Message> implements M
                         "'" + field.getMessageType().getFullName() + "'.");
 
             case NUMERIC:
-                // @TODO(sgammon): support for 'NUMERIC' complex types
-                throw new IllegalStateException("Type 'NUMERIC' is not yet supported for use with Spanner.");
+                // source fields for `NUMERIC` columns can only be strings. while we could safely store 32-bit/64-bit
+                // signed or unsigned (fixed or unfixed) integer types, and float/double types, safely in this field,
+                // we cannot safely decode them from this field, which may break the `long` and `short` ceilings. so,
+                // following Google's advice on the matter (https://cloud.google.com/spanner/docs/working-with-numerics)
+                // they are implemented as strings.
+                if (field.getType() == Descriptors.FieldDescriptor.Type.STRING) {
+                    valueBinder.to(Value.string((String)rawValue));
+                    break;
+                }
+
+                // throw illegal state
+                throw new IllegalStateException(
+                    "NUMERIC fields must be expressed as proto-strings, in exponent notation if necessary. For " +
+                    "more information, please see the Cloud Spanner documentation regarding NUMERIC types: " +
+                    "https://cloud.google.com/spanner/docs/working-with-numerics");
 
             case ARRAY: throw new IllegalStateException("Illegal array received for flattened serialization.");
         }
