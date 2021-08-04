@@ -137,7 +137,7 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <li class="blockList">
 <hr>
 <pre>@ThreadSafe
-public final class <a href="../../../../src-html/gust/backend/driver/spanner/SpannerTemporalConverter.html#line.13">SpannerTemporalConverter</a>
+public final class <a href="../../../../src-html/gust/backend/driver/spanner/SpannerTemporalConverter.html#line.25">SpannerTemporalConverter</a>
 extends java.lang.Object</pre>
 <div class="block">Serialize back and forth between Google Cloud / Protocol Buffer standard TIMESTAMP and DATE records.</div>
 </li>
@@ -219,7 +219,7 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>cloudTimestampFromProto</h4>
 <pre class="methodSignature">@Nonnull
-public static&nbsp;com.google.cloud.Timestamp&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerTemporalConverter.html#line.23">cloudTimestampFromProto</a>&#8203;(com.google.protobuf.Timestamp&nbsp;timestamp)</pre>
+public static&nbsp;com.google.cloud.Timestamp&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerTemporalConverter.html#line.35">cloudTimestampFromProto</a>&#8203;(com.google.protobuf.Timestamp&nbsp;timestamp)</pre>
 <div class="block">Convert a regular/standard Protocol Buffers timestamp into a Google Cloud timestamp without loss of resolution.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
@@ -236,7 +236,7 @@ public static&nbsp;com.google.cloud.Timestamp&nbsp;<a href="../../../../src-html
 <li class="blockList">
 <h4>protoTimestampFromCloud</h4>
 <pre class="methodSignature">@Nonnull
-public static&nbsp;com.google.protobuf.Timestamp&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerTemporalConverter.html#line.33">protoTimestampFromCloud</a>&#8203;(com.google.cloud.Timestamp&nbsp;timestamp)</pre>
+public static&nbsp;com.google.protobuf.Timestamp&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerTemporalConverter.html#line.45">protoTimestampFromCloud</a>&#8203;(com.google.cloud.Timestamp&nbsp;timestamp)</pre>
 <div class="block">Convert a Google Cloud timestamp into a standard Protocol Buffers timestamp without loss of resolution.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
@@ -253,7 +253,7 @@ public static&nbsp;com.google.protobuf.Timestamp&nbsp;<a href="../../../../src-h
 <li class="blockList">
 <h4>cloudDateFromProto</h4>
 <pre class="methodSignature">@Nonnull
-public static&nbsp;com.google.cloud.Date&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerTemporalConverter.html#line.46">cloudDateFromProto</a>&#8203;(com.google.type.Date&nbsp;date)</pre>
+public static&nbsp;com.google.cloud.Date&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerTemporalConverter.html#line.58">cloudDateFromProto</a>&#8203;(com.google.type.Date&nbsp;date)</pre>
 <div class="block">Convert a regular/standard Protocol Buffers date into a Google Cloud date without loss of resolution.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
@@ -270,7 +270,7 @@ public static&nbsp;com.google.cloud.Date&nbsp;<a href="../../../../src-html/gust
 <li class="blockList">
 <h4>protoDateFromCloud</h4>
 <pre class="methodSignature">@Nonnull
-public static&nbsp;com.google.type.Date&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerTemporalConverter.html#line.60">protoDateFromCloud</a>&#8203;(com.google.cloud.Date&nbsp;date)</pre>
+public static&nbsp;com.google.type.Date&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerTemporalConverter.html#line.72">protoDateFromCloud</a>&#8203;(com.google.cloud.Date&nbsp;date)</pre>
 <div class="block">Convert a Google Cloud date into a standard Protocol Buffers date without loss of resolution.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>

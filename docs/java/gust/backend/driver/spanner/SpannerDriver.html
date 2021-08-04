@@ -233,7 +233,7 @@ implements <a href="../../model/DatabaseDriver.html" title="interface in gust.ba
 <tr id="i1" class="rowColor">
 <td class="colFirst"><code><a href="../../runtime/ReactiveFuture.html" title="class in gust.backend.runtime">ReactiveFuture</a>&lt;<a href="SpannerDriver.html" title="type parameter in SpannerDriver">Key</a>&gt;</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#delete(Key,gust.backend.model.DeleteOptions)">delete</a></span>&#8203;(<a href="SpannerDriver.html" title="type parameter in SpannerDriver">Key</a>&nbsp;key,
-      <a href="../../model/DeleteOptions.html" title="interface in gust.backend.model">DeleteOptions</a>&nbsp;options)</code></th>
+      <a href="../../model/DeleteOptions.html" title="interface in gust.backend.model">DeleteOptions</a>&nbsp;baseOptions)</code></th>
 <td class="colLast">
 <div class="block">Low-level record delete method.</div>
 </td>
@@ -300,7 +300,7 @@ implements <a href="../../model/DatabaseDriver.html" title="interface in gust.ba
 <li class="blockList">
 <h4>executorService</h4>
 <pre class="methodSignature">@Nonnull
-public&nbsp;com.google.common.util.concurrent.ListeningScheduledExecutorService&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerDriver.html#line.236">executorService</a>()</pre>
+public&nbsp;com.google.common.util.concurrent.ListeningScheduledExecutorService&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerDriver.html#line.246">executorService</a>()</pre>
 <div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../../model/PersistenceDriver.html#executorService()">PersistenceDriver</a></code></span></div>
 <div class="block">Resolve an executor service for use with this persistence driver. Operations will be executed against this as they
  are received.</div>
@@ -319,7 +319,7 @@ public&nbsp;com.google.common.util.concurrent.ListeningScheduledExecutorService&
 <li class="blockList">
 <h4>codec</h4>
 <pre class="methodSignature">@Nonnull
-public&nbsp;<a href="../../model/ModelCodec.html" title="interface in gust.backend.model">ModelCodec</a>&lt;<a href="SpannerDriver.html" title="type parameter in SpannerDriver">Model</a>,&#8203;com.google.cloud.spanner.Mutation,&#8203;com.google.cloud.spanner.Struct&gt;&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerDriver.html#line.242">codec</a>()</pre>
+public&nbsp;<a href="../../model/ModelCodec.html" title="interface in gust.backend.model">ModelCodec</a>&lt;<a href="SpannerDriver.html" title="type parameter in SpannerDriver">Model</a>,&#8203;com.google.cloud.spanner.Mutation,&#8203;com.google.cloud.spanner.Struct&gt;&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerDriver.html#line.252">codec</a>()</pre>
 <div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../../model/PersistenceDriver.html#codec()">PersistenceDriver</a></code></span></div>
 <div class="block">Acquire an instance of the codec used by this adapter. Codecs are either injected/otherwise provided during adapter
  construction, or they are specified statically if the adapter depends on a specific codec.</div>
@@ -340,7 +340,7 @@ public&nbsp;<a href="../../model/ModelCodec.html" title="interface in gust.backe
 <li class="blockList">
 <h4>retrieve</h4>
 <pre class="methodSignature">@Nonnull
-public&nbsp;<a href="../../runtime/ReactiveFuture.html" title="class in gust.backend.runtime">ReactiveFuture</a>&lt;java.util.Optional&lt;<a href="SpannerDriver.html" title="type parameter in SpannerDriver">Model</a>&gt;&gt;&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerDriver.html#line.248">retrieve</a>&#8203;(@Nonnull
+public&nbsp;<a href="../../runtime/ReactiveFuture.html" title="class in gust.backend.runtime">ReactiveFuture</a>&lt;java.util.Optional&lt;<a href="SpannerDriver.html" title="type parameter in SpannerDriver">Model</a>&gt;&gt;&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerDriver.html#line.258">retrieve</a>&#8203;(@Nonnull
                                                           <a href="SpannerDriver.html" title="type parameter in SpannerDriver">Key</a>&nbsp;key,
                                                           @Nonnull
                                                           <a href="../../model/FetchOptions.html" title="interface in gust.backend.model">FetchOptions</a>&nbsp;options)</pre>
@@ -384,7 +384,7 @@ public&nbsp;<a href="../../runtime/ReactiveFuture.html" title="class in gust.bac
 <li class="blockList">
 <h4>persist</h4>
 <pre class="methodSignature">@Nonnull
-public&nbsp;<a href="../../runtime/ReactiveFuture.html" title="class in gust.backend.runtime">ReactiveFuture</a>&lt;<a href="SpannerDriver.html" title="type parameter in SpannerDriver">Model</a>&gt;&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerDriver.html#line.337">persist</a>&#8203;(@Nullable
+public&nbsp;<a href="../../runtime/ReactiveFuture.html" title="class in gust.backend.runtime">ReactiveFuture</a>&lt;<a href="SpannerDriver.html" title="type parameter in SpannerDriver">Model</a>&gt;&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerDriver.html#line.347">persist</a>&#8203;(@Nullable
                                      <a href="SpannerDriver.html" title="type parameter in SpannerDriver">Key</a>&nbsp;key,
                                      @Nonnull
                                      <a href="SpannerDriver.html" title="type parameter in SpannerDriver">Model</a>&nbsp;model,
@@ -434,10 +434,10 @@ public&nbsp;<a href="../../runtime/ReactiveFuture.html" title="class in gust.bac
 <li class="blockList">
 <h4>delete</h4>
 <pre class="methodSignature">@Nonnull
-public&nbsp;<a href="../../runtime/ReactiveFuture.html" title="class in gust.backend.runtime">ReactiveFuture</a>&lt;<a href="SpannerDriver.html" title="type parameter in SpannerDriver">Key</a>&gt;&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerDriver.html#line.429">delete</a>&#8203;(@Nonnull
+public&nbsp;<a href="../../runtime/ReactiveFuture.html" title="class in gust.backend.runtime">ReactiveFuture</a>&lt;<a href="SpannerDriver.html" title="type parameter in SpannerDriver">Key</a>&gt;&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerDriver.html#line.437">delete</a>&#8203;(@Nonnull
                                   <a href="SpannerDriver.html" title="type parameter in SpannerDriver">Key</a>&nbsp;key,
                                   @Nonnull
-                                  <a href="../../model/DeleteOptions.html" title="interface in gust.backend.model">DeleteOptions</a>&nbsp;options)</pre>
+                                  <a href="../../model/DeleteOptions.html" title="interface in gust.backend.model">DeleteOptions</a>&nbsp;baseOptions)</pre>
 <div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../../model/PersistenceDriver.html#delete(Key,gust.backend.model.DeleteOptions)">PersistenceDriver</a></code></span></div>
 <div class="block">Low-level record delete method. Effectively called by all other delete variants. Asynchronously and permanently
  erase an existing data model instance from storage, addressed by its key unique key or ID.
@@ -461,7 +461,7 @@ public&nbsp;<a href="../../runtime/ReactiveFuture.html" title="class in gust.bac
 <dd><code><a href="../../model/PersistenceDriver.html#delete(Key,gust.backend.model.DeleteOptions)">delete</a></code>&nbsp;in interface&nbsp;<code><a href="../../model/PersistenceDriver.html" title="interface in gust.backend.model">PersistenceDriver</a>&lt;<a href="SpannerDriver.html" title="type parameter in SpannerDriver">Key</a> extends com.google.protobuf.Message,&#8203;<a href="SpannerDriver.html" title="type parameter in SpannerDriver">Model</a> extends com.google.protobuf.Message,&#8203;com.google.cloud.spanner.Struct,&#8203;com.google.cloud.spanner.Mutation&gt;</code></dd>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>key</code> - Unique key referring to the record in storage that should be deleted.</dd>
-<dd><code>options</code> - Options to apply to this specific delete operation.</dd>
+<dd><code>baseOptions</code> - Options to apply to this specific delete operation.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>Future value, which resolves to the deleted record's key when the operation completes.</dd>
 </dl>

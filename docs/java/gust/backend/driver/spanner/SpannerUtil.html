@@ -781,7 +781,7 @@ public static&nbsp;java.util.stream.Stream&lt;<a href="../../../util/Pair.html" 
 <li class="blockList">
 <h4>calculateDefaultFields</h4>
 <pre class="methodSignature">@Nonnull
-public static&nbsp;java.util.List&lt;java.lang.String&gt;&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerUtil.html#line.443">calculateDefaultFields</a>&#8203;(@Nonnull
+public static&nbsp;java.util.List&lt;java.lang.String&gt;&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerUtil.html#line.444">calculateDefaultFields</a>&#8203;(@Nonnull
                                                                       com.google.protobuf.Descriptors.Descriptor&nbsp;descriptor,
                                                                       @Nonnull
                                                                       <a href="SpannerDriverSettings.html" title="interface in gust.backend.driver.spanner">SpannerDriverSettings</a>&nbsp;driverSettings)</pre>
@@ -802,7 +802,7 @@ public static&nbsp;java.util.List&lt;java.lang.String&gt;&nbsp;<a href="../../..
 <li class="blockList">
 <h4>generateStruct</h4>
 <pre class="methodSignature">@Nonnull
-public static&nbsp;java.util.Collection&lt;com.google.cloud.spanner.Type.StructField&gt;&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerUtil.html#line.469">generateStruct</a>&#8203;(@Nonnull
+public static&nbsp;java.util.Collection&lt;com.google.cloud.spanner.Type.StructField&gt;&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerUtil.html#line.470">generateStruct</a>&#8203;(@Nonnull
                                                                                              com.google.protobuf.Descriptors.Descriptor&nbsp;descriptor,
                                                                                              @Nonnull
                                                                                              <a href="SpannerDriverSettings.html" title="interface in gust.backend.driver.spanner">SpannerDriverSettings</a>&nbsp;driverSettings)</pre>
@@ -835,7 +835,7 @@ public static&nbsp;java.util.Collection&lt;com.google.cloud.spanner.Type.StructF
 <li class="blockList">
 <h4>onlySpannerEligibleFields</h4>
 <pre class="methodSignature">@Nonnull
-public static&nbsp;java.util.function.Predicate&lt;<a href="../../model/ModelMetadata.FieldPointer.html" title="class in gust.backend.model">ModelMetadata.FieldPointer</a>&gt;&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerUtil.html#line.518">onlySpannerEligibleFields</a>&#8203;(@Nonnull
+public static&nbsp;java.util.function.Predicate&lt;<a href="../../model/ModelMetadata.FieldPointer.html" title="class in gust.backend.model">ModelMetadata.FieldPointer</a>&gt;&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerUtil.html#line.519">onlySpannerEligibleFields</a>&#8203;(@Nonnull
                                                                                                  java.util.SortedSet&lt;java.lang.String&gt;&nbsp;eligibleFields,
                                                                                                  @Nonnull
                                                                                                  <a href="SpannerDriverSettings.html" title="interface in gust.backend.driver.spanner">SpannerDriverSettings</a>&nbsp;settings)</pre>
@@ -870,7 +870,7 @@ public static&nbsp;java.util.function.Predicate&lt;<a href="../../model/ModelMet
 <li class="blockList">
 <h4>onlySpannerEligibleFields</h4>
 <pre class="methodSignature">@Nonnull
-public static&nbsp;java.util.function.Predicate&lt;<a href="../../model/ModelMetadata.FieldPointer.html" title="class in gust.backend.model">ModelMetadata.FieldPointer</a>&gt;&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerUtil.html#line.553">onlySpannerEligibleFields</a>&#8203;(@Nonnull
+public static&nbsp;java.util.function.Predicate&lt;<a href="../../model/ModelMetadata.FieldPointer.html" title="class in gust.backend.model">ModelMetadata.FieldPointer</a>&gt;&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerUtil.html#line.554">onlySpannerEligibleFields</a>&#8203;(@Nonnull
                                                                                                  <a href="SpannerDriverSettings.html" title="interface in gust.backend.driver.spanner">SpannerDriverSettings</a>&nbsp;settings)</pre>
 <div class="block">Return a <code>Predicate</code> implementation which operates on <a href="../../model/ModelMetadata.FieldPointer.html" title="class in gust.backend.model"><code>ModelMetadata.FieldPointer</code></a> objects to determine eligibility
  for interaction with Spanner.
@@ -896,7 +896,7 @@ public static&nbsp;java.util.function.Predicate&lt;<a href="../../model/ModelMet
 <li class="blockList">
 <h4>maybeWrapType</h4>
 <pre class="methodSignature">@Nonnull
-public static&nbsp;com.google.cloud.spanner.Type&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerUtil.html#line.564">maybeWrapType</a>&#8203;(@Nonnull
+public static&nbsp;com.google.cloud.spanner.Type&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerUtil.html#line.565">maybeWrapType</a>&#8203;(@Nonnull
                                                           <a href="../../model/ModelMetadata.FieldPointer.html" title="class in gust.backend.model">ModelMetadata.FieldPointer</a>&nbsp;field,
                                                           @Nonnull
                                                           com.google.cloud.spanner.Type&nbsp;inner)</pre>
@@ -917,7 +917,7 @@ public static&nbsp;com.google.cloud.spanner.Type&nbsp;<a href="../../../../src-h
 <li class="blockList">
 <h4>resolveType</h4>
 <pre class="methodSignature">@Nonnull
-public static&nbsp;com.google.cloud.spanner.Type&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerUtil.html#line.580">resolveType</a>&#8203;(@Nonnull
+public static&nbsp;com.google.cloud.spanner.Type&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerUtil.html#line.581">resolveType</a>&#8203;(@Nonnull
                                                         <a href="../../model/ModelMetadata.FieldPointer.html" title="class in gust.backend.model">ModelMetadata.FieldPointer</a>&nbsp;pointer,
                                                         @Nonnull
                                                         tools.elide.core.SpannerOptions.SpannerType&nbsp;spannerType)</pre>
@@ -939,7 +939,7 @@ public static&nbsp;com.google.cloud.spanner.Type&nbsp;<a href="../../../../src-h
 <li class="blockList">
 <h4>resolveDefaultType</h4>
 <pre class="methodSignature">@Nonnull
-public static&nbsp;com.google.cloud.spanner.Type&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerUtil.html#line.604">resolveDefaultType</a>&#8203;(@Nonnull
+public static&nbsp;com.google.cloud.spanner.Type&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerUtil.html#line.605">resolveDefaultType</a>&#8203;(@Nonnull
                                                                <a href="../../model/ModelMetadata.FieldPointer.html" title="class in gust.backend.model">ModelMetadata.FieldPointer</a>&nbsp;pointer,
                                                                @Nonnull
                                                                <a href="SpannerDriverSettings.html" title="interface in gust.backend.driver.spanner">SpannerDriverSettings</a>&nbsp;settings)</pre>
@@ -961,7 +961,7 @@ public static&nbsp;com.google.cloud.spanner.Type&nbsp;<a href="../../../../src-h
 <li class="blockList">
 <h4>resolveDefaultType</h4>
 <pre class="methodSignature">@Nonnull
-public static&nbsp;com.google.cloud.spanner.Type&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerUtil.html#line.622">resolveDefaultType</a>&#8203;(@Nonnull
+public static&nbsp;com.google.cloud.spanner.Type&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerUtil.html#line.623">resolveDefaultType</a>&#8203;(@Nonnull
                                                                <a href="../../model/ModelMetadata.FieldPointer.html" title="class in gust.backend.model">ModelMetadata.FieldPointer</a>&nbsp;pointer,
                                                                @Nonnull
                                                                com.google.protobuf.Descriptors.FieldDescriptor.Type&nbsp;protoType,
@@ -986,7 +986,7 @@ public static&nbsp;com.google.cloud.spanner.Type&nbsp;<a href="../../../../src-h
 <li class="blockList">
 <h4>columnOpts</h4>
 <pre class="methodSignature">@Nonnull
-public static&nbsp;java.util.Optional&lt;tools.elide.core.TableFieldOptions&gt;&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerUtil.html#line.694">columnOpts</a>&#8203;(@Nonnull
+public static&nbsp;java.util.Optional&lt;tools.elide.core.TableFieldOptions&gt;&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerUtil.html#line.695">columnOpts</a>&#8203;(@Nonnull
                                                                                 <a href="../../model/ModelMetadata.FieldPointer.html" title="class in gust.backend.model">ModelMetadata.FieldPointer</a>&nbsp;fieldPointer)</pre>
 <div class="block">Given a pre-resolved <a href="../../model/ModelMetadata.FieldPointer.html" title="class in gust.backend.model"><code>ModelMetadata.FieldPointer</code></a>, resolve any present <code>TableFieldOptions</code>.</div>
 <dl>
@@ -1007,7 +1007,7 @@ public static&nbsp;java.util.Optional&lt;tools.elide.core.TableFieldOptions&gt;&
 <li class="blockList">
 <h4>columnOpts</h4>
 <pre class="methodSignature">@Nonnull
-public static&nbsp;java.util.Optional&lt;tools.elide.core.TableFieldOptions&gt;&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerUtil.html#line.713">columnOpts</a>&#8203;(@Nonnull
+public static&nbsp;java.util.Optional&lt;tools.elide.core.TableFieldOptions&gt;&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerUtil.html#line.714">columnOpts</a>&#8203;(@Nonnull
                                                                                 com.google.protobuf.Descriptors.FieldDescriptor&nbsp;field)</pre>
 <div class="block">Given a resolved Protocol Buffer <code>Descriptors.FieldDescriptor</code> which is considered eligible for interaction
  with Spanner, resolve any present column-generic options and annotations via <code>TableFieldOptions</code>.
@@ -1035,7 +1035,7 @@ public static&nbsp;java.util.Optional&lt;tools.elide.core.TableFieldOptions&gt;&
 <li class="blockList">
 <h4>spannerOpts</h4>
 <pre class="methodSignature">@Nonnull
-public static&nbsp;java.util.Optional&lt;tools.elide.core.SpannerFieldOptions&gt;&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerUtil.html#line.739">spannerOpts</a>&#8203;(@Nonnull
+public static&nbsp;java.util.Optional&lt;tools.elide.core.SpannerFieldOptions&gt;&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerUtil.html#line.740">spannerOpts</a>&#8203;(@Nonnull
                                                                                    <a href="../../model/ModelMetadata.FieldPointer.html" title="class in gust.backend.model">ModelMetadata.FieldPointer</a>&nbsp;fieldPointer)</pre>
 <div class="block">Given a pre-resolved <a href="../../model/ModelMetadata.FieldPointer.html" title="class in gust.backend.model"><code>ModelMetadata.FieldPointer</code></a>, resolve any present <code>SpannerFieldOptions</code>.</div>
 <dl>
@@ -1056,7 +1056,7 @@ public static&nbsp;java.util.Optional&lt;tools.elide.core.SpannerFieldOptions&gt
 <li class="blockList">
 <h4>spannerOpts</h4>
 <pre class="methodSignature">@Nonnull
-public static&nbsp;java.util.Optional&lt;tools.elide.core.SpannerFieldOptions&gt;&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerUtil.html#line.756">spannerOpts</a>&#8203;(@Nonnull
+public static&nbsp;java.util.Optional&lt;tools.elide.core.SpannerFieldOptions&gt;&nbsp;<a href="../../../../src-html/gust/backend/driver/spanner/SpannerUtil.html#line.757">spannerOpts</a>&#8203;(@Nonnull
                                                                                    com.google.protobuf.Descriptors.FieldDescriptor&nbsp;field)</pre>
 <div class="block">Given a resolved Protocol Buffer <code>Descriptors.FieldDescriptor</code> which is considered eligible for interaction
  with Spanner, resolve any present Spanner-specific options and annotations via <code>SpannerFieldOptions</code>.

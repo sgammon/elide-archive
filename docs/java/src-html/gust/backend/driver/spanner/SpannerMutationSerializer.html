@@ -290,131 +290,144 @@
 <span class="sourceLineNo">281</span><a id="line.281">                        "'" + field.getMessageType().getFullName() + "'.");</a>
 <span class="sourceLineNo">282</span><a id="line.282"></a>
 <span class="sourceLineNo">283</span><a id="line.283">            case NUMERIC:</a>
-<span class="sourceLineNo">284</span><a id="line.284">                // @TODO(sgammon): support for 'NUMERIC' complex types</a>
-<span class="sourceLineNo">285</span><a id="line.285">                throw new IllegalStateException("Type 'NUMERIC' is not yet supported for use with Spanner.");</a>
-<span class="sourceLineNo">286</span><a id="line.286"></a>
-<span class="sourceLineNo">287</span><a id="line.287">            case ARRAY: throw new IllegalStateException("Illegal array received for flattened serialization.");</a>
-<span class="sourceLineNo">288</span><a id="line.288">        }</a>
-<span class="sourceLineNo">289</span><a id="line.289">    }</a>
-<span class="sourceLineNo">290</span><a id="line.290"></a>
-<span class="sourceLineNo">291</span><a id="line.291">    /**</a>
-<span class="sourceLineNo">292</span><a id="line.292">     * Collapse an individual {@link Message} field into the expected column slow against a given Spanner</a>
-<span class="sourceLineNo">293</span><a id="line.293">     * {@link Mutation} record, which is in the process of being assembled.</a>
-<span class="sourceLineNo">294</span><a id="line.294">     *</a>
-<span class="sourceLineNo">295</span><a id="line.295">     * &lt;p&gt;Each individual model field which is eligible for storage in Spanner must be resolvable to a valid column name</a>
-<span class="sourceLineNo">296</span><a id="line.296">     * and type. This process is usually conducted via model annotations, with sensible defaults built in. Before a</a>
-<span class="sourceLineNo">297</span><a id="line.297">     * value can be duly bound, this method resolves such ancillary values and feeds them into</a>
-<span class="sourceLineNo">298</span><a id="line.298">     * {@link #bindValueTyped(Descriptors.FieldDescriptor, ValueBinder, Type, Object, Optional, Optional)}, where the</a>
-<span class="sourceLineNo">299</span><a id="line.299">     * binding itself takes place.&lt;/p&gt;</a>
-<span class="sourceLineNo">300</span><a id="line.300">     *</a>
-<span class="sourceLineNo">301</span><a id="line.301">     * @see #bindValueTyped(Descriptors.FieldDescriptor, ValueBinder, Type, Object, Optional, Optional) Inner post-check</a>
-<span class="sourceLineNo">302</span><a id="line.302">     *      typed value injection.</a>
-<span class="sourceLineNo">303</span><a id="line.303">     * @param instance Model instance we should pluck the field value from.</a>
-<span class="sourceLineNo">304</span><a id="line.304">     * @param fieldPointer Resolved pointer to the model field we are collapsing into a column value.</a>
-<span class="sourceLineNo">305</span><a id="line.305">     * @param target Mutation target we should write the resulting value to, as applicable.</a>
-<span class="sourceLineNo">306</span><a id="line.306">     */</a>
-<span class="sourceLineNo">307</span><a id="line.307">    @VisibleForTesting</a>
-<span class="sourceLineNo">308</span><a id="line.308">    void collapseColumnField(@Nonnull Model instance,</a>
-<span class="sourceLineNo">309</span><a id="line.309">                             @Nonnull FieldPointer fieldPointer,</a>
-<span class="sourceLineNo">310</span><a id="line.310">                             @Nonnull Mutation.WriteBuilder target) {</a>
-<span class="sourceLineNo">311</span><a id="line.311">        var field = fieldPointer.getField();</a>
-<span class="sourceLineNo">312</span><a id="line.312">        var fieldValue = pluck(instance, fieldPointer.getName());</a>
-<span class="sourceLineNo">313</span><a id="line.313"></a>
-<span class="sourceLineNo">314</span><a id="line.314">        if (!field.isRepeated() &amp;&amp; !instance.hasField(field) || fieldValue.getValue().isEmpty() ||</a>
-<span class="sourceLineNo">315</span><a id="line.315">            field.isRepeated() &amp;&amp; instance.getRepeatedFieldCount(field) &lt; 1) {</a>
-<span class="sourceLineNo">316</span><a id="line.316">            // field has no value. skip, but log about it.</a>
-<span class="sourceLineNo">317</span><a id="line.317">            if (logging.isTraceEnabled())</a>
-<span class="sourceLineNo">318</span><a id="line.318">                logging.trace(</a>
-<span class="sourceLineNo">319</span><a id="line.319">                    "Field '{}' on model '{}' had no value. Skipping.",</a>
-<span class="sourceLineNo">320</span><a id="line.320">                    field,</a>
-<span class="sourceLineNo">321</span><a id="line.321">                    model.getFullName()</a>
-<span class="sourceLineNo">322</span><a id="line.322">                );</a>
-<span class="sourceLineNo">323</span><a id="line.323">            return;</a>
-<span class="sourceLineNo">324</span><a id="line.324">        }</a>
-<span class="sourceLineNo">325</span><a id="line.325"></a>
-<span class="sourceLineNo">326</span><a id="line.326">        // virtualize the key property, when encountered</a>
-<span class="sourceLineNo">327</span><a id="line.327">        if (!field.isRepeated() &amp;&amp; matchFieldAnnotation(field, FieldType.KEY)) {</a>
-<span class="sourceLineNo">328</span><a id="line.328">            this.collapseRowKey(fieldPointer, instance, target);</a>
-<span class="sourceLineNo">329</span><a id="line.329">            return;</a>
-<span class="sourceLineNo">330</span><a id="line.330">        } else if (field.isRepeated() &amp;&amp; matchFieldAnnotation(field, FieldType.KEY)) {</a>
-<span class="sourceLineNo">331</span><a id="line.331">            throw new IllegalStateException(</a>
-<span class="sourceLineNo">332</span><a id="line.332">                "Cannot make `KEY` field repeated (on model '" + field.getMessageType().getFullName() + "'."</a>
-<span class="sourceLineNo">333</span><a id="line.333">            );</a>
-<span class="sourceLineNo">334</span><a id="line.334">        }</a>
-<span class="sourceLineNo">335</span><a id="line.335"></a>
-<span class="sourceLineNo">336</span><a id="line.336">        // resolve any column or spanner options</a>
-<span class="sourceLineNo">337</span><a id="line.337">        var columnOpts = columnOpts(fieldPointer);</a>
-<span class="sourceLineNo">338</span><a id="line.338">        var spannerOpts = spannerOpts(fieldPointer);</a>
-<span class="sourceLineNo">339</span><a id="line.339"></a>
-<span class="sourceLineNo">340</span><a id="line.340">        // resolve column name...</a>
-<span class="sourceLineNo">341</span><a id="line.341">        var columnName = resolveColumnName(</a>
-<span class="sourceLineNo">342</span><a id="line.342">            fieldPointer,</a>
-<span class="sourceLineNo">343</span><a id="line.343">            spannerOpts,</a>
-<span class="sourceLineNo">344</span><a id="line.344">            columnOpts,</a>
-<span class="sourceLineNo">345</span><a id="line.345">            driverSettings</a>
-<span class="sourceLineNo">346</span><a id="line.346">        );</a>
-<span class="sourceLineNo">347</span><a id="line.347"></a>
-<span class="sourceLineNo">348</span><a id="line.348">        // then type...</a>
-<span class="sourceLineNo">349</span><a id="line.349">        var columnType = resolveColumnType(</a>
-<span class="sourceLineNo">350</span><a id="line.350">            fieldPointer,</a>
-<span class="sourceLineNo">351</span><a id="line.351">            spannerOpts,</a>
-<span class="sourceLineNo">352</span><a id="line.352">            columnOpts,</a>
-<span class="sourceLineNo">353</span><a id="line.353">            driverSettings</a>
-<span class="sourceLineNo">354</span><a id="line.354">        );</a>
-<span class="sourceLineNo">355</span><a id="line.355"></a>
-<span class="sourceLineNo">356</span><a id="line.356">        // then raw value...</a>
-<span class="sourceLineNo">357</span><a id="line.357">        var valueBinder = target.set(columnName);</a>
-<span class="sourceLineNo">358</span><a id="line.358">        var rawValue = fieldValue.getValue().orElseThrow();</a>
-<span class="sourceLineNo">359</span><a id="line.359"></a>
-<span class="sourceLineNo">360</span><a id="line.360">        bindValueTyped(</a>
-<span class="sourceLineNo">361</span><a id="line.361">            field,</a>
-<span class="sourceLineNo">362</span><a id="line.362">            valueBinder,</a>
-<span class="sourceLineNo">363</span><a id="line.363">            columnType,</a>
-<span class="sourceLineNo">364</span><a id="line.364">            rawValue,</a>
-<span class="sourceLineNo">365</span><a id="line.365">            spannerOpts,</a>
-<span class="sourceLineNo">366</span><a id="line.366">            columnOpts</a>
+<span class="sourceLineNo">284</span><a id="line.284">                // source fields for `NUMERIC` columns can only be strings. while we could safely store 32-bit/64-bit</a>
+<span class="sourceLineNo">285</span><a id="line.285">                // signed or unsigned (fixed or unfixed) integer types, and float/double types, safely in this field,</a>
+<span class="sourceLineNo">286</span><a id="line.286">                // we cannot safely decode them from this field, which may break the `long` and `short` ceilings. so,</a>
+<span class="sourceLineNo">287</span><a id="line.287">                // following Google's advice on the matter (https://cloud.google.com/spanner/docs/working-with-numerics)</a>
+<span class="sourceLineNo">288</span><a id="line.288">                // they are implemented as strings.</a>
+<span class="sourceLineNo">289</span><a id="line.289">                if (field.getType() == Descriptors.FieldDescriptor.Type.STRING) {</a>
+<span class="sourceLineNo">290</span><a id="line.290">                    valueBinder.to(Value.string((String)rawValue));</a>
+<span class="sourceLineNo">291</span><a id="line.291">                    break;</a>
+<span class="sourceLineNo">292</span><a id="line.292">                }</a>
+<span class="sourceLineNo">293</span><a id="line.293"></a>
+<span class="sourceLineNo">294</span><a id="line.294">                // throw illegal state</a>
+<span class="sourceLineNo">295</span><a id="line.295">                throw new IllegalStateException(</a>
+<span class="sourceLineNo">296</span><a id="line.296">                    "NUMERIC fields must be expressed as proto-strings, in exponent notation if necessary. For " +</a>
+<span class="sourceLineNo">297</span><a id="line.297">                    "more information, please see the Cloud Spanner documentation regarding NUMERIC types: " +</a>
+<span class="sourceLineNo">298</span><a id="line.298">                    "https://cloud.google.com/spanner/docs/working-with-numerics");</a>
+<span class="sourceLineNo">299</span><a id="line.299"></a>
+<span class="sourceLineNo">300</span><a id="line.300">            case ARRAY: throw new IllegalStateException("Illegal array received for flattened serialization.");</a>
+<span class="sourceLineNo">301</span><a id="line.301">        }</a>
+<span class="sourceLineNo">302</span><a id="line.302">    }</a>
+<span class="sourceLineNo">303</span><a id="line.303"></a>
+<span class="sourceLineNo">304</span><a id="line.304">    /**</a>
+<span class="sourceLineNo">305</span><a id="line.305">     * Collapse an individual {@link Message} field into the expected column slow against a given Spanner</a>
+<span class="sourceLineNo">306</span><a id="line.306">     * {@link Mutation} record, which is in the process of being assembled.</a>
+<span class="sourceLineNo">307</span><a id="line.307">     *</a>
+<span class="sourceLineNo">308</span><a id="line.308">     * &lt;p&gt;Each individual model field which is eligible for storage in Spanner must be resolvable to a valid column name</a>
+<span class="sourceLineNo">309</span><a id="line.309">     * and type. This process is usually conducted via model annotations, with sensible defaults built in. Before a</a>
+<span class="sourceLineNo">310</span><a id="line.310">     * value can be duly bound, this method resolves such ancillary values and feeds them into</a>
+<span class="sourceLineNo">311</span><a id="line.311">     * {@link #bindValueTyped(Descriptors.FieldDescriptor, ValueBinder, Type, Object, Optional, Optional)}, where the</a>
+<span class="sourceLineNo">312</span><a id="line.312">     * binding itself takes place.&lt;/p&gt;</a>
+<span class="sourceLineNo">313</span><a id="line.313">     *</a>
+<span class="sourceLineNo">314</span><a id="line.314">     * @see #bindValueTyped(Descriptors.FieldDescriptor, ValueBinder, Type, Object, Optional, Optional) Inner post-check</a>
+<span class="sourceLineNo">315</span><a id="line.315">     *      typed value injection.</a>
+<span class="sourceLineNo">316</span><a id="line.316">     * @param instance Model instance we should pluck the field value from.</a>
+<span class="sourceLineNo">317</span><a id="line.317">     * @param fieldPointer Resolved pointer to the model field we are collapsing into a column value.</a>
+<span class="sourceLineNo">318</span><a id="line.318">     * @param target Mutation target we should write the resulting value to, as applicable.</a>
+<span class="sourceLineNo">319</span><a id="line.319">     */</a>
+<span class="sourceLineNo">320</span><a id="line.320">    @VisibleForTesting</a>
+<span class="sourceLineNo">321</span><a id="line.321">    void collapseColumnField(@Nonnull Model instance,</a>
+<span class="sourceLineNo">322</span><a id="line.322">                             @Nonnull FieldPointer fieldPointer,</a>
+<span class="sourceLineNo">323</span><a id="line.323">                             @Nonnull Mutation.WriteBuilder target) {</a>
+<span class="sourceLineNo">324</span><a id="line.324">        var field = fieldPointer.getField();</a>
+<span class="sourceLineNo">325</span><a id="line.325">        var fieldValue = pluck(instance, fieldPointer.getName());</a>
+<span class="sourceLineNo">326</span><a id="line.326"></a>
+<span class="sourceLineNo">327</span><a id="line.327">        if (!field.isRepeated() &amp;&amp; !instance.hasField(field) || fieldValue.getValue().isEmpty() ||</a>
+<span class="sourceLineNo">328</span><a id="line.328">            field.isRepeated() &amp;&amp; instance.getRepeatedFieldCount(field) &lt; 1) {</a>
+<span class="sourceLineNo">329</span><a id="line.329">            // field has no value. skip, but log about it.</a>
+<span class="sourceLineNo">330</span><a id="line.330">            if (logging.isTraceEnabled())</a>
+<span class="sourceLineNo">331</span><a id="line.331">                logging.trace(</a>
+<span class="sourceLineNo">332</span><a id="line.332">                    "Field '{}' on model '{}' had no value. Skipping.",</a>
+<span class="sourceLineNo">333</span><a id="line.333">                    field,</a>
+<span class="sourceLineNo">334</span><a id="line.334">                    model.getFullName()</a>
+<span class="sourceLineNo">335</span><a id="line.335">                );</a>
+<span class="sourceLineNo">336</span><a id="line.336">            return;</a>
+<span class="sourceLineNo">337</span><a id="line.337">        }</a>
+<span class="sourceLineNo">338</span><a id="line.338"></a>
+<span class="sourceLineNo">339</span><a id="line.339">        // virtualize the key property, when encountered</a>
+<span class="sourceLineNo">340</span><a id="line.340">        if (!field.isRepeated() &amp;&amp; matchFieldAnnotation(field, FieldType.KEY)) {</a>
+<span class="sourceLineNo">341</span><a id="line.341">            this.collapseRowKey(fieldPointer, instance, target);</a>
+<span class="sourceLineNo">342</span><a id="line.342">            return;</a>
+<span class="sourceLineNo">343</span><a id="line.343">        } else if (field.isRepeated() &amp;&amp; matchFieldAnnotation(field, FieldType.KEY)) {</a>
+<span class="sourceLineNo">344</span><a id="line.344">            throw new IllegalStateException(</a>
+<span class="sourceLineNo">345</span><a id="line.345">                "Cannot make `KEY` field repeated (on model '" + field.getMessageType().getFullName() + "'."</a>
+<span class="sourceLineNo">346</span><a id="line.346">            );</a>
+<span class="sourceLineNo">347</span><a id="line.347">        }</a>
+<span class="sourceLineNo">348</span><a id="line.348"></a>
+<span class="sourceLineNo">349</span><a id="line.349">        // resolve any column or spanner options</a>
+<span class="sourceLineNo">350</span><a id="line.350">        var columnOpts = columnOpts(fieldPointer);</a>
+<span class="sourceLineNo">351</span><a id="line.351">        var spannerOpts = spannerOpts(fieldPointer);</a>
+<span class="sourceLineNo">352</span><a id="line.352"></a>
+<span class="sourceLineNo">353</span><a id="line.353">        // resolve column name...</a>
+<span class="sourceLineNo">354</span><a id="line.354">        var columnName = resolveColumnName(</a>
+<span class="sourceLineNo">355</span><a id="line.355">            fieldPointer,</a>
+<span class="sourceLineNo">356</span><a id="line.356">            spannerOpts,</a>
+<span class="sourceLineNo">357</span><a id="line.357">            columnOpts,</a>
+<span class="sourceLineNo">358</span><a id="line.358">            driverSettings</a>
+<span class="sourceLineNo">359</span><a id="line.359">        );</a>
+<span class="sourceLineNo">360</span><a id="line.360"></a>
+<span class="sourceLineNo">361</span><a id="line.361">        // then type...</a>
+<span class="sourceLineNo">362</span><a id="line.362">        var columnType = resolveColumnType(</a>
+<span class="sourceLineNo">363</span><a id="line.363">            fieldPointer,</a>
+<span class="sourceLineNo">364</span><a id="line.364">            spannerOpts,</a>
+<span class="sourceLineNo">365</span><a id="line.365">            columnOpts,</a>
+<span class="sourceLineNo">366</span><a id="line.366">            driverSettings</a>
 <span class="sourceLineNo">367</span><a id="line.367">        );</a>
-<span class="sourceLineNo">368</span><a id="line.368">    }</a>
-<span class="sourceLineNo">369</span><a id="line.369"></a>
-<span class="sourceLineNo">370</span><a id="line.370">    /**</a>
-<span class="sourceLineNo">371</span><a id="line.371">     * Construct a {@link Mutation} serializer for the provided &lt;b&gt;instance&lt;/b&gt;.</a>
-<span class="sourceLineNo">372</span><a id="line.372">     *</a>
-<span class="sourceLineNo">373</span><a id="line.373">     * @param instance Model instance to acquire a mutation serializer for.</a>
-<span class="sourceLineNo">374</span><a id="line.374">     * @param driverSettings Settings for the Spanner driver itself.</a>
-<span class="sourceLineNo">375</span><a id="line.375">     * @param &lt;M&gt; Model type to deserialize.</a>
-<span class="sourceLineNo">376</span><a id="line.376">     * @return Snapshot deserializer instance.</a>
-<span class="sourceLineNo">377</span><a id="line.377">     */</a>
-<span class="sourceLineNo">378</span><a id="line.378">    @SuppressWarnings("SameParameterValue")</a>
-<span class="sourceLineNo">379</span><a id="line.379">    static &lt;M extends Message&gt; SpannerMutationSerializer&lt;M&gt; forModel(@Nonnull M instance,</a>
-<span class="sourceLineNo">380</span><a id="line.380">                                                                     @Nonnull SpannerDriverSettings driverSettings) {</a>
-<span class="sourceLineNo">381</span><a id="line.381">        return new SpannerMutationSerializer&lt;&gt;(</a>
-<span class="sourceLineNo">382</span><a id="line.382">            instance,</a>
-<span class="sourceLineNo">383</span><a id="line.383">            driverSettings</a>
-<span class="sourceLineNo">384</span><a id="line.384">        );</a>
-<span class="sourceLineNo">385</span><a id="line.385">    }</a>
-<span class="sourceLineNo">386</span><a id="line.386"></a>
-<span class="sourceLineNo">387</span><a id="line.387">    /** @inheritDoc */</a>
-<span class="sourceLineNo">388</span><a id="line.388">    @Override</a>
-<span class="sourceLineNo">389</span><a id="line.389">    public @Nonnull Mutation deflate(@Nonnull Model input) throws ModelDeflateException {</a>
-<span class="sourceLineNo">390</span><a id="line.390">        // `initializeMutation` must be called before `deflate`. it is force-emptied each cycle to prevent</a>
-<span class="sourceLineNo">391</span><a id="line.391">        var writeBuilder = this.target;</a>
-<span class="sourceLineNo">392</span><a id="line.392">        Objects.requireNonNull(input, "cannot deflate `null` input for Spanner mutation");</a>
-<span class="sourceLineNo">393</span><a id="line.393">        Objects.requireNonNull(writeBuilder, "cannot deflate model with no initialized write target.");</a>
-<span class="sourceLineNo">394</span><a id="line.394"></a>
-<span class="sourceLineNo">395</span><a id="line.395">        // stream all non-recursive model fields, filtering down only to fields which are eligible for storage in</a>
-<span class="sourceLineNo">396</span><a id="line.396">        // Spanner. for each field, invoke `collapseColumnField`, which mutates the held builder in-place.</a>
-<span class="sourceLineNo">397</span><a id="line.397">        forEachField(</a>
-<span class="sourceLineNo">398</span><a id="line.398">          model,</a>
-<span class="sourceLineNo">399</span><a id="line.399">          Optional.of(onlySpannerEligibleFields(driverSettings))</a>
-<span class="sourceLineNo">400</span><a id="line.400">        ).forEach((field) -&gt;</a>
-<span class="sourceLineNo">401</span><a id="line.401">            this.collapseColumnField(input, field, writeBuilder)</a>
-<span class="sourceLineNo">402</span><a id="line.402">        );</a>
-<span class="sourceLineNo">403</span><a id="line.403"></a>
-<span class="sourceLineNo">404</span><a id="line.404">        final Mutation mutation = writeBuilder.build();</a>
-<span class="sourceLineNo">405</span><a id="line.405">        this.target = null;</a>
-<span class="sourceLineNo">406</span><a id="line.406">        return mutation;</a>
-<span class="sourceLineNo">407</span><a id="line.407">    }</a>
-<span class="sourceLineNo">408</span><a id="line.408">}</a>
+<span class="sourceLineNo">368</span><a id="line.368"></a>
+<span class="sourceLineNo">369</span><a id="line.369">        // then raw value...</a>
+<span class="sourceLineNo">370</span><a id="line.370">        var valueBinder = target.set(columnName);</a>
+<span class="sourceLineNo">371</span><a id="line.371">        var rawValue = fieldValue.getValue().orElseThrow();</a>
+<span class="sourceLineNo">372</span><a id="line.372"></a>
+<span class="sourceLineNo">373</span><a id="line.373">        bindValueTyped(</a>
+<span class="sourceLineNo">374</span><a id="line.374">            field,</a>
+<span class="sourceLineNo">375</span><a id="line.375">            valueBinder,</a>
+<span class="sourceLineNo">376</span><a id="line.376">            columnType,</a>
+<span class="sourceLineNo">377</span><a id="line.377">            rawValue,</a>
+<span class="sourceLineNo">378</span><a id="line.378">            spannerOpts,</a>
+<span class="sourceLineNo">379</span><a id="line.379">            columnOpts</a>
+<span class="sourceLineNo">380</span><a id="line.380">        );</a>
+<span class="sourceLineNo">381</span><a id="line.381">    }</a>
+<span class="sourceLineNo">382</span><a id="line.382"></a>
+<span class="sourceLineNo">383</span><a id="line.383">    /**</a>
+<span class="sourceLineNo">384</span><a id="line.384">     * Construct a {@link Mutation} serializer for the provided &lt;b&gt;instance&lt;/b&gt;.</a>
+<span class="sourceLineNo">385</span><a id="line.385">     *</a>
+<span class="sourceLineNo">386</span><a id="line.386">     * @param instance Model instance to acquire a mutation serializer for.</a>
+<span class="sourceLineNo">387</span><a id="line.387">     * @param driverSettings Settings for the Spanner driver itself.</a>
+<span class="sourceLineNo">388</span><a id="line.388">     * @param &lt;M&gt; Model type to deserialize.</a>
+<span class="sourceLineNo">389</span><a id="line.389">     * @return Snapshot deserializer instance.</a>
+<span class="sourceLineNo">390</span><a id="line.390">     */</a>
+<span class="sourceLineNo">391</span><a id="line.391">    @SuppressWarnings("SameParameterValue")</a>
+<span class="sourceLineNo">392</span><a id="line.392">    static &lt;M extends Message&gt; SpannerMutationSerializer&lt;M&gt; forModel(@Nonnull M instance,</a>
+<span class="sourceLineNo">393</span><a id="line.393">                                                                     @Nonnull SpannerDriverSettings driverSettings) {</a>
+<span class="sourceLineNo">394</span><a id="line.394">        return new SpannerMutationSerializer&lt;&gt;(</a>
+<span class="sourceLineNo">395</span><a id="line.395">            instance,</a>
+<span class="sourceLineNo">396</span><a id="line.396">            driverSettings</a>
+<span class="sourceLineNo">397</span><a id="line.397">        );</a>
+<span class="sourceLineNo">398</span><a id="line.398">    }</a>
+<span class="sourceLineNo">399</span><a id="line.399"></a>
+<span class="sourceLineNo">400</span><a id="line.400">    /** @inheritDoc */</a>
+<span class="sourceLineNo">401</span><a id="line.401">    @Override</a>
+<span class="sourceLineNo">402</span><a id="line.402">    public @Nonnull Mutation deflate(@Nonnull Model input) throws ModelDeflateException {</a>
+<span class="sourceLineNo">403</span><a id="line.403">        // `initializeMutation` must be called before `deflate`. it is force-emptied each cycle to prevent</a>
+<span class="sourceLineNo">404</span><a id="line.404">        var writeBuilder = this.target;</a>
+<span class="sourceLineNo">405</span><a id="line.405">        Objects.requireNonNull(input, "cannot deflate `null` input for Spanner mutation");</a>
+<span class="sourceLineNo">406</span><a id="line.406">        Objects.requireNonNull(writeBuilder, "cannot deflate model with no initialized write target.");</a>
+<span class="sourceLineNo">407</span><a id="line.407"></a>
+<span class="sourceLineNo">408</span><a id="line.408">        // stream all non-recursive model fields, filtering down only to fields which are eligible for storage in</a>
+<span class="sourceLineNo">409</span><a id="line.409">        // Spanner. for each field, invoke `collapseColumnField`, which mutates the held builder in-place.</a>
+<span class="sourceLineNo">410</span><a id="line.410">        forEachField(</a>
+<span class="sourceLineNo">411</span><a id="line.411">          model,</a>
+<span class="sourceLineNo">412</span><a id="line.412">          Optional.of(onlySpannerEligibleFields(driverSettings))</a>
+<span class="sourceLineNo">413</span><a id="line.413">        ).forEach((field) -&gt;</a>
+<span class="sourceLineNo">414</span><a id="line.414">            this.collapseColumnField(input, field, writeBuilder)</a>
+<span class="sourceLineNo">415</span><a id="line.415">        );</a>
+<span class="sourceLineNo">416</span><a id="line.416"></a>
+<span class="sourceLineNo">417</span><a id="line.417">        final Mutation mutation = writeBuilder.build();</a>
+<span class="sourceLineNo">418</span><a id="line.418">        this.target = null;</a>
+<span class="sourceLineNo">419</span><a id="line.419">        return mutation;</a>
+<span class="sourceLineNo">420</span><a id="line.420">    }</a>
+<span class="sourceLineNo">421</span><a id="line.421">}</a>
 
 
 

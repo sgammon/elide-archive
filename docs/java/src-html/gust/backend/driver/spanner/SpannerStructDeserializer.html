@@ -113,393 +113,425 @@
 <span class="sourceLineNo">104</span><a id="line.104">     * &lt;p&gt;The provided field pointer is used to fill in the primary key ID pulled from a given Spanner row result. That</a>
 <span class="sourceLineNo">105</span><a id="line.105">     * ID is spliced into the key record, which is then spliced into the target builder.&lt;/p&gt;</a>
 <span class="sourceLineNo">106</span><a id="line.106">     *</a>
-<span class="sourceLineNo">107</span><a id="line.107">     * @param fieldPointer Resolved field pointer.</a>
-<span class="sourceLineNo">108</span><a id="line.108">     * @param target Target message builder.</a>
-<span class="sourceLineNo">109</span><a id="line.109">     * @param value Resolved value for the ID.</a>
-<span class="sourceLineNo">110</span><a id="line.110">     */</a>
-<span class="sourceLineNo">111</span><a id="line.111">    private void inflateRowKey(@Nonnull ModelMetadata.FieldPointer fieldPointer,</a>
-<span class="sourceLineNo">112</span><a id="line.112">                               @Nonnull Message.Builder target,</a>
-<span class="sourceLineNo">113</span><a id="line.113">                               @Nonnull Value value) {</a>
-<span class="sourceLineNo">114</span><a id="line.114">        Objects.requireNonNull(fieldPointer, "cannot inflate Spanner key with no field pointer");</a>
-<span class="sourceLineNo">115</span><a id="line.115">        Objects.requireNonNull(value, "cannot inflate Spanner key from NULL value");</a>
-<span class="sourceLineNo">116</span><a id="line.116">        var keyBuilder = target.newBuilderForField(fieldPointer.getField());</a>
-<span class="sourceLineNo">117</span><a id="line.117">        var keyType = resolveKeyType(idField(keyBuilder.getDefaultInstanceForType()).orElseThrow());</a>
-<span class="sourceLineNo">118</span><a id="line.118"></a>
-<span class="sourceLineNo">119</span><a id="line.119">        // splice the ID into the key</a>
-<span class="sourceLineNo">120</span><a id="line.120">        if (keyType.getCode() == Type.Code.STRING) {</a>
-<span class="sourceLineNo">121</span><a id="line.121">            spliceIdBuilder(keyBuilder, Optional.of(value.getString()));</a>
-<span class="sourceLineNo">122</span><a id="line.122">        } else if (keyType.getCode() == Type.Code.INT64) {</a>
-<span class="sourceLineNo">123</span><a id="line.123">            spliceIdBuilder(keyBuilder, Optional.of(value.getInt64()));</a>
-<span class="sourceLineNo">124</span><a id="line.124">        } else {</a>
-<span class="sourceLineNo">125</span><a id="line.125">            throw new IllegalStateException(format("Unsupported key type: '%s'.", keyType.getCode().name()));</a>
-<span class="sourceLineNo">126</span><a id="line.126">        }</a>
-<span class="sourceLineNo">127</span><a id="line.127"></a>
-<span class="sourceLineNo">128</span><a id="line.128">        // splice the key into the model</a>
-<span class="sourceLineNo">129</span><a id="line.129">        target.setField(fieldPointer.getField(), keyBuilder.build());</a>
-<span class="sourceLineNo">130</span><a id="line.130">    }</a>
-<span class="sourceLineNo">131</span><a id="line.131"></a>
-<span class="sourceLineNo">132</span><a id="line.132">    /**</a>
-<span class="sourceLineNo">133</span><a id="line.133">     * Resolve a Cloud Spanner column and value for the provided model field, from the source row structure, if one</a>
-<span class="sourceLineNo">134</span><a id="line.134">     * is present.</a>
-<span class="sourceLineNo">135</span><a id="line.135">     *</a>
-<span class="sourceLineNo">136</span><a id="line.136">     * &lt;p&gt;If the column has no value, it is skipped. If the column has a value present, it is decoded according to the</a>
-<span class="sourceLineNo">137</span><a id="line.137">     * Cloud Spanner {@link Type} specified for the column, each of which are mapped to primitive Protocol Buffer</a>
-<span class="sourceLineNo">138</span><a id="line.138">     * object field types.&lt;/p&gt;</a>
-<span class="sourceLineNo">139</span><a id="line.139">     *</a>
-<span class="sourceLineNo">140</span><a id="line.140">     * @param target Target protocol buffer builder to fill in.</a>
-<span class="sourceLineNo">141</span><a id="line.141">     * @param source Row result from Spanner to fill from.</a>
-<span class="sourceLineNo">142</span><a id="line.142">     * @param fieldPointer Field we are resolving from the proto.</a>
-<span class="sourceLineNo">143</span><a id="line.143">     */</a>
-<span class="sourceLineNo">144</span><a id="line.144">    private void convergeColumnField(@Nonnull Message.Builder target,</a>
-<span class="sourceLineNo">145</span><a id="line.145">                                     @Nonnull Struct source,</a>
-<span class="sourceLineNo">146</span><a id="line.146">                                     @Nonnull ModelMetadata.FieldPointer fieldPointer) {</a>
-<span class="sourceLineNo">147</span><a id="line.147">        // resolve any generic column options and spanner extension options</a>
-<span class="sourceLineNo">148</span><a id="line.148">        var columnOpts = columnOpts(fieldPointer);</a>
-<span class="sourceLineNo">149</span><a id="line.149">        var spannerOpts = spannerOpts(fieldPointer);</a>
-<span class="sourceLineNo">150</span><a id="line.150"></a>
-<span class="sourceLineNo">151</span><a id="line.151">        // resolve the expected column index</a>
-<span class="sourceLineNo">152</span><a id="line.152">        var columnValue = resolveColumnValue(</a>
-<span class="sourceLineNo">153</span><a id="line.153">            source,</a>
-<span class="sourceLineNo">154</span><a id="line.154">            fieldPointer,</a>
-<span class="sourceLineNo">155</span><a id="line.155">            spannerOpts,</a>
-<span class="sourceLineNo">156</span><a id="line.156">            columnOpts,</a>
-<span class="sourceLineNo">157</span><a id="line.157">            driverSettings</a>
-<span class="sourceLineNo">158</span><a id="line.158">        );</a>
-<span class="sourceLineNo">159</span><a id="line.159"></a>
-<span class="sourceLineNo">160</span><a id="line.160">        if (columnValue.isNull()) {</a>
-<span class="sourceLineNo">161</span><a id="line.161">            if (logging.isTraceEnabled())</a>
-<span class="sourceLineNo">162</span><a id="line.162">                logging.trace("Resolved column value for field '{}' was NULL. Skipping.",</a>
-<span class="sourceLineNo">163</span><a id="line.163">                    fieldPointer.getName());</a>
-<span class="sourceLineNo">164</span><a id="line.164">        } else {</a>
-<span class="sourceLineNo">165</span><a id="line.165">            // first up, check to see if this is a key or ID field, and decode it properly if so</a>
-<span class="sourceLineNo">166</span><a id="line.166">            var field = fieldPointer.getField();</a>
-<span class="sourceLineNo">167</span><a id="line.167">            if (matchFieldAnnotation(field, FieldType.KEY) ||</a>
-<span class="sourceLineNo">168</span><a id="line.168">                    matchFieldAnnotation(field, FieldType.ID)) {</a>
-<span class="sourceLineNo">169</span><a id="line.169">                this.inflateRowKey(fieldPointer, target, columnValue);</a>
-<span class="sourceLineNo">170</span><a id="line.170">                return;</a>
-<span class="sourceLineNo">171</span><a id="line.171">            }</a>
-<span class="sourceLineNo">172</span><a id="line.172"></a>
-<span class="sourceLineNo">173</span><a id="line.173">            // if so directed, check the expected type against the real type indicated by Spanner. if this</a>
-<span class="sourceLineNo">174</span><a id="line.174">            // feature is turned off, soft logging errors turn into value exceptions.</a>
-<span class="sourceLineNo">175</span><a id="line.175">            if (driverSettings.checkExpectedTypes()) {</a>
-<span class="sourceLineNo">176</span><a id="line.176">                // resolve the expected column type</a>
-<span class="sourceLineNo">177</span><a id="line.177">                var columnType = resolveColumnType(</a>
-<span class="sourceLineNo">178</span><a id="line.178">                    fieldPointer,</a>
-<span class="sourceLineNo">179</span><a id="line.179">                    spannerOpts,</a>
-<span class="sourceLineNo">180</span><a id="line.180">                    columnOpts,</a>
-<span class="sourceLineNo">181</span><a id="line.181">                    driverSettings</a>
-<span class="sourceLineNo">182</span><a id="line.182">                );</a>
-<span class="sourceLineNo">183</span><a id="line.183"></a>
-<span class="sourceLineNo">184</span><a id="line.184">                if (logging.isTraceEnabled())</a>
-<span class="sourceLineNo">185</span><a id="line.185">                    logging.trace("Resolved Spanner type for field '{}': '{}'",</a>
-<span class="sourceLineNo">186</span><a id="line.186">                        fieldPointer.getName(),</a>
-<span class="sourceLineNo">187</span><a id="line.187">                        columnType.toString());</a>
-<span class="sourceLineNo">188</span><a id="line.188"></a>
-<span class="sourceLineNo">189</span><a id="line.189">                if (!columnType.getCode().equals(columnValue.getType().getCode())) {</a>
-<span class="sourceLineNo">190</span><a id="line.190">                    logging.error(</a>
-<span class="sourceLineNo">191</span><a id="line.191">                            "Type mismatch: field '{}' expected type {}, but got {}.",</a>
-<span class="sourceLineNo">192</span><a id="line.192">                        fieldPointer.getField().getFullName(),</a>
-<span class="sourceLineNo">193</span><a id="line.193">                        columnType.getCode().name(),</a>
-<span class="sourceLineNo">194</span><a id="line.194">                        columnValue.getType().getCode().name()</a>
-<span class="sourceLineNo">195</span><a id="line.195">                    );</a>
-<span class="sourceLineNo">196</span><a id="line.196">                    return;</a>
-<span class="sourceLineNo">197</span><a id="line.197">                }</a>
-<span class="sourceLineNo">198</span><a id="line.198">            }</a>
-<span class="sourceLineNo">199</span><a id="line.199"></a>
-<span class="sourceLineNo">200</span><a id="line.200">            // if we make it this far, the following conditions are true, and we are ready to copy a value from</a>
-<span class="sourceLineNo">201</span><a id="line.201">            // the source struct into the proto:</a>
-<span class="sourceLineNo">202</span><a id="line.202">            //</a>
-<span class="sourceLineNo">203</span><a id="line.203">            // 1) we have a non-NULL value in Spanner for a given column, with a resolved name and type.</a>
-<span class="sourceLineNo">204</span><a id="line.204">            // 2) the name and type match the proto model, where we also have a resolved proto native type.</a>
-<span class="sourceLineNo">205</span><a id="line.205">            // 3) we are certainly operating on a leaf field.</a>
-<span class="sourceLineNo">206</span><a id="line.206"></a>
-<span class="sourceLineNo">207</span><a id="line.207">            boolean repeated = columnValue.getType().getCode() == Type.Code.ARRAY;</a>
-<span class="sourceLineNo">208</span><a id="line.208">            Type.Code innerType = repeated ?</a>
-<span class="sourceLineNo">209</span><a id="line.209">                columnValue.getType().getArrayElementType().getCode() :</a>
-<span class="sourceLineNo">210</span><a id="line.210">                columnValue.getType().getCode();</a>
-<span class="sourceLineNo">211</span><a id="line.211"></a>
-<span class="sourceLineNo">212</span><a id="line.212">            switch (innerType) {</a>
-<span class="sourceLineNo">213</span><a id="line.213">                case BOOL:</a>
-<span class="sourceLineNo">214</span><a id="line.214">                    spliceBuilder(</a>
-<span class="sourceLineNo">215</span><a id="line.215">                        target,</a>
-<span class="sourceLineNo">216</span><a id="line.216">                        fieldPointer,</a>
-<span class="sourceLineNo">217</span><a id="line.217">                        Optional.of(repeated ? columnValue.getBoolArray() : columnValue.getBool())</a>
-<span class="sourceLineNo">218</span><a id="line.218">                    );</a>
-<span class="sourceLineNo">219</span><a id="line.219">                    break;</a>
-<span class="sourceLineNo">220</span><a id="line.220">                case INT64:</a>
+<span class="sourceLineNo">107</span><a id="line.107">     * @param target Target message builder.</a>
+<span class="sourceLineNo">108</span><a id="line.108">     * @param value Resolved value for the ID.</a>
+<span class="sourceLineNo">109</span><a id="line.109">     */</a>
+<span class="sourceLineNo">110</span><a id="line.110">    private void inflateRowKey(@Nonnull Message.Builder target,</a>
+<span class="sourceLineNo">111</span><a id="line.111">                               @Nonnull Value value) {</a>
+<span class="sourceLineNo">112</span><a id="line.112">        Objects.requireNonNull(value, "cannot inflate Spanner key from NULL value");</a>
+<span class="sourceLineNo">113</span><a id="line.113">        var baseInstance = target.getDefaultInstanceForType();</a>
+<span class="sourceLineNo">114</span><a id="line.114">        var keyField = keyField(baseInstance).orElseThrow();</a>
+<span class="sourceLineNo">115</span><a id="line.115">        var idField = idField(baseInstance).orElseThrow();</a>
+<span class="sourceLineNo">116</span><a id="line.116"></a>
+<span class="sourceLineNo">117</span><a id="line.117">        var keyBuilder = target.newBuilderForField(keyField.getField());</a>
+<span class="sourceLineNo">118</span><a id="line.118">        var keyType = resolveKeyType(idField);</a>
+<span class="sourceLineNo">119</span><a id="line.119"></a>
+<span class="sourceLineNo">120</span><a id="line.120">        // splice the ID into the key</a>
+<span class="sourceLineNo">121</span><a id="line.121">        if (keyType.getCode() == Type.Code.STRING) {</a>
+<span class="sourceLineNo">122</span><a id="line.122">            spliceIdBuilder(keyBuilder, Optional.of(value.getString()));</a>
+<span class="sourceLineNo">123</span><a id="line.123">        } else if (keyType.getCode() == Type.Code.INT64) {</a>
+<span class="sourceLineNo">124</span><a id="line.124">            // special case: stringify if so instructed</a>
+<span class="sourceLineNo">125</span><a id="line.125">            if (idField.getField().getType().equals(Descriptors.FieldDescriptor.Type.STRING)) {</a>
+<span class="sourceLineNo">126</span><a id="line.126">                spliceIdBuilder(keyBuilder, Optional.of(String.valueOf(value.getInt64())));</a>
+<span class="sourceLineNo">127</span><a id="line.127">            } else {</a>
+<span class="sourceLineNo">128</span><a id="line.128">                spliceIdBuilder(keyBuilder, Optional.of(value.getInt64()));</a>
+<span class="sourceLineNo">129</span><a id="line.129">            }</a>
+<span class="sourceLineNo">130</span><a id="line.130">        } else {</a>
+<span class="sourceLineNo">131</span><a id="line.131">            throw new IllegalStateException(format("Unsupported key type: '%s'.", keyType.getCode().name()));</a>
+<span class="sourceLineNo">132</span><a id="line.132">        }</a>
+<span class="sourceLineNo">133</span><a id="line.133"></a>
+<span class="sourceLineNo">134</span><a id="line.134">        // splice the key into the model</a>
+<span class="sourceLineNo">135</span><a id="line.135">        target.setField(keyField.getField(), keyBuilder.build());</a>
+<span class="sourceLineNo">136</span><a id="line.136">    }</a>
+<span class="sourceLineNo">137</span><a id="line.137"></a>
+<span class="sourceLineNo">138</span><a id="line.138">    /**</a>
+<span class="sourceLineNo">139</span><a id="line.139">     * Resolve a Cloud Spanner column and value for the provided model field, from the source row structure, if one</a>
+<span class="sourceLineNo">140</span><a id="line.140">     * is present.</a>
+<span class="sourceLineNo">141</span><a id="line.141">     *</a>
+<span class="sourceLineNo">142</span><a id="line.142">     * &lt;p&gt;If the column has no value, it is skipped. If the column has a value present, it is decoded according to the</a>
+<span class="sourceLineNo">143</span><a id="line.143">     * Cloud Spanner {@link Type} specified for the column, each of which are mapped to primitive Protocol Buffer</a>
+<span class="sourceLineNo">144</span><a id="line.144">     * object field types.&lt;/p&gt;</a>
+<span class="sourceLineNo">145</span><a id="line.145">     *</a>
+<span class="sourceLineNo">146</span><a id="line.146">     * @param target Target protocol buffer builder to fill in.</a>
+<span class="sourceLineNo">147</span><a id="line.147">     * @param source Row result from Spanner to fill from.</a>
+<span class="sourceLineNo">148</span><a id="line.148">     * @param fieldPointer Field we are resolving from the proto.</a>
+<span class="sourceLineNo">149</span><a id="line.149">     */</a>
+<span class="sourceLineNo">150</span><a id="line.150">    private void convergeColumnField(@Nonnull Message.Builder target,</a>
+<span class="sourceLineNo">151</span><a id="line.151">                                     @Nonnull Struct source,</a>
+<span class="sourceLineNo">152</span><a id="line.152">                                     @Nonnull ModelMetadata.FieldPointer fieldPointer) {</a>
+<span class="sourceLineNo">153</span><a id="line.153">        // resolve any generic column options and spanner extension options</a>
+<span class="sourceLineNo">154</span><a id="line.154">        var columnOpts = columnOpts(fieldPointer);</a>
+<span class="sourceLineNo">155</span><a id="line.155">        var spannerOpts = spannerOpts(fieldPointer);</a>
+<span class="sourceLineNo">156</span><a id="line.156">        var columnName = resolveColumnName(fieldPointer.getField(), driverSettings);</a>
+<span class="sourceLineNo">157</span><a id="line.157"></a>
+<span class="sourceLineNo">158</span><a id="line.158">        if (source.isNull(columnName)) {</a>
+<span class="sourceLineNo">159</span><a id="line.159">            if (logging.isTraceEnabled())</a>
+<span class="sourceLineNo">160</span><a id="line.160">                logging.trace("Resolved column value for field '{}' was NULL. Skipping.",</a>
+<span class="sourceLineNo">161</span><a id="line.161">                    fieldPointer.getName());</a>
+<span class="sourceLineNo">162</span><a id="line.162">        } else {</a>
+<span class="sourceLineNo">163</span><a id="line.163">            // resolve the expected column index</a>
+<span class="sourceLineNo">164</span><a id="line.164">            var columnValue = resolveColumnValue(</a>
+<span class="sourceLineNo">165</span><a id="line.165">                source,</a>
+<span class="sourceLineNo">166</span><a id="line.166">                fieldPointer,</a>
+<span class="sourceLineNo">167</span><a id="line.167">                spannerOpts,</a>
+<span class="sourceLineNo">168</span><a id="line.168">                columnOpts,</a>
+<span class="sourceLineNo">169</span><a id="line.169">                driverSettings</a>
+<span class="sourceLineNo">170</span><a id="line.170">            );</a>
+<span class="sourceLineNo">171</span><a id="line.171"></a>
+<span class="sourceLineNo">172</span><a id="line.172">            // first up, check to see if this is a key or ID field, and decode it properly if so</a>
+<span class="sourceLineNo">173</span><a id="line.173">            var field = fieldPointer.getField();</a>
+<span class="sourceLineNo">174</span><a id="line.174">            if (matchFieldAnnotation(field, FieldType.ID)) {</a>
+<span class="sourceLineNo">175</span><a id="line.175">                this.inflateRowKey(target, columnValue);</a>
+<span class="sourceLineNo">176</span><a id="line.176">                return;</a>
+<span class="sourceLineNo">177</span><a id="line.177">            } else if (matchFieldAnnotation(field, FieldType.KEY)) {</a>
+<span class="sourceLineNo">178</span><a id="line.178">                throw new IllegalStateException("Should not get KEY-type fields in convergence loop.");</a>
+<span class="sourceLineNo">179</span><a id="line.179">            }</a>
+<span class="sourceLineNo">180</span><a id="line.180"></a>
+<span class="sourceLineNo">181</span><a id="line.181">            // if so directed, check the expected type against the real type indicated by Spanner. if this</a>
+<span class="sourceLineNo">182</span><a id="line.182">            // feature is turned off, soft logging errors turn into value exceptions.</a>
+<span class="sourceLineNo">183</span><a id="line.183">            if (driverSettings.checkExpectedTypes()) {</a>
+<span class="sourceLineNo">184</span><a id="line.184">                // resolve the expected column type</a>
+<span class="sourceLineNo">185</span><a id="line.185">                var columnType = resolveColumnType(</a>
+<span class="sourceLineNo">186</span><a id="line.186">                    fieldPointer,</a>
+<span class="sourceLineNo">187</span><a id="line.187">                    spannerOpts,</a>
+<span class="sourceLineNo">188</span><a id="line.188">                    columnOpts,</a>
+<span class="sourceLineNo">189</span><a id="line.189">                    driverSettings</a>
+<span class="sourceLineNo">190</span><a id="line.190">                );</a>
+<span class="sourceLineNo">191</span><a id="line.191"></a>
+<span class="sourceLineNo">192</span><a id="line.192">                if (logging.isTraceEnabled())</a>
+<span class="sourceLineNo">193</span><a id="line.193">                    logging.trace("Resolved Spanner type for field '{}': '{}'",</a>
+<span class="sourceLineNo">194</span><a id="line.194">                        fieldPointer.getName(),</a>
+<span class="sourceLineNo">195</span><a id="line.195">                        columnType.toString());</a>
+<span class="sourceLineNo">196</span><a id="line.196"></a>
+<span class="sourceLineNo">197</span><a id="line.197">                if (!columnType.getCode().equals(columnValue.getType().getCode())) {</a>
+<span class="sourceLineNo">198</span><a id="line.198">                    logging.error(</a>
+<span class="sourceLineNo">199</span><a id="line.199">                            "Type mismatch: field '{}' expected type {}, but got {}.",</a>
+<span class="sourceLineNo">200</span><a id="line.200">                        fieldPointer.getField().getFullName(),</a>
+<span class="sourceLineNo">201</span><a id="line.201">                        columnType.getCode().name(),</a>
+<span class="sourceLineNo">202</span><a id="line.202">                        columnValue.getType().getCode().name()</a>
+<span class="sourceLineNo">203</span><a id="line.203">                    );</a>
+<span class="sourceLineNo">204</span><a id="line.204">                    return;</a>
+<span class="sourceLineNo">205</span><a id="line.205">                }</a>
+<span class="sourceLineNo">206</span><a id="line.206">            }</a>
+<span class="sourceLineNo">207</span><a id="line.207"></a>
+<span class="sourceLineNo">208</span><a id="line.208">            // if we make it this far, the following conditions are true, and we are ready to copy a value from</a>
+<span class="sourceLineNo">209</span><a id="line.209">            // the source struct into the proto:</a>
+<span class="sourceLineNo">210</span><a id="line.210">            //</a>
+<span class="sourceLineNo">211</span><a id="line.211">            // 1) we have a non-NULL value in Spanner for a given column, with a resolved name and type.</a>
+<span class="sourceLineNo">212</span><a id="line.212">            // 2) the name and type match the proto model, where we also have a resolved proto native type.</a>
+<span class="sourceLineNo">213</span><a id="line.213">            // 3) we are certainly operating on a leaf field.</a>
+<span class="sourceLineNo">214</span><a id="line.214">            boolean repeated = columnValue.getType().getCode() == Type.Code.ARRAY;</a>
+<span class="sourceLineNo">215</span><a id="line.215">            Type.Code innerType = repeated ?</a>
+<span class="sourceLineNo">216</span><a id="line.216">                columnValue.getType().getArrayElementType().getCode() :</a>
+<span class="sourceLineNo">217</span><a id="line.217">                columnValue.getType().getCode();</a>
+<span class="sourceLineNo">218</span><a id="line.218"></a>
+<span class="sourceLineNo">219</span><a id="line.219">            switch (innerType) {</a>
+<span class="sourceLineNo">220</span><a id="line.220">                case BOOL:</a>
 <span class="sourceLineNo">221</span><a id="line.221">                    spliceBuilder(</a>
 <span class="sourceLineNo">222</span><a id="line.222">                        target,</a>
 <span class="sourceLineNo">223</span><a id="line.223">                        fieldPointer,</a>
-<span class="sourceLineNo">224</span><a id="line.224">                        Optional.of(repeated ? columnValue.getInt64Array() : columnValue.getInt64())</a>
+<span class="sourceLineNo">224</span><a id="line.224">                        Optional.of(repeated ? columnValue.getBoolArray() : columnValue.getBool())</a>
 <span class="sourceLineNo">225</span><a id="line.225">                    );</a>
 <span class="sourceLineNo">226</span><a id="line.226">                    break;</a>
-<span class="sourceLineNo">227</span><a id="line.227"></a>
-<span class="sourceLineNo">228</span><a id="line.228">                case FLOAT64:</a>
-<span class="sourceLineNo">229</span><a id="line.229">                    spliceBuilder(</a>
-<span class="sourceLineNo">230</span><a id="line.230">                        target,</a>
-<span class="sourceLineNo">231</span><a id="line.231">                        fieldPointer,</a>
-<span class="sourceLineNo">232</span><a id="line.232">                        Optional.of(repeated ? columnValue.getFloat64Array() : columnValue.getFloat64())</a>
-<span class="sourceLineNo">233</span><a id="line.233">                    );</a>
-<span class="sourceLineNo">234</span><a id="line.234">                    break;</a>
-<span class="sourceLineNo">235</span><a id="line.235"></a>
-<span class="sourceLineNo">236</span><a id="line.236">                case STRING:</a>
-<span class="sourceLineNo">237</span><a id="line.237">                    // special case: string fields containing model-compliant JSON</a>
-<span class="sourceLineNo">238</span><a id="line.238">                    if (fieldPointer.getField().getType() == Descriptors.FieldDescriptor.Type.MESSAGE &amp;&amp;</a>
-<span class="sourceLineNo">239</span><a id="line.239">                        (spannerOpts.isPresent() &amp;&amp; spannerOpts.get().getType() == SpannerOptions.SpannerType.JSON ||</a>
-<span class="sourceLineNo">240</span><a id="line.240">                         columnOpts.isPresent() &amp;&amp; columnOpts.get().getSptype() == SpannerOptions.SpannerType.JSON)) {</a>
-<span class="sourceLineNo">241</span><a id="line.241">                        int modelIndex = 0;</a>
-<span class="sourceLineNo">242</span><a id="line.242">                        try {</a>
-<span class="sourceLineNo">243</span><a id="line.243">                            if (repeated) {</a>
-<span class="sourceLineNo">244</span><a id="line.244">                                // decode as a list of JSON-encoded model instances.</a>
-<span class="sourceLineNo">245</span><a id="line.245">                                var encodedModels = columnValue.getStringArray();</a>
-<span class="sourceLineNo">246</span><a id="line.246">                                var modelResults = new ArrayList&lt;&gt;(encodedModels.size());</a>
-<span class="sourceLineNo">247</span><a id="line.247">                                for (var encodedModel : encodedModels) {</a>
-<span class="sourceLineNo">248</span><a id="line.248">                                    var subBuilder = target.newBuilderForField(fieldPointer.getField());</a>
-<span class="sourceLineNo">249</span><a id="line.249">                                    defaultJsonParser.merge(encodedModel, subBuilder);</a>
-<span class="sourceLineNo">250</span><a id="line.250">                                    modelResults.add(subBuilder.build());</a>
-<span class="sourceLineNo">251</span><a id="line.251">                                    modelIndex++;</a>
-<span class="sourceLineNo">252</span><a id="line.252">                                }</a>
-<span class="sourceLineNo">253</span><a id="line.253"></a>
-<span class="sourceLineNo">254</span><a id="line.254">                                // mount set of models on the target proto</a>
-<span class="sourceLineNo">255</span><a id="line.255">                                spliceBuilder(</a>
-<span class="sourceLineNo">256</span><a id="line.256">                                        target,</a>
-<span class="sourceLineNo">257</span><a id="line.257">                                        fieldPointer,</a>
-<span class="sourceLineNo">258</span><a id="line.258">                                        Optional.of(modelResults)</a>
-<span class="sourceLineNo">259</span><a id="line.259">                                );</a>
+<span class="sourceLineNo">227</span><a id="line.227">                case INT64:</a>
+<span class="sourceLineNo">228</span><a id="line.228">                    spliceBuilder(</a>
+<span class="sourceLineNo">229</span><a id="line.229">                        target,</a>
+<span class="sourceLineNo">230</span><a id="line.230">                        fieldPointer,</a>
+<span class="sourceLineNo">231</span><a id="line.231">                        Optional.of(repeated ? columnValue.getInt64Array() : columnValue.getInt64())</a>
+<span class="sourceLineNo">232</span><a id="line.232">                    );</a>
+<span class="sourceLineNo">233</span><a id="line.233">                    break;</a>
+<span class="sourceLineNo">234</span><a id="line.234"></a>
+<span class="sourceLineNo">235</span><a id="line.235">                case FLOAT64:</a>
+<span class="sourceLineNo">236</span><a id="line.236">                    spliceBuilder(</a>
+<span class="sourceLineNo">237</span><a id="line.237">                        target,</a>
+<span class="sourceLineNo">238</span><a id="line.238">                        fieldPointer,</a>
+<span class="sourceLineNo">239</span><a id="line.239">                        Optional.of(repeated ? columnValue.getFloat64Array() : columnValue.getFloat64())</a>
+<span class="sourceLineNo">240</span><a id="line.240">                    );</a>
+<span class="sourceLineNo">241</span><a id="line.241">                    break;</a>
+<span class="sourceLineNo">242</span><a id="line.242"></a>
+<span class="sourceLineNo">243</span><a id="line.243">                case STRING:</a>
+<span class="sourceLineNo">244</span><a id="line.244">                    // special case: string fields containing model-compliant JSON</a>
+<span class="sourceLineNo">245</span><a id="line.245">                    if (fieldPointer.getField().getType() == Descriptors.FieldDescriptor.Type.MESSAGE &amp;&amp;</a>
+<span class="sourceLineNo">246</span><a id="line.246">                        (spannerOpts.isPresent() &amp;&amp; spannerOpts.get().getType() == SpannerOptions.SpannerType.JSON ||</a>
+<span class="sourceLineNo">247</span><a id="line.247">                         columnOpts.isPresent() &amp;&amp; columnOpts.get().getSptype() == SpannerOptions.SpannerType.JSON)) {</a>
+<span class="sourceLineNo">248</span><a id="line.248">                        int modelIndex = 0;</a>
+<span class="sourceLineNo">249</span><a id="line.249">                        try {</a>
+<span class="sourceLineNo">250</span><a id="line.250">                            if (repeated) {</a>
+<span class="sourceLineNo">251</span><a id="line.251">                                // decode as a list of JSON-encoded model instances.</a>
+<span class="sourceLineNo">252</span><a id="line.252">                                var encodedModels = columnValue.getStringArray();</a>
+<span class="sourceLineNo">253</span><a id="line.253">                                var modelResults = new ArrayList&lt;&gt;(encodedModels.size());</a>
+<span class="sourceLineNo">254</span><a id="line.254">                                for (var encodedModel : encodedModels) {</a>
+<span class="sourceLineNo">255</span><a id="line.255">                                    var subBuilder = target.newBuilderForField(fieldPointer.getField());</a>
+<span class="sourceLineNo">256</span><a id="line.256">                                    defaultJsonParser.merge(encodedModel, subBuilder);</a>
+<span class="sourceLineNo">257</span><a id="line.257">                                    modelResults.add(subBuilder.build());</a>
+<span class="sourceLineNo">258</span><a id="line.258">                                    modelIndex++;</a>
+<span class="sourceLineNo">259</span><a id="line.259">                                }</a>
 <span class="sourceLineNo">260</span><a id="line.260"></a>
-<span class="sourceLineNo">261</span><a id="line.261">                            } else {</a>
-<span class="sourceLineNo">262</span><a id="line.262">                                // decode as a singular JSON-encoded model instance.</a>
-<span class="sourceLineNo">263</span><a id="line.263">                                var encodedModel = columnValue.getString();</a>
-<span class="sourceLineNo">264</span><a id="line.264">                                var subBuilder = target.newBuilderForField(fieldPointer.getField());</a>
-<span class="sourceLineNo">265</span><a id="line.265">                                defaultJsonParser.merge(encodedModel, subBuilder);</a>
-<span class="sourceLineNo">266</span><a id="line.266">                                spliceBuilder(</a>
-<span class="sourceLineNo">267</span><a id="line.267">                                        target,</a>
-<span class="sourceLineNo">268</span><a id="line.268">                                        fieldPointer,</a>
-<span class="sourceLineNo">269</span><a id="line.269">                                        Optional.of(subBuilder.build())</a>
-<span class="sourceLineNo">270</span><a id="line.270">                                );</a>
-<span class="sourceLineNo">271</span><a id="line.271">                            }</a>
-<span class="sourceLineNo">272</span><a id="line.272"></a>
-<span class="sourceLineNo">273</span><a id="line.273">                        } catch (InvalidProtocolBufferException invalidProtoException) {</a>
-<span class="sourceLineNo">274</span><a id="line.274">                            if (repeated) {</a>
-<span class="sourceLineNo">275</span><a id="line.275">                                logging.error(format(</a>
-<span class="sourceLineNo">276</span><a id="line.276">                                        "Failed to deserialize JSON model at path '%s', at index %s.",</a>
-<span class="sourceLineNo">277</span><a id="line.277">                                        fieldPointer.getField().getFullName(),</a>
-<span class="sourceLineNo">278</span><a id="line.278">                                        modelIndex</a>
-<span class="sourceLineNo">279</span><a id="line.279">                                ), invalidProtoException);</a>
-<span class="sourceLineNo">280</span><a id="line.280">                            } else {</a>
-<span class="sourceLineNo">281</span><a id="line.281">                                logging.error(format(</a>
-<span class="sourceLineNo">282</span><a id="line.282">                                        "Failed to deserialize JSON model at path '%s'.",</a>
-<span class="sourceLineNo">283</span><a id="line.283">                                        fieldPointer.getField().getFullName()</a>
-<span class="sourceLineNo">284</span><a id="line.284">                                ), invalidProtoException);</a>
-<span class="sourceLineNo">285</span><a id="line.285">                            }</a>
-<span class="sourceLineNo">286</span><a id="line.286"></a>
-<span class="sourceLineNo">287</span><a id="line.287">                            throw new IllegalStateException(invalidProtoException);</a>
-<span class="sourceLineNo">288</span><a id="line.288">                        }</a>
-<span class="sourceLineNo">289</span><a id="line.289">                    } else {</a>
-<span class="sourceLineNo">290</span><a id="line.290">                        spliceBuilder(</a>
-<span class="sourceLineNo">291</span><a id="line.291">                            target,</a>
-<span class="sourceLineNo">292</span><a id="line.292">                            fieldPointer,</a>
-<span class="sourceLineNo">293</span><a id="line.293">                            Optional.of(repeated ? columnValue.getStringArray() : columnValue.getString())</a>
-<span class="sourceLineNo">294</span><a id="line.294">                        );</a>
-<span class="sourceLineNo">295</span><a id="line.295">                    }</a>
-<span class="sourceLineNo">296</span><a id="line.296">                    break;</a>
-<span class="sourceLineNo">297</span><a id="line.297"></a>
-<span class="sourceLineNo">298</span><a id="line.298">                case BYTES:</a>
-<span class="sourceLineNo">299</span><a id="line.299">                    spliceBuilder(</a>
-<span class="sourceLineNo">300</span><a id="line.300">                        target,</a>
-<span class="sourceLineNo">301</span><a id="line.301">                        fieldPointer,</a>
-<span class="sourceLineNo">302</span><a id="line.302">                        Optional.of(repeated ? columnValue.getBytesArray() : columnValue.getBytes())</a>
-<span class="sourceLineNo">303</span><a id="line.303">                    );</a>
-<span class="sourceLineNo">304</span><a id="line.304">                    break;</a>
-<span class="sourceLineNo">305</span><a id="line.305"></a>
-<span class="sourceLineNo">306</span><a id="line.306">                case NUMERIC:</a>
-<span class="sourceLineNo">307</span><a id="line.307">                    // @TODO(sgammon): implement NUMERIC support</a>
-<span class="sourceLineNo">308</span><a id="line.308">                    throw new IllegalStateException("NUMERIC fields are not supported yet.");</a>
-<span class="sourceLineNo">309</span><a id="line.309"></a>
-<span class="sourceLineNo">310</span><a id="line.310">                case TIMESTAMP:</a>
-<span class="sourceLineNo">311</span><a id="line.311">                    // extract timestamp value</a>
-<span class="sourceLineNo">312</span><a id="line.312">                    var timestampValue = columnValue.getTimestamp();</a>
-<span class="sourceLineNo">313</span><a id="line.313"></a>
-<span class="sourceLineNo">314</span><a id="line.314">                    switch (field.getType()) {</a>
-<span class="sourceLineNo">315</span><a id="line.315">                        case UINT64:</a>
-<span class="sourceLineNo">316</span><a id="line.316">                        case FIXED64:</a>
-<span class="sourceLineNo">317</span><a id="line.317">                            // we're being asked to put a Google Cloud timestamp record into an unsigned integer field,</a>
-<span class="sourceLineNo">318</span><a id="line.318">                            // with a `long`-style size. this is the only possible safe native conversion.</a>
-<span class="sourceLineNo">319</span><a id="line.319">                            spliceBuilder(</a>
-<span class="sourceLineNo">320</span><a id="line.320">                                target,</a>
-<span class="sourceLineNo">321</span><a id="line.321">                                fieldPointer,</a>
-<span class="sourceLineNo">322</span><a id="line.322">                                Optional.of((timestampValue.getSeconds() * 1000) + timestampValue.getNanos())</a>
-<span class="sourceLineNo">323</span><a id="line.323">                            );</a>
-<span class="sourceLineNo">324</span><a id="line.324">                            break;</a>
-<span class="sourceLineNo">325</span><a id="line.325"></a>
-<span class="sourceLineNo">326</span><a id="line.326">                        case STRING:</a>
-<span class="sourceLineNo">327</span><a id="line.327">                            // we're being asked to put a Google Cloud timestamp record into a string field. in this</a>
-<span class="sourceLineNo">328</span><a id="line.328">                            // case, the adapter leverages any date options or otherwise defaults to ISO8601.</a>
-<span class="sourceLineNo">329</span><a id="line.329">                            spliceBuilder(</a>
-<span class="sourceLineNo">330</span><a id="line.330">                                target,</a>
-<span class="sourceLineNo">331</span><a id="line.331">                                fieldPointer,</a>
-<span class="sourceLineNo">332</span><a id="line.332">                                Optional.of(timestampValue.toString())</a>
-<span class="sourceLineNo">333</span><a id="line.333">                            );</a>
-<span class="sourceLineNo">334</span><a id="line.334">                            break;</a>
-<span class="sourceLineNo">335</span><a id="line.335"></a>
-<span class="sourceLineNo">336</span><a id="line.336">                        case MESSAGE:</a>
-<span class="sourceLineNo">337</span><a id="line.337">                            // if we have a sub-message in the same spot as a timestamp, it's worth checking to see if</a>
-<span class="sourceLineNo">338</span><a id="line.338">                            // it's a native Google Cloud timestamp, in which case we can just use it. otherwise, if we</a>
-<span class="sourceLineNo">339</span><a id="line.339">                            // encounter a standard PB timestamp, we need to convert.</a>
-<span class="sourceLineNo">340</span><a id="line.340">                            if (Timestamp.getDescriptor().getFullName().equals(field.getMessageType().getFullName())) {</a>
-<span class="sourceLineNo">341</span><a id="line.341">                                spliceBuilder(</a>
-<span class="sourceLineNo">342</span><a id="line.342">                                    target,</a>
-<span class="sourceLineNo">343</span><a id="line.343">                                    fieldPointer,</a>
-<span class="sourceLineNo">344</span><a id="line.344">                                    Optional.of(protoTimestampFromCloud(timestampValue))</a>
-<span class="sourceLineNo">345</span><a id="line.345">                                );</a>
-<span class="sourceLineNo">346</span><a id="line.346">                                break;</a>
-<span class="sourceLineNo">347</span><a id="line.347">                            }</a>
-<span class="sourceLineNo">348</span><a id="line.348"></a>
-<span class="sourceLineNo">349</span><a id="line.349">                            // any other sub-message type represents an illegal state.</a>
-<span class="sourceLineNo">350</span><a id="line.350">                            throw new IllegalStateException(</a>
-<span class="sourceLineNo">351</span><a id="line.351">                                "Cannot convert Spanner TIMESTAMP value to unsupported sub-message type " +</a>
-<span class="sourceLineNo">352</span><a id="line.352">                                "'" + field.getMessageType().getFullName() + "'."</a>
+<span class="sourceLineNo">261</span><a id="line.261">                                // mount set of models on the target proto</a>
+<span class="sourceLineNo">262</span><a id="line.262">                                spliceBuilder(</a>
+<span class="sourceLineNo">263</span><a id="line.263">                                        target,</a>
+<span class="sourceLineNo">264</span><a id="line.264">                                        fieldPointer,</a>
+<span class="sourceLineNo">265</span><a id="line.265">                                        Optional.of(modelResults)</a>
+<span class="sourceLineNo">266</span><a id="line.266">                                );</a>
+<span class="sourceLineNo">267</span><a id="line.267"></a>
+<span class="sourceLineNo">268</span><a id="line.268">                            } else {</a>
+<span class="sourceLineNo">269</span><a id="line.269">                                // decode as a singular JSON-encoded model instance.</a>
+<span class="sourceLineNo">270</span><a id="line.270">                                var encodedModel = columnValue.getString();</a>
+<span class="sourceLineNo">271</span><a id="line.271">                                var subBuilder = target.newBuilderForField(fieldPointer.getField());</a>
+<span class="sourceLineNo">272</span><a id="line.272">                                defaultJsonParser.merge(encodedModel, subBuilder);</a>
+<span class="sourceLineNo">273</span><a id="line.273">                                spliceBuilder(</a>
+<span class="sourceLineNo">274</span><a id="line.274">                                        target,</a>
+<span class="sourceLineNo">275</span><a id="line.275">                                        fieldPointer,</a>
+<span class="sourceLineNo">276</span><a id="line.276">                                        Optional.of(subBuilder.build())</a>
+<span class="sourceLineNo">277</span><a id="line.277">                                );</a>
+<span class="sourceLineNo">278</span><a id="line.278">                            }</a>
+<span class="sourceLineNo">279</span><a id="line.279"></a>
+<span class="sourceLineNo">280</span><a id="line.280">                        } catch (InvalidProtocolBufferException invalidProtoException) {</a>
+<span class="sourceLineNo">281</span><a id="line.281">                            if (repeated) {</a>
+<span class="sourceLineNo">282</span><a id="line.282">                                logging.error(format(</a>
+<span class="sourceLineNo">283</span><a id="line.283">                                        "Failed to deserialize JSON model at path '%s', at index %s.",</a>
+<span class="sourceLineNo">284</span><a id="line.284">                                        fieldPointer.getField().getFullName(),</a>
+<span class="sourceLineNo">285</span><a id="line.285">                                        modelIndex</a>
+<span class="sourceLineNo">286</span><a id="line.286">                                ), invalidProtoException);</a>
+<span class="sourceLineNo">287</span><a id="line.287">                            } else {</a>
+<span class="sourceLineNo">288</span><a id="line.288">                                logging.error(format(</a>
+<span class="sourceLineNo">289</span><a id="line.289">                                        "Failed to deserialize JSON model at path '%s'.",</a>
+<span class="sourceLineNo">290</span><a id="line.290">                                        fieldPointer.getField().getFullName()</a>
+<span class="sourceLineNo">291</span><a id="line.291">                                ), invalidProtoException);</a>
+<span class="sourceLineNo">292</span><a id="line.292">                            }</a>
+<span class="sourceLineNo">293</span><a id="line.293"></a>
+<span class="sourceLineNo">294</span><a id="line.294">                            throw new IllegalStateException(invalidProtoException);</a>
+<span class="sourceLineNo">295</span><a id="line.295">                        }</a>
+<span class="sourceLineNo">296</span><a id="line.296">                    } else {</a>
+<span class="sourceLineNo">297</span><a id="line.297">                        spliceBuilder(</a>
+<span class="sourceLineNo">298</span><a id="line.298">                            target,</a>
+<span class="sourceLineNo">299</span><a id="line.299">                            fieldPointer,</a>
+<span class="sourceLineNo">300</span><a id="line.300">                            Optional.of(repeated ? columnValue.getStringArray() : columnValue.getString())</a>
+<span class="sourceLineNo">301</span><a id="line.301">                        );</a>
+<span class="sourceLineNo">302</span><a id="line.302">                    }</a>
+<span class="sourceLineNo">303</span><a id="line.303">                    break;</a>
+<span class="sourceLineNo">304</span><a id="line.304"></a>
+<span class="sourceLineNo">305</span><a id="line.305">                case BYTES:</a>
+<span class="sourceLineNo">306</span><a id="line.306">                    spliceBuilder(</a>
+<span class="sourceLineNo">307</span><a id="line.307">                        target,</a>
+<span class="sourceLineNo">308</span><a id="line.308">                        fieldPointer,</a>
+<span class="sourceLineNo">309</span><a id="line.309">                        Optional.of(repeated ? columnValue.getBytesArray() : columnValue.getBytes())</a>
+<span class="sourceLineNo">310</span><a id="line.310">                    );</a>
+<span class="sourceLineNo">311</span><a id="line.311">                    break;</a>
+<span class="sourceLineNo">312</span><a id="line.312"></a>
+<span class="sourceLineNo">313</span><a id="line.313">                case NUMERIC:</a>
+<span class="sourceLineNo">314</span><a id="line.314">                    if (field.getType() == Descriptors.FieldDescriptor.Type.STRING) {</a>
+<span class="sourceLineNo">315</span><a id="line.315">                        // grab the string value and splice</a>
+<span class="sourceLineNo">316</span><a id="line.316">                        spliceBuilder(</a>
+<span class="sourceLineNo">317</span><a id="line.317">                            target,</a>
+<span class="sourceLineNo">318</span><a id="line.318">                            fieldPointer,</a>
+<span class="sourceLineNo">319</span><a id="line.319">                            Optional.of(repeated ? columnValue.getStringArray() : columnValue.getString())</a>
+<span class="sourceLineNo">320</span><a id="line.320">                        );</a>
+<span class="sourceLineNo">321</span><a id="line.321">                        break;</a>
+<span class="sourceLineNo">322</span><a id="line.322">                    }</a>
+<span class="sourceLineNo">323</span><a id="line.323"></a>
+<span class="sourceLineNo">324</span><a id="line.324">                    // throw illegal state</a>
+<span class="sourceLineNo">325</span><a id="line.325">                    throw new IllegalStateException(</a>
+<span class="sourceLineNo">326</span><a id="line.326">                        "NUMERIC fields must be expressed as proto-strings, in exponent notation if necessary. For " +</a>
+<span class="sourceLineNo">327</span><a id="line.327">                        "more information, please see the Cloud Spanner documentation regarding NUMERIC types: " +</a>
+<span class="sourceLineNo">328</span><a id="line.328">                        "https://cloud.google.com/spanner/docs/working-with-numerics");</a>
+<span class="sourceLineNo">329</span><a id="line.329"></a>
+<span class="sourceLineNo">330</span><a id="line.330">                case TIMESTAMP:</a>
+<span class="sourceLineNo">331</span><a id="line.331">                    // extract timestamp value</a>
+<span class="sourceLineNo">332</span><a id="line.332">                    var timestampValue = columnValue.getTimestamp();</a>
+<span class="sourceLineNo">333</span><a id="line.333"></a>
+<span class="sourceLineNo">334</span><a id="line.334">                    switch (field.getType()) {</a>
+<span class="sourceLineNo">335</span><a id="line.335">                        case UINT64:</a>
+<span class="sourceLineNo">336</span><a id="line.336">                        case FIXED64:</a>
+<span class="sourceLineNo">337</span><a id="line.337">                            // we're being asked to put a Google Cloud timestamp record into an unsigned integer field,</a>
+<span class="sourceLineNo">338</span><a id="line.338">                            // with a `long`-style size. this is the only possible safe native conversion.</a>
+<span class="sourceLineNo">339</span><a id="line.339">                            spliceBuilder(</a>
+<span class="sourceLineNo">340</span><a id="line.340">                                target,</a>
+<span class="sourceLineNo">341</span><a id="line.341">                                fieldPointer,</a>
+<span class="sourceLineNo">342</span><a id="line.342">                                Optional.of((timestampValue.getSeconds() * 1000) + timestampValue.getNanos())</a>
+<span class="sourceLineNo">343</span><a id="line.343">                            );</a>
+<span class="sourceLineNo">344</span><a id="line.344">                            break;</a>
+<span class="sourceLineNo">345</span><a id="line.345"></a>
+<span class="sourceLineNo">346</span><a id="line.346">                        case STRING:</a>
+<span class="sourceLineNo">347</span><a id="line.347">                            // we're being asked to put a Google Cloud timestamp record into a string field. in this</a>
+<span class="sourceLineNo">348</span><a id="line.348">                            // case, the adapter leverages any date options or otherwise defaults to ISO8601.</a>
+<span class="sourceLineNo">349</span><a id="line.349">                            spliceBuilder(</a>
+<span class="sourceLineNo">350</span><a id="line.350">                                target,</a>
+<span class="sourceLineNo">351</span><a id="line.351">                                fieldPointer,</a>
+<span class="sourceLineNo">352</span><a id="line.352">                                Optional.of(timestampValue.toString())</a>
 <span class="sourceLineNo">353</span><a id="line.353">                            );</a>
-<span class="sourceLineNo">354</span><a id="line.354"></a>
-<span class="sourceLineNo">355</span><a id="line.355">                        default:</a>
-<span class="sourceLineNo">356</span><a id="line.356">                            // any other expressed field represents an illegal state.</a>
-<span class="sourceLineNo">357</span><a id="line.357">                            throw new IllegalStateException(</a>
-<span class="sourceLineNo">358</span><a id="line.358">                                "Cannot convert Spanner TIMESTAMP value to proto-type '" + field.getType().name() + "'."</a>
-<span class="sourceLineNo">359</span><a id="line.359">                            );</a>
-<span class="sourceLineNo">360</span><a id="line.360">                    }</a>
-<span class="sourceLineNo">361</span><a id="line.361"></a>
-<span class="sourceLineNo">362</span><a id="line.362">                case DATE:</a>
-<span class="sourceLineNo">363</span><a id="line.363">                    // extract date value</a>
-<span class="sourceLineNo">364</span><a id="line.364">                    var dateValue = columnValue.getDate();</a>
-<span class="sourceLineNo">365</span><a id="line.365">                    if (field.getType() == Descriptors.FieldDescriptor.Type.STRING) {</a>
-<span class="sourceLineNo">366</span><a id="line.366">                        // we're being asked to put a Google Cloud structured date record into a string field. in</a>
-<span class="sourceLineNo">367</span><a id="line.367">                        // this case, the adapter leverages any date options or otherwise defaults to ISO8601.</a>
-<span class="sourceLineNo">368</span><a id="line.368">                        spliceBuilder(</a>
-<span class="sourceLineNo">369</span><a id="line.369">                                target,</a>
-<span class="sourceLineNo">370</span><a id="line.370">                                fieldPointer,</a>
-<span class="sourceLineNo">371</span><a id="line.371">                                Optional.of(format(</a>
-<span class="sourceLineNo">372</span><a id="line.372">                                        "%s/%s/%s",</a>
-<span class="sourceLineNo">373</span><a id="line.373">                                        dateValue.getYear(),</a>
-<span class="sourceLineNo">374</span><a id="line.374">                                        dateValue.getMonth(),</a>
-<span class="sourceLineNo">375</span><a id="line.375">                                        dateValue.getDayOfMonth()</a>
-<span class="sourceLineNo">376</span><a id="line.376">                                ))</a>
-<span class="sourceLineNo">377</span><a id="line.377">                        );</a>
-<span class="sourceLineNo">378</span><a id="line.378">                    } else if (field.getType() == Descriptors.FieldDescriptor.Type.MESSAGE &amp;&amp;</a>
-<span class="sourceLineNo">379</span><a id="line.379">                            Date.getDescriptor().getFullName().equals(field.getMessageType().getFullName())) {</a>
-<span class="sourceLineNo">380</span><a id="line.380">                        // if we have a sub-message in the same spot as a date, we need to convert to a standard</a>
-<span class="sourceLineNo">381</span><a id="line.381">                        // proto date, which is the only supported target here.</a>
-<span class="sourceLineNo">382</span><a id="line.382">                        spliceBuilder(</a>
-<span class="sourceLineNo">383</span><a id="line.383">                            target,</a>
-<span class="sourceLineNo">384</span><a id="line.384">                            fieldPointer,</a>
-<span class="sourceLineNo">385</span><a id="line.385">                            Optional.of(protoDateFromCloud(dateValue))</a>
-<span class="sourceLineNo">386</span><a id="line.386">                        );</a>
-<span class="sourceLineNo">387</span><a id="line.387">                        break;</a>
-<span class="sourceLineNo">388</span><a id="line.388">                    } else if (field.getType() == Descriptors.FieldDescriptor.Type.MESSAGE) {</a>
-<span class="sourceLineNo">389</span><a id="line.389">                        throw new IllegalStateException(</a>
-<span class="sourceLineNo">390</span><a id="line.390">                            "Cannot convert Spanner DATE value to unsupported sub-message type " +</a>
-<span class="sourceLineNo">391</span><a id="line.391">                            "'" + field.getMessageType().getFullName() + "'."</a>
-<span class="sourceLineNo">392</span><a id="line.392">                        );</a>
-<span class="sourceLineNo">393</span><a id="line.393">                    } else  {</a>
-<span class="sourceLineNo">394</span><a id="line.394">                        // any other expressed field represents an illegal state.</a>
-<span class="sourceLineNo">395</span><a id="line.395">                        throw new IllegalStateException(</a>
-<span class="sourceLineNo">396</span><a id="line.396">                            "Cannot convert Spanner DATE value to proto-type '" + field.getType().name() + "'."</a>
+<span class="sourceLineNo">354</span><a id="line.354">                            break;</a>
+<span class="sourceLineNo">355</span><a id="line.355"></a>
+<span class="sourceLineNo">356</span><a id="line.356">                        case MESSAGE:</a>
+<span class="sourceLineNo">357</span><a id="line.357">                            // if we have a sub-message in the same spot as a timestamp, it's worth checking to see if</a>
+<span class="sourceLineNo">358</span><a id="line.358">                            // it's a native Google Cloud timestamp, in which case we can just use it. otherwise, if we</a>
+<span class="sourceLineNo">359</span><a id="line.359">                            // encounter a standard PB timestamp, we need to convert.</a>
+<span class="sourceLineNo">360</span><a id="line.360">                            if (Timestamp.getDescriptor().getFullName().equals(field.getMessageType().getFullName())) {</a>
+<span class="sourceLineNo">361</span><a id="line.361">                                spliceBuilder(</a>
+<span class="sourceLineNo">362</span><a id="line.362">                                    target,</a>
+<span class="sourceLineNo">363</span><a id="line.363">                                    fieldPointer,</a>
+<span class="sourceLineNo">364</span><a id="line.364">                                    Optional.of(protoTimestampFromCloud(timestampValue))</a>
+<span class="sourceLineNo">365</span><a id="line.365">                                );</a>
+<span class="sourceLineNo">366</span><a id="line.366">                                break;</a>
+<span class="sourceLineNo">367</span><a id="line.367">                            }</a>
+<span class="sourceLineNo">368</span><a id="line.368"></a>
+<span class="sourceLineNo">369</span><a id="line.369">                            // any other sub-message type represents an illegal state.</a>
+<span class="sourceLineNo">370</span><a id="line.370">                            throw new IllegalStateException(</a>
+<span class="sourceLineNo">371</span><a id="line.371">                                "Cannot convert Spanner TIMESTAMP value to unsupported sub-message type " +</a>
+<span class="sourceLineNo">372</span><a id="line.372">                                "'" + field.getMessageType().getFullName() + "'."</a>
+<span class="sourceLineNo">373</span><a id="line.373">                            );</a>
+<span class="sourceLineNo">374</span><a id="line.374"></a>
+<span class="sourceLineNo">375</span><a id="line.375">                        default:</a>
+<span class="sourceLineNo">376</span><a id="line.376">                            // any other expressed field represents an illegal state.</a>
+<span class="sourceLineNo">377</span><a id="line.377">                            throw new IllegalStateException(</a>
+<span class="sourceLineNo">378</span><a id="line.378">                                "Cannot convert Spanner TIMESTAMP value to proto-type '" + field.getType().name() + "'."</a>
+<span class="sourceLineNo">379</span><a id="line.379">                            );</a>
+<span class="sourceLineNo">380</span><a id="line.380">                    }</a>
+<span class="sourceLineNo">381</span><a id="line.381"></a>
+<span class="sourceLineNo">382</span><a id="line.382">                case DATE:</a>
+<span class="sourceLineNo">383</span><a id="line.383">                    // extract date value</a>
+<span class="sourceLineNo">384</span><a id="line.384">                    var dateValue = columnValue.getDate();</a>
+<span class="sourceLineNo">385</span><a id="line.385">                    if (field.getType() == Descriptors.FieldDescriptor.Type.STRING) {</a>
+<span class="sourceLineNo">386</span><a id="line.386">                        // we're being asked to put a Google Cloud structured date record into a string field. in</a>
+<span class="sourceLineNo">387</span><a id="line.387">                        // this case, the adapter leverages any date options or otherwise defaults to ISO8601.</a>
+<span class="sourceLineNo">388</span><a id="line.388">                        spliceBuilder(</a>
+<span class="sourceLineNo">389</span><a id="line.389">                                target,</a>
+<span class="sourceLineNo">390</span><a id="line.390">                                fieldPointer,</a>
+<span class="sourceLineNo">391</span><a id="line.391">                                Optional.of(format(</a>
+<span class="sourceLineNo">392</span><a id="line.392">                                        "%s/%s/%s",</a>
+<span class="sourceLineNo">393</span><a id="line.393">                                        dateValue.getYear(),</a>
+<span class="sourceLineNo">394</span><a id="line.394">                                        dateValue.getMonth(),</a>
+<span class="sourceLineNo">395</span><a id="line.395">                                        dateValue.getDayOfMonth()</a>
+<span class="sourceLineNo">396</span><a id="line.396">                                ))</a>
 <span class="sourceLineNo">397</span><a id="line.397">                        );</a>
-<span class="sourceLineNo">398</span><a id="line.398">                    }</a>
-<span class="sourceLineNo">399</span><a id="line.399"></a>
-<span class="sourceLineNo">400</span><a id="line.400">                case ARRAY:</a>
-<span class="sourceLineNo">401</span><a id="line.401">                    throw new IllegalStateException(</a>
-<span class="sourceLineNo">402</span><a id="line.402">                        "Should not receive `ARRAY` field types for concrete decoding."</a>
-<span class="sourceLineNo">403</span><a id="line.403">                    );</a>
-<span class="sourceLineNo">404</span><a id="line.404"></a>
-<span class="sourceLineNo">405</span><a id="line.405">                case STRUCT:</a>
-<span class="sourceLineNo">406</span><a id="line.406">                    convergeFields(</a>
-<span class="sourceLineNo">407</span><a id="line.407">                        target.newBuilderForField(fieldPointer.getField()),</a>
-<span class="sourceLineNo">408</span><a id="line.408">                        fieldPointer.getField().getMessageType(),</a>
-<span class="sourceLineNo">409</span><a id="line.409">                        columnValue.getStruct(),</a>
-<span class="sourceLineNo">410</span><a id="line.410">                        columnValue.getStruct().getType().getStructFields()</a>
-<span class="sourceLineNo">411</span><a id="line.411">                    );</a>
-<span class="sourceLineNo">412</span><a id="line.412">            }</a>
-<span class="sourceLineNo">413</span><a id="line.413">        }</a>
-<span class="sourceLineNo">414</span><a id="line.414">    }</a>
-<span class="sourceLineNo">415</span><a id="line.415"></a>
-<span class="sourceLineNo">416</span><a id="line.416">    /**</a>
-<span class="sourceLineNo">417</span><a id="line.417">     * Resolve all fields for the provided `target` `model`, from the provided row struct `source`. If a value is</a>
-<span class="sourceLineNo">418</span><a id="line.418">     * present, decode it according to the assigned Spanner {@link Type} and any present or implied model</a>
-<span class="sourceLineNo">419</span><a id="line.419">     * annotations.</a>
-<span class="sourceLineNo">420</span><a id="line.420">     *</a>
-<span class="sourceLineNo">421</span><a id="line.421">     * &lt;p&gt;This method performs recursion for nested `STRUCT` objects inside the row. Such structures are interpreted</a>
-<span class="sourceLineNo">422</span><a id="line.422">     * according to model annotations present or implied on the target builder. In such cases, `base` is set to the</a>
-<span class="sourceLineNo">423</span><a id="line.423">     * root builder being filled in. For the initial case, `base` is always {@link Optional#empty()}.&lt;/p&gt;</a>
-<span class="sourceLineNo">424</span><a id="line.424">     *</a>
-<span class="sourceLineNo">425</span><a id="line.425">     * @param target Target builder which we intend to fill in with values.</a>
-<span class="sourceLineNo">426</span><a id="line.426">     * @param model Model descriptor for the object we are building.</a>
-<span class="sourceLineNo">427</span><a id="line.427">     * @param source Source row structure to pull data from.</a>
-<span class="sourceLineNo">428</span><a id="line.428">     * @param fields List of fields present in the row, for efficient model filtering.</a>
-<span class="sourceLineNo">429</span><a id="line.429">     */</a>
-<span class="sourceLineNo">430</span><a id="line.430">    private void convergeFields(@Nonnull Message.Builder target,</a>
-<span class="sourceLineNo">431</span><a id="line.431">                                @Nonnull Descriptors.Descriptor model,</a>
-<span class="sourceLineNo">432</span><a id="line.432">                                @Nonnull Struct source,</a>
-<span class="sourceLineNo">433</span><a id="line.433">                                @Nonnull List&lt;Type.StructField&gt; fields) {</a>
-<span class="sourceLineNo">434</span><a id="line.434">        if (logging.isDebugEnabled()) logging.trace(</a>
-<span class="sourceLineNo">435</span><a id="line.435">                "More than one column value present in row. Decoding as {}...",</a>
-<span class="sourceLineNo">436</span><a id="line.436">                modelDescriptor.getFullName());</a>
-<span class="sourceLineNo">437</span><a id="line.437"></a>
-<span class="sourceLineNo">438</span><a id="line.438">        // compute a set of projection fields</a>
-<span class="sourceLineNo">439</span><a id="line.439">        SortedSet&lt;String&gt; eligibleFields = fields.isEmpty() ? new TreeSet&lt;&gt;() : fields</a>
-<span class="sourceLineNo">440</span><a id="line.440">                .stream()</a>
-<span class="sourceLineNo">441</span><a id="line.441">                .map(Type.StructField::getName)</a>
-<span class="sourceLineNo">442</span><a id="line.442">                .collect(Collectors.toCollection(TreeSet::new));</a>
-<span class="sourceLineNo">443</span><a id="line.443"></a>
-<span class="sourceLineNo">444</span><a id="line.444">        forEachField(</a>
-<span class="sourceLineNo">445</span><a id="line.445">            model,</a>
-<span class="sourceLineNo">446</span><a id="line.446">            Optional.of(onlySpannerEligibleFields(eligibleFields, driverSettings))</a>
-<span class="sourceLineNo">447</span><a id="line.447">        ).forEach((fieldPointer) -&gt; {</a>
-<span class="sourceLineNo">448</span><a id="line.448">            if (logging.isDebugEnabled()) logging.trace(</a>
-<span class="sourceLineNo">449</span><a id="line.449">                    "Converging eligible column field {}...",</a>
-<span class="sourceLineNo">450</span><a id="line.450">                    fieldPointer.getField().getFullName());</a>
-<span class="sourceLineNo">451</span><a id="line.451"></a>
-<span class="sourceLineNo">452</span><a id="line.452">            convergeColumnField(</a>
-<span class="sourceLineNo">453</span><a id="line.453">                target,</a>
-<span class="sourceLineNo">454</span><a id="line.454">                source,</a>
-<span class="sourceLineNo">455</span><a id="line.455">                fieldPointer</a>
-<span class="sourceLineNo">456</span><a id="line.456">            );</a>
-<span class="sourceLineNo">457</span><a id="line.457">        });</a>
-<span class="sourceLineNo">458</span><a id="line.458">    }</a>
-<span class="sourceLineNo">459</span><a id="line.459"></a>
-<span class="sourceLineNo">460</span><a id="line.460">    /** @inheritDoc */</a>
-<span class="sourceLineNo">461</span><a id="line.461">    @Override</a>
-<span class="sourceLineNo">462</span><a id="line.462">    public @Nonnull Model inflate(@Nonnull Struct rowStruct) throws ModelInflateException {</a>
-<span class="sourceLineNo">463</span><a id="line.463">        Objects.requireNonNull(rowStruct, "cannot inflate null row struct from spanner");</a>
+<span class="sourceLineNo">398</span><a id="line.398">                        break;</a>
+<span class="sourceLineNo">399</span><a id="line.399">                    } else if (field.getType() == Descriptors.FieldDescriptor.Type.MESSAGE &amp;&amp;</a>
+<span class="sourceLineNo">400</span><a id="line.400">                            Date.getDescriptor().getFullName().equals(field.getMessageType().getFullName())) {</a>
+<span class="sourceLineNo">401</span><a id="line.401">                        // if we have a sub-message in the same spot as a date, we need to convert to a standard</a>
+<span class="sourceLineNo">402</span><a id="line.402">                        // proto date, which is the only supported target here.</a>
+<span class="sourceLineNo">403</span><a id="line.403">                        spliceBuilder(</a>
+<span class="sourceLineNo">404</span><a id="line.404">                            target,</a>
+<span class="sourceLineNo">405</span><a id="line.405">                            fieldPointer,</a>
+<span class="sourceLineNo">406</span><a id="line.406">                            Optional.of(protoDateFromCloud(dateValue))</a>
+<span class="sourceLineNo">407</span><a id="line.407">                        );</a>
+<span class="sourceLineNo">408</span><a id="line.408">                        break;</a>
+<span class="sourceLineNo">409</span><a id="line.409">                    } else if (field.getType() == Descriptors.FieldDescriptor.Type.MESSAGE) {</a>
+<span class="sourceLineNo">410</span><a id="line.410">                        throw new IllegalStateException(</a>
+<span class="sourceLineNo">411</span><a id="line.411">                            "Cannot convert Spanner DATE value to unsupported sub-message type " +</a>
+<span class="sourceLineNo">412</span><a id="line.412">                            "'" + field.getMessageType().getFullName() + "'."</a>
+<span class="sourceLineNo">413</span><a id="line.413">                        );</a>
+<span class="sourceLineNo">414</span><a id="line.414">                    } else  {</a>
+<span class="sourceLineNo">415</span><a id="line.415">                        // any other expressed field represents an illegal state.</a>
+<span class="sourceLineNo">416</span><a id="line.416">                        throw new IllegalStateException(</a>
+<span class="sourceLineNo">417</span><a id="line.417">                            "Cannot convert Spanner DATE value to proto-type '" + field.getType().name() + "'."</a>
+<span class="sourceLineNo">418</span><a id="line.418">                        );</a>
+<span class="sourceLineNo">419</span><a id="line.419">                    }</a>
+<span class="sourceLineNo">420</span><a id="line.420"></a>
+<span class="sourceLineNo">421</span><a id="line.421">                case ARRAY:</a>
+<span class="sourceLineNo">422</span><a id="line.422">                    throw new IllegalStateException(</a>
+<span class="sourceLineNo">423</span><a id="line.423">                        "Should not receive `ARRAY` field types for concrete decoding."</a>
+<span class="sourceLineNo">424</span><a id="line.424">                    );</a>
+<span class="sourceLineNo">425</span><a id="line.425"></a>
+<span class="sourceLineNo">426</span><a id="line.426">                case STRUCT:</a>
+<span class="sourceLineNo">427</span><a id="line.427">                    convergeFields(</a>
+<span class="sourceLineNo">428</span><a id="line.428">                        target.newBuilderForField(fieldPointer.getField()),</a>
+<span class="sourceLineNo">429</span><a id="line.429">                        fieldPointer.getField().getMessageType(),</a>
+<span class="sourceLineNo">430</span><a id="line.430">                        columnValue.getStruct(),</a>
+<span class="sourceLineNo">431</span><a id="line.431">                        columnValue.getStruct().getType().getStructFields()</a>
+<span class="sourceLineNo">432</span><a id="line.432">                    );</a>
+<span class="sourceLineNo">433</span><a id="line.433">            }</a>
+<span class="sourceLineNo">434</span><a id="line.434">        }</a>
+<span class="sourceLineNo">435</span><a id="line.435">    }</a>
+<span class="sourceLineNo">436</span><a id="line.436"></a>
+<span class="sourceLineNo">437</span><a id="line.437">    /**</a>
+<span class="sourceLineNo">438</span><a id="line.438">     * Resolve all fields for the provided `target` `model`, from the provided row struct `source`. If a value is</a>
+<span class="sourceLineNo">439</span><a id="line.439">     * present, decode it according to the assigned Spanner {@link Type} and any present or implied model</a>
+<span class="sourceLineNo">440</span><a id="line.440">     * annotations.</a>
+<span class="sourceLineNo">441</span><a id="line.441">     *</a>
+<span class="sourceLineNo">442</span><a id="line.442">     * &lt;p&gt;This method performs recursion for nested `STRUCT` objects inside the row. Such structures are interpreted</a>
+<span class="sourceLineNo">443</span><a id="line.443">     * according to model annotations present or implied on the target builder. In such cases, `base` is set to the</a>
+<span class="sourceLineNo">444</span><a id="line.444">     * root builder being filled in. For the initial case, `base` is always {@link Optional#empty()}.&lt;/p&gt;</a>
+<span class="sourceLineNo">445</span><a id="line.445">     *</a>
+<span class="sourceLineNo">446</span><a id="line.446">     * @param target Target builder which we intend to fill in with values.</a>
+<span class="sourceLineNo">447</span><a id="line.447">     * @param model Model descriptor for the object we are building.</a>
+<span class="sourceLineNo">448</span><a id="line.448">     * @param source Source row structure to pull data from.</a>
+<span class="sourceLineNo">449</span><a id="line.449">     * @param fields List of fields present in the row, for efficient model filtering.</a>
+<span class="sourceLineNo">450</span><a id="line.450">     */</a>
+<span class="sourceLineNo">451</span><a id="line.451">    private void convergeFields(@Nonnull Message.Builder target,</a>
+<span class="sourceLineNo">452</span><a id="line.452">                                @Nonnull Descriptors.Descriptor model,</a>
+<span class="sourceLineNo">453</span><a id="line.453">                                @Nonnull Struct source,</a>
+<span class="sourceLineNo">454</span><a id="line.454">                                @Nonnull List&lt;Type.StructField&gt; fields) {</a>
+<span class="sourceLineNo">455</span><a id="line.455">        if (logging.isDebugEnabled()) logging.trace(</a>
+<span class="sourceLineNo">456</span><a id="line.456">                "More than one column value present in row. Decoding as {}...",</a>
+<span class="sourceLineNo">457</span><a id="line.457">                modelDescriptor.getFullName());</a>
+<span class="sourceLineNo">458</span><a id="line.458"></a>
+<span class="sourceLineNo">459</span><a id="line.459">        // compute a set of projection fields</a>
+<span class="sourceLineNo">460</span><a id="line.460">        SortedSet&lt;String&gt; eligibleFields = fields.isEmpty() ? new TreeSet&lt;&gt;() : fields</a>
+<span class="sourceLineNo">461</span><a id="line.461">                .stream()</a>
+<span class="sourceLineNo">462</span><a id="line.462">                .map(Type.StructField::getName)</a>
+<span class="sourceLineNo">463</span><a id="line.463">                .collect(Collectors.toCollection(TreeSet::new));</a>
 <span class="sourceLineNo">464</span><a id="line.464"></a>
-<span class="sourceLineNo">465</span><a id="line.465">        // grab field count and begin iterating over fields, and assigning by type</a>
-<span class="sourceLineNo">466</span><a id="line.466">        var fieldCount = rowStruct.getColumnCount();</a>
-<span class="sourceLineNo">467</span><a id="line.467">        if (fieldCount &gt; 0 &amp;&amp; logging.isDebugEnabled()) logging.debug(</a>
-<span class="sourceLineNo">468</span><a id="line.468">                "Inflating {} fields from Spanner row struct.",</a>
-<span class="sourceLineNo">469</span><a id="line.469">                fieldCount);</a>
-<span class="sourceLineNo">470</span><a id="line.470"></a>
-<span class="sourceLineNo">471</span><a id="line.471">        if (fieldCount &lt; 1) {</a>
-<span class="sourceLineNo">472</span><a id="line.472">            logging.warn("Empty rowStruct. Discarding.");</a>
-<span class="sourceLineNo">473</span><a id="line.473">            //noinspection unchecked</a>
-<span class="sourceLineNo">474</span><a id="line.474">            return (Model)defaultInstance.newBuilderForType().build();</a>
-<span class="sourceLineNo">475</span><a id="line.475">        } else {</a>
-<span class="sourceLineNo">476</span><a id="line.476">            if (logging.isTraceEnabled()) logging.trace(</a>
-<span class="sourceLineNo">477</span><a id="line.477">                    "More than one column value present in row. Decoding as {}...",</a>
-<span class="sourceLineNo">478</span><a id="line.478">                    modelDescriptor.getFullName());</a>
-<span class="sourceLineNo">479</span><a id="line.479"></a>
-<span class="sourceLineNo">480</span><a id="line.480">            // create a new builder, converge against it from the source row structure.</a>
-<span class="sourceLineNo">481</span><a id="line.481">            var builder = defaultInstance.newBuilderForType();</a>
-<span class="sourceLineNo">482</span><a id="line.482">            convergeFields(</a>
-<span class="sourceLineNo">483</span><a id="line.483">                builder,</a>
-<span class="sourceLineNo">484</span><a id="line.484">                modelDescriptor,</a>
-<span class="sourceLineNo">485</span><a id="line.485">                rowStruct,</a>
-<span class="sourceLineNo">486</span><a id="line.486">                rowStruct.getType().getStructFields()</a>
-<span class="sourceLineNo">487</span><a id="line.487">            );</a>
-<span class="sourceLineNo">488</span><a id="line.488"></a>
-<span class="sourceLineNo">489</span><a id="line.489">            //noinspection unchecked</a>
-<span class="sourceLineNo">490</span><a id="line.490">            return (Model)builder.build();</a>
-<span class="sourceLineNo">491</span><a id="line.491">        }</a>
-<span class="sourceLineNo">492</span><a id="line.492">    }</a>
-<span class="sourceLineNo">493</span><a id="line.493">}</a>
+<span class="sourceLineNo">465</span><a id="line.465">        forEachField(</a>
+<span class="sourceLineNo">466</span><a id="line.466">            model,</a>
+<span class="sourceLineNo">467</span><a id="line.467">            Optional.of(onlySpannerEligibleFields(eligibleFields, driverSettings)),</a>
+<span class="sourceLineNo">468</span><a id="line.468">            (pointer) -&gt; {</a>
+<span class="sourceLineNo">469</span><a id="line.469">                // decide if we should recurse. we should never recurse for `JSON` fields, or for fields marked with</a>
+<span class="sourceLineNo">470</span><a id="line.470">                // `ignore` on the column or spanner options.</a>
+<span class="sourceLineNo">471</span><a id="line.471">                var spannerOpts = spannerOpts(pointer);</a>
+<span class="sourceLineNo">472</span><a id="line.472">                var columnOpts = columnOpts(pointer);</a>
+<span class="sourceLineNo">473</span><a id="line.473">                return !(</a>
+<span class="sourceLineNo">474</span><a id="line.474">                    (columnOpts.isPresent() &amp;&amp; columnOpts.get().getIgnore()) ||</a>
+<span class="sourceLineNo">475</span><a id="line.475">                    (spannerOpts.isPresent() &amp;&amp; spannerOpts.get().getIgnore()) ||</a>
+<span class="sourceLineNo">476</span><a id="line.476">                    (spannerOpts.isPresent() &amp;&amp; spannerOpts.get().getType().equals(SpannerOptions.SpannerType.JSON))</a>
+<span class="sourceLineNo">477</span><a id="line.477">                );</a>
+<span class="sourceLineNo">478</span><a id="line.478">            }</a>
+<span class="sourceLineNo">479</span><a id="line.479">        ).forEach((fieldPointer) -&gt; {</a>
+<span class="sourceLineNo">480</span><a id="line.480">            if (logging.isDebugEnabled()) logging.trace(</a>
+<span class="sourceLineNo">481</span><a id="line.481">                    "Converging eligible column field {}...",</a>
+<span class="sourceLineNo">482</span><a id="line.482">                    fieldPointer.getField().getFullName());</a>
+<span class="sourceLineNo">483</span><a id="line.483"></a>
+<span class="sourceLineNo">484</span><a id="line.484">            convergeColumnField(</a>
+<span class="sourceLineNo">485</span><a id="line.485">                target,</a>
+<span class="sourceLineNo">486</span><a id="line.486">                source,</a>
+<span class="sourceLineNo">487</span><a id="line.487">                fieldPointer</a>
+<span class="sourceLineNo">488</span><a id="line.488">            );</a>
+<span class="sourceLineNo">489</span><a id="line.489">        });</a>
+<span class="sourceLineNo">490</span><a id="line.490">    }</a>
+<span class="sourceLineNo">491</span><a id="line.491"></a>
+<span class="sourceLineNo">492</span><a id="line.492">    /** @inheritDoc */</a>
+<span class="sourceLineNo">493</span><a id="line.493">    @Override</a>
+<span class="sourceLineNo">494</span><a id="line.494">    public @Nonnull Model inflate(@Nonnull Struct rowStruct) throws ModelInflateException {</a>
+<span class="sourceLineNo">495</span><a id="line.495">        Objects.requireNonNull(rowStruct, "cannot inflate null row struct from spanner");</a>
+<span class="sourceLineNo">496</span><a id="line.496"></a>
+<span class="sourceLineNo">497</span><a id="line.497">        // grab field count and begin iterating over fields, and assigning by type</a>
+<span class="sourceLineNo">498</span><a id="line.498">        var fieldCount = rowStruct.getColumnCount();</a>
+<span class="sourceLineNo">499</span><a id="line.499">        if (fieldCount &gt; 0 &amp;&amp; logging.isDebugEnabled()) logging.debug(</a>
+<span class="sourceLineNo">500</span><a id="line.500">                "Inflating {} fields from Spanner row struct.",</a>
+<span class="sourceLineNo">501</span><a id="line.501">                fieldCount);</a>
+<span class="sourceLineNo">502</span><a id="line.502"></a>
+<span class="sourceLineNo">503</span><a id="line.503">        if (fieldCount &lt; 1) {</a>
+<span class="sourceLineNo">504</span><a id="line.504">            logging.warn("Empty rowStruct. Discarding.");</a>
+<span class="sourceLineNo">505</span><a id="line.505">            //noinspection unchecked</a>
+<span class="sourceLineNo">506</span><a id="line.506">            return (Model)defaultInstance.newBuilderForType().build();</a>
+<span class="sourceLineNo">507</span><a id="line.507">        } else {</a>
+<span class="sourceLineNo">508</span><a id="line.508">            if (logging.isTraceEnabled()) logging.trace(</a>
+<span class="sourceLineNo">509</span><a id="line.509">                    "More than one column value present in row. Decoding as {}...",</a>
+<span class="sourceLineNo">510</span><a id="line.510">                    modelDescriptor.getFullName());</a>
+<span class="sourceLineNo">511</span><a id="line.511"></a>
+<span class="sourceLineNo">512</span><a id="line.512">            // create a new builder, converge against it from the source row structure.</a>
+<span class="sourceLineNo">513</span><a id="line.513">            var builder = defaultInstance.newBuilderForType();</a>
+<span class="sourceLineNo">514</span><a id="line.514">            convergeFields(</a>
+<span class="sourceLineNo">515</span><a id="line.515">                builder,</a>
+<span class="sourceLineNo">516</span><a id="line.516">                modelDescriptor,</a>
+<span class="sourceLineNo">517</span><a id="line.517">                rowStruct,</a>
+<span class="sourceLineNo">518</span><a id="line.518">                rowStruct.getType().getStructFields()</a>
+<span class="sourceLineNo">519</span><a id="line.519">            );</a>
+<span class="sourceLineNo">520</span><a id="line.520"></a>
+<span class="sourceLineNo">521</span><a id="line.521">            //noinspection unchecked</a>
+<span class="sourceLineNo">522</span><a id="line.522">            return (Model)builder.build();</a>
+<span class="sourceLineNo">523</span><a id="line.523">        }</a>
+<span class="sourceLineNo">524</span><a id="line.524">    }</a>
+<span class="sourceLineNo">525</span><a id="line.525">}</a>
 
 
 

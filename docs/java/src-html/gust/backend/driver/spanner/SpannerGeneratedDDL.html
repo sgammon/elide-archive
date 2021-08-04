@@ -482,286 +482,284 @@
 <span class="sourceLineNo">473</span><a id="line.473">            // add interleave target statement, if specified</a>
 <span class="sourceLineNo">474</span><a id="line.474">            this.interleaveTarget.ifPresent(target -&gt; buf.add(target.render()));</a>
 <span class="sourceLineNo">475</span><a id="line.475"></a>
-<span class="sourceLineNo">476</span><a id="line.476">//            this.rowDeletionPolicy.ifPresent(target -&gt; buf.add(target.render()));</a>
-<span class="sourceLineNo">477</span><a id="line.477"></a>
-<span class="sourceLineNo">478</span><a id="line.478">            builder.append(join(", ", buf));</a>
-<span class="sourceLineNo">479</span><a id="line.479">            return builder;</a>
-<span class="sourceLineNo">480</span><a id="line.480">        }</a>
-<span class="sourceLineNo">481</span><a id="line.481"></a>
-<span class="sourceLineNo">482</span><a id="line.482">        /**</a>
-<span class="sourceLineNo">483</span><a id="line.483">         * Collapse the builder into an immutable DDL statement container</a>
-<span class="sourceLineNo">484</span><a id="line.484">         *</a>
-<span class="sourceLineNo">485</span><a id="line.485">         * @return Immutable DDL statement container.</a>
-<span class="sourceLineNo">486</span><a id="line.486">         */</a>
-<span class="sourceLineNo">487</span><a id="line.487">        public @Nonnull SpannerGeneratedDDL build() {</a>
-<span class="sourceLineNo">488</span><a id="line.488">            var fields = forEachField(</a>
-<span class="sourceLineNo">489</span><a id="line.489">                model,</a>
-<span class="sourceLineNo">490</span><a id="line.490">                Optional.of(onlySpannerEligibleFields(settings))</a>
-<span class="sourceLineNo">491</span><a id="line.491">            ).map((fieldPointer) -&gt;</a>
-<span class="sourceLineNo">492</span><a id="line.492">                    ColumnSpec.columnSpecForField(fieldPointer, settings)</a>
-<span class="sourceLineNo">493</span><a id="line.493">            ).collect(Collectors.toUnmodifiableList());</a>
-<span class="sourceLineNo">494</span><a id="line.494"></a>
-<span class="sourceLineNo">495</span><a id="line.495">            return new SpannerGeneratedDDL(</a>
-<span class="sourceLineNo">496</span><a id="line.496">                tableName,</a>
-<span class="sourceLineNo">497</span><a id="line.497">                fields,</a>
-<span class="sourceLineNo">498</span><a id="line.498">                model,</a>
-<span class="sourceLineNo">499</span><a id="line.499">                renderCreateDDLStatement()</a>
-<span class="sourceLineNo">500</span><a id="line.500">            );</a>
-<span class="sourceLineNo">501</span><a id="line.501">        }</a>
+<span class="sourceLineNo">476</span><a id="line.476">            builder.append(join(", ", buf));</a>
+<span class="sourceLineNo">477</span><a id="line.477">            return builder;</a>
+<span class="sourceLineNo">478</span><a id="line.478">        }</a>
+<span class="sourceLineNo">479</span><a id="line.479"></a>
+<span class="sourceLineNo">480</span><a id="line.480">        /**</a>
+<span class="sourceLineNo">481</span><a id="line.481">         * Collapse the builder into an immutable DDL statement container</a>
+<span class="sourceLineNo">482</span><a id="line.482">         *</a>
+<span class="sourceLineNo">483</span><a id="line.483">         * @return Immutable DDL statement container.</a>
+<span class="sourceLineNo">484</span><a id="line.484">         */</a>
+<span class="sourceLineNo">485</span><a id="line.485">        public @Nonnull SpannerGeneratedDDL build() {</a>
+<span class="sourceLineNo">486</span><a id="line.486">            var fields = forEachField(</a>
+<span class="sourceLineNo">487</span><a id="line.487">                model,</a>
+<span class="sourceLineNo">488</span><a id="line.488">                Optional.of(onlySpannerEligibleFields(settings))</a>
+<span class="sourceLineNo">489</span><a id="line.489">            ).map((fieldPointer) -&gt;</a>
+<span class="sourceLineNo">490</span><a id="line.490">                    ColumnSpec.columnSpecForField(fieldPointer, settings)</a>
+<span class="sourceLineNo">491</span><a id="line.491">            ).collect(Collectors.toUnmodifiableList());</a>
+<span class="sourceLineNo">492</span><a id="line.492"></a>
+<span class="sourceLineNo">493</span><a id="line.493">            return new SpannerGeneratedDDL(</a>
+<span class="sourceLineNo">494</span><a id="line.494">                tableName,</a>
+<span class="sourceLineNo">495</span><a id="line.495">                fields,</a>
+<span class="sourceLineNo">496</span><a id="line.496">                model,</a>
+<span class="sourceLineNo">497</span><a id="line.497">                renderCreateDDLStatement()</a>
+<span class="sourceLineNo">498</span><a id="line.498">            );</a>
+<span class="sourceLineNo">499</span><a id="line.499">        }</a>
+<span class="sourceLineNo">500</span><a id="line.500"></a>
+<span class="sourceLineNo">501</span><a id="line.501">        // -- Builder API: Getters -- //</a>
 <span class="sourceLineNo">502</span><a id="line.502"></a>
-<span class="sourceLineNo">503</span><a id="line.503">        // -- Builder API: Getters -- //</a>
-<span class="sourceLineNo">504</span><a id="line.504"></a>
-<span class="sourceLineNo">505</span><a id="line.505">        /** @return Model descriptor this builder wraps. */</a>
-<span class="sourceLineNo">506</span><a id="line.506">        public @Nonnull Descriptor getModel() {</a>
-<span class="sourceLineNo">507</span><a id="line.507">            return model;</a>
-<span class="sourceLineNo">508</span><a id="line.508">        }</a>
-<span class="sourceLineNo">509</span><a id="line.509"></a>
-<span class="sourceLineNo">510</span><a id="line.510">        /** @return Active Spanner driver settings. */</a>
-<span class="sourceLineNo">511</span><a id="line.511">        public @Nonnull SpannerDriverSettings getSettings() {</a>
-<span class="sourceLineNo">512</span><a id="line.512">            return settings;</a>
-<span class="sourceLineNo">513</span><a id="line.513">        }</a>
-<span class="sourceLineNo">514</span><a id="line.514"></a>
-<span class="sourceLineNo">515</span><a id="line.515">        /** @return Generated or resolved Spanner table name. */</a>
-<span class="sourceLineNo">516</span><a id="line.516">        public @Nonnull String getTableName() {</a>
-<span class="sourceLineNo">517</span><a id="line.517">            return tableName;</a>
-<span class="sourceLineNo">518</span><a id="line.518">        }</a>
-<span class="sourceLineNo">519</span><a id="line.519"></a>
-<span class="sourceLineNo">520</span><a id="line.520">        /** @return Primary key column for this model/table. */</a>
-<span class="sourceLineNo">521</span><a id="line.521">        public @Nonnull String getPrimaryKey() {</a>
-<span class="sourceLineNo">522</span><a id="line.522">            return primaryKey;</a>
-<span class="sourceLineNo">523</span><a id="line.523">        }</a>
-<span class="sourceLineNo">524</span><a id="line.524"></a>
-<span class="sourceLineNo">525</span><a id="line.525">        /** @return Set of generated columns for this model in Spanner. */</a>
-<span class="sourceLineNo">526</span><a id="line.526">        public @Nonnull List&lt;ColumnSpec&gt; getColumns() {</a>
-<span class="sourceLineNo">527</span><a id="line.527">            return columns;</a>
-<span class="sourceLineNo">528</span><a id="line.528">        }</a>
-<span class="sourceLineNo">529</span><a id="line.529"></a>
-<span class="sourceLineNo">530</span><a id="line.530">        /** @return Primary key column sort direction. */</a>
-<span class="sourceLineNo">531</span><a id="line.531">        public @Nonnull SortDirection getKeySortDirection() {</a>
-<span class="sourceLineNo">532</span><a id="line.532">            return keySortDirection;</a>
-<span class="sourceLineNo">533</span><a id="line.533">        }</a>
-<span class="sourceLineNo">534</span><a id="line.534"></a>
-<span class="sourceLineNo">535</span><a id="line.535">        /** @return Set of constraints to apply to this table. */</a>
-<span class="sourceLineNo">536</span><a id="line.536">        public @Nonnull Optional&lt;List&lt;TableConstraint&gt;&gt; getTableConstraints() {</a>
-<span class="sourceLineNo">537</span><a id="line.537">            return tableConstraints;</a>
-<span class="sourceLineNo">538</span><a id="line.538">        }</a>
-<span class="sourceLineNo">539</span><a id="line.539"></a>
-<span class="sourceLineNo">540</span><a id="line.540">        /** @return Optimizer version to set for this table. */</a>
-<span class="sourceLineNo">541</span><a id="line.541">        public @Nonnull Optional&lt;Integer&gt; getOptimizerVersion() {</a>
-<span class="sourceLineNo">542</span><a id="line.542">            return optimizerVersion;</a>
-<span class="sourceLineNo">543</span><a id="line.543">        }</a>
-<span class="sourceLineNo">544</span><a id="line.544"></a>
-<span class="sourceLineNo">545</span><a id="line.545">        /** @return Data versioning retention period to set for this table. */</a>
-<span class="sourceLineNo">546</span><a id="line.546">        public @Nonnull Optional&lt;String&gt; getVersionRetentionPeriod() {</a>
-<span class="sourceLineNo">547</span><a id="line.547">            return versionRetentionPeriod;</a>
-<span class="sourceLineNo">548</span><a id="line.548">        }</a>
-<span class="sourceLineNo">549</span><a id="line.549"></a>
-<span class="sourceLineNo">550</span><a id="line.550">        /** @return Parent interleaving target for this table. */</a>
-<span class="sourceLineNo">551</span><a id="line.551">        public @Nonnull Optional&lt;InterleaveTarget&gt; getInterleaveTarget() {</a>
-<span class="sourceLineNo">552</span><a id="line.552">            return interleaveTarget;</a>
-<span class="sourceLineNo">553</span><a id="line.553">        }</a>
+<span class="sourceLineNo">503</span><a id="line.503">        /** @return Model descriptor this builder wraps. */</a>
+<span class="sourceLineNo">504</span><a id="line.504">        public @Nonnull Descriptor getModel() {</a>
+<span class="sourceLineNo">505</span><a id="line.505">            return model;</a>
+<span class="sourceLineNo">506</span><a id="line.506">        }</a>
+<span class="sourceLineNo">507</span><a id="line.507"></a>
+<span class="sourceLineNo">508</span><a id="line.508">        /** @return Active Spanner driver settings. */</a>
+<span class="sourceLineNo">509</span><a id="line.509">        public @Nonnull SpannerDriverSettings getSettings() {</a>
+<span class="sourceLineNo">510</span><a id="line.510">            return settings;</a>
+<span class="sourceLineNo">511</span><a id="line.511">        }</a>
+<span class="sourceLineNo">512</span><a id="line.512"></a>
+<span class="sourceLineNo">513</span><a id="line.513">        /** @return Generated or resolved Spanner table name. */</a>
+<span class="sourceLineNo">514</span><a id="line.514">        public @Nonnull String getTableName() {</a>
+<span class="sourceLineNo">515</span><a id="line.515">            return tableName;</a>
+<span class="sourceLineNo">516</span><a id="line.516">        }</a>
+<span class="sourceLineNo">517</span><a id="line.517"></a>
+<span class="sourceLineNo">518</span><a id="line.518">        /** @return Primary key column for this model/table. */</a>
+<span class="sourceLineNo">519</span><a id="line.519">        public @Nonnull String getPrimaryKey() {</a>
+<span class="sourceLineNo">520</span><a id="line.520">            return primaryKey;</a>
+<span class="sourceLineNo">521</span><a id="line.521">        }</a>
+<span class="sourceLineNo">522</span><a id="line.522"></a>
+<span class="sourceLineNo">523</span><a id="line.523">        /** @return Set of generated columns for this model in Spanner. */</a>
+<span class="sourceLineNo">524</span><a id="line.524">        public @Nonnull List&lt;ColumnSpec&gt; getColumns() {</a>
+<span class="sourceLineNo">525</span><a id="line.525">            return columns;</a>
+<span class="sourceLineNo">526</span><a id="line.526">        }</a>
+<span class="sourceLineNo">527</span><a id="line.527"></a>
+<span class="sourceLineNo">528</span><a id="line.528">        /** @return Primary key column sort direction. */</a>
+<span class="sourceLineNo">529</span><a id="line.529">        public @Nonnull SortDirection getKeySortDirection() {</a>
+<span class="sourceLineNo">530</span><a id="line.530">            return keySortDirection;</a>
+<span class="sourceLineNo">531</span><a id="line.531">        }</a>
+<span class="sourceLineNo">532</span><a id="line.532"></a>
+<span class="sourceLineNo">533</span><a id="line.533">        /** @return Set of constraints to apply to this table. */</a>
+<span class="sourceLineNo">534</span><a id="line.534">        public @Nonnull Optional&lt;List&lt;TableConstraint&gt;&gt; getTableConstraints() {</a>
+<span class="sourceLineNo">535</span><a id="line.535">            return tableConstraints;</a>
+<span class="sourceLineNo">536</span><a id="line.536">        }</a>
+<span class="sourceLineNo">537</span><a id="line.537"></a>
+<span class="sourceLineNo">538</span><a id="line.538">        /** @return Optimizer version to set for this table. */</a>
+<span class="sourceLineNo">539</span><a id="line.539">        public @Nonnull Optional&lt;Integer&gt; getOptimizerVersion() {</a>
+<span class="sourceLineNo">540</span><a id="line.540">            return optimizerVersion;</a>
+<span class="sourceLineNo">541</span><a id="line.541">        }</a>
+<span class="sourceLineNo">542</span><a id="line.542"></a>
+<span class="sourceLineNo">543</span><a id="line.543">        /** @return Data versioning retention period to set for this table. */</a>
+<span class="sourceLineNo">544</span><a id="line.544">        public @Nonnull Optional&lt;String&gt; getVersionRetentionPeriod() {</a>
+<span class="sourceLineNo">545</span><a id="line.545">            return versionRetentionPeriod;</a>
+<span class="sourceLineNo">546</span><a id="line.546">        }</a>
+<span class="sourceLineNo">547</span><a id="line.547"></a>
+<span class="sourceLineNo">548</span><a id="line.548">        /** @return Parent interleaving target for this table. */</a>
+<span class="sourceLineNo">549</span><a id="line.549">        public @Nonnull Optional&lt;InterleaveTarget&gt; getInterleaveTarget() {</a>
+<span class="sourceLineNo">550</span><a id="line.550">            return interleaveTarget;</a>
+<span class="sourceLineNo">551</span><a id="line.551">        }</a>
+<span class="sourceLineNo">552</span><a id="line.552"></a>
+<span class="sourceLineNo">553</span><a id="line.553">        // -- Builder API: Setters -- //</a>
 <span class="sourceLineNo">554</span><a id="line.554"></a>
-<span class="sourceLineNo">555</span><a id="line.555">        // -- Builder API: Setters -- //</a>
-<span class="sourceLineNo">556</span><a id="line.556"></a>
-<span class="sourceLineNo">557</span><a id="line.557">        /**</a>
-<span class="sourceLineNo">558</span><a id="line.558">         * Set the sort direction for the primary key column in this table.</a>
-<span class="sourceLineNo">559</span><a id="line.559">         *</a>
-<span class="sourceLineNo">560</span><a id="line.560">         * @param keySortDirection Key column sort direction.</a>
-<span class="sourceLineNo">561</span><a id="line.561">         * @return Self, for chained calls to the builder.</a>
-<span class="sourceLineNo">562</span><a id="line.562">         */</a>
-<span class="sourceLineNo">563</span><a id="line.563">        public @Nonnull Builder setKeySortDirection(@Nonnull SortDirection keySortDirection) {</a>
-<span class="sourceLineNo">564</span><a id="line.564">            this.keySortDirection = keySortDirection;</a>
-<span class="sourceLineNo">565</span><a id="line.565">            return this;</a>
-<span class="sourceLineNo">566</span><a id="line.566">        }</a>
-<span class="sourceLineNo">567</span><a id="line.567"></a>
-<span class="sourceLineNo">568</span><a id="line.568">        /**</a>
-<span class="sourceLineNo">569</span><a id="line.569">         * Set, or clear, the set of table constraints added to this table.</a>
-<span class="sourceLineNo">570</span><a id="line.570">         *</a>
-<span class="sourceLineNo">571</span><a id="line.571">         * @param tableConstraints Desired table constraints to set or clear, as applicable.</a>
-<span class="sourceLineNo">572</span><a id="line.572">         * @return Self, for chained calls to the builder.</a>
-<span class="sourceLineNo">573</span><a id="line.573">         */</a>
-<span class="sourceLineNo">574</span><a id="line.574">        public @Nonnull Builder setTableConstraints(@Nonnull Optional&lt;List&lt;TableConstraint&gt;&gt; tableConstraints) {</a>
-<span class="sourceLineNo">575</span><a id="line.575">            this.tableConstraints = tableConstraints;</a>
-<span class="sourceLineNo">576</span><a id="line.576">            return this;</a>
-<span class="sourceLineNo">577</span><a id="line.577">        }</a>
-<span class="sourceLineNo">578</span><a id="line.578"></a>
-<span class="sourceLineNo">579</span><a id="line.579">        /**</a>
-<span class="sourceLineNo">580</span><a id="line.580">         * Set, or clear, the optimizer version to apply when creating this table.</a>
-<span class="sourceLineNo">581</span><a id="line.581">         *</a>
-<span class="sourceLineNo">582</span><a id="line.582">         * @param optimizerVersion Desired optimizer version to apply, as applicable.</a>
-<span class="sourceLineNo">583</span><a id="line.583">         * @return Self, for chained calls to the builder.</a>
-<span class="sourceLineNo">584</span><a id="line.584">         */</a>
-<span class="sourceLineNo">585</span><a id="line.585">        public @Nonnull Builder setOptimizerVersion(@Nonnull Optional&lt;Integer&gt; optimizerVersion) {</a>
-<span class="sourceLineNo">586</span><a id="line.586">            this.optimizerVersion = optimizerVersion;</a>
-<span class="sourceLineNo">587</span><a id="line.587">            return this;</a>
-<span class="sourceLineNo">588</span><a id="line.588">        }</a>
-<span class="sourceLineNo">589</span><a id="line.589"></a>
-<span class="sourceLineNo">590</span><a id="line.590">        /**</a>
-<span class="sourceLineNo">591</span><a id="line.591">         * Set, or clear, the data versioning retention period for this table.</a>
-<span class="sourceLineNo">592</span><a id="line.592">         *</a>
-<span class="sourceLineNo">593</span><a id="line.593">         * @param versionRetentionPeriod Desired data versioning retention period, as applicable.</a>
-<span class="sourceLineNo">594</span><a id="line.594">         * @return Self, for chained calls to the builder.</a>
-<span class="sourceLineNo">595</span><a id="line.595">         */</a>
-<span class="sourceLineNo">596</span><a id="line.596">        public @Nonnull Builder setVersionRetentionPeriod(@Nonnull Optional&lt;String&gt; versionRetentionPeriod) {</a>
-<span class="sourceLineNo">597</span><a id="line.597">            this.versionRetentionPeriod = versionRetentionPeriod;</a>
-<span class="sourceLineNo">598</span><a id="line.598">            return this;</a>
-<span class="sourceLineNo">599</span><a id="line.599">        }</a>
-<span class="sourceLineNo">600</span><a id="line.600"></a>
-<span class="sourceLineNo">601</span><a id="line.601">        /**</a>
-<span class="sourceLineNo">602</span><a id="line.602">         * Set, or clear, the parent interleave target for this table.</a>
-<span class="sourceLineNo">603</span><a id="line.603">         *</a>
-<span class="sourceLineNo">604</span><a id="line.604">         * @param interleaveTarget Desired parent interleave target, as applicable.</a>
-<span class="sourceLineNo">605</span><a id="line.605">         * @return Self, for chained calls to the builder.</a>
-<span class="sourceLineNo">606</span><a id="line.606">         */</a>
-<span class="sourceLineNo">607</span><a id="line.607">        public @Nonnull Builder setInterleaveTarget(@Nonnull Optional&lt;InterleaveTarget&gt; interleaveTarget) {</a>
-<span class="sourceLineNo">608</span><a id="line.608">            this.interleaveTarget = interleaveTarget;</a>
-<span class="sourceLineNo">609</span><a id="line.609">            return this;</a>
-<span class="sourceLineNo">610</span><a id="line.610">        }</a>
-<span class="sourceLineNo">611</span><a id="line.611">    }</a>
-<span class="sourceLineNo">612</span><a id="line.612"></a>
-<span class="sourceLineNo">613</span><a id="line.613">    /** Model that relates to this generated statement. */</a>
-<span class="sourceLineNo">614</span><a id="line.614">    private final @Nonnull Descriptor model;</a>
-<span class="sourceLineNo">615</span><a id="line.615"></a>
-<span class="sourceLineNo">616</span><a id="line.616">    /** Resolved name of the table. */</a>
-<span class="sourceLineNo">617</span><a id="line.617">    private final @Nonnull String tableName;</a>
-<span class="sourceLineNo">618</span><a id="line.618"></a>
-<span class="sourceLineNo">619</span><a id="line.619">    /** Set of generated columns determined to be part of this table. */</a>
-<span class="sourceLineNo">620</span><a id="line.620">    private final @Nonnull List&lt;ColumnSpec&gt; columns;</a>
-<span class="sourceLineNo">621</span><a id="line.621"></a>
-<span class="sourceLineNo">622</span><a id="line.622">    /** Holds the generated query in a string buffer. */</a>
-<span class="sourceLineNo">623</span><a id="line.623">    private final @Nonnull StringBuilder generatedStatement;</a>
-<span class="sourceLineNo">624</span><a id="line.624"></a>
-<span class="sourceLineNo">625</span><a id="line.625">    /**</a>
-<span class="sourceLineNo">626</span><a id="line.626">     * Private constructor.</a>
-<span class="sourceLineNo">627</span><a id="line.627">     *</a>
-<span class="sourceLineNo">628</span><a id="line.628">     * @param tableName Name of the generated table.</a>
-<span class="sourceLineNo">629</span><a id="line.629">     * @param columns Generated set of columns.</a>
-<span class="sourceLineNo">630</span><a id="line.630">     * @param model Model this table corresponds to.</a>
-<span class="sourceLineNo">631</span><a id="line.631">     * @param generatedStatement Rendered DDL statement.</a>
-<span class="sourceLineNo">632</span><a id="line.632">     */</a>
-<span class="sourceLineNo">633</span><a id="line.633">    private SpannerGeneratedDDL(@Nonnull String tableName,</a>
-<span class="sourceLineNo">634</span><a id="line.634">                                @Nonnull List&lt;ColumnSpec&gt; columns,</a>
-<span class="sourceLineNo">635</span><a id="line.635">                                @Nonnull Descriptor model,</a>
-<span class="sourceLineNo">636</span><a id="line.636">                                @Nonnull StringBuilder generatedStatement) {</a>
-<span class="sourceLineNo">637</span><a id="line.637">        this.tableName = tableName;</a>
-<span class="sourceLineNo">638</span><a id="line.638">        this.columns = columns;</a>
-<span class="sourceLineNo">639</span><a id="line.639">        this.generatedStatement = generatedStatement;</a>
-<span class="sourceLineNo">640</span><a id="line.640">        this.model = model;</a>
-<span class="sourceLineNo">641</span><a id="line.641">    }</a>
-<span class="sourceLineNo">642</span><a id="line.642"></a>
-<span class="sourceLineNo">643</span><a id="line.643">    /**</a>
-<span class="sourceLineNo">644</span><a id="line.644">     * Given a model definition, produce a generated DDL statement which creates a backing table in Spanner implementing</a>
-<span class="sourceLineNo">645</span><a id="line.645">     * that model's properties. This method variant operates from a full model instance.</a>
+<span class="sourceLineNo">555</span><a id="line.555">        /**</a>
+<span class="sourceLineNo">556</span><a id="line.556">         * Set the sort direction for the primary key column in this table.</a>
+<span class="sourceLineNo">557</span><a id="line.557">         *</a>
+<span class="sourceLineNo">558</span><a id="line.558">         * @param keySortDirection Key column sort direction.</a>
+<span class="sourceLineNo">559</span><a id="line.559">         * @return Self, for chained calls to the builder.</a>
+<span class="sourceLineNo">560</span><a id="line.560">         */</a>
+<span class="sourceLineNo">561</span><a id="line.561">        public @Nonnull Builder setKeySortDirection(@Nonnull SortDirection keySortDirection) {</a>
+<span class="sourceLineNo">562</span><a id="line.562">            this.keySortDirection = keySortDirection;</a>
+<span class="sourceLineNo">563</span><a id="line.563">            return this;</a>
+<span class="sourceLineNo">564</span><a id="line.564">        }</a>
+<span class="sourceLineNo">565</span><a id="line.565"></a>
+<span class="sourceLineNo">566</span><a id="line.566">        /**</a>
+<span class="sourceLineNo">567</span><a id="line.567">         * Set, or clear, the set of table constraints added to this table.</a>
+<span class="sourceLineNo">568</span><a id="line.568">         *</a>
+<span class="sourceLineNo">569</span><a id="line.569">         * @param tableConstraints Desired table constraints to set or clear, as applicable.</a>
+<span class="sourceLineNo">570</span><a id="line.570">         * @return Self, for chained calls to the builder.</a>
+<span class="sourceLineNo">571</span><a id="line.571">         */</a>
+<span class="sourceLineNo">572</span><a id="line.572">        public @Nonnull Builder setTableConstraints(@Nonnull Optional&lt;List&lt;TableConstraint&gt;&gt; tableConstraints) {</a>
+<span class="sourceLineNo">573</span><a id="line.573">            this.tableConstraints = tableConstraints;</a>
+<span class="sourceLineNo">574</span><a id="line.574">            return this;</a>
+<span class="sourceLineNo">575</span><a id="line.575">        }</a>
+<span class="sourceLineNo">576</span><a id="line.576"></a>
+<span class="sourceLineNo">577</span><a id="line.577">        /**</a>
+<span class="sourceLineNo">578</span><a id="line.578">         * Set, or clear, the optimizer version to apply when creating this table.</a>
+<span class="sourceLineNo">579</span><a id="line.579">         *</a>
+<span class="sourceLineNo">580</span><a id="line.580">         * @param optimizerVersion Desired optimizer version to apply, as applicable.</a>
+<span class="sourceLineNo">581</span><a id="line.581">         * @return Self, for chained calls to the builder.</a>
+<span class="sourceLineNo">582</span><a id="line.582">         */</a>
+<span class="sourceLineNo">583</span><a id="line.583">        public @Nonnull Builder setOptimizerVersion(@Nonnull Optional&lt;Integer&gt; optimizerVersion) {</a>
+<span class="sourceLineNo">584</span><a id="line.584">            this.optimizerVersion = optimizerVersion;</a>
+<span class="sourceLineNo">585</span><a id="line.585">            return this;</a>
+<span class="sourceLineNo">586</span><a id="line.586">        }</a>
+<span class="sourceLineNo">587</span><a id="line.587"></a>
+<span class="sourceLineNo">588</span><a id="line.588">        /**</a>
+<span class="sourceLineNo">589</span><a id="line.589">         * Set, or clear, the data versioning retention period for this table.</a>
+<span class="sourceLineNo">590</span><a id="line.590">         *</a>
+<span class="sourceLineNo">591</span><a id="line.591">         * @param versionRetentionPeriod Desired data versioning retention period, as applicable.</a>
+<span class="sourceLineNo">592</span><a id="line.592">         * @return Self, for chained calls to the builder.</a>
+<span class="sourceLineNo">593</span><a id="line.593">         */</a>
+<span class="sourceLineNo">594</span><a id="line.594">        public @Nonnull Builder setVersionRetentionPeriod(@Nonnull Optional&lt;String&gt; versionRetentionPeriod) {</a>
+<span class="sourceLineNo">595</span><a id="line.595">            this.versionRetentionPeriod = versionRetentionPeriod;</a>
+<span class="sourceLineNo">596</span><a id="line.596">            return this;</a>
+<span class="sourceLineNo">597</span><a id="line.597">        }</a>
+<span class="sourceLineNo">598</span><a id="line.598"></a>
+<span class="sourceLineNo">599</span><a id="line.599">        /**</a>
+<span class="sourceLineNo">600</span><a id="line.600">         * Set, or clear, the parent interleave target for this table.</a>
+<span class="sourceLineNo">601</span><a id="line.601">         *</a>
+<span class="sourceLineNo">602</span><a id="line.602">         * @param interleaveTarget Desired parent interleave target, as applicable.</a>
+<span class="sourceLineNo">603</span><a id="line.603">         * @return Self, for chained calls to the builder.</a>
+<span class="sourceLineNo">604</span><a id="line.604">         */</a>
+<span class="sourceLineNo">605</span><a id="line.605">        public @Nonnull Builder setInterleaveTarget(@Nonnull Optional&lt;InterleaveTarget&gt; interleaveTarget) {</a>
+<span class="sourceLineNo">606</span><a id="line.606">            this.interleaveTarget = interleaveTarget;</a>
+<span class="sourceLineNo">607</span><a id="line.607">            return this;</a>
+<span class="sourceLineNo">608</span><a id="line.608">        }</a>
+<span class="sourceLineNo">609</span><a id="line.609">    }</a>
+<span class="sourceLineNo">610</span><a id="line.610"></a>
+<span class="sourceLineNo">611</span><a id="line.611">    /** Model that relates to this generated statement. */</a>
+<span class="sourceLineNo">612</span><a id="line.612">    private final @Nonnull Descriptor model;</a>
+<span class="sourceLineNo">613</span><a id="line.613"></a>
+<span class="sourceLineNo">614</span><a id="line.614">    /** Resolved name of the table. */</a>
+<span class="sourceLineNo">615</span><a id="line.615">    private final @Nonnull String tableName;</a>
+<span class="sourceLineNo">616</span><a id="line.616"></a>
+<span class="sourceLineNo">617</span><a id="line.617">    /** Set of generated columns determined to be part of this table. */</a>
+<span class="sourceLineNo">618</span><a id="line.618">    private final @Nonnull List&lt;ColumnSpec&gt; columns;</a>
+<span class="sourceLineNo">619</span><a id="line.619"></a>
+<span class="sourceLineNo">620</span><a id="line.620">    /** Holds the generated query in a string buffer. */</a>
+<span class="sourceLineNo">621</span><a id="line.621">    private final @Nonnull StringBuilder generatedStatement;</a>
+<span class="sourceLineNo">622</span><a id="line.622"></a>
+<span class="sourceLineNo">623</span><a id="line.623">    /**</a>
+<span class="sourceLineNo">624</span><a id="line.624">     * Private constructor.</a>
+<span class="sourceLineNo">625</span><a id="line.625">     *</a>
+<span class="sourceLineNo">626</span><a id="line.626">     * @param tableName Name of the generated table.</a>
+<span class="sourceLineNo">627</span><a id="line.627">     * @param columns Generated set of columns.</a>
+<span class="sourceLineNo">628</span><a id="line.628">     * @param model Model this table corresponds to.</a>
+<span class="sourceLineNo">629</span><a id="line.629">     * @param generatedStatement Rendered DDL statement.</a>
+<span class="sourceLineNo">630</span><a id="line.630">     */</a>
+<span class="sourceLineNo">631</span><a id="line.631">    private SpannerGeneratedDDL(@Nonnull String tableName,</a>
+<span class="sourceLineNo">632</span><a id="line.632">                                @Nonnull List&lt;ColumnSpec&gt; columns,</a>
+<span class="sourceLineNo">633</span><a id="line.633">                                @Nonnull Descriptor model,</a>
+<span class="sourceLineNo">634</span><a id="line.634">                                @Nonnull StringBuilder generatedStatement) {</a>
+<span class="sourceLineNo">635</span><a id="line.635">        this.tableName = tableName;</a>
+<span class="sourceLineNo">636</span><a id="line.636">        this.columns = columns;</a>
+<span class="sourceLineNo">637</span><a id="line.637">        this.generatedStatement = generatedStatement;</a>
+<span class="sourceLineNo">638</span><a id="line.638">        this.model = model;</a>
+<span class="sourceLineNo">639</span><a id="line.639">    }</a>
+<span class="sourceLineNo">640</span><a id="line.640"></a>
+<span class="sourceLineNo">641</span><a id="line.641">    /**</a>
+<span class="sourceLineNo">642</span><a id="line.642">     * Given a model definition, produce a generated DDL statement which creates a backing table in Spanner implementing</a>
+<span class="sourceLineNo">643</span><a id="line.643">     * that model's properties. This method variant operates from a full model instance.</a>
+<span class="sourceLineNo">644</span><a id="line.644">     *</a>
+<span class="sourceLineNo">645</span><a id="line.645">     * &lt;p&gt;This method offers no ability to control driver settings. See below if you need alternatives.&lt;/p&gt;</a>
 <span class="sourceLineNo">646</span><a id="line.646">     *</a>
-<span class="sourceLineNo">647</span><a id="line.647">     * &lt;p&gt;This method offers no ability to control driver settings. See below if you need alternatives.&lt;/p&gt;</a>
-<span class="sourceLineNo">648</span><a id="line.648">     *</a>
-<span class="sourceLineNo">649</span><a id="line.649">     * @see #generateTableDDL(Message, Optional) For control over driver settings, optionally.</a>
-<span class="sourceLineNo">650</span><a id="line.650">     * @param instance Model instance to generate a table statement for.</a>
-<span class="sourceLineNo">651</span><a id="line.651">     * @return Generated DDL statement object.</a>
-<span class="sourceLineNo">652</span><a id="line.652">     */</a>
-<span class="sourceLineNo">653</span><a id="line.653">    public static @Nonnull SpannerGeneratedDDL.Builder generateTableDDL(@Nonnull Message instance) {</a>
-<span class="sourceLineNo">654</span><a id="line.654">        return generateTableDDL(instance, Optional.of(SpannerDriverSettings.DEFAULTS));</a>
-<span class="sourceLineNo">655</span><a id="line.655">    }</a>
-<span class="sourceLineNo">656</span><a id="line.656"></a>
-<span class="sourceLineNo">657</span><a id="line.657">    /**</a>
-<span class="sourceLineNo">658</span><a id="line.658">     * Given a model definition, produce a generated DDL statement which creates a backing table in Spanner implementing</a>
-<span class="sourceLineNo">659</span><a id="line.659">     * that model's properties. This method variant operates from a full model instance.</a>
-<span class="sourceLineNo">660</span><a id="line.660">     *</a>
-<span class="sourceLineNo">661</span><a id="line.661">     * @param instance Model instance to generate a table statement for.</a>
-<span class="sourceLineNo">662</span><a id="line.662">     * @param settings Settings to employ for the driver. These must align at runtime.</a>
-<span class="sourceLineNo">663</span><a id="line.663">     * @return Generated DDL statement object.</a>
-<span class="sourceLineNo">664</span><a id="line.664">     */</a>
-<span class="sourceLineNo">665</span><a id="line.665">    public static @Nonnull SpannerGeneratedDDL.Builder generateTableDDL(</a>
-<span class="sourceLineNo">666</span><a id="line.666">            @Nonnull Message instance,</a>
-<span class="sourceLineNo">667</span><a id="line.667">            @Nonnull Optional&lt;SpannerDriverSettings&gt; settings) {</a>
-<span class="sourceLineNo">668</span><a id="line.668">        return generateTableDDL(</a>
-<span class="sourceLineNo">669</span><a id="line.669">            instance.getDescriptorForType(),</a>
-<span class="sourceLineNo">670</span><a id="line.670">            settings.orElse(SpannerDriverSettings.DEFAULTS)</a>
-<span class="sourceLineNo">671</span><a id="line.671">        );</a>
-<span class="sourceLineNo">672</span><a id="line.672">    }</a>
-<span class="sourceLineNo">673</span><a id="line.673"></a>
-<span class="sourceLineNo">674</span><a id="line.674">    /**</a>
-<span class="sourceLineNo">675</span><a id="line.675">     * Given a model definition, produce a generated DDL statement which creates a backing table in Spanner implementing</a>
-<span class="sourceLineNo">676</span><a id="line.676">     * that model's properties.</a>
-<span class="sourceLineNo">677</span><a id="line.677">     *</a>
-<span class="sourceLineNo">678</span><a id="line.678">     * @param model Model schema to generate a table statement for.</a>
-<span class="sourceLineNo">679</span><a id="line.679">     * @return Generated DDL statement object.</a>
-<span class="sourceLineNo">680</span><a id="line.680">     */</a>
-<span class="sourceLineNo">681</span><a id="line.681">    public static @Nonnull SpannerGeneratedDDL.Builder generateTableDDL(</a>
-<span class="sourceLineNo">682</span><a id="line.682">            @Nonnull Descriptor model,</a>
-<span class="sourceLineNo">683</span><a id="line.683">            @Nonnull SpannerDriverSettings settings) {</a>
-<span class="sourceLineNo">684</span><a id="line.684">        return new SpannerGeneratedDDL.Builder(</a>
-<span class="sourceLineNo">685</span><a id="line.685">            model,</a>
-<span class="sourceLineNo">686</span><a id="line.686">            resolveTableName(model),</a>
-<span class="sourceLineNo">687</span><a id="line.687">            resolveKeyColumn(idField(model).orElseThrow(), settings),</a>
-<span class="sourceLineNo">688</span><a id="line.688">            resolveDefaultColumns(model, settings),</a>
-<span class="sourceLineNo">689</span><a id="line.689">            settings</a>
-<span class="sourceLineNo">690</span><a id="line.690">        );</a>
-<span class="sourceLineNo">691</span><a id="line.691">    }</a>
-<span class="sourceLineNo">692</span><a id="line.692"></a>
-<span class="sourceLineNo">693</span><a id="line.693">    /**</a>
-<span class="sourceLineNo">694</span><a id="line.694">     * Resolve the default calculated set of Spanner columns for a given model structure.</a>
-<span class="sourceLineNo">695</span><a id="line.695">     *</a>
-<span class="sourceLineNo">696</span><a id="line.696">     * @param model Model to traverse and generate columns for.</a>
-<span class="sourceLineNo">697</span><a id="line.697">     * @return Set of generated and type-resolved columns.</a>
-<span class="sourceLineNo">698</span><a id="line.698">     */</a>
-<span class="sourceLineNo">699</span><a id="line.699">    public static @Nonnull List&lt;ColumnSpec&gt; resolveDefaultColumns(@Nonnull Descriptor model,</a>
-<span class="sourceLineNo">700</span><a id="line.700">                                                                  @Nonnull SpannerDriverSettings settings) {</a>
-<span class="sourceLineNo">701</span><a id="line.701">        var keyField = keyField(model).orElseThrow();</a>
-<span class="sourceLineNo">702</span><a id="line.702">        var fieldSet = new LinkedList&lt;ColumnSpec&gt;();</a>
-<span class="sourceLineNo">703</span><a id="line.703"></a>
-<span class="sourceLineNo">704</span><a id="line.704">        // first up: generate the column which implements the model's primary key</a>
-<span class="sourceLineNo">705</span><a id="line.705">        fieldSet.add(ColumnSpec.columnSpecForKey(</a>
-<span class="sourceLineNo">706</span><a id="line.706">            model,</a>
-<span class="sourceLineNo">707</span><a id="line.707">            keyField,</a>
-<span class="sourceLineNo">708</span><a id="line.708">            settings</a>
-<span class="sourceLineNo">709</span><a id="line.709">        ));</a>
-<span class="sourceLineNo">710</span><a id="line.710"></a>
-<span class="sourceLineNo">711</span><a id="line.711">        // next: generate all remaining data columns</a>
-<span class="sourceLineNo">712</span><a id="line.712">        forEachField(</a>
-<span class="sourceLineNo">713</span><a id="line.713">            model,</a>
-<span class="sourceLineNo">714</span><a id="line.714">            Optional.of(onlySpannerEligibleFields(settings))</a>
-<span class="sourceLineNo">715</span><a id="line.715">        ).filter((fieldPointer) -&gt;</a>
-<span class="sourceLineNo">716</span><a id="line.716">            // filter out key fields: we'll handle those separately</a>
-<span class="sourceLineNo">717</span><a id="line.717">            !keyField.getField().getFullName().equals(fieldPointer.getField().getFullName())</a>
-<span class="sourceLineNo">718</span><a id="line.718">        ).map((fieldPointer) -&gt;</a>
-<span class="sourceLineNo">719</span><a id="line.719">            ColumnSpec.columnSpecForField(fieldPointer, settings)</a>
-<span class="sourceLineNo">720</span><a id="line.720">        ).forEach(fieldSet::add);</a>
-<span class="sourceLineNo">721</span><a id="line.721"></a>
-<span class="sourceLineNo">722</span><a id="line.722">        return Collections.unmodifiableList(fieldSet);</a>
-<span class="sourceLineNo">723</span><a id="line.723">    }</a>
+<span class="sourceLineNo">647</span><a id="line.647">     * @see #generateTableDDL(Message, Optional) For control over driver settings, optionally.</a>
+<span class="sourceLineNo">648</span><a id="line.648">     * @param instance Model instance to generate a table statement for.</a>
+<span class="sourceLineNo">649</span><a id="line.649">     * @return Generated DDL statement object.</a>
+<span class="sourceLineNo">650</span><a id="line.650">     */</a>
+<span class="sourceLineNo">651</span><a id="line.651">    public static @Nonnull SpannerGeneratedDDL.Builder generateTableDDL(@Nonnull Message instance) {</a>
+<span class="sourceLineNo">652</span><a id="line.652">        return generateTableDDL(instance, Optional.of(SpannerDriverSettings.DEFAULTS));</a>
+<span class="sourceLineNo">653</span><a id="line.653">    }</a>
+<span class="sourceLineNo">654</span><a id="line.654"></a>
+<span class="sourceLineNo">655</span><a id="line.655">    /**</a>
+<span class="sourceLineNo">656</span><a id="line.656">     * Given a model definition, produce a generated DDL statement which creates a backing table in Spanner implementing</a>
+<span class="sourceLineNo">657</span><a id="line.657">     * that model's properties. This method variant operates from a full model instance.</a>
+<span class="sourceLineNo">658</span><a id="line.658">     *</a>
+<span class="sourceLineNo">659</span><a id="line.659">     * @param instance Model instance to generate a table statement for.</a>
+<span class="sourceLineNo">660</span><a id="line.660">     * @param settings Settings to employ for the driver. These must align at runtime.</a>
+<span class="sourceLineNo">661</span><a id="line.661">     * @return Generated DDL statement object.</a>
+<span class="sourceLineNo">662</span><a id="line.662">     */</a>
+<span class="sourceLineNo">663</span><a id="line.663">    public static @Nonnull SpannerGeneratedDDL.Builder generateTableDDL(</a>
+<span class="sourceLineNo">664</span><a id="line.664">            @Nonnull Message instance,</a>
+<span class="sourceLineNo">665</span><a id="line.665">            @Nonnull Optional&lt;SpannerDriverSettings&gt; settings) {</a>
+<span class="sourceLineNo">666</span><a id="line.666">        return generateTableDDL(</a>
+<span class="sourceLineNo">667</span><a id="line.667">            instance.getDescriptorForType(),</a>
+<span class="sourceLineNo">668</span><a id="line.668">            settings.orElse(SpannerDriverSettings.DEFAULTS)</a>
+<span class="sourceLineNo">669</span><a id="line.669">        );</a>
+<span class="sourceLineNo">670</span><a id="line.670">    }</a>
+<span class="sourceLineNo">671</span><a id="line.671"></a>
+<span class="sourceLineNo">672</span><a id="line.672">    /**</a>
+<span class="sourceLineNo">673</span><a id="line.673">     * Given a model definition, produce a generated DDL statement which creates a backing table in Spanner implementing</a>
+<span class="sourceLineNo">674</span><a id="line.674">     * that model's properties.</a>
+<span class="sourceLineNo">675</span><a id="line.675">     *</a>
+<span class="sourceLineNo">676</span><a id="line.676">     * @param model Model schema to generate a table statement for.</a>
+<span class="sourceLineNo">677</span><a id="line.677">     * @return Generated DDL statement object.</a>
+<span class="sourceLineNo">678</span><a id="line.678">     */</a>
+<span class="sourceLineNo">679</span><a id="line.679">    public static @Nonnull SpannerGeneratedDDL.Builder generateTableDDL(</a>
+<span class="sourceLineNo">680</span><a id="line.680">            @Nonnull Descriptor model,</a>
+<span class="sourceLineNo">681</span><a id="line.681">            @Nonnull SpannerDriverSettings settings) {</a>
+<span class="sourceLineNo">682</span><a id="line.682">        return new SpannerGeneratedDDL.Builder(</a>
+<span class="sourceLineNo">683</span><a id="line.683">            model,</a>
+<span class="sourceLineNo">684</span><a id="line.684">            resolveTableName(model),</a>
+<span class="sourceLineNo">685</span><a id="line.685">            resolveKeyColumn(idField(model).orElseThrow(), settings),</a>
+<span class="sourceLineNo">686</span><a id="line.686">            resolveDefaultColumns(model, settings),</a>
+<span class="sourceLineNo">687</span><a id="line.687">            settings</a>
+<span class="sourceLineNo">688</span><a id="line.688">        );</a>
+<span class="sourceLineNo">689</span><a id="line.689">    }</a>
+<span class="sourceLineNo">690</span><a id="line.690"></a>
+<span class="sourceLineNo">691</span><a id="line.691">    /**</a>
+<span class="sourceLineNo">692</span><a id="line.692">     * Resolve the default calculated set of Spanner columns for a given model structure.</a>
+<span class="sourceLineNo">693</span><a id="line.693">     *</a>
+<span class="sourceLineNo">694</span><a id="line.694">     * @param model Model to traverse and generate columns for.</a>
+<span class="sourceLineNo">695</span><a id="line.695">     * @return Set of generated and type-resolved columns.</a>
+<span class="sourceLineNo">696</span><a id="line.696">     */</a>
+<span class="sourceLineNo">697</span><a id="line.697">    public static @Nonnull List&lt;ColumnSpec&gt; resolveDefaultColumns(@Nonnull Descriptor model,</a>
+<span class="sourceLineNo">698</span><a id="line.698">                                                                  @Nonnull SpannerDriverSettings settings) {</a>
+<span class="sourceLineNo">699</span><a id="line.699">        var keyField = keyField(model).orElseThrow();</a>
+<span class="sourceLineNo">700</span><a id="line.700">        var fieldSet = new LinkedList&lt;ColumnSpec&gt;();</a>
+<span class="sourceLineNo">701</span><a id="line.701"></a>
+<span class="sourceLineNo">702</span><a id="line.702">        // first up: generate the column which implements the model's primary key</a>
+<span class="sourceLineNo">703</span><a id="line.703">        fieldSet.add(ColumnSpec.columnSpecForKey(</a>
+<span class="sourceLineNo">704</span><a id="line.704">            model,</a>
+<span class="sourceLineNo">705</span><a id="line.705">            keyField,</a>
+<span class="sourceLineNo">706</span><a id="line.706">            settings</a>
+<span class="sourceLineNo">707</span><a id="line.707">        ));</a>
+<span class="sourceLineNo">708</span><a id="line.708"></a>
+<span class="sourceLineNo">709</span><a id="line.709">        // next: generate all remaining data columns</a>
+<span class="sourceLineNo">710</span><a id="line.710">        forEachField(</a>
+<span class="sourceLineNo">711</span><a id="line.711">            model,</a>
+<span class="sourceLineNo">712</span><a id="line.712">            Optional.of(onlySpannerEligibleFields(settings))</a>
+<span class="sourceLineNo">713</span><a id="line.713">        ).filter((fieldPointer) -&gt;</a>
+<span class="sourceLineNo">714</span><a id="line.714">            // filter out key fields: we'll handle those separately</a>
+<span class="sourceLineNo">715</span><a id="line.715">            !keyField.getField().getFullName().equals(fieldPointer.getField().getFullName())</a>
+<span class="sourceLineNo">716</span><a id="line.716">        ).map((fieldPointer) -&gt;</a>
+<span class="sourceLineNo">717</span><a id="line.717">            ColumnSpec.columnSpecForField(fieldPointer, settings)</a>
+<span class="sourceLineNo">718</span><a id="line.718">        ).forEach(fieldSet::add);</a>
+<span class="sourceLineNo">719</span><a id="line.719"></a>
+<span class="sourceLineNo">720</span><a id="line.720">        return Collections.unmodifiableList(fieldSet);</a>
+<span class="sourceLineNo">721</span><a id="line.721">    }</a>
+<span class="sourceLineNo">722</span><a id="line.722"></a>
+<span class="sourceLineNo">723</span><a id="line.723">    // -- Accessors -- //</a>
 <span class="sourceLineNo">724</span><a id="line.724"></a>
-<span class="sourceLineNo">725</span><a id="line.725">    // -- Accessors -- //</a>
-<span class="sourceLineNo">726</span><a id="line.726"></a>
-<span class="sourceLineNo">727</span><a id="line.727">    /** @return Model for which this object generates a table create statement. */</a>
-<span class="sourceLineNo">728</span><a id="line.728">    public @Nonnull Descriptor getModel() {</a>
-<span class="sourceLineNo">729</span><a id="line.729">        return model;</a>
-<span class="sourceLineNo">730</span><a id="line.730">    }</a>
-<span class="sourceLineNo">731</span><a id="line.731"></a>
-<span class="sourceLineNo">732</span><a id="line.732">    /** @return Resolved name of the table to be created. */</a>
-<span class="sourceLineNo">733</span><a id="line.733">    public @Nonnull String getTableName() {</a>
-<span class="sourceLineNo">734</span><a id="line.734">        return tableName;</a>
-<span class="sourceLineNo">735</span><a id="line.735">    }</a>
-<span class="sourceLineNo">736</span><a id="line.736"></a>
-<span class="sourceLineNo">737</span><a id="line.737">    /** @return Resolved set of Spanner columns. */</a>
-<span class="sourceLineNo">738</span><a id="line.738">    public @Nonnull List&lt;ColumnSpec&gt; getColumns() {</a>
-<span class="sourceLineNo">739</span><a id="line.739">        return columns;</a>
-<span class="sourceLineNo">740</span><a id="line.740">    }</a>
-<span class="sourceLineNo">741</span><a id="line.741"></a>
-<span class="sourceLineNo">742</span><a id="line.742">    /** @return Rendered generated DDL statement. */</a>
-<span class="sourceLineNo">743</span><a id="line.743">    public @Nonnull StringBuilder getGeneratedStatement() {</a>
-<span class="sourceLineNo">744</span><a id="line.744">        return generatedStatement;</a>
-<span class="sourceLineNo">745</span><a id="line.745">    }</a>
-<span class="sourceLineNo">746</span><a id="line.746"></a>
-<span class="sourceLineNo">747</span><a id="line.747">    @Override</a>
-<span class="sourceLineNo">748</span><a id="line.748">    public String toString() {</a>
-<span class="sourceLineNo">749</span><a id="line.749">        return "SpannerDDL{" +</a>
-<span class="sourceLineNo">750</span><a id="line.750">            "model=" + model.getFullName() +</a>
-<span class="sourceLineNo">751</span><a id="line.751">            ", tableName='" + tableName + '\'' +</a>
-<span class="sourceLineNo">752</span><a id="line.752">            ", statement=\"" + generatedStatement.toString() +</a>
-<span class="sourceLineNo">753</span><a id="line.753">        "\"}";</a>
-<span class="sourceLineNo">754</span><a id="line.754">    }</a>
-<span class="sourceLineNo">755</span><a id="line.755">}</a>
+<span class="sourceLineNo">725</span><a id="line.725">    /** @return Model for which this object generates a table create statement. */</a>
+<span class="sourceLineNo">726</span><a id="line.726">    public @Nonnull Descriptor getModel() {</a>
+<span class="sourceLineNo">727</span><a id="line.727">        return model;</a>
+<span class="sourceLineNo">728</span><a id="line.728">    }</a>
+<span class="sourceLineNo">729</span><a id="line.729"></a>
+<span class="sourceLineNo">730</span><a id="line.730">    /** @return Resolved name of the table to be created. */</a>
+<span class="sourceLineNo">731</span><a id="line.731">    public @Nonnull String getTableName() {</a>
+<span class="sourceLineNo">732</span><a id="line.732">        return tableName;</a>
+<span class="sourceLineNo">733</span><a id="line.733">    }</a>
+<span class="sourceLineNo">734</span><a id="line.734"></a>
+<span class="sourceLineNo">735</span><a id="line.735">    /** @return Resolved set of Spanner columns. */</a>
+<span class="sourceLineNo">736</span><a id="line.736">    public @Nonnull List&lt;ColumnSpec&gt; getColumns() {</a>
+<span class="sourceLineNo">737</span><a id="line.737">        return columns;</a>
+<span class="sourceLineNo">738</span><a id="line.738">    }</a>
+<span class="sourceLineNo">739</span><a id="line.739"></a>
+<span class="sourceLineNo">740</span><a id="line.740">    /** @return Rendered generated DDL statement. */</a>
+<span class="sourceLineNo">741</span><a id="line.741">    public @Nonnull StringBuilder getGeneratedStatement() {</a>
+<span class="sourceLineNo">742</span><a id="line.742">        return generatedStatement;</a>
+<span class="sourceLineNo">743</span><a id="line.743">    }</a>
+<span class="sourceLineNo">744</span><a id="line.744"></a>
+<span class="sourceLineNo">745</span><a id="line.745">    @Override</a>
+<span class="sourceLineNo">746</span><a id="line.746">    public String toString() {</a>
+<span class="sourceLineNo">747</span><a id="line.747">        return "SpannerDDL{" +</a>
+<span class="sourceLineNo">748</span><a id="line.748">            "model=" + model.getFullName() +</a>
+<span class="sourceLineNo">749</span><a id="line.749">            ", tableName='" + tableName + '\'' +</a>
+<span class="sourceLineNo">750</span><a id="line.750">            ", statement=\"" + generatedStatement.toString() +</a>
+<span class="sourceLineNo">751</span><a id="line.751">        "\"}";</a>
+<span class="sourceLineNo">752</span><a id="line.752">    }</a>
+<span class="sourceLineNo">753</span><a id="line.753">}</a>
 
 
 
