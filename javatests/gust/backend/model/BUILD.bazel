@@ -35,6 +35,10 @@ load(
 model(
     name = "person",
     srcs = ["person.proto"],
+    deps = [
+        "@proto_common//:type_date",
+        "@com_google_protobuf//:timestamp_proto",
+    ],
 )
 
 _COMMON_DEPS = [
@@ -116,6 +120,8 @@ java_library(
         javaproto(":person"),
         maven("org.junit.jupiter:junit-jupiter-api"),
         maven("com.google.guava:guava"),
+        maven("com.google.truth:truth"),
+        maven("com.google.truth.extensions:truth-proto-extension"),
     ] + _COMMON_DEPS,
 )
 

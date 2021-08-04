@@ -169,38 +169,38 @@ DEPS = {
     # Google: J2CL (Java-to-Closure)
     "com_google_j2cl": {
         "type": "github",
-        "repo": "sgammon/j2cl",
-        "target": "5084fe6863ded1eb72fbec4ff654af48bc8abae8",
+        "repo": "google/j2cl",
+        "target": "4fda30b07470dfc87555847af14bdbba60a41774",
         "local": "/workspace/GUST/vendor/bazel/j2cl",
-        "seal": "7874cc5e560067e2fa6788a75596af7a7fbd690194b5e7286b2b9d11ea931db7"},
+        "seal": "4518030355ae19e7ba991978ed32e061edda05ea1abd8b1a1fae930596ee29b0"},
 
     # Google: Elemental2
     "com_google_elemental2": {
         "type": "github",
-        "repo": "sgammon/elemental2",
-        "target": "35295fcb16770fa6b424be14e2dbbcc01b964af5",
-        "seal": "47fa516661b3b6fe1ebaa35210726642b0a4bfbf0a7fa22eba9a94c9715bd826"},
+        "repo": "google/elemental2",
+        "target": "281ab6c570b4d000d6786b2d8ef54e9d0169391a",
+        "seal": "bd67f90b779773a49baf2786063ad050a716dd31cd3381ab267c76f5a30d11b3"},
 
     # Google: JS Interop (Base)
     "com_google_jsinterop_base": {
         "type": "github",
         "repo": "google/jsinterop-base",
-        "target": "d63376592856ef4dfd3ef68500df9745cd8c6919",
-        "seal": "b22b91d64f963fa7cc1fcf99430139de74306fd25ff4ef2da5f0100dae67efba"},
+        "target": "fffe9c4de072e812fa6d4af385bda3969fb692fa",
+        "seal": "cd807fb9457db9d07aaad73e7cb16595d3a14a96de1c29e4f185751e381a0712"},
 
     # Google: JS Interop (Generator)
     "com_google_jsinterop_generator": {
         "type": "github",
         "repo": "google/jsinterop-generator",
-        "target": "4881aa1b210d3a44db9789e1a7079679b6a4d0af",
-        "seal": "87cf682f565d92f3e1f20b7d0e7b7d2b2b6593deec8ab1ded4d796c1dc72fc34"},
+        "target": "e4248fa7c99ee65fc797ea20307d7edbd0dd715a",
+        "seal": "c05d0978f487d5aa65986caece052d877b9a9576a15f915b463a53249e57b0a2"},
 
     # Google: JS Interop (Generator)
     "com_google_jsinterop_annotations": {
         "type": "github",
         "repo": "google/jsinterop-annotations",
-        "target": "04bda45586e2a7e0ef5a02f908b828f5da6747af",
-        "seal": "483d3d18ace60a8e62796abef374d472cfeecf233ef1b6f384a47fb99e4bb23f"},
+        "target": "b5e8b46e46a68f030e63c53140072334c4e7ee9d",
+        "seal": "0ac20baedf3590140fb9382a21ccd44ba1fbcea718e778639ce5e20d903c8629"},
 
     # Google: API (Core)
     "com_google_api": {
@@ -213,8 +213,8 @@ DEPS = {
     "com_google_api_codegen": {
         "type": "github",
         "repo": "googleapis/gapic-generator",
-        "target": "9da693477658964878d4dd5a3f4d5e0d197950db",
-        "seal": "8a6c58021565dd7d02d07beb0f5851f0679ac99d540034a132a759959d3a8269"},
+        "target": "857e2aab8017ecbb2abc9adc02d8571c02f94b3b",
+        "seal": "bdaa14564a7eb408f98ba788018eb5d9a5330aaa5b5cfcdd36f3f7fe4477b489"},
 
     # BuildStack: Protobuf Rules
     "build_stack_rules_proto": {
@@ -235,9 +235,9 @@ DEPS = {
     "proto_common": {
         "type": "github",
         "repo": "googleapis/api-common-protos",
-        "target": "0fcae75a2c20a140137e3a9c48a87d15ceffabd7",
+        "target": "f37c0ecc55f19b1675448e4bad70fd45c93f5b8f",
         "overlay": "proto_common.bzl",
-        "seal": "3cc5d56cf02dbf2e41022d84135cff48d0720d229b13806a6fc799b2ad3693c5"},
+        "seal": "20f5e27c83f417c34bf36f38686435dd9e5ca454bef47c08c7d359c37ae26fcf"},
 
     # Safe HTML Types
     "safe_html_types": {
@@ -258,17 +258,17 @@ DEPS = {
     "io_grpc_java": {
         "type": "github",
         "repo": "grpc/grpc-java",
-        "target": "c40e2dcb0b0ee0f1bba73e59ac812ee3625a9fce",
-        "seal": "97e2b57f13a08180fcf5504c851744e21f0434003179c761a98c81ea6d253361"},
+        "target": "6cb4d90e6bbe0081d42d88bc83a8f4648087596e",
+        "seal": "ba7b097d3e151cc0fcdd3e1c48d487eafa2acde258bfb044d8549f48c5c50940"},
 
     # gRPC: Web
     "com_github_grpc_grpc_web": {
         "type": "github",
-        "repo": "sgammon/grpc-web",
+        "repo": "grpc/grpc-web",
         "forceLocal": False,
         "local": "/workspace/GUST/vendor/grpc/web",
-        "target": "6aa18295f2f6dd6e9a608e2362f5ddcbe6e69ee1",
-        "seal": "42460855313b61b1b4f9bfef0723e6735cd3735234e03d74f5199e8b88ec10ed"},
+        "target": "3d921fffb7ce29f03329e411711d0751328c761a",
+        "seal": "fc12f7cea2b3a5e52f231348d99709006c344652d4511117157ee7484ee42ae9"},
 
     # Compression: Brotli
     "org_brotli": {
@@ -296,8 +296,8 @@ DEPS = {
         "type": "github",
         "repo": "firebase/firebase-js-sdk",
         "overlay": "firebase.bzl",
-        "target": "9d593bc72fcc6f695ed3666525d0638dfdf50b62",
-        "seal": "f298860e52321aef52d62d4e6df6c8f55b522f25eac1fc3e73b89632966b4f83"},
+        "target": "c9560d3103032caa6dcd2fd6daed2b119bd7b713",
+        "seal": "c9560d3103032caa6dcd2fd6daed2b119bd7b713"},
 
     # Firebase: Java SDK
     "com_google_firebase_java": {
@@ -327,8 +327,8 @@ DEPS = {
     "com_google_closure_stylesheets": {
         "type": "java",
         "licenses": ["notice"],
-        "targets": ["https://storage.googleapis.com/elide-software/closure-stylesheets-1.6.0-b15.jar"],
-        "seal": "190bc72d4a29f751d10dbd34125b8d35317b5db303ba37cd4d5f273c1499ec47",
+        "targets": ["https://storage.googleapis.com/elide-software/closure-stylesheets-1.6.0-b16.jar"],
+        "seal": "142123dc2c1c56c085380cd4d5b7c37965754a1805d0f30cfd5e8bf37c0a6ca0",
         "deps": [
             "@args4j",
             "@com_google_javascript_closure_compiler",

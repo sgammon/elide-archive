@@ -13,16 +13,40 @@
 
 steps:
   - command: "make build CI=yes QUIET=no"
-    label: ":bazel: Build: Framework"
-    key: framework-build
+    label: ":bazel: Build: Framework (Linux)"
+    key: framework-build-linux
+    agents:
+      "gcp:project-id": "cookies-co"
 
-  - command: "make build test report-coverage report-tests CI=yes QUIET=no"
-    label: ":coverage: Testsuite"
-    depends_on: framework-build
+  - command: "make build CI=yes QUIET=no"
+    label: ":bazel: Build: Framework (macOS)"
+    key: framework-build-macos
+    agents:
+      os_flavor: "macos"
+
+  # report-coverage report-tests
+  - command: "make test report-coverage CI=yes QUIET=no"
+    label: ":coverage: Testsuite (Linux)"
+    depends_on: framework-build-linux
+    env:
+      CODECOV_TOKEN: "8942c419-eb75-46a4-8f08-abfaadd11bb5"
+      CC_TEST_REPORTER_ID: "9d5646c30c5e1f267b4a7a6ae4d6aedb22edc797e87845564b812812fff81f3c"
     artifact_paths:
       - "reports/coverage/index.html"
       - "reports/coverage.tar.gz"
       - "reports/tests.xml.html"
+    agents:
+      "gcp:project-id": "cookies-co"
+
+  - command: "make test CI=yes QUIET=no"
+    label: ":coverage: Testsuite (macOS)"
+    depends_on: framework-build-macos
+    artifact_paths:
+      - "reports/coverage/index.html"
+      - "reports/coverage.tar.gz"
+      - "reports/tests.xml.html"
+    agents:
+      os_flavor: "macos"
 
   - command: "make build CI=yes TARGETS='//samples/rest_mvc/java:MicronautMVCSample-native-bin' && make build CI=yes TARGETS='//samples/soy_ssr/src:MicronautSSRSample-native-bin'"
     label: ":java: Build: Native Binaries"
@@ -35,7 +59,14 @@ steps:
   - wait
 
   - command: "docker pull us.gcr.io/elide-ai/base/alpine"
-    label: ":docker: Pull Bases"
+    label: ":docker: Pull Bases: Alpine"
+    agents:
+      "gcp:project-id": "cookies-co"
+
+  - command: "docker pull us.gcr.io/elide-ai/base/node"
+    label: ":docker: Pull Bases: Node"
+    agents:
+      "gcp:project-id": "cookies-co"
 
   - command: "make build samples CI=yes"
     label: ":gcloud: Publish: Images"
@@ -76,3 +107,4 @@ steps:
     label: ":docker: Release: Docker"
     depends_on: native-build
     if: build.tag != null
+

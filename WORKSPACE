@@ -91,7 +91,6 @@ java_import(
 )
 
 
-
 #
 # Extensions
 #
@@ -147,7 +146,9 @@ graal_bindist_repository(
 
 ## Java Repos/Deps
 load("//defs/toolchain/java:repos.bzl", "gust_java_repositories")
-gust_java_repositories()
+gust_java_repositories(
+  maven_install_json = "@gust//:maven_install.json",
+)
 
 load("@maven//:compat.bzl", "compat_repositories")
 compat_repositories()

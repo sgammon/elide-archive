@@ -118,6 +118,7 @@ java_library(
     srcs = ["DatabaseManager.java"],
     deps = [
         ":DatabaseDriver",
+        ":DatabaseAdapter",
         ":PersistenceManager",
     ] + _COMMON_DEPS,
 )

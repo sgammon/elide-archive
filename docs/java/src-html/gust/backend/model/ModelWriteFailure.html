@@ -1,0 +1,169 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<main role="main">
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span><a id="line.1">/*</a>
+<span class="sourceLineNo">002</span><a id="line.2"> * Copyright © 2020, The Gust Framework Authors. All rights reserved.</a>
+<span class="sourceLineNo">003</span><a id="line.3"> *</a>
+<span class="sourceLineNo">004</span><a id="line.4"> * The Gust/Elide framework and tools, and all associated source or object computer code, except where otherwise noted,</a>
+<span class="sourceLineNo">005</span><a id="line.5"> * are licensed under the Zero Prosperity license, which is enclosed in this repository, in the file LICENSE.txt. Use of</a>
+<span class="sourceLineNo">006</span><a id="line.6"> * this code in object or source form requires and implies consent and agreement to that license in principle and</a>
+<span class="sourceLineNo">007</span><a id="line.7"> * practice. Source or object code not listing this header, or unless specified otherwise, remain the property of</a>
+<span class="sourceLineNo">008</span><a id="line.8"> * Elide LLC and its suppliers, if any. The intellectual and technical concepts contained herein are proprietary to</a>
+<span class="sourceLineNo">009</span><a id="line.9"> * Elide LLC and its suppliers and may be covered by U.S. and Foreign Patents, or patents in process, and are protected</a>
+<span class="sourceLineNo">010</span><a id="line.10"> * by trade secret and copyright law. Dissemination of this information, or reproduction of this material, in any form,</a>
+<span class="sourceLineNo">011</span><a id="line.11"> * is strictly forbidden except in adherence with assigned license requirements.</a>
+<span class="sourceLineNo">012</span><a id="line.12"> */</a>
+<span class="sourceLineNo">013</span><a id="line.13">package gust.backend.model;</a>
+<span class="sourceLineNo">014</span><a id="line.14"></a>
+<span class="sourceLineNo">015</span><a id="line.15">import com.google.protobuf.Message;</a>
+<span class="sourceLineNo">016</span><a id="line.16"></a>
+<span class="sourceLineNo">017</span><a id="line.17">import javax.annotation.Nonnull;</a>
+<span class="sourceLineNo">018</span><a id="line.18">import javax.annotation.Nullable;</a>
+<span class="sourceLineNo">019</span><a id="line.19"></a>
+<span class="sourceLineNo">020</span><a id="line.20"></a>
+<span class="sourceLineNo">021</span><a id="line.21">/** Thrown when a model fails to write. Should be extended by more specific error cases. */</a>
+<span class="sourceLineNo">022</span><a id="line.22">@SuppressWarnings("unused")</a>
+<span class="sourceLineNo">023</span><a id="line.23">public class ModelWriteFailure extends PersistenceException {</a>
+<span class="sourceLineNo">024</span><a id="line.24">  /** Key for the model that failed to write. */</a>
+<span class="sourceLineNo">025</span><a id="line.25">  private final @Nullable Object key;</a>
+<span class="sourceLineNo">026</span><a id="line.26"></a>
+<span class="sourceLineNo">027</span><a id="line.27">  /** Model that failed to write. */</a>
+<span class="sourceLineNo">028</span><a id="line.28">  private final @Nonnull Message model;</a>
+<span class="sourceLineNo">029</span><a id="line.29"></a>
+<span class="sourceLineNo">030</span><a id="line.30">  /**</a>
+<span class="sourceLineNo">031</span><a id="line.31">   * Create a model write exception with a throwable as a cause.</a>
+<span class="sourceLineNo">032</span><a id="line.32">   *</a>
+<span class="sourceLineNo">033</span><a id="line.33">   * @param key Key for the record that failed to write.</a>
+<span class="sourceLineNo">034</span><a id="line.34">   * @param model Model that failed to write.</a>
+<span class="sourceLineNo">035</span><a id="line.35">   */</a>
+<span class="sourceLineNo">036</span><a id="line.36">  ModelWriteFailure(@Nullable Object key, @Nonnull Message model) {</a>
+<span class="sourceLineNo">037</span><a id="line.37">    super(String.format("Failed to write model at key '%s'.", key));</a>
+<span class="sourceLineNo">038</span><a id="line.38">    this.key = key;</a>
+<span class="sourceLineNo">039</span><a id="line.39">    this.model = model;</a>
+<span class="sourceLineNo">040</span><a id="line.40">  }</a>
+<span class="sourceLineNo">041</span><a id="line.41"></a>
+<span class="sourceLineNo">042</span><a id="line.42">  /**</a>
+<span class="sourceLineNo">043</span><a id="line.43">   * Create a model write exception with a throwable as a cause.</a>
+<span class="sourceLineNo">044</span><a id="line.44">   *</a>
+<span class="sourceLineNo">045</span><a id="line.45">   * @param key Key for the record that failed to write.</a>
+<span class="sourceLineNo">046</span><a id="line.46">   * @param model Model that failed to write.</a>
+<span class="sourceLineNo">047</span><a id="line.47">   * @param cause Cause for the error.</a>
+<span class="sourceLineNo">048</span><a id="line.48">   */</a>
+<span class="sourceLineNo">049</span><a id="line.49">  ModelWriteFailure(@Nullable Object key, @Nonnull Message model, @Nonnull Throwable cause) {</a>
+<span class="sourceLineNo">050</span><a id="line.50">    super(String.format("Failed to write model at key '%s': %s.", key, cause.getMessage()), cause);</a>
+<span class="sourceLineNo">051</span><a id="line.51">    this.key = key;</a>
+<span class="sourceLineNo">052</span><a id="line.52">    this.model = model;</a>
+<span class="sourceLineNo">053</span><a id="line.53">  }</a>
+<span class="sourceLineNo">054</span><a id="line.54"></a>
+<span class="sourceLineNo">055</span><a id="line.55">  /**</a>
+<span class="sourceLineNo">056</span><a id="line.56">   * Create a model write exception with a custom error message.</a>
+<span class="sourceLineNo">057</span><a id="line.57">   *</a>
+<span class="sourceLineNo">058</span><a id="line.58">   * @param key Key for the record that failed to write.</a>
+<span class="sourceLineNo">059</span><a id="line.59">   * @param model Model that failed to write.</a>
+<span class="sourceLineNo">060</span><a id="line.60">   * @param errorMessage Custom error message.</a>
+<span class="sourceLineNo">061</span><a id="line.61">   */</a>
+<span class="sourceLineNo">062</span><a id="line.62">  ModelWriteFailure(@Nullable Object key, @Nonnull Message model, @Nonnull String errorMessage) {</a>
+<span class="sourceLineNo">063</span><a id="line.63">    super(errorMessage);</a>
+<span class="sourceLineNo">064</span><a id="line.64">    this.key = key;</a>
+<span class="sourceLineNo">065</span><a id="line.65">    this.model = model;</a>
+<span class="sourceLineNo">066</span><a id="line.66">  }</a>
+<span class="sourceLineNo">067</span><a id="line.67"></a>
+<span class="sourceLineNo">068</span><a id="line.68">  /**</a>
+<span class="sourceLineNo">069</span><a id="line.69">   * Create a model write exception with a throwable and a custom error message.</a>
+<span class="sourceLineNo">070</span><a id="line.70">   *</a>
+<span class="sourceLineNo">071</span><a id="line.71">   * @param key Key for the record that failed to write.</a>
+<span class="sourceLineNo">072</span><a id="line.72">   * @param model Model that failed to write.</a>
+<span class="sourceLineNo">073</span><a id="line.73">   * @param cause Cause for the error.</a>
+<span class="sourceLineNo">074</span><a id="line.74">   * @param errorMessage Custom error message.</a>
+<span class="sourceLineNo">075</span><a id="line.75">   */</a>
+<span class="sourceLineNo">076</span><a id="line.76">  ModelWriteFailure(@Nullable Object key,</a>
+<span class="sourceLineNo">077</span><a id="line.77">                    @Nonnull Message model,</a>
+<span class="sourceLineNo">078</span><a id="line.78">                    @Nonnull Throwable cause,</a>
+<span class="sourceLineNo">079</span><a id="line.79">                    @Nonnull String errorMessage) {</a>
+<span class="sourceLineNo">080</span><a id="line.80">    super(errorMessage, cause);</a>
+<span class="sourceLineNo">081</span><a id="line.81">    this.key = key;</a>
+<span class="sourceLineNo">082</span><a id="line.82">    this.model = model;</a>
+<span class="sourceLineNo">083</span><a id="line.83">  }</a>
+<span class="sourceLineNo">084</span><a id="line.84"></a>
+<span class="sourceLineNo">085</span><a id="line.85">  // -- Getters -- //</a>
+<span class="sourceLineNo">086</span><a id="line.86">  /** @return Key for the model that failed to write. */</a>
+<span class="sourceLineNo">087</span><a id="line.87">  public @Nullable Object getKey() {</a>
+<span class="sourceLineNo">088</span><a id="line.88">    return key;</a>
+<span class="sourceLineNo">089</span><a id="line.89">  }</a>
+<span class="sourceLineNo">090</span><a id="line.90"></a>
+<span class="sourceLineNo">091</span><a id="line.91">  /** @return Model that failed to write. */</a>
+<span class="sourceLineNo">092</span><a id="line.92">  public @Nonnull Message getModel() {</a>
+<span class="sourceLineNo">093</span><a id="line.93">    return model;</a>
+<span class="sourceLineNo">094</span><a id="line.94">  }</a>
+<span class="sourceLineNo">095</span><a id="line.95">}</a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</main>
+</body>
+</html>

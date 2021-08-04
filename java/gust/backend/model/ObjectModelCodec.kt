@@ -14,7 +14,7 @@ import javax.annotation.concurrent.ThreadSafe
  */
 @Immutable
 @ThreadSafe
-class ObjectModelCodec<Model: Message> private constructor(@Nonnull instance: Model) :
+class ObjectModelCodec<Model: Message> private constructor(@Nonnull private val instance: Model) :
   ModelCodec<Model, Map<String, *>, Map<String, *>> {
   /**
    * @return Builder for the model handled by this codec.
@@ -29,6 +29,9 @@ class ObjectModelCodec<Model: Message> private constructor(@Nonnull instance: Mo
   private val deserializer: ObjectModelDeserializer<Model> = ObjectModelDeserializer.defaultInstance(instance)
 
   // -- Components -- //
+  /** @inheritDoc */
+  @Nonnull override fun instance(): Model = this.instance
+
   /**
    * Acquire an instance of the [ModelSerializer] attached to this adapter.
    *

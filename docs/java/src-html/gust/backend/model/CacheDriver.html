@@ -1,0 +1,176 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<main role="main">
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span><a id="line.1">/*</a>
+<span class="sourceLineNo">002</span><a id="line.2"> * Copyright © 2020, The Gust Framework Authors. All rights reserved.</a>
+<span class="sourceLineNo">003</span><a id="line.3"> *</a>
+<span class="sourceLineNo">004</span><a id="line.4"> * The Gust/Elide framework and tools, and all associated source or object computer code, except where otherwise noted,</a>
+<span class="sourceLineNo">005</span><a id="line.5"> * are licensed under the Zero Prosperity license, which is enclosed in this repository, in the file LICENSE.txt. Use of</a>
+<span class="sourceLineNo">006</span><a id="line.6"> * this code in object or source form requires and implies consent and agreement to that license in principle and</a>
+<span class="sourceLineNo">007</span><a id="line.7"> * practice. Source or object code not listing this header, or unless specified otherwise, remain the property of</a>
+<span class="sourceLineNo">008</span><a id="line.8"> * Elide LLC and its suppliers, if any. The intellectual and technical concepts contained herein are proprietary to</a>
+<span class="sourceLineNo">009</span><a id="line.9"> * Elide LLC and its suppliers and may be covered by U.S. and Foreign Patents, or patents in process, and are protected</a>
+<span class="sourceLineNo">010</span><a id="line.10"> * by trade secret and copyright law. Dissemination of this information, or reproduction of this material, in any form,</a>
+<span class="sourceLineNo">011</span><a id="line.11"> * is strictly forbidden except in adherence with assigned license requirements.</a>
+<span class="sourceLineNo">012</span><a id="line.12"> */</a>
+<span class="sourceLineNo">013</span><a id="line.13"></a>
+<span class="sourceLineNo">014</span><a id="line.14">package gust.backend.model;</a>
+<span class="sourceLineNo">015</span><a id="line.15"></a>
+<span class="sourceLineNo">016</span><a id="line.16">import com.google.common.util.concurrent.Futures;</a>
+<span class="sourceLineNo">017</span><a id="line.17">import com.google.common.util.concurrent.ListenableFuture;</a>
+<span class="sourceLineNo">018</span><a id="line.18">import com.google.common.util.concurrent.ListeningScheduledExecutorService;</a>
+<span class="sourceLineNo">019</span><a id="line.19">import com.google.protobuf.Message;</a>
+<span class="sourceLineNo">020</span><a id="line.20">import gust.backend.runtime.ReactiveFuture;</a>
+<span class="sourceLineNo">021</span><a id="line.21"></a>
+<span class="sourceLineNo">022</span><a id="line.22">import javax.annotation.Nonnull;</a>
+<span class="sourceLineNo">023</span><a id="line.23">import java.util.*;</a>
+<span class="sourceLineNo">024</span><a id="line.24"></a>
+<span class="sourceLineNo">025</span><a id="line.25"></a>
+<span class="sourceLineNo">026</span><a id="line.26">/**</a>
+<span class="sourceLineNo">027</span><a id="line.27"> * Describes the surface of a &lt;i&gt;cache driver&lt;/i&gt;, which is a partner object to a {@link PersistenceDriver} specifically</a>
+<span class="sourceLineNo">028</span><a id="line.28"> * tailored to deal with caching engines. Cache drivers may be used with any {@link ModelAdapter} implementation for</a>
+<span class="sourceLineNo">029</span><a id="line.29"> * transparent read-through caching support.</a>
+<span class="sourceLineNo">030</span><a id="line.30"> *</a>
+<span class="sourceLineNo">031</span><a id="line.31"> * &lt;p&gt;Caches implemented in this manner are expected to adhere to options defined on {@link CacheOptions}, particularly</a>
+<span class="sourceLineNo">032</span><a id="line.32"> * with regard to eviction and timeouts. Specific implementations may extend that interface to define custom options,</a>
+<span class="sourceLineNo">033</span><a id="line.33"> * which may be provided to the implementation at runtime either via stubbed options parameters or app config.&lt;/p&gt;</a>
+<span class="sourceLineNo">034</span><a id="line.34"> */</a>
+<span class="sourceLineNo">035</span><a id="line.35">@SuppressWarnings("UnstableApiUsage")</a>
+<span class="sourceLineNo">036</span><a id="line.36">public interface CacheDriver&lt;Key extends Message, Model extends Message&gt; {</a>
+<span class="sourceLineNo">037</span><a id="line.37">  /**</a>
+<span class="sourceLineNo">038</span><a id="line.38">   * Flush the entire cache managed by this driver. This should drop all keys related to model instance caching that are</a>
+<span class="sourceLineNo">039</span><a id="line.39">   * currently held by the cache.</a>
+<span class="sourceLineNo">040</span><a id="line.40">   *</a>
+<span class="sourceLineNo">041</span><a id="line.41">   * @param executor Executor to use for any async operations.</a>
+<span class="sourceLineNo">042</span><a id="line.42">   * @return Future, which simply completes when the flush is done.</a>
+<span class="sourceLineNo">043</span><a id="line.43">   */</a>
+<span class="sourceLineNo">044</span><a id="line.44">  @Nonnull ReactiveFuture flush(@Nonnull ListeningScheduledExecutorService executor);</a>
+<span class="sourceLineNo">045</span><a id="line.45"></a>
+<span class="sourceLineNo">046</span><a id="line.46">  /**</a>
+<span class="sourceLineNo">047</span><a id="line.47">   * Write a record ({@code model}) at {@code key} into the cache, overwriting any model currently stored at the same</a>
+<span class="sourceLineNo">048</span><a id="line.48">   * key, if applicable. The resulting future completes with no value, when the cache write has finished, to let the</a>
+<span class="sourceLineNo">049</span><a id="line.49">   * framework know the cache is done following up.</a>
+<span class="sourceLineNo">050</span><a id="line.50">   *</a>
+<span class="sourceLineNo">051</span><a id="line.51">   * @param key Key for the record we should inject into the cache.</a>
+<span class="sourceLineNo">052</span><a id="line.52">   * @param model Record data to inject into the cache.</a>
+<span class="sourceLineNo">053</span><a id="line.53">   * @param executor Executor to use for any async operations.</a>
+<span class="sourceLineNo">054</span><a id="line.54">   * @return Future, which simply completes when the write is done.</a>
+<span class="sourceLineNo">055</span><a id="line.55">   */</a>
+<span class="sourceLineNo">056</span><a id="line.56">  @Nonnull ReactiveFuture put(@Nonnull Key key,</a>
+<span class="sourceLineNo">057</span><a id="line.57">                              @Nonnull Model model,</a>
+<span class="sourceLineNo">058</span><a id="line.58">                              @Nonnull ListeningScheduledExecutorService executor);</a>
+<span class="sourceLineNo">059</span><a id="line.59"></a>
+<span class="sourceLineNo">060</span><a id="line.60">  /**</a>
+<span class="sourceLineNo">061</span><a id="line.61">   * Force-evict any cached record at the provided {@code key} in the cache managed by this driver. This operation is</a>
+<span class="sourceLineNo">062</span><a id="line.62">   * expected to succeed in all cases and perform its work in an idempotent manner.</a>
+<span class="sourceLineNo">063</span><a id="line.63">   *</a>
+<span class="sourceLineNo">064</span><a id="line.64">   * @param key Key for the record to force-evict from the cache.</a>
+<span class="sourceLineNo">065</span><a id="line.65">   * @param executor Executor to use for any async operations.</a>
+<span class="sourceLineNo">066</span><a id="line.66">   * @return Future, which resolves to the evicted key when the operation completes.</a>
+<span class="sourceLineNo">067</span><a id="line.67">   */</a>
+<span class="sourceLineNo">068</span><a id="line.68">  @Nonnull ReactiveFuture&lt;Key&gt; evict(@Nonnull Key key, @Nonnull ListeningScheduledExecutorService executor);</a>
+<span class="sourceLineNo">069</span><a id="line.69"></a>
+<span class="sourceLineNo">070</span><a id="line.70">  /**</a>
+<span class="sourceLineNo">071</span><a id="line.71">   * Force-evict the set of cached records specified by {@code keys}, in the cache managed by this driver. This</a>
+<span class="sourceLineNo">072</span><a id="line.72">   * operation is expected to succeed in all cases and perform its work in an idempotent manner, similar to the single-</a>
+<span class="sourceLineNo">073</span><a id="line.73">   * key version of this method (see: {@link #evict(Message, ListeningScheduledExecutorService)}).</a>
+<span class="sourceLineNo">074</span><a id="line.74">   *</a>
+<span class="sourceLineNo">075</span><a id="line.75">   * @param keys Set of keys to evict from the cache.</a>
+<span class="sourceLineNo">076</span><a id="line.76">   * @param executor Executor to sue for any async operations.</a>
+<span class="sourceLineNo">077</span><a id="line.77">   * @return Future, which simply completes when the bulk-evict operation is done.</a>
+<span class="sourceLineNo">078</span><a id="line.78">   */</a>
+<span class="sourceLineNo">079</span><a id="line.79">  default @Nonnull ReactiveFuture evict(@Nonnull Iterable&lt;Key&gt; keys,</a>
+<span class="sourceLineNo">080</span><a id="line.80">                                        @Nonnull ListeningScheduledExecutorService executor) {</a>
+<span class="sourceLineNo">081</span><a id="line.81">    List&lt;ListenableFuture&lt;?&gt;&gt; evictions = new ArrayList&lt;&gt;();</a>
+<span class="sourceLineNo">082</span><a id="line.82">    keys.forEach((key) -&gt; evictions.add(evict(key, executor)));</a>
+<span class="sourceLineNo">083</span><a id="line.83">    return ReactiveFuture.wrap(Futures.allAsList(evictions));</a>
+<span class="sourceLineNo">084</span><a id="line.84">  }</a>
+<span class="sourceLineNo">085</span><a id="line.85"></a>
+<span class="sourceLineNo">086</span><a id="line.86">  /**</a>
+<span class="sourceLineNo">087</span><a id="line.87">   * Attempt to resolve a known model, addressed by {@code key}, from the cache powered/backed by this driver, according</a>
+<span class="sourceLineNo">088</span><a id="line.88">   * to {@code options} and making use of {@code executor}.</a>
+<span class="sourceLineNo">089</span><a id="line.89">   *</a>
+<span class="sourceLineNo">090</span><a id="line.90">   * &lt;p&gt;If no value is available in the cache, {@link Optional#empty()} must be returned, which triggers a call to the</a>
+<span class="sourceLineNo">091</span><a id="line.91">   * driver to resolve the record. If the record can be fetched originally, it will later be added to the cache by a</a>
+<span class="sourceLineNo">092</span><a id="line.92">   * separate call to {@link #put(Message, Message, ListeningScheduledExecutorService)}.&lt;/p&gt;</a>
+<span class="sourceLineNo">093</span><a id="line.93">   *</a>
+<span class="sourceLineNo">094</span><a id="line.94">   * @param key Key for the record which we should look for in the cache.</a>
+<span class="sourceLineNo">095</span><a id="line.95">   * @param options Options to apply to the fetch routine taking place.</a>
+<span class="sourceLineNo">096</span><a id="line.96">   * @param executor Executor to use for async tasks. Provided by the driver or adapter.</a>
+<span class="sourceLineNo">097</span><a id="line.97">   * @return Future value, which resolves either to {@link Optional#empty()} or a wrapped result value.</a>
+<span class="sourceLineNo">098</span><a id="line.98">   */</a>
+<span class="sourceLineNo">099</span><a id="line.99">  @Nonnull ReactiveFuture&lt;Optional&lt;Model&gt;&gt; fetch(@Nonnull Key key,</a>
+<span class="sourceLineNo">100</span><a id="line.100">                                                 @Nonnull FetchOptions options,</a>
+<span class="sourceLineNo">101</span><a id="line.101">                                                 @Nonnull ListeningScheduledExecutorService executor);</a>
+<span class="sourceLineNo">102</span><a id="line.102">}</a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</main>
+</body>
+</html>

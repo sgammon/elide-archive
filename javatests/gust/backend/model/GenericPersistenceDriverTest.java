@@ -30,6 +30,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 import static org.junit.jupiter.api.Assertions.*;
@@ -37,7 +38,7 @@ import static org.junit.jupiter.api.DynamicTest.dynamicTest;
 
 
 /** Abstract test factory, which is responsible for testing/enforcing {@link PersistenceDriver} surfaces. */
-@SuppressWarnings({"WeakerAccess", "DuplicatedCode", "CodeBlock2Expr", "unchecked"})
+@SuppressWarnings({"WeakerAccess", "DuplicatedCode", "CodeBlock2Expr", "unchecked", "rawtypes"})
 public abstract class GenericPersistenceDriverTest<Driver extends PersistenceDriver> {
   /** Describes data keys touched in this test case. */
   protected final HashSet<Message> touchedKeys = new HashSet<>();
@@ -51,7 +52,27 @@ public abstract class GenericPersistenceDriverTest<Driver extends PersistenceDri
   @TestFactory
   protected final Iterable<DynamicTest> driverTests() {
     final String subcase = this.getClass().getSimpleName();
-    List<DynamicTest> tests = Arrays.asList(
+    List<DynamicTest> tests = this.supportedDriverTests();
+    Set<String> unsupported = this.unsupportedDriverTests()
+            .orElse(Collections.emptyList())
+            .stream()
+            .map((name) -> String.format("%s: `%s`", subcase, name))
+            .collect(Collectors.toUnmodifiableSet());
+
+    tests.addAll(subclassTests().orElse(Collections.emptyList()));
+
+    return tests.stream().filter((test) ->
+      // mark unsupported tests with ignore annotations
+      unsupported.isEmpty() || !unsupported.contains(test.getDisplayName())
+    ).collect(Collectors.toUnmodifiableList());
+  }
+
+  /**
+   * @return Set of tests that are currently expected to be supported by this driver.
+   */
+  protected @Nonnull List<DynamicTest> supportedDriverTests() {
+    final String subcase = this.getClass().getSimpleName();
+    return Arrays.asList(
       dynamicTest(format("%s: `acquireDriver`", subcase), this::acquireDriver),
       dynamicTest(format("%s: `testDriverCodec`", subcase), this::testDriverCodec),
       dynamicTest(format("%s: `testDriverExecutor`", subcase), this::testDriverExecutor),
@@ -63,15 +84,22 @@ public abstract class GenericPersistenceDriverTest<Driver extends PersistenceDri
       dynamicTest(format("%s: `createEntityThenUpdate`", subcase), this::createEntityThenUpdate),
       dynamicTest(format("%s: `createUpdateWithInvalidOptions`", subcase), this::createUpdateWithInvalidOptions),
       dynamicTest(format("%s: `createEntityThenDelete`", subcase), this::createEntityThenDelete),
-      dynamicTest(format("%s: `createEntityThenDeleteByRecord`", subcase), this::createEntityThenDeleteByRecord)//,
-//      dynamicTest(format("%s: `storeEntityUpdateNotFound`", subcase), this::storeEntityUpdateNotFound),
-//      dynamicTest(format("%s: `storeEntityCollission`", subcase), this::storeEntityCollission),
+      dynamicTest(format("%s: `createEntityThenDeleteByRecord`", subcase), this::createEntityThenDeleteByRecord),
+      dynamicTest(format("%s: `storeEntityUpdateNotFound`", subcase), this::storeEntityUpdateNotFound),
+      dynamicTest(format("%s: `storeEntityCollission`", subcase), this::storeEntityCollission)
     );
-
-    tests.addAll(subclassTests().orElse(Collections.emptyList()));
-    return tests;
   }
 
+  /**
+   * @return Set of tests that are not currently supported by this driver.
+   */
+  protected @Nonnull Optional<List<String>> unsupportedDriverTests() {
+    return Optional.empty();
+  }
+
+  /**
+   * @return Additional dynamic tests to add from the specific driver test implementation.
+   */
   protected @Nonnull Optional<List<DynamicTest>> subclassTests() {
     return Optional.empty();
   }
@@ -246,6 +274,9 @@ public abstract class GenericPersistenceDriverTest<Driver extends PersistenceDri
     assertTrue(refetched2.isPresent(), "should find record we just stored");
     assertEquals(keySpliced.toString(), refetched2.get().toString(),
       "fetched person record should match identically, but with key");
+
+    var id = ModelMetadata.id(refetched2.get());
+    assertTrue(id.isPresent(), "ID should be decoded on fetched models");
   }
 
   /** Create a simple entity, store it, and then fetch it, but with a field mask. */
@@ -277,6 +308,7 @@ public abstract class GenericPersistenceDriverTest<Driver extends PersistenceDri
       @Override
       public @Nonnull Optional<FieldMask> fieldMask() {
         return Optional.of(FieldMask.newBuilder()
+          .addPaths("key.id")
           .addPaths("name")
           .addPaths("contact_info.email_address")
           .build());
@@ -298,6 +330,9 @@ public abstract class GenericPersistenceDriverTest<Driver extends PersistenceDri
     assertEquals("", fetchedPerson.getContactInfo().getPhoneE164(), "phone number should be empty");
     assertFalse(fetchedPerson.getContactInfo().hasField(ContactInfo.getDescriptor().findFieldByName("phone_e164")),
       "phone should not be present on masked person");
+
+    var id = ModelMetadata.id(fetchedPerson);
+    assertTrue(id.isPresent(), "ID should be decoded on fetched models");
   }
 
   /** Create a simple entity, store it, and then try to store it again. */
@@ -410,6 +445,9 @@ public abstract class GenericPersistenceDriverTest<Driver extends PersistenceDri
     assertNotNull(key2, "should get a key back from a persist operation");
     assertFalse(op2.isCancelled(), "write future should not present as cancelled after completing");
     touchedKeys.add(key2.get());
+
+    var id = ModelMetadata.id(record2);
+    assertTrue(id.isPresent(), "ID should be decoded on fetched models");
   }
 
   /** Create a simple entity, store it, and then try to update an entity that does not exist. */

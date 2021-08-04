@@ -1,0 +1,187 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../stylesheet.css" title="Style">
+</head>
+<body>
+<main role="main">
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span><a id="line.1">/*</a>
+<span class="sourceLineNo">002</span><a id="line.2"> * Copyright © 2020, The Gust Framework Authors. All rights reserved.</a>
+<span class="sourceLineNo">003</span><a id="line.3"> *</a>
+<span class="sourceLineNo">004</span><a id="line.4"> * The Gust/Elide framework and tools, and all associated source or object computer code, except where otherwise noted,</a>
+<span class="sourceLineNo">005</span><a id="line.5"> * are licensed under the Zero Prosperity license, which is enclosed in this repository, in the file LICENSE.txt. Use of</a>
+<span class="sourceLineNo">006</span><a id="line.6"> * this code in object or source form requires and implies consent and agreement to that license in principle and</a>
+<span class="sourceLineNo">007</span><a id="line.7"> * practice. Source or object code not listing this header, or unless specified otherwise, remain the property of</a>
+<span class="sourceLineNo">008</span><a id="line.8"> * Elide LLC and its suppliers, if any. The intellectual and technical concepts contained herein are proprietary to</a>
+<span class="sourceLineNo">009</span><a id="line.9"> * Elide LLC and its suppliers and may be covered by U.S. and Foreign Patents, or patents in process, and are protected</a>
+<span class="sourceLineNo">010</span><a id="line.10"> * by trade secret and copyright law. Dissemination of this information, or reproduction of this material, in any form,</a>
+<span class="sourceLineNo">011</span><a id="line.11"> * is strictly forbidden except in adherence with assigned license requirements.</a>
+<span class="sourceLineNo">012</span><a id="line.12"> */</a>
+<span class="sourceLineNo">013</span><a id="line.13">package gust;</a>
+<span class="sourceLineNo">014</span><a id="line.14"></a>
+<span class="sourceLineNo">015</span><a id="line.15">import jsinterop.annotations.JsType;</a>
+<span class="sourceLineNo">016</span><a id="line.16"></a>
+<span class="sourceLineNo">017</span><a id="line.17"></a>
+<span class="sourceLineNo">018</span><a id="line.18">/**</a>
+<span class="sourceLineNo">019</span><a id="line.19"> * Provides core values, utility methods, etc, which can be used throughout the back- and front-end of a Gust-based</a>
+<span class="sourceLineNo">020</span><a id="line.20"> * application. Some of these methods or properties will return different values based on where the application is</a>
+<span class="sourceLineNo">021</span><a id="line.21"> * executed. So, accessing, say, {@link #getEngine()} will return {@code browser} when invoked from JavaScript on the</a>
+<span class="sourceLineNo">022</span><a id="line.22"> * front-end, and one of {@code jvm} or {@code native} when running on the backend.</a>
+<span class="sourceLineNo">023</span><a id="line.23"> */</a>
+<span class="sourceLineNo">024</span><a id="line.24">@JsType</a>
+<span class="sourceLineNo">025</span><a id="line.25">@SuppressWarnings("WeakerAccess")</a>
+<span class="sourceLineNo">026</span><a id="line.26">public final class Core {</a>
+<span class="sourceLineNo">027</span><a id="line.27">  /** Holds the current runtime engine. */</a>
+<span class="sourceLineNo">028</span><a id="line.28">  static final String currentEngine = System.getProperty("gust.engine", "unknown");</a>
+<span class="sourceLineNo">029</span><a id="line.29"></a>
+<span class="sourceLineNo">030</span><a id="line.30">  /** Version of the framework. Injected at build time. */</a>
+<span class="sourceLineNo">031</span><a id="line.31">  static final String frameworkVersion = System.getProperty("gust.version", "alpha");</a>
+<span class="sourceLineNo">032</span><a id="line.32"></a>
+<span class="sourceLineNo">033</span><a id="line.33">  /** Holds the current `dev` flag status. */</a>
+<span class="sourceLineNo">034</span><a id="line.34">  static final Boolean devMode = Boolean.parseBoolean(System.getProperty("gust.dev", "true"));</a>
+<span class="sourceLineNo">035</span><a id="line.35"></a>
+<span class="sourceLineNo">036</span><a id="line.36">  /** Holds the current `debug` flag status. */</a>
+<span class="sourceLineNo">037</span><a id="line.37">  static final Boolean debugMode = Boolean.parseBoolean(System.getProperty("gust.debug", "true"));</a>
+<span class="sourceLineNo">038</span><a id="line.38"></a>
+<span class="sourceLineNo">039</span><a id="line.39">  /** Holds the static prefix for dynamically routed assets. */</a>
+<span class="sourceLineNo">040</span><a id="line.40">  static final String dynamicAssetPrefix = "/_/assets";</a>
+<span class="sourceLineNo">041</span><a id="line.41"></a>
+<span class="sourceLineNo">042</span><a id="line.42">  private Core() { /* Disallow instantiation. */ }</a>
+<span class="sourceLineNo">043</span><a id="line.43"></a>
+<span class="sourceLineNo">044</span><a id="line.44">  /**</a>
+<span class="sourceLineNo">045</span><a id="line.45">   * Retrieve the application version setting, which is applied via the JVM system property &lt;pre&gt;gust.version&lt;/pre&gt;.</a>
+<span class="sourceLineNo">046</span><a id="line.46">   * This value also shows up in frontend libraries as &lt;pre&gt;gust.version&lt;/pre&gt;. The default value for this property, if</a>
+<span class="sourceLineNo">047</span><a id="line.47">   * left unspecified by the runtime, is `alpha`.</a>
+<span class="sourceLineNo">048</span><a id="line.48">   *</a>
+<span class="sourceLineNo">049</span><a id="line.49">   * @return Version assigned for the currently-running application.</a>
+<span class="sourceLineNo">050</span><a id="line.50">   **/</a>
+<span class="sourceLineNo">051</span><a id="line.51">  public static String getGustVersion() {</a>
+<span class="sourceLineNo">052</span><a id="line.52">    return frameworkVersion;</a>
+<span class="sourceLineNo">053</span><a id="line.53">  }</a>
+<span class="sourceLineNo">054</span><a id="line.54"></a>
+<span class="sourceLineNo">055</span><a id="line.55">  /**</a>
+<span class="sourceLineNo">056</span><a id="line.56">   * Retrieve the current engine running this code. By default, this is the string `unknown`. When running in frontend</a>
+<span class="sourceLineNo">057</span><a id="line.57">   * contexts, this is generally overridden to be `browser`. On the backend, this value is generally either `jvm` or</a>
+<span class="sourceLineNo">058</span><a id="line.58">   * `native`, depending on how the code is executing.</a>
+<span class="sourceLineNo">059</span><a id="line.59">   *</a>
+<span class="sourceLineNo">060</span><a id="line.60">   * @return Current execution engine.</a>
+<span class="sourceLineNo">061</span><a id="line.61">   */</a>
+<span class="sourceLineNo">062</span><a id="line.62">  public static String getEngine() {</a>
+<span class="sourceLineNo">063</span><a id="line.63">    return currentEngine;</a>
+<span class="sourceLineNo">064</span><a id="line.64">  }</a>
+<span class="sourceLineNo">065</span><a id="line.65"></a>
+<span class="sourceLineNo">066</span><a id="line.66">  /**</a>
+<span class="sourceLineNo">067</span><a id="line.67">   * Returns the current debug-mode flag state, which indicates whether we are running in a debugging-compatible mode or</a>
+<span class="sourceLineNo">068</span><a id="line.68">   * not. If not, we can generally expect a stripped binary (on the front and back-end), and perhaps expect that symbol</a>
+<span class="sourceLineNo">069</span><a id="line.69">   * renaming is active.</a>
+<span class="sourceLineNo">070</span><a id="line.70">   *</a>
+<span class="sourceLineNo">071</span><a id="line.71">   * @return Whether we are running in debug mode, or production mode (in which case this is `false`).</a>
+<span class="sourceLineNo">072</span><a id="line.72">   */</a>
+<span class="sourceLineNo">073</span><a id="line.73">  public static Boolean isDebugMode() {</a>
+<span class="sourceLineNo">074</span><a id="line.74">    return debugMode;</a>
+<span class="sourceLineNo">075</span><a id="line.75">  }</a>
+<span class="sourceLineNo">076</span><a id="line.76"></a>
+<span class="sourceLineNo">077</span><a id="line.77">  /**</a>
+<span class="sourceLineNo">078</span><a id="line.78">   * Returns the current dev-mode flag state, which indicates whether we are running locally/in a development context.</a>
+<span class="sourceLineNo">079</span><a id="line.79">   * This is intentionally separate from {@link #isDebugMode()} to facilitate "production" binary testing in a local</a>
+<span class="sourceLineNo">080</span><a id="line.80">   * setting. Flip this flag to `true` to enable local RPC calls, logging, and so on, but with a production-optimized</a>
+<span class="sourceLineNo">081</span><a id="line.81">   * set of artifacts.</a>
+<span class="sourceLineNo">082</span><a id="line.82">   *</a>
+<span class="sourceLineNo">083</span><a id="line.83">   * @return Whether we are running in dev mode, or production mode (in which case this is `false`).</a>
+<span class="sourceLineNo">084</span><a id="line.84">   */</a>
+<span class="sourceLineNo">085</span><a id="line.85">  public static Boolean isDevMode() {</a>
+<span class="sourceLineNo">086</span><a id="line.86">    return devMode;</a>
+<span class="sourceLineNo">087</span><a id="line.87">  }</a>
+<span class="sourceLineNo">088</span><a id="line.88"></a>
+<span class="sourceLineNo">089</span><a id="line.89">  /**</a>
+<span class="sourceLineNo">090</span><a id="line.90">   * "Production mode" is so-called because both {@link #isDebugMode()} and {@link #isDevMode()} return `false`. In this</a>
+<span class="sourceLineNo">091</span><a id="line.91">   * circumstance, we are running entirely in a mode for production use, in a production context. RPCs should be sent to</a>
+<span class="sourceLineNo">092</span><a id="line.92">   * endpoints that write and read to/from production databases.</a>
+<span class="sourceLineNo">093</span><a id="line.93">   *</a>
+<span class="sourceLineNo">094</span><a id="line.94">   * @return Whether we are running in production mode or not (`true` when `dev` and `debug` are both `false`).</a>
+<span class="sourceLineNo">095</span><a id="line.95">   */</a>
+<span class="sourceLineNo">096</span><a id="line.96">  public static Boolean isProductionMode() {</a>
+<span class="sourceLineNo">097</span><a id="line.97">    return !debugMode &amp;&amp; !devMode;</a>
+<span class="sourceLineNo">098</span><a id="line.98">  }</a>
+<span class="sourceLineNo">099</span><a id="line.99"></a>
+<span class="sourceLineNo">100</span><a id="line.100">  /**</a>
+<span class="sourceLineNo">101</span><a id="line.101">   * The &lt;i&gt;dynamic asset prefix&lt;/i&gt; is a URL prefix under which frontend application assets are served, using a managed</a>
+<span class="sourceLineNo">102</span><a id="line.102">   * file and token scheme, with a generated binary asset manifest living at the root of the JAR. Using this feature,</a>
+<span class="sourceLineNo">103</span><a id="line.103">   * the server auto-detects managed assets and includes them in the page when directed.</a>
+<span class="sourceLineNo">104</span><a id="line.104">   *</a>
+<span class="sourceLineNo">105</span><a id="line.105">   * &lt;p&gt;All assets, stylesheets and scripts included, are served under this URL if they are "managed assets," meaning</a>
+<span class="sourceLineNo">106</span><a id="line.106">   * they are defined in the asset manifest and enclosed in the JAR.&lt;/p&gt;</a>
+<span class="sourceLineNo">107</span><a id="line.107">   *</a>
+<span class="sourceLineNo">108</span><a id="line.108">   * @return Dynamic frontend asset serving prefix.</a>
+<span class="sourceLineNo">109</span><a id="line.109">   */</a>
+<span class="sourceLineNo">110</span><a id="line.110">  public static String getDynamicAssetPrefix() {</a>
+<span class="sourceLineNo">111</span><a id="line.111">    return dynamicAssetPrefix;</a>
+<span class="sourceLineNo">112</span><a id="line.112">  }</a>
+<span class="sourceLineNo">113</span><a id="line.113">}</a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</main>
+</body>
+</html>
