@@ -739,48 +739,90 @@
 <span class="sourceLineNo">730</span><a id="line.730">    }</a>
 <span class="sourceLineNo">731</span><a id="line.731"></a>
 <span class="sourceLineNo">732</span><a id="line.732">    /**</a>
-<span class="sourceLineNo">733</span><a id="line.733">     * Given a pre-resolved {@link FieldPointer}, resolve any present {@link SpannerFieldOptions}.</a>
+<span class="sourceLineNo">733</span><a id="line.733">     * Given a pre-resolved {@link FieldPointer}, resolve any present generic {@link FieldPersistenceOptions}.</a>
 <span class="sourceLineNo">734</span><a id="line.734">     *</a>
-<span class="sourceLineNo">735</span><a id="line.735">     * @see #spannerOpts(Descriptors.FieldDescriptor) For the low-level version of this method, which includes a more</a>
-<span class="sourceLineNo">736</span><a id="line.736">     *      detailed explanation of {@link SpannerFieldOptions}.</a>
-<span class="sourceLineNo">737</span><a id="line.737">     * @param fieldPointer Field pointer for which we should resolve any present column-generic options.</a>
-<span class="sourceLineNo">738</span><a id="line.738">     * @return Set of specified table field options, or {@link Optional#empty()}.</a>
+<span class="sourceLineNo">735</span><a id="line.735">     * @see #fieldOpts(Descriptors.FieldDescriptor) For the low-level version of this method, which includes a more</a>
+<span class="sourceLineNo">736</span><a id="line.736">     *      detailed explanation of {@link FieldPersistenceOptions}.</a>
+<span class="sourceLineNo">737</span><a id="line.737">     * @param fieldPointer Field pointer for which we should resolve any present field-generic options.</a>
+<span class="sourceLineNo">738</span><a id="line.738">     * @return Set of specified general field options, or {@link Optional#empty()}.</a>
 <span class="sourceLineNo">739</span><a id="line.739">     */</a>
-<span class="sourceLineNo">740</span><a id="line.740">    public static @Nonnull Optional&lt;SpannerFieldOptions&gt; spannerOpts(@Nonnull FieldPointer fieldPointer) {</a>
-<span class="sourceLineNo">741</span><a id="line.741">        return spannerOpts(fieldPointer.getField());</a>
+<span class="sourceLineNo">740</span><a id="line.740">    public static @Nonnull Optional&lt;FieldPersistenceOptions&gt; fieldOpts(@Nonnull FieldPointer fieldPointer) {</a>
+<span class="sourceLineNo">741</span><a id="line.741">        return fieldOpts(fieldPointer.getField());</a>
 <span class="sourceLineNo">742</span><a id="line.742">    }</a>
 <span class="sourceLineNo">743</span><a id="line.743"></a>
 <span class="sourceLineNo">744</span><a id="line.744">    /**</a>
 <span class="sourceLineNo">745</span><a id="line.745">     * Given a resolved Protocol Buffer {@link Descriptors.FieldDescriptor} which is considered eligible for interaction</a>
-<span class="sourceLineNo">746</span><a id="line.746">     * with Spanner, resolve any present Spanner-specific options and annotations via {@link SpannerFieldOptions}.</a>
+<span class="sourceLineNo">746</span><a id="line.746">     * with Spanner, resolve any present field-generic options and annotations via {@link FieldPersistenceOptions}.</a>
 <span class="sourceLineNo">747</span><a id="line.747">     *</a>
-<span class="sourceLineNo">748</span><a id="line.748">     * &lt;p&gt;To adapt to other columnar-style engines, model fields may be annotated with {@link TableFieldOptions}. In all</a>
-<span class="sourceLineNo">749</span><a id="line.749">     * cases, present {@link SpannerFieldOptions} override with regard to Spanner Driver behavior.&lt;/p&gt;</a>
+<span class="sourceLineNo">748</span><a id="line.748">     * &lt;p&gt;To adapt to other persistence engines, model fields may be annotated with {@link FieldPersistenceOptions}. In</a>
+<span class="sourceLineNo">749</span><a id="line.749">     * all cases, present {@link FieldPersistenceOptions} yield with regard to matchin Spanner-specific fields.&lt;/p&gt;</a>
 <span class="sourceLineNo">750</span><a id="line.750">     *</a>
-<span class="sourceLineNo">751</span><a id="line.751">     * @see #spannerOpts(FieldPointer) For a version of this method which operates on {@link FieldPointer}.</a>
-<span class="sourceLineNo">752</span><a id="line.752">     * @see #columnOpts(Descriptors.FieldDescriptor) For the equivalent version of this method that returns column-</a>
-<span class="sourceLineNo">753</span><a id="line.753">     *      generic field options.</a>
-<span class="sourceLineNo">754</span><a id="line.754">     * @param field Field descriptor for which we should resolve any present {@link SpannerFieldOptions}.</a>
-<span class="sourceLineNo">755</span><a id="line.755">     * @return Any present column-generic field options or annotations, or {@link Optional#empty()}.</a>
-<span class="sourceLineNo">756</span><a id="line.756">     */</a>
-<span class="sourceLineNo">757</span><a id="line.757">    public static @Nonnull Optional&lt;SpannerFieldOptions&gt; spannerOpts(@Nonnull Descriptors.FieldDescriptor field) {</a>
-<span class="sourceLineNo">758</span><a id="line.758">        // resolve spanner options next, which override any default table options.</a>
-<span class="sourceLineNo">759</span><a id="line.759">        var spannerOpts = fieldAnnotation(</a>
-<span class="sourceLineNo">760</span><a id="line.760">            field,</a>
-<span class="sourceLineNo">761</span><a id="line.761">            Datamodel.spanner</a>
-<span class="sourceLineNo">762</span><a id="line.762">        );</a>
-<span class="sourceLineNo">763</span><a id="line.763"></a>
-<span class="sourceLineNo">764</span><a id="line.764">        if (spannerOpts.isPresent() &amp;&amp; logging.isDebugEnabled())</a>
-<span class="sourceLineNo">765</span><a id="line.765">            logging.debug("Found Spanner options for field '{}': \n{}",</a>
-<span class="sourceLineNo">766</span><a id="line.766">                    field.getName(),</a>
-<span class="sourceLineNo">767</span><a id="line.767">                    spannerOpts.toString());</a>
-<span class="sourceLineNo">768</span><a id="line.768">        else if (spannerOpts.isEmpty() &amp;&amp; logging.isDebugEnabled()) {</a>
-<span class="sourceLineNo">769</span><a id="line.769">            logging.debug("No Spanner opts for field '{}'. Using defaults.",</a>
-<span class="sourceLineNo">770</span><a id="line.770">                field.getName());</a>
-<span class="sourceLineNo">771</span><a id="line.771">        }</a>
-<span class="sourceLineNo">772</span><a id="line.772">        return spannerOpts;</a>
-<span class="sourceLineNo">773</span><a id="line.773">    }</a>
-<span class="sourceLineNo">774</span><a id="line.774">}</a>
+<span class="sourceLineNo">751</span><a id="line.751">     * @see #spannerOpts(Descriptors.FieldDescriptor) Equivalent method for Spanner options</a>
+<span class="sourceLineNo">752</span><a id="line.752">     * @see #columnOpts(Descriptors.FieldDescriptor) equivalent method for column generic options</a>
+<span class="sourceLineNo">753</span><a id="line.753">     * @param field Field descriptor for which we should resolve any present {@link FieldPersistenceOptions}.</a>
+<span class="sourceLineNo">754</span><a id="line.754">     * @return Any present field-generic field options or annotations, or {@link Optional#empty()}.</a>
+<span class="sourceLineNo">755</span><a id="line.755">     */</a>
+<span class="sourceLineNo">756</span><a id="line.756">    public static @Nonnull Optional&lt;FieldPersistenceOptions&gt; fieldOpts(@Nonnull Descriptors.FieldDescriptor field) {</a>
+<span class="sourceLineNo">757</span><a id="line.757">        // resolve field options</a>
+<span class="sourceLineNo">758</span><a id="line.758">        var fieldOpts = fieldAnnotation(</a>
+<span class="sourceLineNo">759</span><a id="line.759">            field,</a>
+<span class="sourceLineNo">760</span><a id="line.760">            Datamodel.field</a>
+<span class="sourceLineNo">761</span><a id="line.761">        );</a>
+<span class="sourceLineNo">762</span><a id="line.762"></a>
+<span class="sourceLineNo">763</span><a id="line.763">        if (fieldOpts.isPresent() &amp;&amp; logging.isDebugEnabled())</a>
+<span class="sourceLineNo">764</span><a id="line.764">            logging.debug("Found generic options for field '{}': \n{}",</a>
+<span class="sourceLineNo">765</span><a id="line.765">                field.getName(),</a>
+<span class="sourceLineNo">766</span><a id="line.766">                fieldOpts.toString());</a>
+<span class="sourceLineNo">767</span><a id="line.767">        else if (fieldOpts.isEmpty() &amp;&amp; logging.isDebugEnabled()) {</a>
+<span class="sourceLineNo">768</span><a id="line.768">            logging.debug("No generic opts for field '{}'. Using defaults.",</a>
+<span class="sourceLineNo">769</span><a id="line.769">                field.getName());</a>
+<span class="sourceLineNo">770</span><a id="line.770">        }</a>
+<span class="sourceLineNo">771</span><a id="line.771">        return fieldOpts;</a>
+<span class="sourceLineNo">772</span><a id="line.772">    }</a>
+<span class="sourceLineNo">773</span><a id="line.773"></a>
+<span class="sourceLineNo">774</span><a id="line.774">    /**</a>
+<span class="sourceLineNo">775</span><a id="line.775">     * Given a pre-resolved {@link FieldPointer}, resolve any present {@link SpannerFieldOptions}.</a>
+<span class="sourceLineNo">776</span><a id="line.776">     *</a>
+<span class="sourceLineNo">777</span><a id="line.777">     * @see #spannerOpts(Descriptors.FieldDescriptor) For the low-level version of this method, which includes a more</a>
+<span class="sourceLineNo">778</span><a id="line.778">     *      detailed explanation of {@link SpannerFieldOptions}.</a>
+<span class="sourceLineNo">779</span><a id="line.779">     * @param fieldPointer Field pointer for which we should resolve any present column-generic options.</a>
+<span class="sourceLineNo">780</span><a id="line.780">     * @return Set of specified table field options, or {@link Optional#empty()}.</a>
+<span class="sourceLineNo">781</span><a id="line.781">     */</a>
+<span class="sourceLineNo">782</span><a id="line.782">    public static @Nonnull Optional&lt;SpannerFieldOptions&gt; spannerOpts(@Nonnull FieldPointer fieldPointer) {</a>
+<span class="sourceLineNo">783</span><a id="line.783">        return spannerOpts(fieldPointer.getField());</a>
+<span class="sourceLineNo">784</span><a id="line.784">    }</a>
+<span class="sourceLineNo">785</span><a id="line.785"></a>
+<span class="sourceLineNo">786</span><a id="line.786">    /**</a>
+<span class="sourceLineNo">787</span><a id="line.787">     * Given a resolved Protocol Buffer {@link Descriptors.FieldDescriptor} which is considered eligible for interaction</a>
+<span class="sourceLineNo">788</span><a id="line.788">     * with Spanner, resolve any present Spanner-specific options and annotations via {@link SpannerFieldOptions}.</a>
+<span class="sourceLineNo">789</span><a id="line.789">     *</a>
+<span class="sourceLineNo">790</span><a id="line.790">     * &lt;p&gt;To adapt to other columnar-style engines, model fields may be annotated with {@link TableFieldOptions}. In all</a>
+<span class="sourceLineNo">791</span><a id="line.791">     * cases, present {@link SpannerFieldOptions} override with regard to Spanner Driver behavior.&lt;/p&gt;</a>
+<span class="sourceLineNo">792</span><a id="line.792">     *</a>
+<span class="sourceLineNo">793</span><a id="line.793">     * @see #spannerOpts(FieldPointer) For a version of this method which operates on {@link FieldPointer}.</a>
+<span class="sourceLineNo">794</span><a id="line.794">     * @see #columnOpts(Descriptors.FieldDescriptor) For the equivalent version of this method that returns column-</a>
+<span class="sourceLineNo">795</span><a id="line.795">     *      generic field options.</a>
+<span class="sourceLineNo">796</span><a id="line.796">     * @param field Field descriptor for which we should resolve any present {@link SpannerFieldOptions}.</a>
+<span class="sourceLineNo">797</span><a id="line.797">     * @return Any present column-generic field options or annotations, or {@link Optional#empty()}.</a>
+<span class="sourceLineNo">798</span><a id="line.798">     */</a>
+<span class="sourceLineNo">799</span><a id="line.799">    public static @Nonnull Optional&lt;SpannerFieldOptions&gt; spannerOpts(@Nonnull Descriptors.FieldDescriptor field) {</a>
+<span class="sourceLineNo">800</span><a id="line.800">        // resolve spanner options, which override any default table options.</a>
+<span class="sourceLineNo">801</span><a id="line.801">        var spannerOpts = fieldAnnotation(</a>
+<span class="sourceLineNo">802</span><a id="line.802">            field,</a>
+<span class="sourceLineNo">803</span><a id="line.803">            Datamodel.spanner</a>
+<span class="sourceLineNo">804</span><a id="line.804">        );</a>
+<span class="sourceLineNo">805</span><a id="line.805"></a>
+<span class="sourceLineNo">806</span><a id="line.806">        if (spannerOpts.isPresent() &amp;&amp; logging.isDebugEnabled())</a>
+<span class="sourceLineNo">807</span><a id="line.807">            logging.debug("Found Spanner options for field '{}': \n{}",</a>
+<span class="sourceLineNo">808</span><a id="line.808">                    field.getName(),</a>
+<span class="sourceLineNo">809</span><a id="line.809">                    spannerOpts.toString());</a>
+<span class="sourceLineNo">810</span><a id="line.810">        else if (spannerOpts.isEmpty() &amp;&amp; logging.isDebugEnabled()) {</a>
+<span class="sourceLineNo">811</span><a id="line.811">            logging.debug("No Spanner opts for field '{}'. Using defaults.",</a>
+<span class="sourceLineNo">812</span><a id="line.812">                field.getName());</a>
+<span class="sourceLineNo">813</span><a id="line.813">        }</a>
+<span class="sourceLineNo">814</span><a id="line.814">        return spannerOpts;</a>
+<span class="sourceLineNo">815</span><a id="line.815">    }</a>
+<span class="sourceLineNo">816</span><a id="line.816">}</a>
 
 
 

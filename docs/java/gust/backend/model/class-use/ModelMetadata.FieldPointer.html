@@ -171,6 +171,13 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 </td>
 </tr>
 <tr class="rowColor">
+<td class="colFirst"><code>static java.util.Optional&lt;tools.elide.core.FieldPersistenceOptions&gt;</code></td>
+<th class="colSecond" scope="row"><span class="typeNameLabel">SpannerUtil.</span><code><span class="memberNameLink"><a href="../../driver/spanner/SpannerUtil.html#fieldOpts(gust.backend.model.ModelMetadata.FieldPointer)">fieldOpts</a></span>&#8203;(<a href="../ModelMetadata.FieldPointer.html" title="class in gust.backend.model">ModelMetadata.FieldPointer</a>&nbsp;fieldPointer)</code></th>
+<td class="colLast">
+<div class="block">Given a pre-resolved <a href="../ModelMetadata.FieldPointer.html" title="class in gust.backend.model"><code>ModelMetadata.FieldPointer</code></a>, resolve any present generic <code>FieldPersistenceOptions</code>.</div>
+</td>
+</tr>
+<tr class="altColor">
 <td class="colFirst"><code>static com.google.cloud.spanner.Type</code></td>
 <th class="colSecond" scope="row"><span class="typeNameLabel">SpannerUtil.</span><code><span class="memberNameLink"><a href="../../driver/spanner/SpannerUtil.html#maybeWrapType(gust.backend.model.ModelMetadata.FieldPointer,com.google.cloud.spanner.Type)">maybeWrapType</a></span>&#8203;(<a href="../ModelMetadata.FieldPointer.html" title="class in gust.backend.model">ModelMetadata.FieldPointer</a>&nbsp;field,
              com.google.cloud.spanner.Type&nbsp;inner)</code></th>
@@ -178,7 +185,7 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <div class="block">If a concrete type is marked as repeated, wrap it in an array type.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>static int</code></td>
 <th class="colSecond" scope="row"><span class="typeNameLabel">SpannerUtil.</span><code><span class="memberNameLink"><a href="../../driver/spanner/SpannerUtil.html#resolveColumnIndex(com.google.cloud.spanner.Struct,gust.backend.model.ModelMetadata.FieldPointer,java.lang.String)">resolveColumnIndex</a></span>&#8203;(com.google.cloud.spanner.Struct&nbsp;source,
                   <a href="../ModelMetadata.FieldPointer.html" title="class in gust.backend.model">ModelMetadata.FieldPointer</a>&nbsp;fieldPointer,
@@ -188,7 +195,7 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
  present, with a pre-resolved column name, return the numeric column index.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code>static java.lang.String</code></td>
 <th class="colSecond" scope="row"><span class="typeNameLabel">SpannerUtil.</span><code><span class="memberNameLink"><a href="../../driver/spanner/SpannerUtil.html#resolveColumnName(gust.backend.model.ModelMetadata.FieldPointer,java.util.Optional,java.util.Optional,gust.backend.driver.spanner.SpannerDriverSettings)">resolveColumnName</a></span>&#8203;(<a href="../ModelMetadata.FieldPointer.html" title="class in gust.backend.model">ModelMetadata.FieldPointer</a>&nbsp;fieldPointer,
                  java.util.Optional&lt;tools.elide.core.SpannerFieldOptions&gt;&nbsp;spannerOpts,
@@ -199,7 +206,7 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
  a given typed model field.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>static com.google.cloud.spanner.Type</code></td>
 <th class="colSecond" scope="row"><span class="typeNameLabel">SpannerUtil.</span><code><span class="memberNameLink"><a href="../../driver/spanner/SpannerUtil.html#resolveColumnType(gust.backend.model.ModelMetadata.FieldPointer,java.util.Optional,java.util.Optional,gust.backend.driver.spanner.SpannerDriverSettings)">resolveColumnType</a></span>&#8203;(<a href="../ModelMetadata.FieldPointer.html" title="class in gust.backend.model">ModelMetadata.FieldPointer</a>&nbsp;fieldPointer,
                  java.util.Optional&lt;tools.elide.core.SpannerFieldOptions&gt;&nbsp;spannerOpts,
@@ -211,7 +218,7 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
  annotations on the model field.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code>static com.google.cloud.spanner.Value</code></td>
 <th class="colSecond" scope="row"><span class="typeNameLabel">SpannerUtil.</span><code><span class="memberNameLink"><a href="../../driver/spanner/SpannerUtil.html#resolveColumnValue(com.google.cloud.spanner.Struct,gust.backend.model.ModelMetadata.FieldPointer,java.util.Optional,java.util.Optional,gust.backend.driver.spanner.SpannerDriverSettings)">resolveColumnValue</a></span>&#8203;(com.google.cloud.spanner.Struct&nbsp;source,
                   <a href="../ModelMetadata.FieldPointer.html" title="class in gust.backend.model">ModelMetadata.FieldPointer</a>&nbsp;fieldPointer,
@@ -223,7 +230,7 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
  present, resolve any present <code>Value</code>.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>static com.google.cloud.spanner.Type</code></td>
 <th class="colSecond" scope="row"><span class="typeNameLabel">SpannerUtil.</span><code><span class="memberNameLink"><a href="../../driver/spanner/SpannerUtil.html#resolveDefaultType(gust.backend.model.ModelMetadata.FieldPointer,com.google.protobuf.Descriptors.FieldDescriptor.Type,gust.backend.driver.spanner.SpannerDriverSettings)">resolveDefaultType</a></span>&#8203;(<a href="../ModelMetadata.FieldPointer.html" title="class in gust.backend.model">ModelMetadata.FieldPointer</a>&nbsp;pointer,
                   com.google.protobuf.Descriptors.FieldDescriptor.Type&nbsp;protoType,
@@ -232,7 +239,7 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <div class="block">Resolve a default Spanner type for the provided field `pointer`.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code>static com.google.cloud.spanner.Type</code></td>
 <th class="colSecond" scope="row"><span class="typeNameLabel">SpannerUtil.</span><code><span class="memberNameLink"><a href="../../driver/spanner/SpannerUtil.html#resolveDefaultType(gust.backend.model.ModelMetadata.FieldPointer,gust.backend.driver.spanner.SpannerDriverSettings)">resolveDefaultType</a></span>&#8203;(<a href="../ModelMetadata.FieldPointer.html" title="class in gust.backend.model">ModelMetadata.FieldPointer</a>&nbsp;pointer,
                   <a href="../../driver/spanner/SpannerDriverSettings.html" title="interface in gust.backend.driver.spanner">SpannerDriverSettings</a>&nbsp;settings)</code></th>
@@ -240,7 +247,7 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <div class="block">Resolve a default Spanner type for the provided field `pointer`.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>static java.lang.String</code></td>
 <th class="colSecond" scope="row"><span class="typeNameLabel">SpannerUtil.</span><code><span class="memberNameLink"><a href="../../driver/spanner/SpannerUtil.html#resolveKeyColumn(gust.backend.model.ModelMetadata.FieldPointer,gust.backend.driver.spanner.SpannerDriverSettings)">resolveKeyColumn</a></span>&#8203;(<a href="../ModelMetadata.FieldPointer.html" title="class in gust.backend.model">ModelMetadata.FieldPointer</a>&nbsp;idField,
                 <a href="../../driver/spanner/SpannerDriverSettings.html" title="interface in gust.backend.driver.spanner">SpannerDriverSettings</a>&nbsp;driverSettings)</code></th>
@@ -249,7 +256,7 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
  according to the annotation structure present on the key.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code>static com.google.cloud.spanner.Type</code></td>
 <th class="colSecond" scope="row"><span class="typeNameLabel">SpannerUtil.</span><code><span class="memberNameLink"><a href="../../driver/spanner/SpannerUtil.html#resolveKeyType(gust.backend.model.ModelMetadata.FieldPointer)">resolveKeyType</a></span>&#8203;(<a href="../ModelMetadata.FieldPointer.html" title="class in gust.backend.model">ModelMetadata.FieldPointer</a>&nbsp;idField)</code></th>
 <td class="colLast">
@@ -257,7 +264,7 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
  according to the annotation structure present on the key.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>static com.google.cloud.spanner.Type</code></td>
 <th class="colSecond" scope="row"><span class="typeNameLabel">SpannerUtil.</span><code><span class="memberNameLink"><a href="../../driver/spanner/SpannerUtil.html#resolveType(gust.backend.model.ModelMetadata.FieldPointer,tools.elide.core.SpannerOptions.SpannerType)">resolveType</a></span>&#8203;(<a href="../ModelMetadata.FieldPointer.html" title="class in gust.backend.model">ModelMetadata.FieldPointer</a>&nbsp;pointer,
            tools.elide.core.SpannerOptions.SpannerType&nbsp;spannerType)</code></th>
@@ -265,7 +272,7 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <div class="block">Resolve a normalized Spanner type for the provided field `pointer`, with the explicit provided `spannerType`.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code>static java.util.Optional&lt;tools.elide.core.SpannerFieldOptions&gt;</code></td>
 <th class="colSecond" scope="row"><span class="typeNameLabel">SpannerUtil.</span><code><span class="memberNameLink"><a href="../../driver/spanner/SpannerUtil.html#spannerOpts(gust.backend.model.ModelMetadata.FieldPointer)">spannerOpts</a></span>&#8203;(<a href="../ModelMetadata.FieldPointer.html" title="class in gust.backend.model">ModelMetadata.FieldPointer</a>&nbsp;fieldPointer)</code></th>
 <td class="colLast">
