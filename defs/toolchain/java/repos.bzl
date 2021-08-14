@@ -301,6 +301,7 @@ MICRONAUT_EXTRAS = [
     ("io.netty:netty-handler", NETTY_VERSION),
     ("io.netty:netty-handler-proxy", NETTY_VERSION),
     ("io.micronaut:micronaut-context", MICRONAUT_CONTEXT_VERSION),
+    ("io.netty:netty-tcnative", NETTY_BORINGSSL_VERSION),
     ("io.netty:netty-tcnative-boringssl-static", NETTY_BORINGSSL_VERSION),
     ("io.micronaut:micronaut-multitenancy", MICRONAUT_MULTITENANCY_VERSION),
     ("io.micronaut.security:micronaut-security", MICRONAUT_SECURITY_VERSION),

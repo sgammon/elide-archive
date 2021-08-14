@@ -562,7 +562,7 @@ def _micronaut_application(name,
         computed_deps = _dedupe_deps((deps or []) + INJECTED_MICRONAUT_DEPS + controllers + services)
         computed_image_deps = _dedupe_deps((deps or []) + INJECTED_MICRONAUT_DEPS)
         computed_image_layers = _dedupe_deps((
-            INJECTED_MICRONAUT_RUNTIME_DEPS + [template_loader] + [":%s-assets" % name] + controllers + services))
+            INJECTED_MICRONAUT_RUNTIME_DEPS + [template_loader] + [":%s-assets" % name] + controllers + services + (runtime_deps or [])))
         computed_runtime_deps = [template_loader]
 
         if inject_main:
@@ -573,6 +573,7 @@ def _micronaut_application(name,
         computed_image_layers = []
         computed_runtime_deps = _dedupe_deps(
             (deps or []) +
+            (runtime_deps or []) +
             INJECTED_MICRONAUT_DEPS +
             INJECTED_CONTROLLERS +
             services +
