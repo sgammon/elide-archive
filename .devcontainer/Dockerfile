@@ -1,9 +1,10 @@
 
 FROM us-docker.pkg.dev/cookies-eng/public/base/codespaces:latest
 
-ENV SHELL zsh
-ENV C6S_CODESPACES_VERSION=v1a
-ENV HOME /home/dev
+ENV SHELL=zsh \
+    C6S_CODESPACES_VERSION=v1a \
+    HOME=/home/dev
+    DEVCONTAINER=yes
 
 USER dev
 WORKDIR /home/dev
