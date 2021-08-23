@@ -168,10 +168,16 @@ LN ?= $(shell which ln)
 CURL ?= $(shell which curl)
 CHMOD ?= $(shell which chmod)
 MKDIR ?= $(shell which mkdir)
-BAZELISK ?= $(ENV)/bin/bazelisk
 GENHTML ?= $(shell which genhtml)
-IBAZEL ?= $(ENV)/bin/ibazel
 DOCKER ?= $(shell which docker)
+
+ifeq ($(DEVCONTAINER),yes)
+BAZELISK ?= $(shell which bazelisk)
+IBAZEL ?= $(shell which ibazel)
+else
+BAZELISK ?= $(ENV)/bin/bazelisk
+IBAZEL ?= $(ENV)/bin/ibazel
+endif
 
 PYTHON ?= $(shell which python)
 VIRTUALENV ?= $(shell which virtualenv)
