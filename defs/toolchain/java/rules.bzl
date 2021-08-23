@@ -449,7 +449,7 @@ native_tools = native
 
 
 def _micronaut_application(name,
-                           native = False,
+                           enable_native = False,
                            main_class = "gust.backend.Application",
                            config = str(Label("@gust//java/gust:application.yml")),
                            template_loader = str(Label("@gust//java/gust/backend:TemplateProvider")),
@@ -462,6 +462,7 @@ def _micronaut_application(name,
                            native_configsets = [],
                            registry = "us.gcr.io",
                            image_format = "OCI",
+                           image_name = None,
                            srcs = [],
                            controllers = [],
                            services = [],
@@ -591,7 +592,7 @@ def _micronaut_application(name,
             computed_runtime_deps.append("@gust//java/gust/backend:backend")
 
     _java_image(
-        name = "%s-image" % name,
+        name = image_name or ("%s-image" % name),
         srcs = srcs,
         main_class = main_class,
         deps = computed_image_deps,
@@ -606,6 +607,12 @@ def _micronaut_application(name,
             ":%s-assets-manifest" % name
         ],
     )
+
+    if image_name:
+        native.alias(
+            name = "%s-image" % name,
+            actual = image_name,
+        )
 
     _java_library(
         name = "%s-lib" % name,
@@ -622,7 +629,7 @@ def _micronaut_application(name,
         resource_strip_prefix = "java/gust" in config and "java/gust/" or None,
     )
 
-    if native:
+    if enable_native:
         _graal_binary(
             name = "%s-native" % name,
             deps = _dedupe_deps(["%s-lib" % name] + computed_runtime_deps),
