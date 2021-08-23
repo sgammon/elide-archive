@@ -3,7 +3,7 @@
         "dockerfile": "./Dockerfile",
         "context": ".."
     },
-    "initializeCommand": "make build DEVCONTAINER=yes",
+    "initializeCommand": "make build",
     "postAttachCommand": "gcloud auth login && make help",
     "extensions": [
         "BazelBuild.vscode-bazel",
