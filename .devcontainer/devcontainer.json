@@ -3,7 +3,7 @@
         "dockerfile": "./Dockerfile",
         "context": ".."
     },
-    "initializeCommand": ["make", "build"],
+    "initializeCommand": "make build DEVCONTAINER=yes",
     "postAttachCommand": "gcloud auth login && make help"
 }
 

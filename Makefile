@@ -210,7 +210,11 @@ endif
 
 all: devtools build test  ## Build and test all framework targets.
 
+ifeq ($(DEVCONTAINER),yes)
+build:
+else
 build: $(ENV)  ## Build all framework targets.
+endif
 	$(info Building $(PROJECT_NAME)...)
 	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) build $(TAG) $(BASE_ARGS) $(BUILD_ARGS) -- $(TARGETS)
 
