@@ -1,5 +1,5 @@
 
-FROM us-docker.pkg.dev/cookies-eng/public/base/codespaces:v1g
+FROM us-docker.pkg.dev/cookies-eng/public/base/codespaces:v1h
 
 ENV SHELL=zsh \
     HOME=/home/dev \
@@ -8,5 +8,5 @@ ENV SHELL=zsh \
 USER dev
 WORKDIR /home/dev
 
-COPY defs/container.bazelrc /home/dev/.bazelrc
+COPY defs/container.bazelrc /home/dev/bazelrc.remote
 
