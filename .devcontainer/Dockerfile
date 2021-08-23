@@ -11,7 +11,12 @@ WORKDIR /home/dev
 
 RUN echo "Installing BuildBuddy credentials..." \
 	&& echo "$BUILDBUDDY_CERT" > /home/dev/buildbuddy-cert.pem \
-	&& echo "$BUILDBUDDY_KEY" > /home/dev/buildbuddy-key.pem;
+	&& echo "$BUILDBUDDY_KEY" > /home/dev/buildbuddy-key.pem \
+	&& mkdir -p /home/dev/.ssh \
+	&& echo "Installing SSH credentials..." \
+	&& echo "$SSHKEY" > /home/dev/.ssh/id_rsa \
+	&& chown dev:engineering /home/dev/.ssh/id_rsa \
+	&& chmod 600 /home/dev/.ssh/id_rsa;
 
 COPY defs/container.bazelrc /home/dev/.bazelrc
 
