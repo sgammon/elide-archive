@@ -5,9 +5,11 @@
     },
     "containerEnv": {
         "DEVCONTAINER": "yes",
-        "HOME": "/home/dev"
+        "HOME": "/home/dev",
+        "GOOGLE_APPLICATION_CREDENTIALS": "/home/dev/.config/gcloud/application_default_credentials.json"
     },
-    "postAttachCommand": "gcloud auth login && make help",
+    "postCreateCommand": "bash tools/container-init.sh",
+    "postAttachCommand": "make help",
     "containerUser": "dev",
     "extensions": [
         "BazelBuild.vscode-bazel",
