@@ -3,7 +3,7 @@ FROM us-docker.pkg.dev/cookies-eng/public/base/codespaces:latest
 
 ENV SHELL=zsh \
     C6S_CODESPACES_VERSION=v1a \
-    HOME=/home/dev
+    HOME=/home/dev \
     DEVCONTAINER=yes
 
 USER dev
