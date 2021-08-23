@@ -9,31 +9,31 @@ build --bes_results_url=https://app.buildbuddy.io/invocation/
 build --bes_backend=grpcs://cloud.buildbuddy.io
 build --remote_cache=grpcs://cloud.buildbuddy.io
 build --remote_timeout=3600
-build --remote_executor=grpcs://cloud.buildbuddy.io
 build --tls_client_certificate=~/buildbuddy-cert.pem
 build --tls_client_key=~/buildbuddy-key.pem
 build --experimental_docker_image=gcr.io/cloud-marketplace/google/rbe-ubuntu18-04@sha256:48b67b41118dbcdfc265e7335f454fbefa62681ab8d47200971fc7a52fb32054
 
 build --jobs=50
 
-build --spawn_strategy=remote,sandboxed
-build --strategy=Javac=remote
-build --strategy=Closure=remote
-build --strategy=Genrule=remote
-build --define=EXECUTOR=remote
+build:rbe --remote_executor=grpcs://cloud.buildbuddy.io
+build:rbe --spawn_strategy=remote,sandboxed
+build:rbe --strategy=Javac=remote
+build:rbe --strategy=Closure=remote
+build:rbe --strategy=Genrule=remote
+build:rbe --define=EXECUTOR=remote
 
 build --google_default_credentials=true
 
-build --javabase=@rbe_jdk11//java:jdk
-build --host_javabase=@rbe_jdk11//java:jdk
-build --crosstool_top=@rbe_jdk11//cc:toolchain
-build --extra_toolchains=@rbe_jdk11//config:cc-toolchain
-build --extra_execution_platforms=@rbe_jdk11//config:platform
-build --host_platform=@rbe_jdk11//config:platform
-build --platforms=@rbe_jdk11//config:platform
-build --action_env=BAZEL_DO_NOT_DETECT_CPP_TOOLCHAIN=1
-build --host_java_toolchain=@bazel_tools//tools/jdk:toolchain_java11
-build --java_toolchain=@bazel_tools//tools/jdk:toolchain_java11
+build:rbe --javabase=@rbe_jdk11//java:jdk
+build:rbe --host_javabase=@rbe_jdk11//java:jdk
+build:rbe --crosstool_top=@rbe_jdk11//cc:toolchain
+build:rbe --extra_toolchains=@rbe_jdk11//config:cc-toolchain
+build:rbe --extra_execution_platforms=@rbe_jdk11//config:platform
+build:rbe --host_platform=@rbe_jdk11//config:platform
+build:rbe --platforms=@rbe_jdk11//config:platform
+build:rbe --action_env=BAZEL_DO_NOT_DETECT_CPP_TOOLCHAIN=1
+build:rbe --host_java_toolchain=@bazel_tools//tools/jdk:toolchain_java11
+build:rbe --java_toolchain=@bazel_tools//tools/jdk:toolchain_java11
 
 build --build_metadata=REPO_URL=https://github.com/CookiesCo/elide.git
 build --build_metadata=BUILDKITE_REPO=cookies/elide
