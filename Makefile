@@ -35,6 +35,7 @@ ENABLE_REPORTCI ?= yes
 JS_COVERAGE_REPORT ?= no
 REPORTS ?= reports
 CI_REPO ?= sgammon/elide
+DEVCONTAINER ?= $(shell echo $$DEVCONTAINER)
 
 SAMPLES ?= //samples/rest_mvc/java:MicronautMVCSample //samples/soy_ssr/src:MicronautSSRSample
 
@@ -179,7 +180,11 @@ VIRTUALENV ?= $(shell which virtualenv)
 ifeq ($(CI),yes)
 TAG += --config=ci
 else
+ifeq ($(DEVCONTAINER),yes)
 TAG += --config=dev --config=labs
+else
+TAG += --config=dev-local --config=labs
+endif
 endif
 
 # Flag: `DEBUG`

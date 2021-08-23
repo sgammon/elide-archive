@@ -4,7 +4,6 @@ build --show_timestamps
 build --action_env=GOOGLE_DEFAULT_CREDENTIALS
 
 ## Config: BuildBuddy
-build --tls_enabled=true
 build --auth_enabled=true
 build --bes_results_url=https://app.buildbuddy.io/invocation/
 build --bes_backend=grpcs://cloud.buildbuddy.io

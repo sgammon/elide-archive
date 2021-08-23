@@ -71,10 +71,10 @@ build:dev --strategy=KotlinCompile=worker
 build:dev --strategy=TypeScriptCompile=worker
 build:dev --strategy=JdepsMerger=worker
 
-fetch:dev --repository_cache=~/.cache/bazel/repo
-query:dev --repository_cache=~/.cache/bazel/repo
-build:dev --disk_cache=~/.cache/bazel-disk-cache
-build:dev --repository_cache=~/.cache/bazel/repo
+fetch:dev-local --repository_cache=~/.cache/bazel/repo
+query:dev-local --repository_cache=~/.cache/bazel/repo
+build:dev-local --disk_cache=~/.cache/bazel-disk-cache
+build:dev-local --repository_cache=~/.cache/bazel/repo
 
 #test:dev --test_strategy=standalone
 #test:dev --strategy=TestRunner=worker
