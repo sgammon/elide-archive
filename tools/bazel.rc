@@ -21,12 +21,12 @@
 # Base Settings
 ##
 
+build --java_header_compilation
+
 build --show_timestamps
 build --embed_label=alpha
 build --define project=elide-ai
 build --define cluster=_cluster_
-build --nojava_header_compilation
-build --noexperimental_worker_multiplex
 build --output_filter='^//(gust|defs|java|js|tools|config|images|javatests|tests|jstests):'
 build --watchfs
 build --symlink_prefix=dist/
@@ -36,8 +36,8 @@ build --javacopt="-encoding UTF-8"
 build --strict_java_deps=strict
 build --use_ijars
 build --interface_shared_objects
-build --java_toolchain=@bazel_tools//tools/jdk:toolchain_java11
-build --host_java_toolchain=@bazel_tools//tools/jdk:toolchain_java11
+build --java_toolchain=@gust//defs/toolchain/java:toolchain
+build --host_java_toolchain=@gust//defs/toolchain/java:toolchain
 build --workspace_status_command=./tools/bazel_stamp_vars.sh
 build --worker_sandboxing
 build --spawn_strategy=sandboxed,worker

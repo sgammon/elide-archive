@@ -13,8 +13,23 @@
 
 workspace(
   name = "gust",
-  managed_directories = {"@npm": ["node_modules"]})
+  managed_directories = {"@npm": ["node_modules"]},
+)
 
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+
+http_archive(
+    name = "remote_java_tools",
+    sha256 = "b763ee80e5754e593fd6d5be6d7343f905bc8b73d661d36d842b024ca11b6793",
+    urls = [
+            "https://mirror.bazel.build/bazel_java_tools/releases/java/v11.5/java_tools-v11.5.zip",
+            "https://github.com/bazelbuild/java_tools/releases/download/java_v11.5/java_tools-v11.5.zip",
+    ],
+)
+
+
+## `build.bzl`
 load("//defs:build.bzl", "install_dependencies")
 load("//defs:config.bzl", "CHROMIUM", "FIREFOX", "SAUCE", "GRAALVM_VERSION", "GRAALVM_JDK_VERSION", "K8S_VERSION")
 install_dependencies()
@@ -52,8 +67,6 @@ load(
 
 protobuf_deps()
 
-
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 
 #

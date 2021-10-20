@@ -18,11 +18,19 @@ package(
 load(
     "@rules_java//java:defs.bzl",
     "java_runtime",
+    "java_toolchain",
 )
 
 load(
     "@bazel_skylib//:bzl_library.bzl",
     "bzl_library",
+)
+
+load(
+    "@bazel_tools//tools/jdk:default_java_toolchain.bzl",
+    "DEFAULT_JAVACOPTS",
+    "JDK8_JVM_OPTS",
+    "JDK9_JVM_OPTS",
 )
 
 
@@ -57,4 +65,37 @@ alias(
         "//defs/conditions:zulu": ":zulu_runtime",
         "//conditions:default": "@embedded_jdk//:jdk",
     }),
+)
+
+
+## Java Runtime
+## ------------------------
+## Customized Java toolchain for JDK11.
+java_toolchain(
+  name = "toolchain",
+  source_version = "11",
+  target_version = "11",
+  javac_supports_workers = True,
+  forcibly_disable_header_compilation = False,
+  misc = DEFAULT_JAVACOPTS,
+
+  bootclasspath = ["@bazel_tools//tools/jdk:platformclasspath"],
+  ijar = ["@bazel_tools//tools/jdk:ijar"],
+  genclass = ["@bazel_tools//tools/jdk:genclass"],
+  javabuilder = ["@bazel_tools//tools/jdk:javabuilder"],
+  singlejar = ["@bazel_tools//tools/jdk:singlejar"],
+  jacocorunner = "@bazel_tools//tools/jdk:JacocoCoverageFilegroup",
+  tools = [
+    "@bazel_tools//tools/jdk:javac_jar",
+    "@bazel_tools//tools/jdk:java_compiler_jar",
+    "@bazel_tools//tools/jdk:jdk_compiler_jar",
+  ],
+  jvm_opts = select({
+    "@bazel_tools//src/conditions:openbsd": JDK8_JVM_OPTS,
+    "//conditions:default": JDK9_JVM_OPTS,
+  }),
+
+  # Override: Turbine
+  header_compiler = ["@remote_java_tools//:TurbineDirect"],
+  header_compiler_direct = ["@remote_java_tools//:TurbineDirect"],
 )
