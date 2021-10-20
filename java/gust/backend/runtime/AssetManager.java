@@ -22,6 +22,7 @@ import gust.util.Hex;
 import gust.util.Pair;
 import io.micronaut.context.annotation.Context;
 import io.micronaut.context.annotation.Infrastructure;
+import io.micronaut.core.annotation.NonNull;
 import org.slf4j.Logger;
 import tools.elide.assets.AssetBundle;
 import tools.elide.assets.AssetBundle.StyleBundle.StyleAsset;
@@ -29,7 +30,6 @@ import tools.elide.assets.AssetBundle.ScriptBundle.ScriptAsset;
 import tools.elide.core.data.CompressedData;
 import tools.elide.core.data.CompressionMode;
 
-import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
 import javax.annotation.concurrent.ThreadSafe;
 import java.io.*;
@@ -64,76 +64,76 @@ import static java.lang.String.format;
 @SuppressWarnings("UnstableApiUsage")
 public final class AssetManager {
   /** Private logging pipe. */
-  private static final @Nonnull Logger logging = Logging.logger(AssetManager.class);
+  private static final @NonNull Logger logging = Logging.logger(AssetManager.class);
 
   /** Path to the asset manifest resource. */
-  private static final @Nonnull String manifestPath = "/assets.pb";
+  private static final @NonNull String manifestPath = "/assets.pb";
 
   /** Length of generated ETag values. */
   private static final int ETAG_LENGTH = 8;
 
   /** Algorithm to use for ETag value generation. */
-  private static final @Nonnull String ETAG_DIGEST_ALGORITHM = "SHA-256";
+  private static final @NonNull String ETAG_DIGEST_ALGORITHM = "SHA-256";
 
   /** Shared/static asset bundle object, which is immutable. */
   private static volatile AssetBundle loadedBundle;
 
   /** Specifies a map of asset modules to metadata. */
-  private static final @Nonnull SortedMap<String, ModuleMetadata<? extends Message>> assetMap = new TreeMap<>();
+  private static final @NonNull SortedMap<String, ModuleMetadata<? extends Message>> assetMap = new TreeMap<>();
 
   /** Maps content blocks to their module names. */
-  private static final @Nonnull Multimap<String, String> modulesToTokens = MultimapBuilder
+  private static final @NonNull Multimap<String, String> modulesToTokens = MultimapBuilder
     .hashKeys()
     .treeSetValues()
     .build();
 
   /** Specifies a map of tokens to their content info. */
-  private static final @Nonnull SortedMap<String, ContentInfo> tokenMap = new TreeMap<>();
+  private static final @NonNull SortedMap<String, ContentInfo> tokenMap = new TreeMap<>();
 
   /** Holds on to info related to a raw asset file. */
   @Immutable
   static final class ContentInfo {
     /** Unique token for this asset. */
-    final @Nonnull String token;
+    final @NonNull String token;
 
     /** Unique token for this asset. */
-    final @Nonnull String module;
+    final @NonNull String module;
 
     /** Original filename for this asset. */
-    final @Nonnull String filename;
+    final @NonNull String filename;
 
     /** Uncompressed data size. */
-    final @Nonnull Long size;
+    final @NonNull Long size;
 
     /** Etag, calculated from the token and filename. */
-    final @Nonnull String etag;
+    final @NonNull String etag;
 
     /** Smallest compression option. */
-    final @Nonnull CompressionMode optimalCompression;
+    final @NonNull CompressionMode optimalCompression;
 
     /** Size of the optimally-compressed variant. */
-    final @Nonnull Long compressedSize;
+    final @NonNull Long compressedSize;
 
     /** Count of variants held by this content info block. */
-    final @Nonnull Integer variantCount;
+    final @NonNull Integer variantCount;
 
     /** Options that exist for pre-compressed variants of this content. */
-    final @Nonnull EnumSet<CompressionMode> compressionOptions;
+    final @NonNull EnumSet<CompressionMode> compressionOptions;
 
     /** Pointer to the content record backing this object. */
-    final @Nonnull AssetBundle.AssetContent content;
+    final @NonNull AssetBundle.AssetContent content;
 
     /** Raw constructor for content info metadata. */
-    private ContentInfo(@Nonnull String token,
-                        @Nonnull String module,
-                        @Nonnull String filename,
-                        @Nonnull Long size,
-                        @Nonnull String etag,
-                        @Nonnull CompressionMode optimalCompression,
-                        @Nonnull Long compressedSize,
-                        @Nonnull Integer variantCount,
-                        @Nonnull EnumSet<CompressionMode> compressionOptions,
-                        @Nonnull AssetBundle.AssetContent content) {
+    private ContentInfo(@NonNull String token,
+                        @NonNull String module,
+                        @NonNull String filename,
+                        @NonNull Long size,
+                        @NonNull String etag,
+                        @NonNull CompressionMode optimalCompression,
+                        @NonNull Long compressedSize,
+                        @NonNull Integer variantCount,
+                        @NonNull EnumSet<CompressionMode> compressionOptions,
+                        @NonNull AssetBundle.AssetContent content) {
       this.token = token;
       this.module = module;
       this.filename = filename;
@@ -154,7 +154,7 @@ public final class AssetManager {
      * @param algorithm Algorithm to use for etags.
      * @return Checked content info object.
      */
-    static @Nonnull ContentInfo fromProto(@Nonnull AssetBundle.AssetContent content, @Nonnull String algorithm) {
+    static @NonNull ContentInfo fromProto(@NonNull AssetBundle.AssetContent content, @NonNull String algorithm) {
       try {
         MessageDigest digester = MessageDigest.getInstance(algorithm);
         digester.update(content.getModule().getBytes(StandardCharsets.UTF_8));
@@ -204,7 +204,7 @@ public final class AssetManager {
      * @param content Asset content protocol object.
      * @return Checked content info object.
      */
-    static @Nonnull ContentInfo fromProto(AssetBundle.AssetContent content) {
+    static @NonNull ContentInfo fromProto(AssetBundle.AssetContent content) {
       return fromProto(content, ETAG_DIGEST_ALGORITHM);
     }
   }
@@ -222,18 +222,18 @@ public final class AssetManager {
   @Immutable
   static final class ModuleMetadata<M extends Message> {
     /** Name of this asset module. */
-    final @Nonnull String name;
+    final @NonNull String name;
 
     /** Type of code/logic contained by this asset. */
-    final @Nonnull ModuleType type;
+    final @NonNull ModuleType type;
 
     /** Raw asset records for this module. */
-    final @Nonnull List<M> assets;
+    final @NonNull List<M> assets;
 
     /** Raw constructor for asset module metadata. */
-    private ModuleMetadata(@Nonnull ModuleType type,
-                           @Nonnull String name,
-                           @Nonnull List<M> assets) {
+    private ModuleMetadata(@NonNull ModuleType type,
+                           @NonNull String name,
+                           @NonNull List<M> assets) {
       this.name = name;
       this.type = type;
       this.assets = assets;
@@ -245,7 +245,7 @@ public final class AssetManager {
      * @param content Asset content protocol object.
      * @return Checked module info object.
      */
-    static @Nonnull ModuleMetadata<StyleAsset> fromStyleProto(@Nonnull AssetBundle.StyleBundle content) {
+    static @NonNull ModuleMetadata<StyleAsset> fromStyleProto(@NonNull AssetBundle.StyleBundle content) {
       return new ModuleMetadata<>(
         ModuleType.CSS,
         content.getModule(),
@@ -258,7 +258,7 @@ public final class AssetManager {
      * @param content Asset content protocol object.
      * @return Checked module info object.
      */
-    static @Nonnull ModuleMetadata<ScriptAsset> fromScriptProto(@Nonnull AssetBundle.ScriptBundle content) {
+    static @NonNull ModuleMetadata<ScriptAsset> fromScriptProto(@NonNull AssetBundle.ScriptBundle content) {
       return new ModuleMetadata<>(
         ModuleType.JS,
         content.getModule(),
@@ -271,10 +271,10 @@ public final class AssetManager {
   @SuppressWarnings("unused")
   public static final class ManagedAssetContent implements Comparable<ManagedAssetContent> {
     /** Attached/encapsulated asset content and info. */
-    private final @Nonnull ContentInfo content;
+    private final @NonNull ContentInfo content;
 
     /** Create a {@link ManagedAssetContent} object from scratch. */
-    ManagedAssetContent(@Nonnull ContentInfo content) {
+    ManagedAssetContent(@NonNull ContentInfo content) {
       this.content = content;
     }
 
@@ -293,63 +293,63 @@ public final class AssetManager {
     }
 
     @Override
-    public int compareTo(@Nonnull ManagedAssetContent other) {
+    public int compareTo(@NonNull ManagedAssetContent other) {
       return this.content.token.compareTo(other.content.token);
     }
 
     /** @return Opaque token identifying this asset content. */
-    public @Nonnull String getToken() {
+    public @NonNull String getToken() {
       return content.token;
     }
 
     /** @return Module name for this content chunk. */
-    public @Nonnull String getModule() {
+    public @NonNull String getModule() {
       return content.module;
     }
 
     /** @return Pre-calculated ETag value for this asset. */
-    public @Nonnull String getETag() {
+    public @NonNull String getETag() {
       return content.etag;
     }
 
     /** @return Original filename for the asset. */
-    public @Nonnull String getFilename() {
+    public @NonNull String getFilename() {
       return content.filename;
     }
 
     /** @return Last-modified-timestamp for this asset. */
-    public @Nonnull Timestamp getLastModified() {
+    public @NonNull Timestamp getLastModified() {
       return loadedBundle.getGenerated();
     }
 
     /** @return Un-compressed size of the asset. */
-    public @Nonnull Long getSize() {
+    public @NonNull Long getSize() {
       return content.size;
     }
 
     /** @return Optimal compression mode. */
-    public @Nonnull CompressionMode getOptimalCompression() {
+    public @NonNull CompressionMode getOptimalCompression() {
       return content.optimalCompression;
     }
 
     /** @return Compressed size of the asset (optimal). */
     @SuppressWarnings("WeakerAccess")
-    public @Nonnull Long getCompressedSize() {
+    public @NonNull Long getCompressedSize() {
       return content.compressedSize;
     }
 
     /** @return Count of variants that exist for this asset. */
-    public @Nonnull Integer getVariantCount() {
+    public @NonNull Integer getVariantCount() {
       return content.variantCount;
     }
 
     /** @return Set of supported compression modes for this asset. */
-    public @Nonnull EnumSet<CompressionMode> getCompressionOptions() {
+    public @NonNull EnumSet<CompressionMode> getCompressionOptions() {
       return content.compressionOptions;
     }
 
     /** Retrieve the content backing this info record. */
-    public @Nonnull AssetBundle.AssetContent getContent() {
+    public @NonNull AssetBundle.AssetContent getContent() {
       return content.content;
     }
   }
@@ -358,14 +358,14 @@ public final class AssetManager {
   @Immutable
   public static final class ManagedAsset<M extends Message> implements Comparable<ManagedAsset> {
     /** Resolved module metadata for this asset. */
-    private final @Nonnull ModuleMetadata<M> module;
+    private final @NonNull ModuleMetadata<M> module;
 
     /** Logic references that constitute this managed asset, including dependencies, in reverse topological order. */
-    private final @Nonnull Collection<ManagedAssetContent> content;
+    private final @NonNull Collection<ManagedAssetContent> content;
 
     /** Construct a new managed asset from scratch. */
-    ManagedAsset(@Nonnull ModuleMetadata<M> module,
-                 @Nonnull Collection<ManagedAssetContent> content) {
+    ManagedAsset(@NonNull ModuleMetadata<M> module,
+                 @NonNull Collection<ManagedAssetContent> content) {
       this.module = module;
       this.content = content;
     }
@@ -386,27 +386,27 @@ public final class AssetManager {
     }
 
     @Override
-    public int compareTo(@Nonnull ManagedAsset other) {
+    public int compareTo(@NonNull ManagedAsset other) {
       return this.module.name.compareTo(other.module.name);
     }
 
     /** @return This module's assigned name. */
-    public @Nonnull String getName() {
+    public @NonNull String getName() {
       return module.name;
     }
 
     /** @return This module's assigned type. */
-    public @Nonnull ModuleType getType() {
+    public @NonNull ModuleType getType() {
       return module.type;
     }
 
     /** @return Collection of typed asset records constituting this bundle. */
-    public @Nonnull Collection<M> getAssets() {
+    public @NonNull Collection<M> getAssets() {
       return module.assets;
     }
 
     /** @return Content configurations associated with this asset bundle. */
-    public @Nonnull Collection<ManagedAssetContent> getContent() {
+    public @NonNull Collection<ManagedAssetContent> getContent() {
       return this.content;
     }
   }
@@ -525,7 +525,7 @@ public final class AssetManager {
    * @param token Token uniquely identifying this asset (generated from the module name and content fingerprint).
    * @return Optional, either {@link Optional#empty()} if the asset could not be found, or wrapping the result.
    */
-  public @Nonnull Optional<ManagedAssetContent> assetDataByToken(@Nonnull String token) {
+  public @NonNull Optional<ManagedAssetContent> assetDataByToken(@NonNull String token) {
     if (logging.isTraceEnabled())
       logging.trace(format("Resolving asset by token '%s'.", token));
     if (!tokenMap.containsKey(token)) {
@@ -549,7 +549,7 @@ public final class AssetManager {
    * @return Optional, either {@link Optional#empty()} if the asset group could not be found, or wrapping the result.
    */
   @SuppressWarnings("unused")
-  public @Nonnull <M extends Message> Optional<ManagedAsset<M>> assetMetadataByModule(@Nonnull String module) {
+  public @NonNull <M extends Message> Optional<ManagedAsset<M>> assetMetadataByModule(@NonNull String module) {
     if (logging.isTraceEnabled())
       logging.trace(format("Resolving asset metadata at module '%s'.", module));
     if (!assetMap.containsKey(module)) {
