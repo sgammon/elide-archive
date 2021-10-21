@@ -389,9 +389,9 @@ public final class SpannerUtil {
                                                   @Nonnull SpannerDriverSettings settings) {
         //noinspection deprecation
         return spannerOpts.isPresent() && spannerOpts.get().getType() != SpannerOptions.SpannerType.UNSPECIFIED_TYPE ?
-                 resolveType(fieldPointer, spannerOpts.get().getType()) :
+                 resolveType(settings, fieldPointer, spannerOpts.get().getType()) :
                columnOpts.isPresent() && columnOpts.get().getSptype() != SpannerOptions.SpannerType.UNSPECIFIED_TYPE ?
-                 resolveType(fieldPointer, columnOpts.get().getSptype()) :
+                 resolveType(settings, fieldPointer, columnOpts.get().getSptype()) :
                resolveDefaultType(fieldPointer, settings);
     }
 
@@ -578,11 +578,16 @@ public final class SpannerUtil {
      * @param spannerType Explicit Spanner type.
      * @return Resolved normalized Spanner type.
      */
-    public static @Nonnull Type resolveType(@Nonnull FieldPointer pointer,
+    public static @Nonnull Type resolveType(@Nonnull SpannerDriverSettings settings,
+                                            @Nonnull FieldPointer pointer,
                                             @Nonnull tools.elide.core.SpannerOptions.SpannerType spannerType) {
         switch (spannerType) {
-            case STRING:
-            case JSON: return maybeWrapType(pointer, Type.string());
+            case STRING: return maybeWrapType(pointer, Type.string());
+            case JSON:
+                if (settings.experimentalNativeJsonType()) {
+                    return maybeWrapType(pointer, Type.json());
+                }
+                return maybeWrapType(pointer, Type.string());
             case NUMERIC: return maybeWrapType(pointer, Type.numeric());
             case FLOAT64: return maybeWrapType(pointer, Type.float64());
             case INT64: return maybeWrapType(pointer, Type.int64());
@@ -641,7 +646,14 @@ public final class SpannerUtil {
                 return maybeWrapType(pointer, Type.int64());
 
             case BOOL: return maybeWrapType(pointer, Type.bool());
-            case STRING: return maybeWrapType(pointer, Type.string());
+            case STRING:
+                if (fieldAnnotation(pointer.getField(), Datamodel.spanner).orElse(
+                    SpannerFieldOptions.getDefaultInstance()
+                ).getType().equals(SpannerOptions.SpannerType.JSON)) {
+                    // special case: for JSON fields, express them as the JSON native type (when enabled).
+                    return maybeWrapType(pointer, settings.experimentalNativeJsonType() ? Type.json() : Type.string());
+                }
+                return maybeWrapType(pointer, Type.string());
 
             case BYTES: return maybeWrapType(pointer, Type.bytes());
             case ENUM:

@@ -84,7 +84,7 @@ TEST_ARGS ?=
 else
 TEST_ARGS ?= --test_output=errors
 endif
-TEST_ARGS_WITH_COVERAGE ?= --combined_report=lcov --nocache_test_results
+TEST_ARGS_WITH_COVERAGE ?= --combined_report=lcov
 BUILD_ARGS ?= --define project=$(PROJECT)
 
 BUILDKEY_PLAINTEXT ?= $(shell pwd)/crypto/build-key.json

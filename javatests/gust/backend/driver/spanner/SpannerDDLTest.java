@@ -47,18 +47,19 @@ public final class SpannerDDLTest {
     }
 
     @Test public void testGeneratePersonDDL() {
+        var defaults = SpannerDriverSettings.DEFAULTS;
         var generator = SpannerGeneratedDDL.generateTableDDL(
             PersonRecord.Person.getDefaultInstance(),
             Optional.empty()
         ).build();
 
-        var expectedBasicCreate = (
+        var expectedBasicCreate = String.format(
             "CREATE TABLE People (" +
                 "ID STRING(240) NOT NULL, " +
                 "Name STRING(1024), " +
-                "ContactInfo STRING(2048)" +
+                "ContactInfo %s" +
             ") PRIMARY KEY (ID ASC)"
-        );
+        , defaults.experimentalNativeJsonType() ? "JSON" : "STRING(2048)");
 
         generatorAssertions(generator, "People");
         assertWithMessage("generated DDL statement should match expected output")
@@ -67,6 +68,7 @@ public final class SpannerDDLTest {
     }
 
     @Test public void testGeneratePersonDDLInterleaved() {
+        var defaults = SpannerDriverSettings.DEFAULTS;
         var generator = SpannerGeneratedDDL.generateTableDDL(
                 PersonRecord.Person.getDefaultInstance(),
                 Optional.empty())
@@ -74,15 +76,15 @@ public final class SpannerDDLTest {
                     .forParent("ContactList")))
                 .build();
 
-        var expectedInterleavedCreate = (
+        var expectedInterleavedCreate = String.format(
             "CREATE TABLE People (" +
                 "ID STRING(240) NOT NULL, " +
                 "Name STRING(1024), " +
-                "ContactInfo STRING(2048)" +
+                "ContactInfo %s" +
             ") " +
                 "PRIMARY KEY (ID ASC), " +
                 "INTERLEAVE IN PARENT ContactList"
-        );
+        , defaults.experimentalNativeJsonType() ? "JSON" : "STRING(2048)");
 
         generatorAssertions(generator, "People");
         assertWithMessage("generated DDL statement should match expected output")
@@ -91,20 +93,21 @@ public final class SpannerDDLTest {
     }
 
     @Test public void testGeneratePersonDescendingKey() {
+        var defaults = SpannerDriverSettings.DEFAULTS;
         var generator = SpannerGeneratedDDL.generateTableDDL(
                 PersonRecord.Person.getDefaultInstance(),
                 Optional.empty())
                 .setKeySortDirection(SortDirection.DESC)
                 .build();
 
-        var expectedInterleavedCreate = (
+        var expectedInterleavedCreate = String.format(
             "CREATE TABLE People (" +
                 "ID STRING(240) NOT NULL, " +
                 "Name STRING(1024), " +
-                "ContactInfo STRING(2048)" +
+                "ContactInfo %s" +
             ") " +
                 "PRIMARY KEY (ID DESC)"
-        );
+        , defaults.experimentalNativeJsonType() ? "JSON" : "STRING(2048)");
 
         generatorAssertions(generator, "People");
         assertWithMessage("generated DDL statement should match expected output")
@@ -113,12 +116,13 @@ public final class SpannerDDLTest {
     }
 
     @Test public void testGenerateTypeBuffet() {
+        var defaults = SpannerDriverSettings.DEFAULTS;
         var generator = SpannerGeneratedDDL.generateTableDDL(
                 PersonRecord.TypeBuffet.getDefaultInstance(),
                 Optional.empty()
         ).build();
 
-        var expectedBuffetTable = (
+        var expectedBuffetTable = String.format(
             "CREATE TABLE TypeExamples (" +
                 "ID INT64 NOT NULL, " +
                 "IntNormal INT64, " +
@@ -140,9 +144,10 @@ public final class SpannerDDLTest {
                 "Labels ARRAY<STRING(240)>, " +
                 "SpannerNumericField NUMERIC, " +
                 "Timestamp TIMESTAMP, " +
-                "Date DATE" +
+                "Date DATE, " +
+                "SpannerJsonField %s" +
             ") PRIMARY KEY (ID ASC)"
-        );
+        , defaults.experimentalNativeJsonType() ? "JSON" : "STRING(2048)");
 
         generatorAssertions(generator, "TypeExamples");
         assertWithMessage("generated DDL statement should match expected output")

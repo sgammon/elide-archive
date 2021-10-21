@@ -54,7 +54,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public final class SpannerAdapterTest extends GenericPersistenceAdapterTest<
         SpannerAdapter<PersonRecord.PersonKey, PersonRecord.Person>> {
     private static final Logger logging = Logging.logger(SpannerAdapterTest.class);
-    private static final String spannerVersion = System.getProperty("e2e.spannerVersion", "1.2.0");
+    private static final String spannerVersion = System.getProperty("e2e.spannerVersion", "1.3.0");
     private static ListeningScheduledExecutorService executorService;
     private static SpannerAdapter<PersonRecord.PersonKey, PersonRecord.Person> personAdapter;
     private static SpannerAdapter<PersonRecord.TypeBuffet.SampleKey, PersonRecord.TypeBuffet> sampleAdapter;

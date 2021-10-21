@@ -32,25 +32,26 @@ import static org.junit.jupiter.api.Assertions.*;
 
 /** Spanner utility unit testing. */
 public final class SpannerUtilTest {
-    private void assertResolvedType(@Nonnull ModelMetadata.FieldPointer pointer,
+    private void assertResolvedType(@Nonnull SpannerDriverSettings settings,
+                                    @Nonnull ModelMetadata.FieldPointer pointer,
                                     @Nonnull Type.Code typeCode,
                                     @Nonnull SpannerOptions.SpannerType spannerType,
                                     boolean repeated) {
         if (repeated) {
             assertSame(
                 Type.Code.ARRAY,
-                resolveType(pointer, spannerType).getCode(),
+                resolveType(settings, pointer, spannerType).getCode(),
                 "repeated type should present as ARRAY type in Spanner"
             );
             assertSame(
                 typeCode,
-                resolveType(pointer, spannerType).getArrayElementType().getCode(),
+                resolveType(settings, pointer, spannerType).getArrayElementType().getCode(),
                 String.format("repeated type should present as %s type in Spanner", spannerType.name())
             );
         } else {
             assertEquals(
                 typeCode,
-                resolveType(pointer, spannerType).getCode(),
+                resolveType(settings, pointer, spannerType).getCode(),
                 String.format("%s resolved type should match %s type", typeCode.name(), typeCode.name())
             );
         }
@@ -118,22 +119,39 @@ public final class SpannerUtilTest {
     }
 
     @Test public void testSingularFieldWrap() {
+        var settings = SpannerDriverSettings.DEFAULTS;
+        var jsonEnabled = new SpannerDriverSettings() {
+            @Nonnull @Override public Boolean experimentalNativeJsonType() {
+                return true;
+            }
+        };
         var singularField = ModelMetadata.FieldPointer.fieldAtName(
             PersonRecord.Person.getDescriptor(),
             "name"
         );
 
-        assertResolvedType(singularField, Type.Code.STRING, SpannerOptions.SpannerType.STRING, false);
-        assertResolvedType(singularField, Type.Code.NUMERIC, SpannerOptions.SpannerType.NUMERIC, false);
-        assertResolvedType(singularField, Type.Code.INT64, SpannerOptions.SpannerType.INT64, false);
-        assertResolvedType(singularField, Type.Code.FLOAT64, SpannerOptions.SpannerType.FLOAT64, false);
-        assertResolvedType(singularField, Type.Code.BYTES, SpannerOptions.SpannerType.BYTES, false);
-        assertResolvedType(singularField, Type.Code.BOOL, SpannerOptions.SpannerType.BOOL, false);
-        assertResolvedType(singularField, Type.Code.DATE, SpannerOptions.SpannerType.DATE, false);
-        assertResolvedType(singularField, Type.Code.TIMESTAMP, SpannerOptions.SpannerType.TIMESTAMP, false);
+        assertResolvedType(
+            settings, singularField, Type.Code.STRING, SpannerOptions.SpannerType.STRING, false);
+        assertResolvedType(
+            jsonEnabled, singularField, Type.Code.STRING, SpannerOptions.SpannerType.STRING, false);
+        assertResolvedType(
+            settings, singularField, Type.Code.NUMERIC, SpannerOptions.SpannerType.NUMERIC, false);
+        assertResolvedType(
+            settings, singularField, Type.Code.INT64, SpannerOptions.SpannerType.INT64, false);
+        assertResolvedType(
+            settings, singularField, Type.Code.FLOAT64, SpannerOptions.SpannerType.FLOAT64, false);
+        assertResolvedType(
+            settings, singularField, Type.Code.BYTES, SpannerOptions.SpannerType.BYTES, false);
+        assertResolvedType(
+            settings, singularField, Type.Code.BOOL, SpannerOptions.SpannerType.BOOL, false);
+        assertResolvedType(
+            settings, singularField, Type.Code.DATE, SpannerOptions.SpannerType.DATE, false);
+        assertResolvedType(
+            settings, singularField, Type.Code.TIMESTAMP, SpannerOptions.SpannerType.TIMESTAMP, false);
     }
 
     @Test public void testFailStructTypeAsColumn() {
+        var settings = SpannerDriverSettings.DEFAULTS;
         var singularField = ModelMetadata.FieldPointer.fieldAtName(
             PersonRecord.Person.getDescriptor(),
             "name"
@@ -141,6 +159,7 @@ public final class SpannerUtilTest {
 
         assertThrows(IllegalArgumentException.class, () ->
             assertResolvedType(
+                settings,
                 singularField,
                 Type.Code.STRUCT,
                 SpannerOptions.SpannerType.UNRECOGNIZED,
@@ -150,16 +169,50 @@ public final class SpannerUtilTest {
     }
 
     @Test public void testMaybeWrapArray() {
+        var settings = SpannerDriverSettings.DEFAULTS;
         var repeatedField = ModelMetadata.FieldPointer.fieldAtName(
             PersonRecord.TypeBuffet.getDescriptor(),
             "labels"
         );
 
         assertResolvedType(
+            settings,
             repeatedField,
             Type.Code.STRING,
             SpannerOptions.SpannerType.STRING,
             true
+        );
+    }
+
+    @Test public void testResolveJsonFieldType() {
+        var settings = SpannerDriverSettings.DEFAULTS;
+        var jsonEnabled = new SpannerDriverSettings() {
+            @Nonnull @Override public Boolean experimentalNativeJsonType() {
+                return true;
+            }
+        };
+
+        var jsonField = ModelMetadata.FieldPointer.fieldAtName(
+            PersonRecord.TypeBuffet.getDescriptor(),
+            "spanner_json_field"
+        );
+
+        // when JSON fields are off, fields annotated as JSON should appear as STRING
+        assertResolvedType(
+            settings,
+            jsonField,
+            Type.Code.STRING,
+            SpannerOptions.SpannerType.STRING,
+            false
+        );
+
+        // when JSON fields are on, fields annotated as JSON should appear as JSON
+        assertResolvedType(
+            jsonEnabled,
+            jsonField,
+            Type.Code.JSON,
+            SpannerOptions.SpannerType.JSON,
+            false
         );
     }
 

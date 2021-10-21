@@ -39,6 +39,9 @@ public interface SpannerDriverSettings {
 
         /** Default size for `STRING` or `BYTES` column fields with no explicit setting. */
         private static final int DEFAULT_COLUMN_SIZE = 2048;
+
+        /** Default native JSON field type enablement state. */
+        private static final boolean NATIVE_JSON_TYPE = false;
     }
 
     /** Default set of configured settings for the Spanner driver. */
@@ -62,6 +65,11 @@ public interface SpannerDriverSettings {
     /** @return Whether to perform runtime deserialization checks (defaults to `true`). */
     default @Nonnull Boolean checkExpectedTypes() {
         return DefaultSettings.DEFAULT_CHECK_EXPECTED_TYPES;
+    }
+
+    /** @return Whether to enable experimental support for native JSON columns. */
+    default @Nonnull Boolean experimentalNativeJsonType() {
+        return DefaultSettings.NATIVE_JSON_TYPE;
     }
 
     /** @return Default size to use for `STRING` or `BYTES` columns that don't otherwise specify a size. */

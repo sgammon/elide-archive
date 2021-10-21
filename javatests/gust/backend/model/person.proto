@@ -149,4 +149,8 @@ message TypeBuffet {
 
   google.protobuf.Timestamp timestamp = 20;
   google.type.Date date = 21;
+
+  string spanner_json_field = 22 [
+    (core.spanner).type = JSON
+  ];
 }

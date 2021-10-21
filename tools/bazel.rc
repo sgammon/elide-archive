@@ -48,7 +48,7 @@ build --strategy=KotlinCompile=sandboxed
 build --strategy=TypeScriptCompile=sandboxed
 build --strategy=JdepsMerger=sandboxed
 build --compilation_mode=fastbuild
-build --experimental_ui_mode=mnemonic_histogram
+build:labs --experimental_ui_mode=mnemonic_histogram
 
 build --build_metadata=TEST_GROUPS=//javatests,//jstests,//tests
 build --build_metadata=REPO_URL=https://github.com/CookiesCo/elide.git
