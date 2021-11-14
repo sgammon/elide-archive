@@ -59,9 +59,9 @@ DEPS = {
         "type": "github",
         "forceLocal": False,
         "repo": "sgammon/rules_closure",
-        "target": "8ac141c8c2e131639b7c5fa4eae7d5587ec221b8",
+        "target": "b3fa2ba06bba06c9b658240b8cb72b3a73610618",
         "local": "/Users/sam.g/Workspace/rules_closure",
-        "seal": "cf2a565428d8244dea163e741ca98814281fdada4694aaa934688bcf51ba640d"},
+        "seal": "c74b94c8dc4db751f48e200bd67aea9a3953a97dba982045e7f6b886792ff5b7"},
 
     # Rules: Protobuf
     "rules_proto": {
