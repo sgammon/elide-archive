@@ -115,7 +115,7 @@ K8S_PINNED = False
 ## Protobuf toolchain version.
 ## ------------------------------------
 ## Sets the version enforced throughout for Protobuf.
-PROTOBUF_VERSION = "3.18.1"
+PROTOBUF_VERSION = "3.17.3"
 
 ## JVM-based app debug port.
 ## ------------------------------------
