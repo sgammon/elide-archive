@@ -634,9 +634,10 @@ def _micronaut_application(name,
             name = "%s-native" % name,
             deps = _dedupe_deps(["%s-lib" % name] + computed_runtime_deps),
             main_class = main_class,
-            configsets = [
-                ("%s-files" % c) for c in native_configsets
-            ],
+            # @TODO(sgammon): this is broken
+            #configsets = [
+            #    ("%s-files" % c) for c in native_configsets
+            #],
             graal_extra_args = [
                 # General build flags
                 "--no-fallback",
