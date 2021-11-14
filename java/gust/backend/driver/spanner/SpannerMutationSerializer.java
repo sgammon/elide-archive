@@ -314,26 +314,41 @@ public final class SpannerMutationSerializer<Model extends Message> implements M
      * @see #bindValueTyped(Descriptors.FieldDescriptor, ValueBinder, Type, Object, Optional, Optional) Inner post-check
      *      typed value injection.
      * @param instance Model instance we should pluck the field value from.
+     * @param settings Active settings for the Spanner driver which should guide serialization.
      * @param fieldPointer Resolved pointer to the model field we are collapsing into a column value.
      * @param target Mutation target we should write the resulting value to, as applicable.
      */
     @VisibleForTesting
     void collapseColumnField(@Nonnull Model instance,
+                             @Nonnull SpannerDriverSettings settings,
                              @Nonnull FieldPointer fieldPointer,
                              @Nonnull Mutation.WriteBuilder target) {
         var field = fieldPointer.getField();
         var fieldValue = pluck(instance, fieldPointer.getName());
+        var specialCaseBool = false;
 
         if (!field.isRepeated() && !instance.hasField(field) || fieldValue.getValue().isEmpty() ||
             field.isRepeated() && instance.getRepeatedFieldCount(field) < 1) {
-            // field has no value. skip, but log about it.
-            if (logging.isTraceEnabled())
-                logging.trace(
-                    "Field '{}' on model '{}' had no value. Skipping.",
-                    field,
-                    model.getFullName()
-                );
-            return;
+            // special case: if we're hitting a default (empty) value, and it's a `BOOL` field, it could be set to
+            // `false`; there is no way to tell. if the driver settings say we should, we can default it to `false`.
+            if (field.getType() == Descriptors.FieldDescriptor.Type.BOOL && settings.writeEmptyBoolsAsFalse()) {
+                if (logging.isTraceEnabled())
+                    logging.trace(
+                        "Field '{}' on model '{}' defaulted as BOOL. Driver settings dictate writing `false`",
+                        field,
+                        model.getFullName()
+                    );
+                specialCaseBool = true;
+            } else {
+                // field has no value. skip, but log about it.
+                if (logging.isTraceEnabled())
+                    logging.trace(
+                            "Field '{}' on model '{}' had no value. Skipping.",
+                            field,
+                            model.getFullName()
+                    );
+                return;
+            }
         }
 
         // virtualize the key property, when encountered
@@ -368,16 +383,26 @@ public final class SpannerMutationSerializer<Model extends Message> implements M
 
         // then raw value...
         var valueBinder = target.set(columnName);
-        var rawValue = fieldValue.getValue().orElseThrow();
-
-        bindValueTyped(
-            field,
-            valueBinder,
-            columnType,
-            rawValue,
-            spannerOpts,
-            columnOpts
-        );
+        if (specialCaseBool) {
+            bindValueTyped(
+                field,
+                valueBinder,
+                columnType,
+                    false,
+                spannerOpts,
+                columnOpts
+            );
+        } else {
+            var rawValue = fieldValue.getValue().orElseThrow();
+            bindValueTyped(
+                field,
+                valueBinder,
+                columnType,
+                rawValue,
+                spannerOpts,
+                columnOpts
+            );
+        }
     }
 
     /**
@@ -411,7 +436,7 @@ public final class SpannerMutationSerializer<Model extends Message> implements M
           model,
           Optional.of(onlySpannerEligibleFields(driverSettings))
         ).forEach((field) ->
-            this.collapseColumnField(input, field, writeBuilder)
+            this.collapseColumnField(input, driverSettings, field, writeBuilder)
         );
 
         final Mutation mutation = writeBuilder.build();
