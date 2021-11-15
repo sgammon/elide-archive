@@ -80,7 +80,7 @@ ANIMAL_SNIFFER_VERSION = "1.20"
 ANDROID_ANNOTATIONS_VERSION = "4.1.1.4"
 PERFMARK_VERSION = "0.24.0"
 
-GRPC_JAVA_VERSION = "1.39.0"
+GRPC_JAVA_VERSION = "1.42.0"
 AUTO_VALUE_VERSION = "1.8.1"
 TOMCAT_ANNOTATIONS_VERSION = "6.0.53"
 OPENTRACING_VERSION = "0.2.3"
@@ -189,10 +189,10 @@ GCLOUD_EXCLUSIONS = GRPC_EXCLUSIONS + SOY_EXCLUSIONS + [
 
 
 REPOSITORIES = [
+    "https://maven.google.com",
     "https://repo1.maven.org/maven2",
     "https://dl.bintray.com/micronaut/core-releases-local",
     "https://jcenter.bintray.com/",
-    "https://maven.google.com",
 ]
 
 BUILD_ARTIFACTS = [
@@ -436,6 +436,7 @@ def gust_java_repositories(
         app_artifacts = [],
         app_repositories = [],
         app_fetch_sources = True,
+        app_fetch_javadoc = True,
         app_excludes = [],
         app_overrides = [],
         micronaut = True,
@@ -470,6 +471,7 @@ def gust_java_repositories(
         artifacts = artifacts,
         repositories = REPOSITORIES + (app_repositories or []),
         fetch_sources = app_fetch_sources,
+        fetch_javadoc = app_fetch_javadoc,
         generate_compat_repositories = True,
         strict_visibility = STRICT_DEPENDENCIES,
         excluded_artifacts = [

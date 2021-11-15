@@ -59,9 +59,9 @@ DEPS = {
         "type": "github",
         "forceLocal": False,
         "repo": "sgammon/rules_closure",
-        "target": "076e68d3e298669b57887ed3e8ce6fa03dd1285e",
+        "target": "5ebea4680ac4ae1113d3413bdb58eaecdbf233ab",
         "local": "/Users/sam.g/Workspace/rules_closure",
-        "seal": "3825b6b5c67c49bdc5c867293d34b410bfe7f08e233ce42e566db2b299e2f9ec"},
+        "seal": "0c8d4590f4c3e3dbedc68f6581bc8135612898cd5c6a4c530375d90dabdb8a20"},
 
     # Rules: Protobuf
     "rules_proto": {
@@ -258,8 +258,8 @@ DEPS = {
     "io_grpc_java": {
         "type": "github",
         "repo": "grpc/grpc-java",
-        "target": "6cb4d90e6bbe0081d42d88bc83a8f4648087596e",
-        "seal": "ba7b097d3e151cc0fcdd3e1c48d487eafa2acde258bfb044d8549f48c5c50940"},
+        "target": "1.41.1",
+        "seal": "7978db73f4bb0fdc523c042a0fc347c046b4345823dbeadfec15ceed99d50737"},
 
     # gRPC: Web
     "com_github_grpc_grpc_web": {
