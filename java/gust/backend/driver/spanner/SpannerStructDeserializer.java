@@ -192,7 +192,7 @@ public final class SpannerStructDeserializer<Model extends Message> implements M
                 if (logging.isTraceEnabled())
                     logging.trace("Resolved Spanner type for field '{}': '{}'",
                         fieldPointer.getName(),
-                        columnType.toString());
+                        columnType);
 
                 if (!columnType.getCode().equals(columnValue.getType().getCode())) {
                     logging.error(
@@ -292,6 +292,61 @@ public final class SpannerStructDeserializer<Model extends Message> implements M
                             }
 
                             throw new IllegalStateException(invalidProtoException);
+                        }
+                    } else if (fieldPointer.getField().getType() == Descriptors.FieldDescriptor.Type.ENUM) {
+                        // special case: if this string column is mapped to an `enum` field, we are being asked to
+                        // decode it from the enumeration. in this case, protobuf will be expecting an instance of
+                        // `EnumValueDescriptor`, not `String`.
+                        if (repeated) {
+                            var stringList = columnValue.getStringArray();
+                            if (!stringList.isEmpty()) {
+                                var enumValues = stringList.stream().map((symbol) -> {
+                                    try {
+                                        return Optional.ofNullable(fieldPointer
+                                            .getField()
+                                            .getEnumType()
+                                            .findValueByName(symbol));
+                                    } catch (IllegalArgumentException iae) {
+                                        if (logging.isWarnEnabled())
+                                            logging.warn(format(
+                                                "Failed to decode repeated string enum value '%s' at path '%s'.",
+                                                columnValue.getString(),
+                                                fieldPointer.getField().getFullName()));
+                                        return Optional.<Descriptors.EnumValueDescriptor>empty();
+                                    }
+                                }).filter(Optional::isPresent)
+                                        .map(Optional::get)
+                                        .collect(Collectors.toUnmodifiableList());
+
+                                if (!enumValues.isEmpty()) {
+                                    spliceBuilder(
+                                        target,
+                                        fieldPointer,
+                                        Optional.of(enumValues)
+                                    );
+                                }
+                            }
+                        } else {
+                            try {
+                                var enumValue = fieldPointer
+                                    .getField()
+                                    .getEnumType()
+                                    .findValueByName(columnValue.getString());
+
+                                if (enumValue != null) {
+                                    spliceBuilder(
+                                            target,
+                                            fieldPointer,
+                                            Optional.of(enumValue)
+                                    );
+                                }
+                            } catch (IllegalArgumentException iae) {
+                                if (logging.isWarnEnabled())
+                                    logging.warn(format(
+                                        "Failed to decode singular string enum value '%s' at path '%s'.",
+                                        columnValue.getString(),
+                                        fieldPointer.getField().getFullName()));
+                            }
                         }
                     } else {
                         spliceBuilder(
