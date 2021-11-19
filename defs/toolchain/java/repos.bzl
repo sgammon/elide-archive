@@ -481,8 +481,8 @@ def gust_java_repositories(
         override_targets = dict(([
             ("io.micronaut:micronaut-views", "@io_micronaut_micronaut_views"),
             ("io.micronaut:micronaut-views-soy", "@io_micronaut_micronaut_views_soy"),
-            ("com.google.guava:guava", "@com_google_guava"),
-            ("com.google.guava:guava-jdk15", "@com_google_guava"),
+            ("com.google.guava:guava", "@com_google_guava_guava"),
+            ("com.google.guava:guava-jdk15", "@com_google_guava_guava"),
             ("com.google.protobuf:protobuf-java", "@com_google_protobuf//:protobuf_java"),
             ("com.google.protobuf:protobuf-javalite", "@com_google_protobuf//:protobuf_javalite"),
             ("com.google.protobuf:protobuf-java-util", "@com_google_protobuf//:protobuf_java_util"),
