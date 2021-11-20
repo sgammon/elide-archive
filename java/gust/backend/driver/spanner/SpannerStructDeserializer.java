@@ -33,6 +33,7 @@ import tools.elide.core.SpannerOptions;
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
 import javax.annotation.concurrent.ThreadSafe;
+import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -205,8 +206,8 @@ public final class SpannerStructDeserializer<Model extends Message> implements M
                 }
             }
 
-            // if we make it this far, the following conditions are true, and we are ready to copy a value from
-            // the source struct into the proto:
+            // if we make it this far, the following conditions are true, and we are ready to copy a value from the
+            // source struct into the proto:
             //
             // 1) we have a non-NULL value in Spanner for a given column, with a resolved name and type.
             // 2) the name and type match the proto model, where we also have a resolved proto native type.
@@ -436,29 +437,52 @@ public final class SpannerStructDeserializer<Model extends Message> implements M
 
                 case DATE:
                     // extract date value
-                    var dateValue = columnValue.getDate();
+                    com.google.cloud.Date dateValue;
+                    try {
+                        dateValue = columnValue.getDate();
+                    } catch (IllegalStateException ise) {
+                        // try to fall back to timestamp types. for unclear reasons, the driver will report `DATE`
+                        // fields as `TIMESTAMP` types in some cases.
+                        var ts = columnValue.getTimestamp();
+                        dateValue = com.google.cloud.Date.fromJavaUtilDate(ts.toDate());
+                    }
                     if (field.getType() == Descriptors.FieldDescriptor.Type.STRING) {
                         // we're being asked to put a Google Cloud structured date record into a string field. in
                         // this case, the adapter leverages any date options or otherwise defaults to ISO8601.
                         spliceBuilder(
-                                target,
-                                fieldPointer,
-                                Optional.of(format(
-                                        "%s/%s/%s",
-                                        dateValue.getYear(),
-                                        dateValue.getMonth(),
-                                        dateValue.getDayOfMonth()
-                                ))
+                            target,
+                            fieldPointer,
+                            Optional.of(format(
+                                "%s/%s/%s",
+                                dateValue.getYear(),
+                                dateValue.getMonth(),
+                                dateValue.getDayOfMonth()
+                            ))
                         );
                         break;
                     } else if (field.getType() == Descriptors.FieldDescriptor.Type.MESSAGE &&
                             Date.getDescriptor().getFullName().equals(field.getMessageType().getFullName())) {
-                        // if we have a sub-message in the same spot as a date, we need to convert to a standard
-                        // proto date, which is the only supported target here.
+                        // if we have a `Date` sub-message in the same spot as a date, we need to convert to a standard
+                        // proto date, which is the only supported target here besides a standard `Timestamp` type.
                         spliceBuilder(
                             target,
                             fieldPointer,
                             Optional.of(protoDateFromCloud(dateValue))
+                        );
+                        break;
+                    } else if (field.getType() == Descriptors.FieldDescriptor.Type.MESSAGE &&
+                               Timestamp.getDescriptor().getFullName().equals(field.getMessageType().getFullName())) {
+                        // if we have a sub-message in the same spot as a date that is a standard proto `Timestamp`, we
+                        // need to convert to it.
+                        var dateInstant = com.google.cloud.Date.toJavaUtilDate(dateValue).toInstant();
+
+                        spliceBuilder(
+                            target,
+                            fieldPointer,
+                            Optional.of(Timestamp.newBuilder()
+                                .setSeconds(dateInstant.getEpochSecond())
+                                .setNanos(dateInstant.getNano())
+                                .build())
                         );
                         break;
                     } else if (field.getType() == Descriptors.FieldDescriptor.Type.MESSAGE) {
