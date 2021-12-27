@@ -21,10 +21,10 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 http_archive(
     name = "remote_java_tools",
-    sha256 = "b763ee80e5754e593fd6d5be6d7343f905bc8b73d661d36d842b024ca11b6793",
+    sha256 = None,
     urls = [
-            "https://mirror.bazel.build/bazel_java_tools/releases/java/v11.5/java_tools-v11.5.zip",
-            "https://github.com/bazelbuild/java_tools/releases/download/java_v11.5/java_tools-v11.5.zip",
+            "https://mirror.bazel.build/bazel_java_tools/releases/java/v11.6/java_tools-v11.6.zip",
+            "https://github.com/bazelbuild/java_tools/releases/download/java_v11.6/java_tools-v11.6.zip",
     ],
 )
 
