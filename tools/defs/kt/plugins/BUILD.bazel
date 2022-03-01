@@ -1,0 +1,54 @@
+package(
+    default_visibility = ["//visibility:public"],
+)
+
+load(
+    "@io_bazel_rules_kotlin//kotlin:core.bzl",
+    "kt_compiler_plugin",
+)
+
+kt_compiler_plugin(
+    name = "allopen",
+    compile_phase = True,
+    id = "org.jetbrains.kotlin.allopen",
+    options = {
+        "annotation": "plugin.allopen.OpenForTesting",
+    },
+    stubs_phase = True,
+    deps = [
+        "@com_github_jetbrains_kotlin//:allopen-compiler-plugin",
+    ],
+)
+
+kt_compiler_plugin(
+    name = "noarg",
+    compile_phase = True,
+    id = "org.jetbrains.kotlin.noarg",
+    options = {
+        "annotation": "plugin.noarg.NoArgConstructor",
+    },
+    stubs_phase = True,
+    deps = [
+        "@com_github_jetbrains_kotlin//:noarg-compiler-plugin",
+    ],
+)
+
+kt_compiler_plugin(
+    name = "parcelize",
+    compile_phase = True,
+    id = "org.jetbrains.kotlin.parcelize",
+    stubs_phase = True,
+    deps = [
+        "@com_github_jetbrains_kotlin//:parcelize-compiler-plugin",
+    ],
+)
+
+kt_compiler_plugin(
+    name = "serialization",
+    compile_phase = True,
+    id = "org.jetbrains.kotlin.serialization",
+    stubs_phase = True,
+    deps = [
+        "@com_github_jetbrains_kotlin//:kotlinx-serialization-compiler-plugin",
+    ],
+)

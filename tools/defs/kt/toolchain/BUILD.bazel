@@ -1,0 +1,41 @@
+package(
+    default_visibility = ["//visibility:public"],
+)
+
+load(
+    "@io_bazel_rules_kotlin//kotlin:core.bzl",
+    "define_kt_toolchain",
+    "kt_javac_options",
+    "kt_kotlinc_options",
+)
+load(
+    "//tools:config.bzl",
+    "JAVA_LANGUAGE_LEVEL",
+    "KOTLIN_LANGUAGE_LEVEL",
+)
+
+kt_kotlinc_options(
+    name = "kt_kotlinc_options_default",
+    warn = "report",
+    java_parameters = True,
+    x_multi_platform = True,
+)
+
+kt_javac_options(
+    name = "kt_javac_options_default",
+    warn = "error",
+)
+
+define_kt_toolchain(
+    name = "toolchain",
+    api_version = KOTLIN_LANGUAGE_LEVEL,
+    experimental_multiplex_workers = True,
+    experimental_report_unused_deps = "off",
+    experimental_strict_kotlin_deps = "off",
+    experimental_use_abi_jars = True,
+    jacocorunner = "@bazel_tools//tools/jdk:JacocoCoverage",
+    javac_options = ":kt_javac_options_default",
+    jvm_target = JAVA_LANGUAGE_LEVEL,
+    kotlinc_options = ":kt_kotlinc_options_default",
+    language_version = KOTLIN_LANGUAGE_LEVEL,
+)
