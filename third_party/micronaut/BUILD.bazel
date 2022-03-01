@@ -1,0 +1,84 @@
+##
+# Copyright © 2022, The Elide Framework Authors. All rights reserved.
+#
+# The Gust/Elide framework and tools, and all associated source or object computer code, except where otherwise noted,
+# are licensed under the Zero Prosperity license, which is enclosed in this repository, in the file LICENSE.txt. Use of
+# this code in object or source form requires and implies consent and agreement to that license in principle and
+# practice. Source or object code not listing this header, or unless specified otherwise, remain the property of
+# Elide LLC and its suppliers, if any. The intellectual and technical concepts contained herein are proprietary to
+# Elide LLC and its suppliers and may be covered by U.S. and Foreign Patents, or patents in process, and are protected
+# by trade secret and copyright law. Dissemination of this information, or reproduction of this material, in any form,
+# is strictly forbidden except in adherence with assigned license requirements.
+##
+
+package(
+    default_visibility = ["//visibility:public"],
+)
+
+load(
+    "//tools/defs/micronaut:micronaut.bzl",
+    "ANNOTATION_PROCESSORS",
+)
+load(
+    "@rules_java//java:defs.bzl",
+    "java_library",
+    "java_plugin",
+)
+load(
+    "//tools/defs/java:java.bzl",
+    "maven",
+)
+
+MICRONAUT_BASE_DEPS = [
+    maven("io.micronaut:micronaut-core"),
+    maven("io.micronaut:micronaut-context"),
+    maven("io.micronaut:micronaut-runtime"),
+    maven("io.micronaut:micronaut-http-client"),
+    maven("io.micronaut:micronaut-http-server-netty"),
+    maven("io.micronaut:micronaut-inject-java"),
+    maven("org.slf4j:slf4j-api"),
+    maven("jakarta.inject:jakarta.inject-api"),
+]
+
+MICRONAUT_TEST_DEPS = MICRONAUT_BASE_DEPS + [
+    maven("io.micronaut.test:micronaut-test-junit5"),
+    "@org_junit_jupiter_junit_jupiter_api//jar",
+    "@org_junit_jupiter_junit_jupiter_params//jar",
+]
+
+MICRONAUT_RUNTIME_DEPS = [
+    maven("ch.qos.logback:logback-classic"),
+    "@org_junit_platform_junit_platform_commons//jar",
+    "@org_junit_platform_junit_platform_console//jar",
+    "@org_junit_platform_junit_platform_engine//jar",
+    "@org_junit_platform_junit_platform_launcher//jar",
+    "@org_junit_platform_junit_platform_suite_api//jar",
+]
+
+MICRONAUT_TEST_RUNTIME_DEPS = MICRONAUT_RUNTIME_DEPS + [
+    "@org_junit_jupiter_junit_jupiter_engine//jar",
+]
+
+[
+    java_plugin(
+        name = n.split(".")[-1],
+        generates_api = True,
+        processor_class = n,
+        deps = MICRONAUT_BASE_DEPS,
+    )
+    for n in ANNOTATION_PROCESSORS
+]
+
+java_library(
+    name = "test",
+    testonly = True,
+    exports = MICRONAUT_TEST_DEPS,
+    runtime_deps = MICRONAUT_TEST_RUNTIME_DEPS,
+)
+
+java_library(
+    name = "micronaut",
+    exported_plugins = [":%s" % n.split(".")[-1] for n in ANNOTATION_PROCESSORS],
+    exports = MICRONAUT_BASE_DEPS,
+    runtime_deps = MICRONAUT_RUNTIME_DEPS,
+)

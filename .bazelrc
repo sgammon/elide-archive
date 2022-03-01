@@ -11,50 +11,11 @@
 # is strictly forbidden except in adherence with assigned license requirements.
 ##
 
-package(
-    default_visibility = ["//visibility:public"],
-)
+#
+# Elide: Bazel Configuration
+#
 
-load(
-    "@rules_java//java:defs.bzl",
-    "java_runtime",
-)
+import %workspace%/tools/bazel/base.bazelrc
 
-load(
-    "@bazel_skylib//:bzl_library.bzl",
-    "bzl_library",
-)
+try-import %workspace%/.env.bazel.rc
 
-
-bzl_library(
-    name = "java-toolchain",
-    srcs = [
-        "repos.bzl",
-        "rules.bzl",
-        "testing.bzl",
-    ],
-)
-
-
-## Java Runtime: `zulu`
-## ------------------------
-## Activates when we are running in IntelliJ/locally.
-java_runtime(
-    name = "zulu_runtime",
-    java_home = "$(ZULUBASE)",
-    visibility = ["//visibility:private"],
-)
-
-
-## -- Public Interface -- ##
-
-## Java Runtime
-## ------------------------
-## References the active Java runtime.
-alias(
-    name = "java_runtime",
-    actual = select({
-        "//defs/conditions:zulu": ":zulu_runtime",
-        "//conditions:default": "@embedded_jdk//:jdk",
-    }),
-)

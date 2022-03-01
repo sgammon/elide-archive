@@ -16,45 +16,40 @@ package(
 )
 
 load(
-    "@rules_java//java:defs.bzl",
-    "java_runtime",
+    "//tools/defs/java:java.bzl",
+    "java_library",
 )
 
 load(
-    "@bazel_skylib//:bzl_library.bzl",
-    "bzl_library",
+    "//tools/defs/java:java.bzl",
+    "maven",
 )
 
-
-bzl_library(
-    name = "java-toolchain",
+java_library(
+    name = "Logging",
     srcs = [
-        "repos.bzl",
-        "rules.bzl",
-        "testing.bzl",
+        "Logger.java",
+        "Logging.java"
+    ],
+    deps = [
+        "//java/elide/annotations"
     ],
 )
 
-
-## Java Runtime: `zulu`
-## ------------------------
-## Activates when we are running in IntelliJ/locally.
-java_runtime(
-    name = "zulu_runtime",
-    java_home = "$(ZULUBASE)",
-    visibility = ["//visibility:private"],
+alias(
+    name = "logging",
+    actual = ":Logging",
 )
 
+java_library(
+    name = "runtime",
+    srcs = ["package-info.java"],
+    exports = [
+        ":logging",
+    ]
+)
 
-## -- Public Interface -- ##
-
-## Java Runtime
-## ------------------------
-## References the active Java runtime.
-alias(
-    name = "java_runtime",
-    actual = select({
-        "//defs/conditions:zulu": ":zulu_runtime",
-        "//conditions:default": "@embedded_jdk//:jdk",
-    }),
+filegroup(
+    name = "sources",
+    srcs = glob(["*.java"]),
 )

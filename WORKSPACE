@@ -41,7 +41,7 @@ load(
 
 http_archive(
     name = "com_google_protobuf",
-    sha256 = "87407cd28e7a9c95d9f61a098a53cf031109d451a7763e7dd1253abf8b4df422",
+    sha256 = "4dd35e788944b7686aac898f77df4e9a54da0ca694b8801bd6b2a9ffc1b3085e",
     strip_prefix = "protobuf-%s" % PROTOBUF_VERSION,
     urls = ["https://github.com/protocolbuffers/protobuf/archive/v%s.tar.gz" % PROTOBUF_VERSION],
 )
@@ -55,14 +55,14 @@ http_archive(
 
 http_archive(
     name = "com_github_grpc_grpc",
-    sha256 = "df488fc6ecdc51bfa026fedb552f23b7cd31ce87d4aa38f676d814903f240062",
+    sha256 = "de2d3168e77e5ffb27758b07e87f6066fd0d8087fe272f278771e7780e6aaacb",
     strip_prefix = "grpc-%s" % GRPC_VERSION,
     urls = ["https://github.com/grpc/grpc/archive/v%s.zip" % GRPC_VERSION],
 )
 
 http_archive(
     name = "io_grpc_grpc_java",
-    sha256 = "9c4fd0c3a316c2921d2cd9b17d24c3b103578054da5a09ef1a0696c317af57ea",
+    sha256 = "16cf4556c08b580efede083a9a972eb45060bfbf324cdafc4f9be098ac9e0f01",
     strip_prefix = "grpc-java-%s" % GRPC_JAVA_VERSION,
     url = "https://github.com/grpc/grpc-java/archive/refs/tags/v%s.zip" % GRPC_JAVA_VERSION,
 )
@@ -400,7 +400,7 @@ graal_bindist_repository(
     version = GRAALVM_VERSION,
 )
 
-load("//tools/tests:junit5.bzl", "junit5_repositories")
+load("//tools/defs/tests:junit5.bzl", "junit5_repositories")
 
 junit5_repositories()
 
@@ -425,12 +425,32 @@ maven_install(
     artifacts = [
         "ch.qos.logback:logback-core:1.2.10",
         "ch.qos.logback:logback-classic:1.2.10",
-        "com.google.auto.value:auto-value:1.9",
-        "com.google.auto.value:auto-value-annotations:1.9",
+        "com.google.api:api-common:2.1.4",
+        "com.google.api:gax:2.12.2",
+        "com.google.api:gax-grpc:2.12.2",
+        "com.google.auto.value:auto-value:1.7.4",
+        "com.google.auto.value:auto-value-annotations:1.7.4",
         "com.google.code.findbugs:jsr305:3.0.2",
-        "com.google.code.gson:gson:2.8.6",
+        "com.google.code.gson:gson:2.8.9",
         "com.google.cloud:native-image-support:0.10.0",
-        "com.google.guava:guava:30.1-android",
+        "com.google.guava:guava:30.1.1-android",
+        "io.grpc:grpc-all:%s" % GRPC_JAVA_VERSION,
+        "io.grpc:grpc-alts:%s" % GRPC_JAVA_VERSION,
+        "io.grpc:grpc-android:%s" % GRPC_JAVA_VERSION,
+        "io.grpc:grpc-auth:%s" % GRPC_JAVA_VERSION,
+        "io.grpc:grpc-core:%s" % GRPC_JAVA_VERSION,
+        "io.grpc:grpc-context:%s" % GRPC_JAVA_VERSION,
+        "io.grpc:grpc-grpclb:%s" % GRPC_JAVA_VERSION,
+        "io.grpc:grpc-stub:%s" % GRPC_JAVA_VERSION,
+        "io.grpc:grpc-testing:%s" % GRPC_JAVA_VERSION,
+        "io.grpc:grpc-netty:%s" % GRPC_JAVA_VERSION,
+        "io.grpc:grpc-netty-shaded:%s" % GRPC_JAVA_VERSION,
+        "io.grpc:grpc-okhttp:%s" % GRPC_JAVA_VERSION,
+        "io.grpc:grpc-protobuf:%s" % GRPC_JAVA_VERSION,
+        "io.grpc:grpc-protobuf-lite:%s" % GRPC_JAVA_VERSION,
+        "io.grpc:grpc-xds:%s" % GRPC_JAVA_VERSION,
+        "io.grpc:grpc-kotlin-stub:1.2.1",
+        "io.reactivex.rxjava2:rxjava:2.2.21",
         "io.micronaut:micronaut-core:%s" % MICRONAUT_VERSION,
         "io.micronaut:micronaut-context:%s" % MICRONAUT_VERSION,
         "io.micronaut:micronaut-inject-java:%s" % MICRONAUT_VERSION,
@@ -443,6 +463,7 @@ maven_install(
         "io.micronaut.grpc:micronaut-grpc-client-runtime:3.1.3",
         "io.micronaut.kotlin:micronaut-kotlin-extension-functions:3.2.0",
         "io.micronaut.kotlin:micronaut-kotlin-runtime:3.2.0",
+        "org.reactivestreams:reactive-streams:1.0.3",
         "org.slf4j:slf4j-api:1.7.36",
         "jakarta.inject:jakarta.inject-api:2.0.1",
         "javax.annotation:javax.annotation-api:1.3.2",

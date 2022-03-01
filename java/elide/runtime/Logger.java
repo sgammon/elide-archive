@@ -10,28 +10,16 @@
  * by trade secret and copyright law. Dissemination of this information, or reproduction of this material, in any form,
  * is strictly forbidden except in adherence with assigned license requirements.
  */
-package elide.util;
-
-
-import com.google.protobuf.Timestamp;
-
-import javax.annotation.Nonnull;
-import java.time.Instant;
+package elide.runtime;
 
 
 /**
- * Utilities to convert between different temporal instant records.
+ * Describes a generic, cross-platform interface for a named logger; loggers can be initialized from classes, in which
+ * case the class' full package path is used as the name.
+ *
+ * Logging is implemented on each platform according to the typical semantics of that platform. On the JVM, logging is
+ * backed by SLF4J, which then typically uses a runtime implementation like Logback. In frontend circumstances, the
+ * browser console is used as the logging backend.
  */
-public final class InstantFactory {
-  private InstantFactory() { /* Disallow construction. */ }
-
-  /**
-   * Convert a Protocol Buffers {@link Timestamp} record to a Java {@link Instant} record.
-   *
-   * @param subject Subject timestamp to convert.
-   * @return Converted Java Instant.
-   */
-  public static @Nonnull Instant instant(@Nonnull Timestamp subject) {
-    return Instant.ofEpochSecond(subject.getSeconds(), subject.getNanos() > 0 ? (long)subject.getNanos() : 0);
-  }
+public interface Logger {
 }

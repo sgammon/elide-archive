@@ -10,28 +10,29 @@
  * by trade secret and copyright law. Dissemination of this information, or reproduction of this material, in any form,
  * is strictly forbidden except in adherence with assigned license requirements.
  */
-package elide.util;
+package elide.annotations;
 
+import jakarta.inject.Singleton;
 
-import com.google.protobuf.Timestamp;
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 
-import javax.annotation.Nonnull;
-import java.time.Instant;
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 
 /**
- * Utilities to convert between different temporal instant records.
+ * Marks an application class as "business logic," which automatically makes it eligible for dependency injection, auto-
+ * wired logging, and other framework features.
+ *
+ * This annotation should be used on the <i>implementation</i> of a given Java or Kotlin interface. API interfaces
+ * should be marked with {@link API} to participate in auto-documentation and other AOT-based features.
  */
-public final class InstantFactory {
-  private InstantFactory() { /* Disallow construction. */ }
-
-  /**
-   * Convert a Protocol Buffers {@link Timestamp} record to a Java {@link Instant} record.
-   *
-   * @param subject Subject timestamp to convert.
-   * @return Converted Java Instant.
-   */
-  public static @Nonnull Instant instant(@Nonnull Timestamp subject) {
-    return Instant.ofEpochSecond(subject.getSeconds(), subject.getNanos() > 0 ? (long)subject.getNanos() : 0);
-  }
+@Singleton
+@Documented
+@Retention(RUNTIME)
+@Target({TYPE})
+public @interface Logic {
+    /* This space left intentionally blank. */
 }

@@ -16,52 +16,62 @@ package(
 )
 
 load(
-    "@io_bazel_rules_kotlin//kotlin:core.bzl",
-    "kt_compiler_plugin",
+    "//tools/defs/java:java.bzl",
+    "java_library",
 )
 
-kt_compiler_plugin(
-    name = "allopen",
-    compile_phase = True,
-    id = "org.jetbrains.kotlin.allopen",
-    options = {
-        "annotation": "plugin.allopen.OpenForTesting",
-    },
-    stubs_phase = True,
+load(
+    "//tools/defs/java:java.bzl",
+    "maven",
+)
+
+java_library(
+    name = "LoggingTools",
+    srcs = [
+        "Logger.java",
+        "Logging.java"
+    ],
     deps = [
-        "@com_github_jetbrains_kotlin//:allopen-compiler-plugin",
+        "//java/elide/runtime:logging",
+        maven("org.slf4j:slf4j-api"),
+        maven("javax.annotation:javax.annotation-api"),
     ],
 )
 
-kt_compiler_plugin(
-    name = "noarg",
-    compile_phase = True,
-    id = "org.jetbrains.kotlin.noarg",
-    options = {
-        "annotation": "plugin.noarg.NoArgConstructor",
-    },
-    stubs_phase = True,
+alias(
+    name = "logging",
+    actual = ":LoggingTools",
+)
+
+java_library(
+    name = "ReactiveFuture",
+    srcs = ["ReactiveFuture.java"],
     deps = [
-        "@com_github_jetbrains_kotlin//:noarg-compiler-plugin",
+        maven("com.google.api:api-common"),
+        maven("com.google.code.findbugs:jsr305"),
+        maven("com.google.guava:guava"),
+        maven("com.google.guava:failureaccess"),
+        maven("com.google.protobuf:protobuf-java"),
+        maven("org.reactivestreams:reactive-streams"),
+        maven("io.reactivex.rxjava2:rxjava"),
     ],
 )
 
-kt_compiler_plugin(
-    name = "parcelize",
-    compile_phase = True,
-    id = "org.jetbrains.kotlin.parcelize",
-    stubs_phase = True,
-    deps = [
-        "@com_github_jetbrains_kotlin//:parcelize-compiler-plugin",
-    ],
+alias(
+    name = "reactive",
+    actual = ":ReactiveFuture",
 )
 
-kt_compiler_plugin(
-    name = "serialization",
-    compile_phase = True,
-    id = "org.jetbrains.kotlin.serialization",
-    stubs_phase = True,
-    deps = [
-        "@com_github_jetbrains_kotlin//:kotlinx-serialization-compiler-plugin",
-    ],
+java_library(
+    name = "jvm",
+    srcs = ["package-info.java"],
+    exports = [
+        ":logging",
+        ":reactive",
+    ]
+)
+
+filegroup(
+    name = "sources",
+    srcs = glob(["*.java"]),
 )

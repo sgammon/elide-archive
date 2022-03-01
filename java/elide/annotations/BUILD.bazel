@@ -16,45 +16,29 @@ package(
 )
 
 load(
-    "@rules_java//java:defs.bzl",
-    "java_runtime",
+    "//tools/defs:targets.bzl",
+    "java_package",
+    "maven",
 )
 
-load(
-    "@bazel_skylib//:bzl_library.bzl",
-    "bzl_library",
-)
+ANNOTATIONS = [
+    "API",
+    "Generated",
+    "Logic",
+    "Model",
+]
 
-
-bzl_library(
-    name = "java-toolchain",
-    srcs = [
-        "repos.bzl",
-        "rules.bzl",
-        "testing.bzl",
+java_package(
+    ANNOTATIONS,
+    package = "elide.annotations",
+    package_info = "package-info.java",
+    package_srcs = glob(["*.java"]),
+    deps = [
+        maven("javax.annotation:javax.annotation.api"),
     ],
-)
-
-
-## Java Runtime: `zulu`
-## ------------------------
-## Activates when we are running in IntelliJ/locally.
-java_runtime(
-    name = "zulu_runtime",
-    java_home = "$(ZULUBASE)",
-    visibility = ["//visibility:private"],
-)
-
-
-## -- Public Interface -- ##
-
-## Java Runtime
-## ------------------------
-## References the active Java runtime.
-alias(
-    name = "java_runtime",
-    actual = select({
-        "//defs/conditions:zulu": ":zulu_runtime",
-        "//conditions:default": "@embedded_jdk//:jdk",
-    }),
+    extra_deps = {
+        "Logic": [
+            maven("jakarta.inject:jakarta.inject-api")
+        ],
+    },
 )

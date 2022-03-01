@@ -16,45 +16,42 @@ package(
 )
 
 load(
-    "@rules_java//java:defs.bzl",
-    "java_runtime",
+    "//tools/defs/java:java.bzl",
+    "java_library",
+    "maven",
 )
 
 load(
-    "@bazel_skylib//:bzl_library.bzl",
-    "bzl_library",
+    "//tools/defs/tests:junit5.bzl",
+    "java_test",
 )
 
+_COMMON_DEPS = [
+    maven("org.slf4j:slf4j-api"),
+]
 
-bzl_library(
-    name = "java-toolchain",
-    srcs = [
-        "repos.bzl",
-        "rules.bzl",
-        "testing.bzl",
-    ],
+java_test(
+    name = "LoggingTest",
+    srcs = ["LoggingTest.java"],
+    test_package = "elide.runtime.jvm",
+    deps = [
+        "//java/elide/runtime/jvm:logging",
+        "//java/elide/runtime:logging",
+        maven("ch.qos.logback:logback-classic"),
+        maven("javax.annotation:javax.annotation-api"),
+    ] + _COMMON_DEPS,
 )
 
-
-## Java Runtime: `zulu`
-## ------------------------
-## Activates when we are running in IntelliJ/locally.
-java_runtime(
-    name = "zulu_runtime",
-    java_home = "$(ZULUBASE)",
-    visibility = ["//visibility:private"],
-)
-
-
-## -- Public Interface -- ##
-
-## Java Runtime
-## ------------------------
-## References the active Java runtime.
-alias(
-    name = "java_runtime",
-    actual = select({
-        "//defs/conditions:zulu": ":zulu_runtime",
-        "//conditions:default": "@embedded_jdk//:jdk",
-    }),
+java_test(
+    name = "ReactiveFutureTest",
+    srcs = ["ReactiveFutureTest.java"],
+    test_package = "elide.runtime.jvm",
+    deps = [
+        "//java/elide/runtime/jvm:reactive",
+        maven("com.google.guava:guava"),
+        maven("com.google.api:gax"),
+        maven("com.google.api:api-common"),
+        maven("io.reactivex.rxjava2:rxjava"),
+        maven("org.reactivestreams:reactive-streams"),
+    ] + _COMMON_DEPS,
 )

@@ -15,46 +15,29 @@ package(
     default_visibility = ["//visibility:public"],
 )
 
-load(
-    "@rules_java//java:defs.bzl",
-    "java_runtime",
-)
 
 load(
-    "@bazel_skylib//:bzl_library.bzl",
-    "bzl_library",
+    "//tools/defs/tests:junit5.bzl",
+    "java_test",
 )
 
+TARGETS = [
+    "Hex",
+    "InstantFactory",
+    "Pair",
+]
 
-bzl_library(
-    name = "java-toolchain",
-    srcs = [
-        "repos.bzl",
-        "rules.bzl",
-        "testing.bzl",
+EXTRA_DEPS = {
+    "InstantFactory": [
+        "@com_google_protobuf//java/core",
     ],
-)
+}
 
-
-## Java Runtime: `zulu`
-## ------------------------
-## Activates when we are running in IntelliJ/locally.
-java_runtime(
-    name = "zulu_runtime",
-    java_home = "$(ZULUBASE)",
-    visibility = ["//visibility:private"],
-)
-
-
-## -- Public Interface -- ##
-
-## Java Runtime
-## ------------------------
-## References the active Java runtime.
-alias(
-    name = "java_runtime",
-    actual = select({
-        "//defs/conditions:zulu": ":zulu_runtime",
-        "//conditions:default": "@embedded_jdk//:jdk",
-    }),
-)
+[
+    java_test(
+        name = "%sTest" % c,
+        srcs = ["%sTest.java" % c],
+        deps = ["//java/elide/util:%s" % c] + EXTRA_DEPS.get(c, []),
+        test_package = "elide.util",
+    ) for c in TARGETS
+]

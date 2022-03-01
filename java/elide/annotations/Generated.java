@@ -10,28 +10,24 @@
  * by trade secret and copyright law. Dissemination of this information, or reproduction of this material, in any form,
  * is strictly forbidden except in adherence with assigned license requirements.
  */
-package elide.util;
+package elide.annotations;
 
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 
-import com.google.protobuf.Timestamp;
-
-import javax.annotation.Nonnull;
-import java.time.Instant;
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 
 /**
- * Utilities to convert between different temporal instant records.
+ * Marks a given Java or Kotlin class as "Generated," which excuses it from coverage requirements and other tooling
+ * strictness; should be used sparingly.
  */
-public final class InstantFactory {
-  private InstantFactory() { /* Disallow construction. */ }
-
-  /**
-   * Convert a Protocol Buffers {@link Timestamp} record to a Java {@link Instant} record.
-   *
-   * @param subject Subject timestamp to convert.
-   * @return Converted Java Instant.
-   */
-  public static @Nonnull Instant instant(@Nonnull Timestamp subject) {
-    return Instant.ofEpochSecond(subject.getSeconds(), subject.getNanos() > 0 ? (long)subject.getNanos() : 0);
-  }
+@Documented
+@Retention(RUNTIME)
+@Target({TYPE, METHOD})
+public @interface Generated {
+    /* This space left intentionally blank. */
 }

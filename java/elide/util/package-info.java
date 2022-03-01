@@ -1,5 +1,5 @@
 /*
- * Copyright © 2022, The Gust Framework Authors. All rights reserved.
+ * Copyright © 2022, The Elide Framework Authors. All rights reserved.
  *
  * The Gust/Elide framework and tools, and all associated source or object computer code, except where otherwise noted,
  * are licensed under the Zero Prosperity license, which is enclosed in this repository, in the file LICENSE.txt. Use of

@@ -1,5 +1,5 @@
 ##
-# Copyright © 2020, The Gust Framework Authors. All rights reserved.
+# Copyright © 2022, The Elide Framework Authors. All rights reserved.
 #
 # The Gust/Elide framework and tools, and all associated source or object computer code, except where otherwise noted,
 # are licensed under the Zero Prosperity license, which is enclosed in this repository, in the file LICENSE.txt. Use of
@@ -16,66 +16,29 @@ package(
 )
 
 load(
-    "@rules_java//java:defs.bzl",
-    "java_library",
-)
-
-load(
-    "//tools/defs:deps.bzl",
+    "//tools/defs:targets.bzl",
+    "java_package",
     "maven",
 )
 
+UTILS = [
+    "Hex",
+    "InstantFactory",
+    "Pair",
+]
 
-java_library(
-    name = "Hex",
-    srcs = ["Hex.java"],
-    deps = [
-        maven("javax.annotation:javax.annotation-api"),
-        maven("com.google.code.findbugs:jsr305"),
-    ],
-)
-
-java_library(
-    name = "Pair",
-    srcs = ["Pair.java"],
-    deps = [
-        maven("javax.annotation:javax.annotation-api"),
-        maven("com.google.code.findbugs:jsr305"),
-    ],
-)
-
-java_library(
-    name = "InstantFactory",
-    srcs = ["InstantFactory.java"],
+java_package(
+    UTILS,
+    package = "elide.util",
+    package_info = "package-info.java",
+    package_srcs = glob(["*.java"]),
     deps = [
         maven("com.google.code.findbugs:jsr305"),
         maven("javax.annotation:javax.annotation-api"),
-        maven("com.google.protobuf:protobuf-java"),
     ],
-)
-
-java_library(
-    name = "MessageDifferencer",
-    srcs = ["MessageDifferencer.java"],
-    deps = [
-        "//tools/defs/java/plugins:autovalue",
-        maven("com.google.code.findbugs:jsr305"),
-        maven("com.google.guava:guava"),
-        maven("com.google.auto.value:auto-value-annotations"),
-        maven("com.google.protobuf:protobuf-java"),
-    ],
-)
-
-
-java_library(
-    name = "util",
-    exports = [
-        ":Pair",
-        ":Hex",
-    ],
-)
-
-filegroup(
-    name = "sources",
-    srcs = glob(["*.java"]),
+    extra_deps = {
+        "InstantFactory": [
+            maven("com.google.protobuf:protobuf-java"),
+        ],
+    },
 )

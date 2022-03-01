@@ -1,3 +1,18 @@
+##
+# Copyright © 2022, The Elide Framework Authors. All rights reserved.
+#
+# The Gust/Elide framework and tools, and all associated source or object computer code, except where otherwise noted,
+# are licensed under the Zero Prosperity license, which is enclosed in this repository, in the file LICENSE.txt. Use of
+# this code in object or source form requires and implies consent and agreement to that license in principle and
+# practice. Source or object code not listing this header, or unless specified otherwise, remain the property of
+# Elide LLC and its suppliers, if any. The intellectual and technical concepts contained herein are proprietary to
+# Elide LLC and its suppliers and may be covered by U.S. and Foreign Patents, or patents in process, and are protected
+# by trade secret and copyright law. Dissemination of this information, or reproduction of this material, in any form,
+# is strictly forbidden except in adherence with assigned license requirements.
+##
+
+"""Kotlin JVM and JS macros."""
+
 load(
     "@io_bazel_rules_kotlin//kotlin:jvm.bzl",
     _kt_jvm_binary = "kt_jvm_binary",
@@ -19,27 +34,6 @@ load(
     "//tools/defs/model:service.bzl",
     _javagrpc = "javagrpc",
 )
-
-MICRONAUT_DEPS = [
-    "//tools/micronaut",
-    _maven("com.google.guava:guava"),
-]
-
-MICRONAUT_RUNTIME_DEPS = [
-    # None yet.
-]
-
-MICRONAUT_SERVICE_DEPS = [
-    "@io_grpc_grpc_java//context",
-    "@io_grpc_grpc_java//core",
-    "@io_grpc_grpc_java//stub",
-    _maven("io.micronaut.grpc:micronaut-grpc-runtime"),
-    _maven("io.micronaut.grpc:micronaut-grpc-server-runtime"),
-]
-
-MICRONAUT_KT_PLUGINS = [
-    "//tools/defs/kt/plugins:serialization",
-]
 
 def kt_jvm_library(
         name,
@@ -74,46 +68,6 @@ def kt_jvm_binary(
     _kt_jvm_binary(
         name = name,
         **kwargs
-    )
-
-def micronaut_library(
-        name,
-        srcs = [],
-        deps = [],
-        runtime_deps = [],
-        plugins = [],
-        **kwargs):
-    """Designate a Micronaut (JVM) library."""
-    kt_jvm_library(
-        name = name,
-        srcs = srcs,
-        runtime_deps = runtime_deps + MICRONAUT_RUNTIME_DEPS,
-        deps = deps + MICRONAUT_DEPS,
-        plugins = plugins + MICRONAUT_KT_PLUGINS,
-    )
-
-def micronaut_service(
-        name,
-        srcs = [],
-        deps = [],
-        runtime_deps = [],
-        plugins = [],
-        protos = [],
-        services = [],
-        **kwargs):
-    """Designate a Micronaut (JVM) library."""
-    micronaut_library(
-        name = name,
-        srcs = srcs,
-        runtime_deps = runtime_deps,
-        deps = deps + MICRONAUT_SERVICE_DEPS + [
-            _javaproto(p)
-            for p in (protos + services)
-        ] + [
-            _javagrpc(s)
-            for s in services
-        ],
-        plugins = plugins,
     )
 
 maven = _maven

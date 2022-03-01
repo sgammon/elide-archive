@@ -10,28 +10,27 @@
  * by trade secret and copyright law. Dissemination of this information, or reproduction of this material, in any form,
  * is strictly forbidden except in adherence with assigned license requirements.
  */
-package elide.util;
+package elide.annotations;
 
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 
-import com.google.protobuf.Timestamp;
-
-import javax.annotation.Nonnull;
-import java.time.Instant;
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 
 /**
- * Utilities to convert between different temporal instant records.
+ * Marks an application-level class as an API interface, which defines the abstract surface of a single unit of business
+ * logic; combined with {@link Logic}, classes annotated with `API` constitute a set of interface and implementation
+ * pairs.
+ *
+ * API should only be affixed to interfaces or abstract classes. API interface parameters are preserved and other AOT-
+ * style configurations are possible based on this annotation.
  */
-public final class InstantFactory {
-  private InstantFactory() { /* Disallow construction. */ }
-
-  /**
-   * Convert a Protocol Buffers {@link Timestamp} record to a Java {@link Instant} record.
-   *
-   * @param subject Subject timestamp to convert.
-   * @return Converted Java Instant.
-   */
-  public static @Nonnull Instant instant(@Nonnull Timestamp subject) {
-    return Instant.ofEpochSecond(subject.getSeconds(), subject.getNanos() > 0 ? (long)subject.getNanos() : 0);
-  }
+@Documented
+@Retention(RUNTIME)
+@Target({TYPE})
+public @interface API {
+    /* This space left intentionally blank. */
 }

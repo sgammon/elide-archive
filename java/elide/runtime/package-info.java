@@ -10,28 +10,6 @@
  * by trade secret and copyright law. Dissemination of this information, or reproduction of this material, in any form,
  * is strictly forbidden except in adherence with assigned license requirements.
  */
-package elide.util;
 
-
-import com.google.protobuf.Timestamp;
-
-import javax.annotation.Nonnull;
-import java.time.Instant;
-
-
-/**
- * Utilities to convert between different temporal instant records.
- */
-public final class InstantFactory {
-  private InstantFactory() { /* Disallow construction. */ }
-
-  /**
-   * Convert a Protocol Buffers {@link Timestamp} record to a Java {@link Instant} record.
-   *
-   * @param subject Subject timestamp to convert.
-   * @return Converted Java Instant.
-   */
-  public static @Nonnull Instant instant(@Nonnull Timestamp subject) {
-    return Instant.ofEpochSecond(subject.getSeconds(), subject.getNanos() > 0 ? (long)subject.getNanos() : 0);
-  }
-}
+/** Supplies core backend runtime logic, like execution/scheduling, logging, and so on. */
+package elide.runtime;
