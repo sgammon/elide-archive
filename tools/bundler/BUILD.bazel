@@ -16,30 +16,46 @@ package(
 )
 
 load(
-    "@rules_java//java:defs.bzl",
-    "java_plugin",
-    "java_library",
-)
-load(
     "//tools/defs/java:java.bzl",
     "maven",
+    "java_binary",
+)
+load(
+    "//tools/defs/model:model.bzl",
+    "javaproto",
 )
 
-java_plugin(
-    name = "autovalue-plugin",
-    generates_api = True,
-    processor_class = "com.google.auto.value.processor.AutoValueProcessor",
+_COMMON_DEPS = [
+    "@com_google_errorprone_error_prone_annotations",
+    maven("javax.annotation:javax.annotation-api"),
+    maven("com.google.protobuf:protobuf-java"),
+    maven("com.google.protobuf:protobuf-java-util"),
+    maven("com.google.code.findbugs:jsr305"),
+    maven("com.google.guava:guava"),
+    maven("org.slf4j:slf4j-api"),
+]
+
+
+java_binary(
+    name = "AssetBundler",
+    srcs = ["AssetBundler.java"],
+    main_class = "tools.bundler.AssetBundler",
     deps = [
-        maven("com.google.auto.value:auto-value"),
+        "//java/elide/util:Pair",
+        "//java/elide/util:Hex",
+        javaproto("//proto/core:crypto"),
+        javaproto("//proto/core:data"),
+        javaproto("//proto/assets:bundle"),
+        javaproto("//proto/page:page"),
+        maven("info.picocli:picocli"),
+        maven("io.reactivex.rxjava2:rxjava"),
+        "@com_google_template_soy",
+    ] + _COMMON_DEPS,
+    runtime_deps = [
+        "@com_google_template_soy",
+        maven("ch.qos.logback:logback-classic"),
     ],
-)
-
-java_library(
-    name = "autovalue",
-    exports = [
-        maven("com.google.auto.value:auto-value-annotations"),
-    ],
-    exported_plugins = [
-        ":autovalue-plugin",
+    classpath_resources = [
+        "//tools:logback.xml",
     ],
 )

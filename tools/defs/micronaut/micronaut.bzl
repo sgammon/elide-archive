@@ -60,7 +60,7 @@ MICRONAUT_SERVICE_DEPS = [
 ]
 
 MICRONAUT_KT_PLUGINS = [
-    "//tools/defs/kt/plugins:serialization",
+    "@elide//tools/defs/kt/plugins:serialization",
 ]
 
 def micronaut_library(

@@ -11,23 +11,38 @@
 # is strictly forbidden except in adherence with assigned license requirements.
 ##
 
-load(
-    "//tools/defs/model:internals.bzl",
-    _model = "declare_model",
-    _descriptor = "descriptor",
-    _javaproto = "javaproto",
-    _swiftproto = "swiftproto",
-    _pyproto = "pyproto",
-    _tsproto = "tsproto",
-    _jsproto = "jsproto",
-    _well_known = "well_known",
+package(
+    default_visibility = ["//visibility:public"],
 )
 
-model = _model
-javaproto = _javaproto
-swiftproto = _swiftproto
-tsproto = _tsproto
-jsproto = _jsproto
-pyproto = _pyproto
-well_known = _well_known
-descriptor = _descriptor
+load("@rules_proto//proto:defs.bzl", "proto_library")
+load("@elide//tools/defs/java:java.bzl", "maven")
+
+
+# Safe HTML Types
+proto_library(
+    name = "proto",
+    srcs = ["proto/src/main/protobuf/webutil/html/types/html.proto"],
+    strip_import_prefix = "proto/src/main/protobuf",
+)
+
+# Java HTML Types
+java_proto_library(
+    name = "java-proto",
+    deps = [":proto"],
+)
+
+java_library(
+    name = "java",
+    srcs = glob(["types/src/main/java/com/google/common/html/types/*.java"]),
+    deps = [
+        ":java-proto",
+        "@com_google_guava",
+        "@javax_annotation_api",
+        "@com_google_jsinterop_annotations//:jsinterop-annotations",
+        maven("com.google.errorprone:error_prone_annotations"),
+    ],
+    exports = [
+        ":java-proto",
+    ]
+)

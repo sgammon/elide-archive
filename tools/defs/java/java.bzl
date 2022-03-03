@@ -13,7 +13,8 @@
 
 load(
     "@rules_java//java:defs.bzl",
-    _java_library = "java_library"
+    _java_library = "java_library",
+    _java_binary = "java_binary"
 )
 
 MAVEN_REPO = "@maven"
@@ -30,3 +31,4 @@ def maven(target):
     )
 
 java_library = _java_library
+java_binary = _java_binary

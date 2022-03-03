@@ -1,5 +1,5 @@
 ##
-# Copyright © 2020, The Gust Framework Authors. All rights reserved.
+# Copyright © 2022, The Elide Framework Authors. All rights reserved.
 #
 # The Gust/Elide framework and tools, and all associated source or object computer code, except where otherwise noted,
 # are licensed under the Zero Prosperity license, which is enclosed in this repository, in the file LICENSE.txt. Use of
@@ -82,6 +82,22 @@ http_archive(
 )
 
 http_archive(
+    name = "proto_common",
+    sha256 = "20f5e27c83f417c34bf36f38686435dd9e5ca454bef47c08c7d359c37ae26fcf",
+    strip_prefix = "api-common-protos-f37c0ecc55f19b1675448e4bad70fd45c93f5b8f",
+    build_file = "proto_common.bzl",
+    urls = ["https://github.com/googleapis/api-common-protos/archive/f37c0ecc55f19b1675448e4bad70fd45c93f5b8f.tar.gz"],
+)
+
+http_archive(
+    name = "safe_html_types",
+    sha256 = "2356090e7632f49ea581bb6f8808fa038a7433d433f3e8d7045a36f81fb39d65",
+    strip_prefix = "safe-html-types-8507735457ea41a37dfa027fb176d49d5783c4ba",
+    build_file = "safe_html_types.bzl",
+    urls = ["https://github.com/google/safe-html-types/archive/8507735457ea41a37dfa027fb176d49d5783c4ba.tar.gz"],
+)
+
+http_archive(
     name = "rules_proto",
     sha256 = "66bfdf8782796239d3875d37e7de19b1d94301e8972b3cbd2446b332429b4df1",
     strip_prefix = "rules_proto-4.0.0",
@@ -137,6 +153,18 @@ http_archive(
         "https://mirror.bazel.build/github.com/bazelbuild/rules_go/releases/download/v0.30.0/rules_go-v0.30.0.zip",
         "https://github.com/bazelbuild/rules_go/releases/download/v0.30.0/rules_go-v0.30.0.zip",
     ],
+)
+
+http_archive(
+    name = "build_bazel_rules_apple",
+    sha256 = "a5f00fd89eff67291f6cd3efdc8fad30f4727e6ebb90718f3f05bbf3c3dd5ed7",
+    url = "https://github.com/bazelbuild/rules_apple/releases/download/0.33.0/rules_apple.0.33.0.tar.gz",
+)
+
+http_archive(
+    name = "build_bazel_rules_swift",
+    sha256 = "3e52a508cdc47a7adbad36a3d2b712e282cc39cc211b0d63efcaf608961eb36b",
+    url = "https://github.com/bazelbuild/rules_swift/releases/download/0.26.0/rules_swift.0.26.0.tar.gz",
 )
 
 http_archive(
@@ -289,6 +317,22 @@ rules_closure_dependencies()
 
 rules_closure_toolchains()
 
+load("@build_bazel_rules_apple//apple:repositories.bzl", "apple_rules_dependencies")
+
+apple_rules_dependencies()
+
+load("@build_bazel_rules_swift//swift:repositories.bzl", "swift_rules_dependencies")
+
+swift_rules_dependencies()
+
+load("@build_bazel_rules_swift//swift:extras.bzl", "swift_rules_extra_dependencies")
+
+swift_rules_extra_dependencies()
+
+load("@build_bazel_apple_support//lib:repositories.bzl", "apple_support_dependencies")
+
+apple_support_dependencies()
+
 # Stores Scala version and other configuration
 # 2.12 is a default version, other versions can be use by passing them explicitly:
 # scala_config(scala_version = "2.11.12")
@@ -434,6 +478,7 @@ maven_install(
         "com.google.code.gson:gson:2.8.9",
         "com.google.cloud:native-image-support:0.10.0",
         "com.google.guava:guava:30.1.1-android",
+        "info.picocli:picocli:4.6.3",
         "io.grpc:grpc-all:%s" % GRPC_JAVA_VERSION,
         "io.grpc:grpc-alts:%s" % GRPC_JAVA_VERSION,
         "io.grpc:grpc-android:%s" % GRPC_JAVA_VERSION,

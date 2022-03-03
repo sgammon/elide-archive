@@ -1,0 +1,65 @@
+/**
+ * Specifies annotations that modify or otherwise deal with service definitions, which are used to generate APIs through
+ * tools like gRPC. This source file was inlined from `grpc-gateway` and modified (see `LICENSES/grpc-gateway.txt`).
+ */
+syntax = "proto3";
+
+package api.services;
+
+option optimize_for = SPEED;
+option cc_enable_arenas = true;
+option java_multiple_files = true;
+option java_string_check_utf8 = true;
+option java_outer_classname = "Services";
+option php_namespace = "Elide";
+option php_class_prefix = "ELD";
+option swift_prefix = "Elide";
+option objc_class_prefix = "ELD";
+option ruby_package = "Elide::API";
+option java_package = "tools.elide.api";
+option csharp_namespace = "Elide.API";
+option go_package = "github.com/elide-tools/elide/api";
+
+import "google/protobuf/descriptor.proto";
+import "proto/api/openapiv2.proto";
+
+
+extend google.protobuf.FileOptions {
+  // ID assigned by protobuf-global-extension-registry@google.com for grpc-gateway project.
+  //
+  // All IDs are the same, as assigned. It is okay that they are the same, as they extend
+  // different descriptor messages.
+  api.services.openapiv2.Swagger openapiv2_swagger = 1042;
+}
+
+extend google.protobuf.MethodOptions {
+  // ID assigned by protobuf-global-extension-registry@google.com for grpc-gateway project.
+  //
+  // All IDs are the same, as assigned. It is okay that they are the same, as they extend
+  // different descriptor messages.
+  api.services.openapiv2.Operation openapiv2_operation = 1042;
+}
+
+extend google.protobuf.MessageOptions {
+  // ID assigned by protobuf-global-extension-registry@google.com for grpc-gateway project.
+  //
+  // All IDs are the same, as assigned. It is okay that they are the same, as they extend
+  // different descriptor messages.
+  api.services.openapiv2.Schema openapiv2_schema = 1042;
+}
+
+extend google.protobuf.ServiceOptions {
+  // ID assigned by protobuf-global-extension-registry@google.com for grpc-gateway project.
+  //
+  // All IDs are the same, as assigned. It is okay that they are the same, as they extend
+  // different descriptor messages.
+  api.services.openapiv2.Tag openapiv2_tag = 1042;
+}
+
+extend google.protobuf.FieldOptions {
+  // ID assigned by protobuf-global-extension-registry@google.com for grpc-gateway project.
+  //
+  // All IDs are the same, as assigned. It is okay that they are the same, as they extend
+  // different descriptor messages.
+  api.services.openapiv2.JSONSchema openapiv2_field = 1042;
+}

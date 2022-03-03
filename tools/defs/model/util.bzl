@@ -11,8 +11,6 @@
 # is strictly forbidden except in adherence with assigned license requirements.
 ##
 
-"""General internals used by the model and service macros."""
-
 def _target_name(name, postfix):
     if "/" in name and ":" in name:
         # it's an absolute reference with full spec.
