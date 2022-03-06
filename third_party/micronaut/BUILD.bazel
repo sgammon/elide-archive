@@ -35,6 +35,7 @@ MICRONAUT_BASE_DEPS = [
     maven("io.micronaut:micronaut-runtime"),
     maven("io.micronaut:micronaut-http-client"),
     maven("io.micronaut:micronaut-http-server-netty"),
+    maven("io.micronaut:micronaut-inject"),
     maven("io.micronaut:micronaut-inject-java"),
     maven("org.slf4j:slf4j-api"),
     maven("jakarta.inject:jakarta.inject-api"),

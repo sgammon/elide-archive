@@ -18,10 +18,6 @@ package(
 load(
     "//tools/defs/java:java.bzl",
     "java_library",
-)
-
-load(
-    "//tools/defs/java:java.bzl",
     "maven",
 )
 

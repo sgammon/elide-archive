@@ -313,7 +313,9 @@ register_toolchains("//tools/defs/kt/toolchain")
 
 load("@io_bazel_rules_closure//closure:repositories.bzl", "rules_closure_dependencies", "rules_closure_toolchains")
 
-rules_closure_dependencies()
+rules_closure_dependencies(
+    omit_com_google_errorprone_error_prone_annotations = True,
+)
 
 rules_closure_toolchains()
 
@@ -451,8 +453,8 @@ junit5_repositories()
 load("@io_bazel_rules_webtesting//web:java_repositories.bzl", "RULES_WEBTESTING_ARTIFACTS")
 
 INJECTED_JVM_ARTIFACTS = (
-    [i for i in RULES_WEBTESTING_ARTIFACTS if not "guava" in i] +
-    IO_GRPC_GRPC_JAVA_ARTIFACTS
+    [i for i in RULES_WEBTESTING_ARTIFACTS if (not "guava" in i and not "gson" in i)] +
+    [i for i in IO_GRPC_GRPC_JAVA_ARTIFACTS if (not "guava" in i and not "gson" in i)]
 )
 
 TEST_ARTIFACTS = [
@@ -470,13 +472,17 @@ maven_install(
         "ch.qos.logback:logback-core:1.2.10",
         "ch.qos.logback:logback-classic:1.2.10",
         "com.google.api:api-common:2.1.4",
-        "com.google.api:gax:2.12.2",
-        "com.google.api:gax-grpc:2.12.2",
+        "com.google.api:gax:2.11.0",
+        "com.google.api:gax-grpc:2.11.0",
         "com.google.auto.value:auto-value:1.7.4",
         "com.google.auto.value:auto-value-annotations:1.7.4",
         "com.google.code.findbugs:jsr305:3.0.2",
         "com.google.code.gson:gson:2.8.9",
+        "com.google.cloud:google-cloud-firestore:3.0.13",
+        "com.google.api.grpc:proto-google-cloud-firestore-v1:3.0.13",
         "com.google.cloud:native-image-support:0.10.0",
+        "com.google.errorprone:error_prone_annotations:2.9.0",
+        "com.google.guava:failureaccess:1.0.1",
         "com.google.guava:guava:30.1.1-android",
         "info.picocli:picocli:4.6.3",
         "io.grpc:grpc-all:%s" % GRPC_JAVA_VERSION,
@@ -498,6 +504,7 @@ maven_install(
         "io.reactivex.rxjava2:rxjava:2.2.21",
         "io.micronaut:micronaut-core:%s" % MICRONAUT_VERSION,
         "io.micronaut:micronaut-context:%s" % MICRONAUT_VERSION,
+        "io.micronaut:micronaut-inject:%s" % MICRONAUT_VERSION,
         "io.micronaut:micronaut-inject-java:%s" % MICRONAUT_VERSION,
         "io.micronaut:micronaut-runtime:%s" % MICRONAUT_VERSION,
         "io.micronaut:micronaut-validation:%s" % MICRONAUT_VERSION,

@@ -1,0 +1,474 @@
+##
+# Copyright © 2022, The Elide Framework Authors. All rights reserved.
+#
+# The Gust/Elide framework and tools, and all associated source or object computer code, except where otherwise noted,
+# are licensed under the Zero Prosperity license, which is enclosed in this repository, in the file LICENSE.txt. Use of
+# this code in object or source form requires and implies consent and agreement to that license in principle and
+# practice. Source or object code not listing this header, or unless specified otherwise, remain the property of
+# Elide LLC and its suppliers, if any. The intellectual and technical concepts contained herein are proprietary to
+# Elide LLC and its suppliers and may be covered by U.S. and Foreign Patents, or patents in process, and are protected
+# by trade secret and copyright law. Dissemination of this information, or reproduction of this material, in any form,
+# is strictly forbidden except in adherence with assigned license requirements.
+##
+
+package(
+    default_visibility = ["//visibility:public"],
+)
+
+load(
+    "//tools/defs/java:java.bzl",
+    "java_library",
+    "maven",
+)
+load(
+    "//tools/defs/kt:defs.bzl",
+    "kt_jvm_library",
+)
+load(
+    "//tools/defs/model:model.bzl",
+    "javaproto",
+)
+
+_COMMON_DEPS = [
+    "//java/elide/runtime",
+    "//java/elide/runtime/jvm",
+    "//third_party/micronaut",
+    maven("javax.annotation:javax.annotation.api"),
+    maven("jakarta.inject:jakarta.inject-api"),
+    maven("com.google.code.findbugs:jsr305"),
+    maven("com.google.guava:guava"),
+    maven("org.slf4j:slf4j-api"),
+    "@com_google_protobuf//:protobuf_java",
+]
+
+
+java_library(
+    name = "package-info",
+    srcs = ["package-info.java"],
+)
+
+java_library(
+    name = "CacheDriver",
+    srcs = ["CacheDriver.java"],
+    deps = [
+        ":FetchOptions",
+        ":ModelCodec",
+        ":PersistenceDriver",
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "CacheOptions",
+    srcs = ["CacheOptions.java"],
+    deps = [
+        ":OperationOptions",
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "CollapsedMessage",
+    srcs = ["CollapsedMessage.java"],
+    deps = [
+        ":ModelSerializer",
+        ":WriteProxy",
+        ":SerializedModel",
+        javaproto("//proto/core:datamodel"),
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "CollapsedMessageCodec",
+    srcs = ["CollapsedMessageCodec.java"],
+    deps = [
+        ":CollapsedMessage",
+        ":ModelCodec",
+        ":ModelDeserializer",
+        ":ModelDeflateException",
+        ":ModelInflateException",
+        ":ModelSerializer",
+        ":ObjectModelSerializer",
+        ":ObjectModelDeserializer",
+#        maven("io.micronaut:micronaut-inject"),
+        maven("io.micronaut:micronaut-runtime"),
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "CollapsedMessageSerializer",
+    srcs = ["CollapsedMessageSerializer.java"],
+    deps = [
+        ":CollapsedMessage",
+        ":ModelSerializer",
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "DatabaseAdapter",
+    srcs = ["DatabaseAdapter.java"],
+    deps = [
+        ":ModelAdapter",
+        ":DatabaseDriver",
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "DatabaseDriver",
+    srcs = ["DatabaseDriver.java"],
+    deps = [
+        ":PersistenceDriver",
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "DatabaseManager",
+    srcs = ["DatabaseManager.java"],
+    deps = [
+        ":DatabaseDriver",
+        ":DatabaseAdapter",
+        ":PersistenceManager",
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "DeleteOptions",
+    srcs = ["DeleteOptions.java"],
+    deps = [
+        ":CacheOptions",
+        ":OperationOptions",
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "EncodedModel",
+    srcs = ["EncodedModel.java"],
+    deps = [
+        ":EncodingMode",
+        "@com_google_protobuf//:protobuf_java_util",
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "EncodingMode",
+    srcs = ["EncodingMode.java"],
+    deps = [
+        # No deps.
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "FetchOptions",
+    srcs = ["FetchOptions.java"],
+    deps = [
+        ":CacheOptions",
+        ":OperationOptions",
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "InvalidModelType",
+    srcs = ["InvalidModelType.java"],
+    deps = [
+        ":PersistenceException",
+        javaproto("//proto/core:datamodel"),
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "MissingAnnotatedField",
+    srcs = ["MissingAnnotatedField.java"],
+    deps = [
+        ":PersistenceException",
+        javaproto("//proto/core:datamodel"),
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "ModelAdapter",
+    srcs = ["ModelAdapter.java"],
+    deps = [
+        ":CacheDriver",
+        ":DeleteOptions",
+        ":FetchOptions",
+        ":ModelCodec",
+        ":ModelMetadata",
+        ":PersistenceDriver",
+        ":WriteOptions",
+        javaproto("//proto/core:datamodel"),
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "ModelCodec",
+    srcs = ["ModelCodec.java"],
+    deps = [
+        ":ModelDeserializer",
+        ":ModelDeflateException",
+        ":ModelInflateException",
+        ":ModelSerializer",
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "ModelDeflateException",
+    srcs = ["ModelDeflateException.java"],
+    deps = [
+        ":PersistenceException",
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "ModelDeserializer",
+    srcs = ["ModelDeserializer.java"],
+    deps = [
+        ":ModelInflateException",
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "ModelInflateException",
+    srcs = ["ModelInflateException.java"],
+    deps = [
+        ":PersistenceException",
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "ModelMetadata",
+    srcs = ["ModelMetadata.java"],
+    deps = [
+        ":InvalidModelType",
+        ":MissingAnnotatedField",
+        javaproto("//proto/core:datamodel"),
+        "@com_google_protobuf//:protobuf_java_util",
+        maven("com.google.errorprone:error_prone_annotations"),
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "ModelSerializer",
+    srcs = ["ModelSerializer.java"],
+    deps = [
+        ":ModelDeflateException",
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "ModelWriteConflict",
+    srcs = ["ModelWriteConflict.java"],
+    deps = [
+        ":ModelWriteFailure",
+        ":WriteOptions",
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "ModelWriteFailure",
+    srcs = ["ModelWriteFailure.java"],
+    deps = [
+        ":PersistenceException",
+    ] + _COMMON_DEPS,
+)
+
+kt_jvm_library(
+    name = "ObjectModelCodec",
+    srcs = ["ObjectModelCodec.kt"],
+    deps = [
+        ":ModelCodec",
+        ":ModelSerializer",
+        ":ModelDeserializer",
+        ":ObjectModelDeserializer",
+        ":ObjectModelSerializer",
+    ] + _COMMON_DEPS,
+)
+
+kt_jvm_library(
+    name = "ObjectModelDeserializer",
+    srcs = ["ObjectModelDeserializer.kt"],
+    deps = [
+        ":ModelDeserializer",
+        ":ModelInflateException",
+        ":ObjectModelSerializer",
+        maven("com.google.cloud:google-cloud-firestore"),
+    ] + _COMMON_DEPS,
+)
+
+kt_jvm_library(
+    name = "ObjectModelSerializer",
+    srcs = ["ObjectModelSerializer.kt"],
+    deps = [
+        ":CollapsedMessage",
+        ":ModelDeflateException",
+        ":ModelSerializer",
+        ":ModelMetadata",
+        "//java/elide/util:InstantFactory",
+        maven("com.google.cloud:google-cloud-firestore"),
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "OperationOptions",
+    srcs = ["OperationOptions.java"],
+    deps = [
+        # None yet.
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "PersistenceDriver",
+    srcs = ["PersistenceDriver.java"],
+    deps = [
+        ":DeleteOptions",
+        ":FetchOptions",
+        ":MissingAnnotatedField",
+        ":ModelCodec",
+        ":ModelMetadata",
+        ":PersistenceException",
+        ":PersistenceFailure",
+        ":PersistenceOperationFailed",
+        ":UpdateOptions",
+        ":WriteOptions",
+        javaproto("//proto/core:datamodel"),
+        maven("com.google.errorprone:error_prone_annotations"),
+        maven("io.reactivex.rxjava2:rxjava"),
+        maven("org.reactivestreams:reactive-streams"),
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "PersistenceException",
+    srcs = ["PersistenceException.java"],
+    deps = [
+        # None yet.
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "PersistenceFailure",
+    srcs = ["PersistenceFailure.java"],
+    deps = [
+        # None yet.
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "PersistenceManager",
+    srcs = ["PersistenceManager.java"],
+    deps = [
+        ":PersistenceDriver",
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "PersistenceOperationFailed",
+    srcs = ["PersistenceOperationFailed.java"],
+    deps = [
+        ":PersistenceException",
+        ":PersistenceFailure",
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "ProtoModelCodec",
+    srcs = ["ProtoModelCodec.java"],
+    deps = [
+        ":EncodedModel",
+        ":EncodingMode",
+        ":ModelCodec",
+        ":ModelDeserializer",
+        ":ModelDeflateException",
+        ":ModelInflateException",
+        ":ModelSerializer",
+        "@com_google_protobuf//:protobuf_java_util",
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "SerializedModel",
+    srcs = ["SerializedModel.java"],
+    deps = [
+        maven("com.google.cloud:google-cloud-firestore"),
+        maven("com.google.api.grpc:proto-google-cloud-firestore-v1"),
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "Transaction",
+    srcs = ["Transaction.java"],
+    deps = [
+        # None yet.
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "UpdateOptions",
+    srcs = ["UpdateOptions.java"],
+    deps = [
+        ":WriteOptions",
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "WriteOptions",
+    srcs = ["WriteOptions.java"],
+    deps = [
+        ":OperationOptions",
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "WriteProxy",
+    srcs = ["WriteProxy.java"],
+    deps = [
+        ":SerializedModel",
+    ] + _COMMON_DEPS,
+)
+
+
+java_library(
+    name = "model",
+    exports = [
+        ":package-info",
+        ":CacheDriver",
+        ":CacheOptions",
+        ":CollapsedMessage",
+        ":CollapsedMessageCodec",
+        ":CollapsedMessageSerializer",
+        ":DatabaseAdapter",
+        ":DatabaseDriver",
+        ":DatabaseManager",
+        ":DeleteOptions",
+        ":EncodedModel",
+        ":EncodingMode",
+        ":FetchOptions",
+        ":InvalidModelType",
+        ":MissingAnnotatedField",
+        ":ModelAdapter",
+        ":ModelCodec",
+        ":ModelDeflateException",
+        ":ModelDeserializer",
+        ":ModelInflateException",
+        ":ModelSerializer",
+        ":ModelWriteConflict",
+        ":ModelWriteFailure",
+        ":ObjectModelCodec",
+        ":ObjectModelDeserializer",
+        ":ObjectModelSerializer",
+        ":OperationOptions",
+        ":PersistenceDriver",
+        ":PersistenceException",
+        ":PersistenceFailure",
+        ":PersistenceManager",
+        ":PersistenceOperationFailed",
+        ":ProtoModelCodec",
+        ":SerializedModel",
+        ":Transaction",
+        ":UpdateOptions",
+        ":WriteOptions",
+        ":WriteProxy",
+    ]
+)
+
+filegroup(
+    name = "sources",
+    srcs = glob(["*.java"]),
+)
