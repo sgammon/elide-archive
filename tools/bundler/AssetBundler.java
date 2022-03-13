@@ -23,6 +23,9 @@ import com.google.protobuf.Timestamp;
 import com.google.protobuf.util.JsonFormat;
 import com.google.template.soy.data.SanitizedContent;
 import com.google.template.soy.data.UnsafeSanitizedContentOrdainer;
+import com.nixxcode.jvmbrotli.common.BrotliLoader;
+import com.nixxcode.jvmbrotli.enc.BrotliOutputStream;
+import com.nixxcode.jvmbrotli.enc.Encoder;
 import elide.util.Hex;
 import elide.util.Pair;
 import org.slf4j.Logger;
@@ -80,6 +83,9 @@ public class AssetBundler implements Callable<Integer> {
   /** URL prefix for dynamic asset serving. */
   static final String dynamicAssetPrefix = "/_/asset";
 
+  /** Local indicator of availability for Brotli. */
+  static final boolean brotliAvailable;
+
   /** Default number of characters to take from a hash. */
   private static final int DEFAULT_HASH_LENGTH = 8;
 
@@ -101,6 +107,12 @@ public class AssetBundler implements Callable<Integer> {
   /** Executor to use for async calls. */
   private static final ListeningExecutorService executorService = MoreExecutors.listeningDecorator(
     Executors.newFixedThreadPool(3));
+
+  static {
+    brotliAvailable = (
+        BrotliLoader.isBrotliAvailable()
+    );
+  }
 
   // -- Generic Options -- //
 
@@ -232,7 +244,10 @@ public class AssetBundler implements Callable<Integer> {
     MD5,
     SHA1,
     SHA256,
-    SHA512;
+    SHA512,
+    SHA3_224,
+    SHA3_256,
+    SHA3_512;
 
     /** @return Protocol enumerated value for this hash algorithm. */
     HashAlgorithm toEnum() {
@@ -260,13 +275,15 @@ public class AssetBundler implements Callable<Integer> {
   /** Enumerates supported pre-compression algorithm choices. */
   public enum VariantCompression {
     IDENTITY,
-    GZIP;
+    GZIP,
+    BROTLI;
 
     /** @return Protocol enumerated value for this hash algorithm. */
     CompressionMode toEnum() {
       switch (this) {
         case IDENTITY: return CompressionMode.IDENTITY;
         case GZIP: return CompressionMode.GZIP;
+        case BROTLI: return CompressionMode.BROTLI;
       }
       throw new IllegalArgumentException(format("Unsupported compression mode: %s", this.name()));
     }
@@ -868,7 +885,14 @@ public class AssetBundler implements Callable<Integer> {
               if (VariantCompression.IDENTITY.equals(compressionMode))
                 continue;
               verbose("Kicking off %s compression job for '%s'.", compressionMode.name(), file.getPath());
-              compressionJobs.add(this.compress(compressionMode, fileData, file.getPath()));
+              var job = this.compress(
+                      compressionMode,
+                      fileData,
+                      file.getPath()
+              );
+              if (job != null) {
+                compressionJobs.add(job);
+              }
             }
 
             ListenableFuture<List<Pair<VariantCompression, ByteString>>> jobs = Futures.allAsList(compressionJobs);
@@ -943,10 +967,10 @@ public class AssetBundler implements Callable<Integer> {
    * @param compressionMode Compression mode to employ for this operation.
    * @return Async operation that evaluates to the resulting compressed data.
    */
-  @Nonnull
-  private ListenableFuture<Pair<VariantCompression, ByteString>> compress(@Nonnull VariantCompression compressionMode,
-                                                                          @Nonnull ByteString fileContents,
-                                                                          @Nonnull String file) {
+  private @Nullable ListenableFuture<Pair<VariantCompression, ByteString>> compress(
+          @Nonnull VariantCompression compressionMode,
+          @Nonnull ByteString fileContents,
+          @Nonnull String file) {
     return executorService.submit(() -> {
       try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
         long start = System.currentTimeMillis();
@@ -956,12 +980,28 @@ public class AssetBundler implements Callable<Integer> {
 
         switch (compressionMode) {
           case GZIP:
-            try (GZIPOutputStream gzipper = new GZIPOutputStream(out)) {
-              gzipper.write(rawData);
-              gzipper.flush();
-              gzipper.finish();
-              gzipper.close();
+            try (GZIPOutputStream gzStream = new GZIPOutputStream(out)) {
+              gzStream.write(rawData);
+              gzStream.flush();
+              gzStream.finish();
+              gzStream.close();
               compressed = out.toByteArray();
+            }
+            break;
+
+          case BROTLI:
+            // build Brotli parameters. because the asset bundler is designed for build-time use, we can safely choose a
+            // high compression quality here.
+            try (BrotliOutputStream brStream = new BrotliOutputStream(out, new Encoder.Parameters()
+                    .setQuality(10)
+                    .setWindow(24))) {
+              brStream.write(rawData);
+              brStream.flush();
+              brStream.close();
+              compressed = out.toByteArray();
+            } catch (IOException ioe) {
+              warn("Failed to compress with Brotli: got IOException. Proceeding anyway.");
+              return null;
             }
             break;
 

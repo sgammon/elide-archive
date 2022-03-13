@@ -484,6 +484,7 @@ maven_install(
         "com.google.errorprone:error_prone_annotations:2.9.0",
         "com.google.guava:failureaccess:1.0.1",
         "com.google.guava:guava:30.1.1-android",
+        "com.nixxcode.jvmbrotli:jvmbrotli:0.2.0",
         "info.picocli:picocli:4.6.3",
         "io.grpc:grpc-all:%s" % GRPC_JAVA_VERSION,
         "io.grpc:grpc-alts:%s" % GRPC_JAVA_VERSION,

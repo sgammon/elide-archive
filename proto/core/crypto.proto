@@ -49,4 +49,13 @@ enum HashAlgorithm {
 
   // Use SHA512 for chunk hashing.
   SHA512 = 4;
+
+  // Use SHA3-224 for chunk hashing.
+  SHA3_224 = 5;
+
+  // Use SHA3-256 for chunk hashing.
+  SHA3_256 = 6;
+
+  // Use SHA3-512 for chunk hashing.
+  SHA3_512 = 7;
 }

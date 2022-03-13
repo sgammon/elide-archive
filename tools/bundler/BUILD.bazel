@@ -47,6 +47,7 @@ java_binary(
         javaproto("//proto/core:data"),
         javaproto("//proto/assets:bundle"),
         javaproto("//proto/page:page"),
+        maven("com.nixxcode.jvmbrotli:jvmbrotli"),
         maven("info.picocli:picocli"),
         maven("io.reactivex.rxjava2:rxjava"),
         "@com_google_template_soy",
@@ -58,4 +59,9 @@ java_binary(
     classpath_resources = [
         "//tools:logback.xml",
     ],
+)
+
+alias(
+    name = "bundler",
+    actual = "AssetBundler",
 )
