@@ -70,6 +70,15 @@ NATIVE_IMAGE_COMPILE_DEPS = [
     _maven("com.google.cloud:native-image-support"),
 ]
 
+ASSET_DIGEST_CHARS = 8
+ASSET_DIGEST_ROUNDS = 3
+ASSET_MANIFEST_PATH = "assets.pb"
+ASSET_MANIFEST_FORMAT = "BINARY"
+ASSET_DIGEST_ALGORITHM = "SHA512"
+ASSETS_ENABLE_GZIP = True
+ASSETS_ENABLE_BROTLI = True
+
+
 def server_binary(
         name,
         srcs = [],
@@ -100,7 +109,9 @@ def server_binary(
         _java_library(
             name = "%s.assets" % name,
             resource_strip_prefix = resource_strip_prefix or native.package_name(),
-            resources = assets,
+            resources = [
+                "%s.manifest" % (n) for n in assets
+            ],
         )
         libdeps.append(
             ":%s.assets" % name,
@@ -207,6 +218,21 @@ def server_binary(
         tags = ["no-ide"],
     )
 
+def _join_cmd(strings):
+    """Joins a sequence of objects as strings, with select statements that return
+       strings handled correctly. This has O(N^2) performance, so don't use it for
+       building up large results.
+       This is mostly equivalent to " ".join(strings), except for handling select
+       statements correctly."""
+    result = ''
+    first = True
+    for string in strings:
+        if type(string) == 'select':
+            result += string
+        else:
+            result += str(string)
+    return result
+
 def server_assets(
         name,
         srcs = [],
@@ -262,8 +288,8 @@ def server_assets(
         (enable_renaming and "--rewrite-maps") or ("--no-rewrite-maps"),
     ]
 
-    native_tools.genrule(
-        name = "%s-assets-manifest" % name,
+    native.genrule(
+        name = "%s.manifest" % name,
         outs = [ASSET_MANIFEST_PATH],
         srcs = [
             target for (entry, target) in js_modules.items()
@@ -273,11 +299,11 @@ def server_assets(
             ("%s.css.json" % target) for (entry, target) in css_modules.items()
         ] or []),
         # ends up as `./asset_bundler.sh --output='-' (...) --css="module.here:some/file.css some/file.css" --`
-        cmd = join_cmd([
+        cmd = _join_cmd([
           "./$(location @elide//tools/bundler)", " ",
           "--", select({
-              "@elide//defs/conditions:debug": "dbg",
-              "@elide//defs/conditions:release": "opt",
+              "@elide//tools/defs/conditions:debug": "dbg",
+              "@elide//tools/defs/conditions:release": "opt",
               "//conditions:default": "dbg",
           }),
           " ",
@@ -292,5 +318,7 @@ maven = _maven
 javagrpc = _javagrpc
 javaproto = _javaproto
 java_library = _java_library
+java_binary = _java_binary
 kt_jvm_library = _kt_jvm_library
+kt_jvm_binary = _kt_jvm_binary
 micronaut_library = _micronaut_library

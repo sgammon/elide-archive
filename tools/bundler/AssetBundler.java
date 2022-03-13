@@ -890,9 +890,6 @@ public class AssetBundler implements Callable<Integer> {
                       fileData,
                       file.getPath()
               );
-              if (job != null) {
-                compressionJobs.add(job);
-              }
             }
 
             ListenableFuture<List<Pair<VariantCompression, ByteString>>> jobs = Futures.allAsList(compressionJobs);
@@ -902,6 +899,12 @@ public class AssetBundler implements Callable<Integer> {
             for (Pair<VariantCompression, ByteString> jobSpec : jobs.get()) {
               ByteString jobResultData = jobSpec.getValue();
               VariantCompression compressionMode = jobSpec.getKey();
+              //noinspection ConstantConditions
+              if (jobResultData == null) {
+                // if the job result is null, it's because the compression algorithm in question was not supported or
+                // encountered a fatal IOException.
+                continue;
+              }
               byte[] compressedData = jobResultData.toByteArray();
 
               if (ELIDE_INEFFICIENT_VARIANTS && compressedData.length > fileContents.length) {
@@ -990,6 +993,12 @@ public class AssetBundler implements Callable<Integer> {
             break;
 
           case BROTLI:
+            if (!brotliAvailable) {
+              // return early: brotli is not available on this platform.
+              info("No Brotli library available. Skipping pre-compression with Brotli.");
+              return null;
+            }
+
             // build Brotli parameters. because the asset bundler is designed for build-time use, we can safely choose a
             // high compression quality here.
             try (BrotliOutputStream brStream = new BrotliOutputStream(out, new Encoder.Parameters()
