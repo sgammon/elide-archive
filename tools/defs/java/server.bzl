@@ -59,13 +59,6 @@ GRAAL_IMAGE_ARGS = [
     "-H:-EnableSecurityServicesFeature",
 ]
 
-GRAAL_IMAGE_FEATURES = [
-    "com.google.cloud.nativeimage.features.ProtobufMessageFeature",
-    "com.google.cloud.nativeimage.features.core.GrpcNettyFeature",
-    "com.google.cloud.nativeimage.features.core.GoogleJsonClientFeature",
-    "com.google.cloud.nativeimage.features.core.OpenCensusFeature",
-]
-
 NATIVE_IMAGE_COMPILE_DEPS = [
     _maven("com.google.cloud:native-image-support"),
 ]
@@ -90,7 +83,7 @@ def server_binary(
         micronaut = True,
         optimized = False,
         resource_strip_prefix = DEFAULT_STRIP_PREFIX,
-        native_image_features = GRAAL_IMAGE_FEATURES,
+        native_image_features = [],
         graal_extra_args = GRAAL_IMAGE_ARGS,
         image_name = None,
         gcloud_project = None,
