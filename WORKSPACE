@@ -109,9 +109,9 @@ http_archive(
 
 http_archive(
     name = "io_bazel_rules_closure",
-    sha256 = "ed563463adaeda87c3578ef0a44b995b29f2875d576be234ca5477d82272fa08",
-    strip_prefix = "rules_closure-b82d3f478725e20b870bf9f2e40990d708702a67",
-    url = "https://github.com/dymecard/rules_closure/archive/b82d3f478725e20b870bf9f2e40990d708702a67.tar.gz",
+    sha256 = "2e4aa34e75d57248a168535f66454a5291919728df6433102621125b63b82498",
+    strip_prefix = "rules_closure-4d9d3a1fbe5a0ed9a5c84e2ce9b774513041a902",
+    url = "https://github.com/dymecard/rules_closure/archive/4d9d3a1fbe5a0ed9a5c84e2ce9b774513041a902.tar.gz",
 )
 
 http_archive(
