@@ -119,7 +119,7 @@ GRPC_JAVA_VERSION = "1.44.0"
 ## Google API Extensions version.
 ## ------------------------------------
 ## Sets the version enforced throughout for GAX and GAX-gRPC.
-GAX_VERSION = "2.5.0"
+GAX_VERSION = "2.12.2"
 
 ## Apache Beam SDK version.
 ## ------------------------------------
@@ -164,7 +164,7 @@ GCLOUD_VERSION = "376.0.0"
 ## Micronaut.
 ## ------------------------------------
 ## Server-side framework version.
-MICRONAUT_VERSION = "3.3.3"
+MICRONAUT_VERSION = "3.3.4"
 
 ## iOS Version.
 ## ------------------------------------
