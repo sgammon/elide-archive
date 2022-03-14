@@ -104,7 +104,7 @@ K8S_PINNED = False
 ## Protobuf toolchain version.
 ## ------------------------------------
 ## Sets the version enforced throughout for Protobuf.
-PROTOBUF_VERSION = "3.19.2"
+PROTOBUF_VERSION = "3.19.4"
 
 ## gRPC toolchain version.
 ## ------------------------------------
@@ -159,7 +159,7 @@ ENABLE_ANDROID = False
 ## Google Cloud SDK.
 ## ------------------------------------
 ## Version of the Google Cloud SDK to use and install.
-GCLOUD_VERSION = "373.0.0"
+GCLOUD_VERSION = "376.0.0"
 
 ## Micronaut.
 ## ------------------------------------

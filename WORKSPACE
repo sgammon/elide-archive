@@ -28,7 +28,6 @@ load(
 load(
     "//tools:config.bzl",
     "FIREBASE_VERSION",
-    "GCLOUD_VERSION",
     "GO_VERSION",
     "GRAALVM_VERSION",
     "GRPC_JAVA_VERSION",
@@ -41,16 +40,16 @@ load(
 
 http_archive(
     name = "com_google_protobuf",
-    sha256 = "4dd35e788944b7686aac898f77df4e9a54da0ca694b8801bd6b2a9ffc1b3085e",
+    sha256 = "3bd7828aa5af4b13b99c191e8b1e884ebfa9ad371b0ce264605d347f135d2568",
     strip_prefix = "protobuf-%s" % PROTOBUF_VERSION,
     urls = ["https://github.com/protocolbuffers/protobuf/archive/v%s.tar.gz" % PROTOBUF_VERSION],
 )
 
 http_archive(
     name = "com_google_googleapis",
-    sha256 = "9d55c75eeecb4dd65fe4207e098c1487a53066497335ade913e8fab25283b8bf",
-    strip_prefix = "googleapis-dbfbfdb38a2f891384779a7ee31deb15adba6659",
-    urls = ["https://github.com/googleapis/googleapis/archive/dbfbfdb38a2f891384779a7ee31deb15adba6659.tar.gz"],
+    sha256 = "8d799e239c09abd2154b56922fb1f33d139e62a205a0882639752aaaf9a89be3",
+    strip_prefix = "googleapis-f8a290120b3a67e652742a221f73778626dc3081",
+    urls = ["https://github.com/googleapis/googleapis/archive/f8a290120b3a67e652742a221f73778626dc3081.tar.gz"],
 )
 
 http_archive(
@@ -69,24 +68,24 @@ http_archive(
 
 http_archive(
     name = "com_github_grpc_grpc_web",
-    sha256 = "0e69b985f4d138fe632c2794887d70737f87f5c2fdbb1f809342fd612ee0abde",
-    strip_prefix = "grpc-web-0fe8d4d58682d37cef5a2ae8bdb145ea50827223",
-    url = "https://github.com/grpc/grpc-web/archive/0fe8d4d58682d37cef5a2ae8bdb145ea50827223.tar.gz",
+    sha256 = "26e0e82a9bde617449185d546677377362cc46835014a3e663891aaf5ef1b9fe",
+    strip_prefix = "grpc-web-8c5502186445e35002697f4bd8d1b820abdbed5d",
+    url = "https://github.com/grpc/grpc-web/archive/8c5502186445e35002697f4bd8d1b820abdbed5d.tar.gz",
 )
 
 http_archive(
-    name = "io_grpc_proto",
-    sha256 = "e0885166fa13ea221fc762fa1cd257424015aa9ee145d761a0519b67ad02fd3e",
-    strip_prefix = "grpc-proto-56b02bda9e145da390bc3fb3e2ecc4c4d9e11c06",
-    urls = ["https://github.com/grpc/grpc-proto/archive/56b02bda9e145da390bc3fb3e2ecc4c4d9e11c06.tar.gz"],
+    name = "io_grpc_grpc_proto",
+    sha256 = "3fb4f25978b16d79d663de64a304f59dcf1b60c5890376956973c8b1bae6f734",
+    strip_prefix = "grpc-proto-ab96cf12ec7ce135e03d6ea91d96213fa4cb02af",
+    urls = ["https://github.com/grpc/grpc-proto/archive/ab96cf12ec7ce135e03d6ea91d96213fa4cb02af.tar.gz"],
 )
 
 http_archive(
     name = "proto_common",
-    sha256 = "20f5e27c83f417c34bf36f38686435dd9e5ca454bef47c08c7d359c37ae26fcf",
-    strip_prefix = "api-common-protos-f37c0ecc55f19b1675448e4bad70fd45c93f5b8f",
+    sha256 = "215220fdbe924a338a789459dd630ce46f9195d3e73efeb3172e201b578a053d",
+    strip_prefix = "api-common-protos-e16c55b094638b43a97edd0847614ab91e2461f7",
     build_file = "proto_common.bzl",
-    urls = ["https://github.com/googleapis/api-common-protos/archive/f37c0ecc55f19b1675448e4bad70fd45c93f5b8f.tar.gz"],
+    urls = ["https://github.com/googleapis/api-common-protos/archive/e16c55b094638b43a97edd0847614ab91e2461f7.tar.gz"],
 )
 
 http_archive(
