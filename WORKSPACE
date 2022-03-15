@@ -476,7 +476,7 @@ graal_bindist_repository(
     version = GRAALVM_VERSION,
 )
 
-load("//tools/defs/tests:junit5.bzl", "junit5_repositories")
+load("//tools/defs/java/testing:junit5.bzl", "junit5_repositories")
 
 junit5_repositories()
 
@@ -582,7 +582,16 @@ maven_install(
     maven_install_json = "@//:maven_install.json",
     override_targets = dict(
         IO_GRPC_GRPC_KOTLIN_OVERRIDE_TARGETS.items() +
-        IO_GRPC_GRPC_JAVA_OVERRIDE_TARGETS.items()
+        IO_GRPC_GRPC_JAVA_OVERRIDE_TARGETS.items() + ({
+            "org.junit.jupiter:junit-jupiter-api": "@org_junit_jupiter_junit_jupiter_api//jar",
+            "org.junit.jupiter:junit-jupiter-engine": "@org_junit_jupiter_junit_jupiter_engine//jar",
+            "org.junit.jupiter:junit-jupiter-params": "@org_junit_jupiter_junit_jupiter_params//jar",
+            "org.junit.platform:junit-platform-commons": "@org_junit_platform_junit_platform_commons//jar",
+            "org.junit.platform:junit-platform-console": "@org_junit_platform_junit_platform_console//jar",
+            "org.junit.platform:junit-platform-engine": "@org_junit_platform_junit_platform_engine//jar",
+            "org.junit.platform:junit-platform-launcher": "@org_junit_platform_junit_platform_launcher//jar",
+            "org.junit.platform:junit-platform-suite-api": "@org_junit_platform_junit_platform_suite_api//jar",
+        }).items(),
     ),
     repositories = [
         "https://repo1.maven.org/maven2",

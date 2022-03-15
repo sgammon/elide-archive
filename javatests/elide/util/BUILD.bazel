@@ -17,8 +17,8 @@ package(
 
 
 load(
-    "//tools/defs/tests:junit5.bzl",
-    "java_test",
+    "//tools/defs/java/testing:junit5.bzl",
+    "java_junit5_test",
 )
 
 TARGETS = [
@@ -34,7 +34,7 @@ EXTRA_DEPS = {
 }
 
 [
-    java_test(
+    java_junit5_test(
         name = "%sTest" % c,
         srcs = ["%sTest.java" % c],
         deps = ["//java/elide/util:%s" % c] + EXTRA_DEPS.get(c, []),

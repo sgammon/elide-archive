@@ -1,0 +1,18 @@
+directories:
+  elide
+  java
+  javatests
+  third_party
+  tools
+  .
+
+derive_targets_from_directories: true
+
+targets:
+  //java/...
+
+additional_languages:
+  go
+  javascript
+  kotlin
+  typescript

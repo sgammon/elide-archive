@@ -10,3 +10,47 @@
 # by trade secret and copyright law. Dissemination of this information, or reproduction of this material, in any form,
 # is strictly forbidden except in adherence with assigned license requirements.
 ##
+
+package(
+    default_visibility = ["//visibility:public"],
+)
+
+load(
+    "//tools/defs/java:java.bzl",
+    "java_library",
+)
+
+
+java_library(
+    name = "package-info",
+    srcs = ["package-info.java"],
+)
+
+alias(
+    name = "inmemory",
+    actual = "//java/elide/driver/inmemory:inmemory",
+)
+
+#alias(
+#    name = "firestore",
+#    actual = "//java/elide/driver/firestore:firestore",
+#)
+
+java_library(
+    name = "driver",
+    exports = [
+        ":package-info",
+
+        # Built-in Drivers
+        ":inmemory",
+#        ":firestore",
+    ],
+)
+
+filegroup(
+    name = "sources",
+    srcs = glob(["*.java"]) + [
+        "//java/elide/driver/inmemory:sources",
+#        "//java/elide/driver/firestore:sources",
+    ],
+)

@@ -22,15 +22,15 @@ load(
 )
 
 load(
-    "//tools/defs/tests:junit5.bzl",
-    "java_test",
+    "//tools/defs/java/testing:junit5.bzl",
+    "java_junit5_test",
 )
 
 _COMMON_DEPS = [
     maven("org.slf4j:slf4j-api"),
 ]
 
-java_test(
+java_junit5_test(
     name = "LoggingTest",
     srcs = ["LoggingTest.java"],
     test_package = "elide.runtime.jvm",
@@ -42,7 +42,7 @@ java_test(
     ] + _COMMON_DEPS,
 )
 
-java_test(
+java_junit5_test(
     name = "ReactiveFutureTest",
     srcs = ["ReactiveFutureTest.java"],
     test_package = "elide.runtime.jvm",
