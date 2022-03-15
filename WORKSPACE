@@ -32,6 +32,7 @@ load(
     "GO_VERSION",
     "GRAALVM_VERSION",
     "GRPC_JAVA_VERSION",
+    "GRPC_KT_VERSION",
     "GRPC_VERSION",
     "JAVA_LANGUAGE_LEVEL",
     "MICRONAUT_VERSION",
@@ -65,6 +66,13 @@ http_archive(
     sha256 = "16cf4556c08b580efede083a9a972eb45060bfbf324cdafc4f9be098ac9e0f01",
     strip_prefix = "grpc-java-%s" % GRPC_JAVA_VERSION,
     url = "https://github.com/grpc/grpc-java/archive/refs/tags/v%s.zip" % GRPC_JAVA_VERSION,
+)
+
+http_archive(
+    name = "com_github_grpc_grpc_kotlin",
+    sha256 = "a1b0e40e4f4f7a88ce525cb8f729c27e2650a78b0a7f29c6b4824b0a22b4e290",
+    strip_prefix = "grpc-kotlin-%s" % GRPC_KT_VERSION,
+    url = "https://github.com/grpc/grpc-kotlin/archive/%s.tar.gz" % GRPC_KT_VERSION,
 )
 
 http_archive(
@@ -165,6 +173,13 @@ http_archive(
     name = "build_bazel_rules_swift",
     sha256 = "3e52a508cdc47a7adbad36a3d2b712e282cc39cc211b0d63efcaf608961eb36b",
     url = "https://github.com/bazelbuild/rules_swift/releases/download/0.26.0/rules_swift.0.26.0.tar.gz",
+)
+
+http_archive(
+    name = "grpc_ecosystem_grpc_gateway",
+    sha256 = "40029e77c82430366c884089375d6b933b5efed6b72645fab6f1337d1954cc0b",
+    strip_prefix = "grpc-gateway-eefd4d7e7e0dd8e34da986bb039a75357e87ef9a",
+    url = "https://github.com/grpc-ecosystem/grpc-gateway/archive/eefd4d7e7e0dd8e34da986bb039a75357e87ef9a.tar.gz",
 )
 
 http_archive(
@@ -354,6 +369,10 @@ go_register_toolchains(
     version = GO_VERSION,
 )
 
+load("@grpc_ecosystem_grpc_gateway//:repositories.bzl", grpc_ecosystem_repos = "go_repositories")
+
+grpc_ecosystem_repos()
+
 load("@com_github_grpc_grpc//bazel:grpc_deps.bzl", "grpc_deps", "grpc_test_only_deps")
 
 grpc_deps()
@@ -412,9 +431,20 @@ load("@rules_jvm_external//:defs.bzl", "maven_install")
 load("@rules_jvm_external//:specs.bzl", "maven")
 load("@build_bazel_rules_nodejs//:index.bzl", "node_repositories", "yarn_install")
 load("@io_bazel_rules_docker//container:container.bzl", "container_pull")
+
+
+load("@com_github_grpc_grpc_kotlin//:repositories.bzl", "IO_GRPC_GRPC_KOTLIN_ARTIFACTS")
+load("@com_github_grpc_grpc_kotlin//:repositories.bzl", "IO_GRPC_GRPC_KOTLIN_OVERRIDE_TARGETS")
+load("@com_github_grpc_grpc_kotlin//:repositories.bzl", "grpc_kt_repositories")
+load("@com_github_grpc_grpc_kotlin//:repositories.bzl", "io_grpc_grpc_java")
+
+io_grpc_grpc_java()
+
 load("@io_grpc_grpc_java//:repositories.bzl", "IO_GRPC_GRPC_JAVA_ARTIFACTS")
 load("@io_grpc_grpc_java//:repositories.bzl", "IO_GRPC_GRPC_JAVA_OVERRIDE_TARGETS")
 load("@io_grpc_grpc_java//:repositories.bzl", "grpc_java_repositories")
+
+grpc_kt_repositories()
 
 grpc_java_repositories()
 
@@ -454,7 +484,10 @@ load("@io_bazel_rules_webtesting//web:java_repositories.bzl", "RULES_WEBTESTING_
 
 INJECTED_JVM_ARTIFACTS = (
     [i for i in RULES_WEBTESTING_ARTIFACTS if (not "guava" in i and not "gson" in i)] +
-    [i for i in IO_GRPC_GRPC_JAVA_ARTIFACTS if (not "guava" in i and not "gson" in i)]
+    [i for i in (
+        IO_GRPC_GRPC_JAVA_ARTIFACTS +
+        IO_GRPC_GRPC_KOTLIN_ARTIFACTS
+    ) if (not "guava" in i and not "gson" in i)]
 )
 
 TEST_ARTIFACTS = [
@@ -484,6 +517,11 @@ maven_install(
         "com.google.errorprone:error_prone_annotations:2.9.0",
         "com.google.guava:failureaccess:1.0.1",
         "com.google.guava:guava:30.1.1-android",
+        "com.google.jimfs:jimfs:1.2",
+        "com.google.protobuf:protobuf-java:%s" % PROTOBUF_VERSION,
+        "com.google.protobuf:protobuf-kotlin:%s" % PROTOBUF_VERSION,
+        "com.google.truth:truth:1.1.3",
+        "com.google.truth.extensions:truth-proto-extension:1.1.3",
         "com.nixxcode.jvmbrotli:jvmbrotli:0.2.0",
         "info.picocli:picocli:4.6.3",
         "io.grpc:grpc-all:%s" % GRPC_JAVA_VERSION,
@@ -541,7 +579,10 @@ maven_install(
     fetch_sources = True,
     generate_compat_repositories = True,
     maven_install_json = "@//:maven_install.json",
-    override_targets = IO_GRPC_GRPC_JAVA_OVERRIDE_TARGETS,
+    override_targets = dict(
+        IO_GRPC_GRPC_KOTLIN_OVERRIDE_TARGETS.items() +
+        IO_GRPC_GRPC_JAVA_OVERRIDE_TARGETS.items()
+    ),
     repositories = [
         "https://repo1.maven.org/maven2",
         "https://maven.google.com",

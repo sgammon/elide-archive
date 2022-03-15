@@ -17,6 +17,10 @@ load(
     _swift_proto_library = "swift_proto_library",
 )
 load(
+    "//tools/defs/kt/proto:defs.bzl",
+    _kt_jvm_proto_library = "kt_jvm_proto_library",
+)
+load(
     "@com_google_protobuf//:protobuf.bzl",
     _py_proto_library = "py_proto_library",
 )
@@ -30,8 +34,10 @@ load(
 )
 
 SWIFT = True
-PYTHON = False
+PYTHON = True
+KOTLIN = True
 TYPESCRIPT = True
+KT_POSTFIX = "ktproto"
 JAVA_POSTFIX = "javaproto"
 SWIFT_POSTFIX = "swiftproto"
 PYTHON_POSTFIX = "pyproto"
@@ -73,6 +79,14 @@ def declare_model(name, **kwargs):
         deps = [base],
     )
 
+    if KOTLIN:
+        # Proto: Kotlin.
+        _kt_jvm_proto_library(
+            name = _target_name(name, KT_POSTFIX),
+            srcs = [base],
+            deps = [_target_name(name, JAVA_POSTFIX)],
+        )
+
     if SWIFT:
         # Proto: Swift.
         _swift_proto_library(
@@ -111,6 +125,10 @@ def well_known(name, actual, **kwargs):
         name = name,
         actual = "%s_wellknown" % name,
     )
+
+def ktproto(target):
+    """Calculate a target name for a Kotlin protocol buffer."""
+    return _target_name(target, KT_POSTFIX)
 
 def javaproto(target):
     """Calculate a target name for a Java protocol buffer."""

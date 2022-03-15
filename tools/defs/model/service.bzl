@@ -18,9 +18,14 @@ load(
     _target_name = "target_name",
 )
 
+KTGRPC_POSTFIX = "grpckt"
 JAVAGRPC_POSTFIX = "grpcjava"
 SWIFTGRPC_POSTFIX = "grpcswift"
 TYPESCRIPTGRPC_POSTFIX = "grpcts"
+
+def ktgrpc(target):
+    """Calculate a target path for a Kotlin gRPC service."""
+    return _target_name(target, KTGRPC_POSTFIX)
 
 def javagrpc(target):
     """Calculate a target path for a Java gRPC service."""

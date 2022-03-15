@@ -11,25 +11,11 @@
 # is strictly forbidden except in adherence with assigned license requirements.
 ##
 
-load(
-    "//tools/defs/model:internals.bzl",
-    _model = "declare_model",
-    _descriptor = "descriptor",
-    _javaproto = "javaproto",
-    _swiftproto = "swiftproto",
-    _pyproto = "pyproto",
-    _tsproto = "tsproto",
-    _jsproto = "jsproto",
-    _ktproto = "ktproto",
-    _well_known = "well_known",
-)
+readonly zipper="$1"
+readonly output_dir="$2"
+shift 2
 
-model = _model
-ktproto = _ktproto
-javaproto = _javaproto
-swiftproto = _swiftproto
-tsproto = _tsproto
-jsproto = _jsproto
-pyproto = _pyproto
-well_known = _well_known
-descriptor = _descriptor
+mkdir -p "${output_dir}"
+for input_jar in "$@"; do
+  $zipper x "${input_jar}" -d "${output_dir}"
+done

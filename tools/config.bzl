@@ -116,6 +116,11 @@ GRPC_VERSION = "1.44.0"
 ## Sets the version enforced throughout for gRPC's Java layer.
 GRPC_JAVA_VERSION = "1.44.0"
 
+## gRPC Kotlin version.
+## ------------------------------------
+## Sets the version enforced for gRPC's Kotlin layer.
+GRPC_KT_VERSION = "c7b29c0d7bd5b6f48788ac1ba00fcb5d8467226d"
+
 ## Google API Extensions version.
 ## ------------------------------------
 ## Sets the version enforced throughout for GAX and GAX-gRPC.

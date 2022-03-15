@@ -10,26 +10,3 @@
 # by trade secret and copyright law. Dissemination of this information, or reproduction of this material, in any form,
 # is strictly forbidden except in adherence with assigned license requirements.
 ##
-
-load(
-    "//tools/defs/model:internals.bzl",
-    _model = "declare_model",
-    _descriptor = "descriptor",
-    _javaproto = "javaproto",
-    _swiftproto = "swiftproto",
-    _pyproto = "pyproto",
-    _tsproto = "tsproto",
-    _jsproto = "jsproto",
-    _ktproto = "ktproto",
-    _well_known = "well_known",
-)
-
-model = _model
-ktproto = _ktproto
-javaproto = _javaproto
-swiftproto = _swiftproto
-tsproto = _tsproto
-jsproto = _jsproto
-pyproto = _pyproto
-well_known = _well_known
-descriptor = _descriptor

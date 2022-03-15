@@ -26,12 +26,16 @@ load(
     _maven = "maven",
 )
 load(
-    "//tools/defs/model:model.bzl",
+    "//tools/defs/model:internals.bzl",
     _javaproto = "javaproto",
+    _ktproto = "ktproto",
+    _KT_POSTFIX = "KT_POSTFIX",
+    _JAVA_POSTFIX = "JAVA_POSTFIX",
 )
 load(
     "//tools/defs/model:service.bzl",
     _javagrpc = "javagrpc",
+    _ktgrpc = "ktgrpc",
 )
 
 ANNOTATION_PROCESSORS = [
@@ -99,13 +103,17 @@ def micronaut_service(
         deps = deps + MICRONAUT_SERVICE_DEPS + [
             _javaproto(p)
             for p in (protos + services)
+#            if (_KT_POSTFIX not in p and _JAVA_POSTFIX not in p)
         ] + [
             _javagrpc(s)
             for s in services
+#            if (_KT_POSTFIX not in p and _JAVA_POSTFIX not in p)
         ],
         plugins = plugins,
     )
 
 maven = _maven
+ktproto = _ktproto
 javaproto = _javaproto
 javagrpc = _javagrpc
+ktgrpc = _ktgrpc
