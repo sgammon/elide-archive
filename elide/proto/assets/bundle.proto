@@ -33,11 +33,11 @@ option go_package = "github.com/elide-tools/elide/assets/bundle;bundle";
 
 import "google/protobuf/timestamp.proto";
 
-import "proto/core/crypto.proto";
-import "proto/core/data.proto";
-import "proto/core/datamodel.proto";
-import "proto/page/page.proto";
-import "proto/struct/bloom.proto";
+import "elide/proto/core/crypto.proto";
+import "elide/proto/core/data.proto";
+import "elide/proto/core/datamodel.proto";
+import "elide/proto/page/page.proto";
+import "elide/proto/struct/bloom.proto";
 
 
 // Defines the structure of an "asset bundle," which keeps track of frontend assets for an application. This manifest is

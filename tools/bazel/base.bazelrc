@@ -23,6 +23,7 @@ build --worker_sandboxing
 build --strategy=Closure=worker
 build --strategy=JdepsMerger=worker
 build --strategy=KotlinCompile=worker
+build --strategy=SwiftCompile=sandboxed
 
 build --javacopt='--release 11'
 build --javacopt="-encoding UTF-8"
@@ -32,6 +33,12 @@ build --interface_shared_objects
 build --enable_platform_specific_config
 build --client_env=CC=clang
 build --cxxopt=-std=c++17 --host_cxxopt=-std=c++17 --client_env=BAZEL_CXXOPTS=-std=c++17
+
+build --apple_generate_dsym
+build --objc_generate_linkmap
+build --ios_minimum_os=14.0.0
+build --macos_minimum_os=10.12
+build --xcode_version=13.2.1
 
 build --java_language_version=11
 build --tool_java_language_version=11

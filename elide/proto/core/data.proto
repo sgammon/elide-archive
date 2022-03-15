@@ -31,7 +31,7 @@ option java_package = "tools.elide.core.data";
 option csharp_namespace = "Elide.Core.Data";
 option go_package = "github.com/elide-tools/elide/core/data;data";
 
-import "proto/core/crypto.proto";
+import "elide/proto/core/crypto.proto";
 
 
 // Specifies compression modes that are supported by the framework for pre-compressed assets stored inline within the

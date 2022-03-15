@@ -32,7 +32,7 @@ option java_package = "tools.elide.page";
 option csharp_namespace = "Elide.Page";
 option go_package = "github.com/elide-tools/elide/page";
 
-import "proto/page/media.proto";
+import "elide/proto/page/media.proto";
 
 
 // Enumerates known semantic types, which are further mapped to their implementation types in each

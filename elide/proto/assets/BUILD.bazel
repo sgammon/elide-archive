@@ -11,11 +11,22 @@
 # is strictly forbidden except in adherence with assigned license requirements.
 ##
 
-readonly zipper="$1"
-readonly output_dir="$2"
-shift 2
+package(
+    default_visibility = ["//visibility:public"],
+)
 
-mkdir -p "${output_dir}"
-for input_jar in "$@"; do
-  $zipper x "${input_jar}" -d "${output_dir}"
-done
+load(
+    "//tools/defs:targets.bzl",
+    "protos",
+)
+
+protos([
+    "bundle",
+], deps = [
+    "//elide/proto/core:crypto",
+    "//elide/proto/core:data",
+    "//elide/proto/core:datamodel",
+    "//elide/proto/page:page",
+    "//elide/proto/struct:bloom",
+    "@com_google_protobuf//:timestamp_proto",
+])

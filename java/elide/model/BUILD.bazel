@@ -72,7 +72,7 @@ java_library(
         ":ModelSerializer",
         ":WriteProxy",
         ":SerializedModel",
-        javaproto("//proto/core:datamodel"),
+        javaproto("//elide/proto/core:datamodel"),
     ] + _COMMON_DEPS,
 )
 
@@ -169,7 +169,7 @@ java_library(
     srcs = ["InvalidModelType.java"],
     deps = [
         ":PersistenceException",
-        javaproto("//proto/core:datamodel"),
+        javaproto("//elide/proto/core:datamodel"),
     ] + _COMMON_DEPS,
 )
 
@@ -178,7 +178,7 @@ java_library(
     srcs = ["MissingAnnotatedField.java"],
     deps = [
         ":PersistenceException",
-        javaproto("//proto/core:datamodel"),
+        javaproto("//elide/proto/core:datamodel"),
     ] + _COMMON_DEPS,
 )
 
@@ -193,7 +193,7 @@ java_library(
         ":ModelMetadata",
         ":PersistenceDriver",
         ":WriteOptions",
-        javaproto("//proto/core:datamodel"),
+        javaproto("//elide/proto/core:datamodel"),
     ] + _COMMON_DEPS,
 )
 
@@ -238,7 +238,7 @@ java_library(
     deps = [
         ":InvalidModelType",
         ":MissingAnnotatedField",
-        javaproto("//proto/core:datamodel"),
+        javaproto("//elide/proto/core:datamodel"),
         "@com_google_protobuf//:protobuf_java_util",
         maven("com.google.errorprone:error_prone_annotations"),
     ] + _COMMON_DEPS,
@@ -327,7 +327,7 @@ java_library(
         ":PersistenceOperationFailed",
         ":UpdateOptions",
         ":WriteOptions",
-        javaproto("//proto/core:datamodel"),
+        javaproto("//elide/proto/core:datamodel"),
         maven("com.google.errorprone:error_prone_annotations"),
         maven("io.reactivex.rxjava2:rxjava"),
         maven("org.reactivestreams:reactive-streams"),

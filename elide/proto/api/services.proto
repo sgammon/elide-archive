@@ -21,7 +21,7 @@ option csharp_namespace = "Elide.API";
 option go_package = "github.com/elide-tools/elide/api";
 
 import "google/protobuf/descriptor.proto";
-import "proto/api/openapiv2.proto";
+import "elide/proto/api/openapiv2.proto";
 
 
 extend google.protobuf.FileOptions {

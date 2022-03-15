@@ -12,17 +12,20 @@
 ##
 
 package(
-    default_visibility = ["//visibility:public"]
+    default_visibility = ["//visibility:public"],
 )
 
-load("@io_bazel_rules_kotlin//kotlin:core.bzl", "kt_kotlinc_options")
-
-sh_binary(
-    name = "extract_srcjars",
-    srcs = ["extract_srcjars.sh"],
+load(
+    "//tools/defs:targets.bzl",
+    "protos",
 )
 
-kt_kotlinc_options(
-    name = "proto_gen_kt_options",
-    warn = "off",
+## Bloom Filters
+protos(
+    protos = [
+        "bloom"
+    ], deps = [
+        "//elide/proto/core:crypto",
+        "//elide/proto/core:datamodel",
+    ],
 )

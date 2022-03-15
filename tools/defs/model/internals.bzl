@@ -34,7 +34,7 @@ load(
 )
 
 SWIFT = True
-PYTHON = True
+PYTHON = False
 KOTLIN = True
 TYPESCRIPT = True
 KT_POSTFIX = "ktproto"

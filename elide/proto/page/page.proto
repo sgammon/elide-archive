@@ -37,11 +37,11 @@ import "google/protobuf/timestamp.proto";
 
 import "webutil/html/types/html.proto";
 
-import "proto/core/data.proto";
-import "proto/core/datamodel.proto";
+import "elide/proto/core/data.proto";
+import "elide/proto/core/datamodel.proto";
 
-import "proto/base/language.proto";
-import "proto/page/semantic.proto";
+import "elide/proto/base/language.proto";
+import "elide/proto/page/semantic.proto";
 
 
 // Defines the notion of a *Render Context* for server-side pages in Gust. This protocol message is filled out with data

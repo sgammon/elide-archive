@@ -16,17 +16,37 @@ package(
 )
 
 load(
+    "//tools/defs/model:model.bzl",
+    "model",
+)
+load(
     "//tools/defs:targets.bzl",
     "protos",
 )
 
-protos([
-    "bundle",
-], deps = [
-    "//proto/core:crypto",
-    "//proto/core:data",
-    "//proto/core:datamodel",
-    "//proto/page:page",
-    "//proto/struct:bloom",
-    "@com_google_protobuf//:timestamp_proto",
-])
+
+## Page Models
+model(
+    name = "media",
+    srcs = ["media.proto"],
+)
+
+model(
+    name = "semantic",
+    srcs = ["semantic.proto"],
+    deps = [":media"],
+)
+
+model(
+    name = "page",
+    srcs = ["page.proto"],
+    deps = [
+        ":semantic",
+        "//elide/proto/core:data",
+        "//elide/proto/core:datamodel",
+        "//elide/proto/base:language",
+        "@safe_html_types//:proto",
+        "@com_google_protobuf//:duration_proto",
+        "@com_google_protobuf//:timestamp_proto",
+    ]
+)
