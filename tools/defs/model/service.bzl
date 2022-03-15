@@ -25,16 +25,24 @@ TYPESCRIPTGRPC_POSTFIX = "grpcts"
 
 def ktgrpc(target):
     """Calculate a target path for a Kotlin gRPC service."""
+    if target.endswith(KTGRPC_POSTFIX):
+        return target
     return _target_name(target, KTGRPC_POSTFIX)
 
 def javagrpc(target):
     """Calculate a target path for a Java gRPC service."""
+    if target.endswith(JAVAGRPC_POSTFIX):
+        return target
     return _target_name(target, JAVAGRPC_POSTFIX)
 
 def swiftgrpc(target):
     """Calculate a target path for a Swift gRPC service."""
+    if target.endswith(SWIFTGRPC_POSTFIX):
+        return target
     return _target_name(target, SWIFTGRPC_POSTFIX)
 
 def tsgrpc(target):
     """Calculate a target path for a TypeScript gRPC service."""
+    if target.endswith(TYPESCRIPTGRPC_POSTFIX):
+        return target
     return _target_name(target, TYPESCRIPTGRPC_POSTFIX)

@@ -36,6 +36,8 @@ load(
     "//tools/defs/model:service.bzl",
     _javagrpc = "javagrpc",
     _ktgrpc = "ktgrpc",
+    _KTGRPC_POSTFIX = "KTGRPC_POSTFIX",
+    _JAVAGRPC_POSTFIX = "JAVAGRPC_POSTFIX",
 )
 
 ANNOTATION_PROCESSORS = [
@@ -59,6 +61,8 @@ MICRONAUT_SERVICE_DEPS = [
     "@io_grpc_grpc_java//context",
     "@io_grpc_grpc_java//core",
     "@io_grpc_grpc_java//stub",
+    _maven("com.google.protobuf:protobuf-java"),
+    _maven("com.google.protobuf:protobuf-kotlin"),
     _maven("io.micronaut.grpc:micronaut-grpc-runtime"),
     _maven("io.micronaut.grpc:micronaut-grpc-server-runtime"),
 ]
@@ -103,11 +107,11 @@ def micronaut_service(
         deps = deps + MICRONAUT_SERVICE_DEPS + [
             _javaproto(p)
             for p in (protos + services)
-#            if (_KT_POSTFIX not in p and _JAVA_POSTFIX not in p)
+            if (_KT_POSTFIX not in p and _JAVA_POSTFIX not in p)
         ] + [
             _javagrpc(s)
             for s in services
-#            if (_KT_POSTFIX not in p and _JAVA_POSTFIX not in p)
+            if (_KTGRPC_POSTFIX not in s and _JAVAGRPC_POSTFIX not in s)
         ],
         plugins = plugins,
     )

@@ -17,7 +17,7 @@ load(
     _swift_proto_library = "swift_proto_library",
 )
 load(
-    "//tools/defs/kt/proto:defs.bzl",
+    "@com_github_grpc_grpc_kotlin//:kt_jvm_grpc.bzl",
     _kt_jvm_proto_library = "kt_jvm_proto_library",
 )
 load(
@@ -83,8 +83,7 @@ def declare_model(name, **kwargs):
         # Proto: Kotlin.
         _kt_jvm_proto_library(
             name = _target_name(name, KT_POSTFIX),
-            srcs = [base],
-            deps = [_target_name(name, JAVA_POSTFIX)],
+            deps = [base],
         )
 
     if SWIFT:
