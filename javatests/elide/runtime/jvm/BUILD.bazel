@@ -55,3 +55,11 @@ java_junit5_test(
         maven("org.reactivestreams:reactive-streams"),
     ] + _COMMON_DEPS,
 )
+
+test_suite(
+    name = "jvm",
+    tests = [
+        ":LoggingTest",
+        ":ReactiveFutureTest",
+    ],
+)

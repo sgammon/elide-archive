@@ -41,3 +41,9 @@ EXTRA_DEPS = {
         test_package = "elide.util",
     ) for c in TARGETS
 ]
+
+
+test_suite(
+    name = "util",
+    tests = [":%sTest" % c for c in TARGETS],
+)

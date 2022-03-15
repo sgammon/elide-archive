@@ -119,3 +119,14 @@ java_test(
         "//javatests/elide/model:GenericPersistenceDriverTest",
     ] + _COMMON_DEPS,
 )
+
+test_suite(
+    name = "inmemory",
+    tests = [
+        ":InMemoryAdapterNoopCacheTest",
+        ":InMemoryAdapterTest",
+        ":InMemoryAdapterWithCacheTest",
+        ":InMemoryCacheTest",
+        ":InMemoryDriverTest",
+    ],
+)

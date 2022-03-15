@@ -10,3 +10,17 @@
 # by trade secret and copyright law. Dissemination of this information, or reproduction of this material, in any form,
 # is strictly forbidden except in adherence with assigned license requirements.
 ##
+
+package(
+    default_visibility = ["//visibility:public"],
+)
+
+test_suite(
+    name = "elide",
+    tests = [
+        "//javatests/elide/driver",
+        "//javatests/elide/model",
+        "//javatests/elide/runtime",
+        "//javatests/elide/util",
+    ],
+)

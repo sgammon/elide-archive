@@ -193,3 +193,16 @@ java_test(
         "//java/elide/model:ProtoModelCodec",
     ] + _COMMON_DEPS,
 )
+
+test_suite(
+    name = "model",
+    tests = [
+        ":CollapsedMessageTest",
+        ":EncodedModelTest",
+        ":ModelExceptionTest",
+        ":ModelMetadataTest",
+        ":ModelOptionsTest",
+        ":PersistenceDriverTest",
+        ":ProtoModelCodecTest",
+    ],
+)

@@ -16,3 +16,7 @@ exports_files([
   "logback-test.xml",
 ])
 
+alias(
+    name = "javatests",
+    actual = "//javatests/elide",
+)
