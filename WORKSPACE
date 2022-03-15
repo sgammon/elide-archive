@@ -519,6 +519,7 @@ maven_install(
         "com.google.guava:guava:30.1.1-android",
         "com.google.jimfs:jimfs:1.2",
         "com.google.protobuf:protobuf-java:%s" % PROTOBUF_VERSION,
+        "com.google.protobuf:protobuf-java-util:%s" % PROTOBUF_VERSION,
         "com.google.protobuf:protobuf-kotlin:%s" % PROTOBUF_VERSION,
         "com.google.truth:truth:1.1.3",
         "com.google.truth.extensions:truth-proto-extension:1.1.3",
