@@ -125,7 +125,7 @@
 	height: 0;
 	font-size: 0;
 	line-height: 0;
-	border-width: 1px 0 0 0;
+	border-width: 1px 0 0;
 }
 .ui-menu .ui-state-focus,
 .ui-menu .ui-state-active {
