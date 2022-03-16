@@ -22,8 +22,16 @@ targets:
   //javatests/...
   -//jstests/...
 
+build_flags:
+  --config=dev
+  --config=labs
+  --define=project=elide-ai
+
 ts_config_rules:
   //:tsconfig.json
+  //defs/toolchain/ts:tsconfig-common
+  //defs/toolchain/ts:tsconfig-node
+  //defs/toolchain/ts:tsconfig-browser
 
 test_sources:
   - */tests/*

@@ -73,6 +73,7 @@ java_library(
     deps = [
         maven("com.google.api:api-common"),
         maven("com.google.guava:guava"),
+        maven("com.google.guava:failureaccess"),
         maven("com.google.protobuf:protobuf-java"),
         maven("org.reactivestreams:reactive-streams"),
         maven("io.reactivex.rxjava2:rxjava"),

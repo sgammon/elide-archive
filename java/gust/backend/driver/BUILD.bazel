@@ -52,5 +52,6 @@ filegroup(
     srcs = glob(["*.java"]) + [
         "//java/gust/backend/driver/inmemory:sources",
         "//java/gust/backend/driver/firestore:sources",
+        "//java/gust/backend/driver/spanner:sources",
     ]
 )

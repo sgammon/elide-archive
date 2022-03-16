@@ -53,9 +53,4 @@ public interface FetchOptions extends CacheOptions, OperationOptions {
   default @Nonnull Optional<Long> snapshot() {
     return Optional.empty();
   }
-
-  /** @return Whether to run in a transaction. */
-  default @Nonnull Optional<Boolean> transactional() {
-    return Optional.empty();
-  }
 }

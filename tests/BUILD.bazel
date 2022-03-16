@@ -15,6 +15,17 @@ package(
     default_visibility = ["//visibility:public"],
 )
 
+
 exports_files([
     "karma_config.js",
 ])
+
+
+test_suite(
+    name = "suite",
+    testonly = True,
+    tests = [
+#        "//tests/dom:suite",  @TODO(sgammon): fix these
+        "//tests/style:suite",
+    ],
+)

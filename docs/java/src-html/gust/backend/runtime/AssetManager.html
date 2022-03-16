@@ -1,0 +1,670 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<main role="main">
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span><a id="line.1">/*</a>
+<span class="sourceLineNo">002</span><a id="line.2"> * Copyright © 2020, The Gust Framework Authors. All rights reserved.</a>
+<span class="sourceLineNo">003</span><a id="line.3"> *</a>
+<span class="sourceLineNo">004</span><a id="line.4"> * The Gust/Elide framework and tools, and all associated source or object computer code, except where otherwise noted,</a>
+<span class="sourceLineNo">005</span><a id="line.5"> * are licensed under the Zero Prosperity license, which is enclosed in this repository, in the file LICENSE.txt. Use of</a>
+<span class="sourceLineNo">006</span><a id="line.6"> * this code in object or source form requires and implies consent and agreement to that license in principle and</a>
+<span class="sourceLineNo">007</span><a id="line.7"> * practice. Source or object code not listing this header, or unless specified otherwise, remain the property of</a>
+<span class="sourceLineNo">008</span><a id="line.8"> * Elide LLC and its suppliers, if any. The intellectual and technical concepts contained herein are proprietary to</a>
+<span class="sourceLineNo">009</span><a id="line.9"> * Elide LLC and its suppliers and may be covered by U.S. and Foreign Patents, or patents in process, and are protected</a>
+<span class="sourceLineNo">010</span><a id="line.10"> * by trade secret and copyright law. Dissemination of this information, or reproduction of this material, in any form,</a>
+<span class="sourceLineNo">011</span><a id="line.11"> * is strictly forbidden except in adherence with assigned license requirements.</a>
+<span class="sourceLineNo">012</span><a id="line.12"> */</a>
+<span class="sourceLineNo">013</span><a id="line.13">package gust.backend.runtime;</a>
+<span class="sourceLineNo">014</span><a id="line.14"></a>
+<span class="sourceLineNo">015</span><a id="line.15">import com.google.common.collect.ImmutableSortedSet;</a>
+<span class="sourceLineNo">016</span><a id="line.16">import com.google.common.collect.Multimap;</a>
+<span class="sourceLineNo">017</span><a id="line.17">import com.google.common.collect.MultimapBuilder;</a>
+<span class="sourceLineNo">018</span><a id="line.18">import com.google.protobuf.InvalidProtocolBufferException;</a>
+<span class="sourceLineNo">019</span><a id="line.19">import com.google.protobuf.Message;</a>
+<span class="sourceLineNo">020</span><a id="line.20">import com.google.protobuf.Timestamp;</a>
+<span class="sourceLineNo">021</span><a id="line.21">import gust.util.Hex;</a>
+<span class="sourceLineNo">022</span><a id="line.22">import gust.util.Pair;</a>
+<span class="sourceLineNo">023</span><a id="line.23">import io.micronaut.context.annotation.Context;</a>
+<span class="sourceLineNo">024</span><a id="line.24">import io.micronaut.context.annotation.Infrastructure;</a>
+<span class="sourceLineNo">025</span><a id="line.25">import org.slf4j.Logger;</a>
+<span class="sourceLineNo">026</span><a id="line.26">import tools.elide.assets.AssetBundle;</a>
+<span class="sourceLineNo">027</span><a id="line.27">import tools.elide.assets.AssetBundle.StyleBundle.StyleAsset;</a>
+<span class="sourceLineNo">028</span><a id="line.28">import tools.elide.assets.AssetBundle.ScriptBundle.ScriptAsset;</a>
+<span class="sourceLineNo">029</span><a id="line.29">import tools.elide.core.data.CompressedData;</a>
+<span class="sourceLineNo">030</span><a id="line.30">import tools.elide.core.data.CompressionMode;</a>
+<span class="sourceLineNo">031</span><a id="line.31"></a>
+<span class="sourceLineNo">032</span><a id="line.32">import javax.annotation.Nonnull;</a>
+<span class="sourceLineNo">033</span><a id="line.33">import javax.annotation.concurrent.Immutable;</a>
+<span class="sourceLineNo">034</span><a id="line.34">import javax.annotation.concurrent.ThreadSafe;</a>
+<span class="sourceLineNo">035</span><a id="line.35">import java.io.*;</a>
+<span class="sourceLineNo">036</span><a id="line.36">import java.net.URL;</a>
+<span class="sourceLineNo">037</span><a id="line.37">import java.nio.charset.StandardCharsets;</a>
+<span class="sourceLineNo">038</span><a id="line.38">import java.security.MessageDigest;</a>
+<span class="sourceLineNo">039</span><a id="line.39">import java.security.NoSuchAlgorithmException;</a>
+<span class="sourceLineNo">040</span><a id="line.40">import java.util.*;</a>
+<span class="sourceLineNo">041</span><a id="line.41">import java.util.concurrent.ConcurrentSkipListSet;</a>
+<span class="sourceLineNo">042</span><a id="line.42">import java.util.function.Function;</a>
+<span class="sourceLineNo">043</span><a id="line.43">import java.util.stream.Collectors;</a>
+<span class="sourceLineNo">044</span><a id="line.44"></a>
+<span class="sourceLineNo">045</span><a id="line.45">import static java.lang.String.format;</a>
+<span class="sourceLineNo">046</span><a id="line.46"></a>
+<span class="sourceLineNo">047</span><a id="line.47"></a>
+<span class="sourceLineNo">048</span><a id="line.48">/**</a>
+<span class="sourceLineNo">049</span><a id="line.49"> * Manager class, which mediates interactions with the binary asset bundle. When managed assets are active, the content</a>
+<span class="sourceLineNo">050</span><a id="line.50"> * and manifest are located in a binary proto file at the root of the JAR.</a>
+<span class="sourceLineNo">051</span><a id="line.51"> *</a>
+<span class="sourceLineNo">052</span><a id="line.52"> * &lt;p&gt;This object acts as a singleton, and is responsible for the actual mechanics of initially reading the asset bundle</a>
+<span class="sourceLineNo">053</span><a id="line.53"> * and interpreting its contents. Once we have established indexes and completed other prep work, the manager moves into</a>
+<span class="sourceLineNo">054</span><a id="line.54"> * a read-only mode, where its primary job shifts to satisfying dynamic asset requests - either for referential metadata</a>
+<span class="sourceLineNo">055</span><a id="line.55"> * which is used to embed an asset in the DOM, or content data, which is used to serve the asset itself.&lt;/p&gt;</a>
+<span class="sourceLineNo">056</span><a id="line.56"> *</a>
+<span class="sourceLineNo">057</span><a id="line.57"> * &lt;p&gt;Multiple "variants" of an asset are stored in the bundle (if so configured). This includes one variant reflecting</a>
+<span class="sourceLineNo">058</span><a id="line.58"> * the regular, un-modified content for the asset, and an additional variant for each caching strategy supported by the</a>
+<span class="sourceLineNo">059</span><a id="line.59"> * framework ({@code GZIP} and {@code BROTLI} at the time of this writing).&lt;/p&gt;</a>
+<span class="sourceLineNo">060</span><a id="line.60"> */</a>
+<span class="sourceLineNo">061</span><a id="line.61">@Context</a>
+<span class="sourceLineNo">062</span><a id="line.62">@ThreadSafe</a>
+<span class="sourceLineNo">063</span><a id="line.63">@Infrastructure</a>
+<span class="sourceLineNo">064</span><a id="line.64">@SuppressWarnings("UnstableApiUsage")</a>
+<span class="sourceLineNo">065</span><a id="line.65">public final class AssetManager {</a>
+<span class="sourceLineNo">066</span><a id="line.66">  /** Private logging pipe. */</a>
+<span class="sourceLineNo">067</span><a id="line.67">  private static final @Nonnull Logger logging = Logging.logger(AssetManager.class);</a>
+<span class="sourceLineNo">068</span><a id="line.68"></a>
+<span class="sourceLineNo">069</span><a id="line.69">  /** Path to the asset manifest resource. */</a>
+<span class="sourceLineNo">070</span><a id="line.70">  private static final @Nonnull String manifestPath = "/assets.pb";</a>
+<span class="sourceLineNo">071</span><a id="line.71"></a>
+<span class="sourceLineNo">072</span><a id="line.72">  /** Length of generated ETag values. */</a>
+<span class="sourceLineNo">073</span><a id="line.73">  private static final int ETAG_LENGTH = 8;</a>
+<span class="sourceLineNo">074</span><a id="line.74"></a>
+<span class="sourceLineNo">075</span><a id="line.75">  /** Algorithm to use for ETag value generation. */</a>
+<span class="sourceLineNo">076</span><a id="line.76">  private static final @Nonnull String ETAG_DIGEST_ALGORITHM = "SHA-256";</a>
+<span class="sourceLineNo">077</span><a id="line.77"></a>
+<span class="sourceLineNo">078</span><a id="line.78">  /** Shared/static asset bundle object, which is immutable. */</a>
+<span class="sourceLineNo">079</span><a id="line.79">  private static volatile AssetBundle loadedBundle;</a>
+<span class="sourceLineNo">080</span><a id="line.80"></a>
+<span class="sourceLineNo">081</span><a id="line.81">  /** Specifies a map of asset modules to metadata. */</a>
+<span class="sourceLineNo">082</span><a id="line.82">  private static final @Nonnull SortedMap&lt;String, ModuleMetadata&lt;? extends Message&gt;&gt; assetMap = new TreeMap&lt;&gt;();</a>
+<span class="sourceLineNo">083</span><a id="line.83"></a>
+<span class="sourceLineNo">084</span><a id="line.84">  /** Maps content blocks to their module names. */</a>
+<span class="sourceLineNo">085</span><a id="line.85">  private static final @Nonnull Multimap&lt;String, String&gt; modulesToTokens = MultimapBuilder</a>
+<span class="sourceLineNo">086</span><a id="line.86">    .hashKeys()</a>
+<span class="sourceLineNo">087</span><a id="line.87">    .treeSetValues()</a>
+<span class="sourceLineNo">088</span><a id="line.88">    .build();</a>
+<span class="sourceLineNo">089</span><a id="line.89"></a>
+<span class="sourceLineNo">090</span><a id="line.90">  /** Specifies a map of tokens to their content info. */</a>
+<span class="sourceLineNo">091</span><a id="line.91">  private static final @Nonnull SortedMap&lt;String, ContentInfo&gt; tokenMap = new TreeMap&lt;&gt;();</a>
+<span class="sourceLineNo">092</span><a id="line.92"></a>
+<span class="sourceLineNo">093</span><a id="line.93">  /** Holds on to info related to a raw asset file. */</a>
+<span class="sourceLineNo">094</span><a id="line.94">  @Immutable</a>
+<span class="sourceLineNo">095</span><a id="line.95">  static final class ContentInfo {</a>
+<span class="sourceLineNo">096</span><a id="line.96">    /** Unique token for this asset. */</a>
+<span class="sourceLineNo">097</span><a id="line.97">    final @Nonnull String token;</a>
+<span class="sourceLineNo">098</span><a id="line.98"></a>
+<span class="sourceLineNo">099</span><a id="line.99">    /** Unique token for this asset. */</a>
+<span class="sourceLineNo">100</span><a id="line.100">    final @Nonnull String module;</a>
+<span class="sourceLineNo">101</span><a id="line.101"></a>
+<span class="sourceLineNo">102</span><a id="line.102">    /** Original filename for this asset. */</a>
+<span class="sourceLineNo">103</span><a id="line.103">    final @Nonnull String filename;</a>
+<span class="sourceLineNo">104</span><a id="line.104"></a>
+<span class="sourceLineNo">105</span><a id="line.105">    /** Uncompressed data size. */</a>
+<span class="sourceLineNo">106</span><a id="line.106">    final @Nonnull Long size;</a>
+<span class="sourceLineNo">107</span><a id="line.107"></a>
+<span class="sourceLineNo">108</span><a id="line.108">    /** Etag, calculated from the token and filename. */</a>
+<span class="sourceLineNo">109</span><a id="line.109">    final @Nonnull String etag;</a>
+<span class="sourceLineNo">110</span><a id="line.110"></a>
+<span class="sourceLineNo">111</span><a id="line.111">    /** Smallest compression option. */</a>
+<span class="sourceLineNo">112</span><a id="line.112">    final @Nonnull CompressionMode optimalCompression;</a>
+<span class="sourceLineNo">113</span><a id="line.113"></a>
+<span class="sourceLineNo">114</span><a id="line.114">    /** Size of the optimally-compressed variant. */</a>
+<span class="sourceLineNo">115</span><a id="line.115">    final @Nonnull Long compressedSize;</a>
+<span class="sourceLineNo">116</span><a id="line.116"></a>
+<span class="sourceLineNo">117</span><a id="line.117">    /** Count of variants held by this content info block. */</a>
+<span class="sourceLineNo">118</span><a id="line.118">    final @Nonnull Integer variantCount;</a>
+<span class="sourceLineNo">119</span><a id="line.119"></a>
+<span class="sourceLineNo">120</span><a id="line.120">    /** Options that exist for pre-compressed variants of this content. */</a>
+<span class="sourceLineNo">121</span><a id="line.121">    final @Nonnull EnumSet&lt;CompressionMode&gt; compressionOptions;</a>
+<span class="sourceLineNo">122</span><a id="line.122"></a>
+<span class="sourceLineNo">123</span><a id="line.123">    /** Pointer to the content record backing this object. */</a>
+<span class="sourceLineNo">124</span><a id="line.124">    final @Nonnull AssetBundle.AssetContent content;</a>
+<span class="sourceLineNo">125</span><a id="line.125"></a>
+<span class="sourceLineNo">126</span><a id="line.126">    /** Raw constructor for content info metadata. */</a>
+<span class="sourceLineNo">127</span><a id="line.127">    private ContentInfo(@Nonnull String token,</a>
+<span class="sourceLineNo">128</span><a id="line.128">                        @Nonnull String module,</a>
+<span class="sourceLineNo">129</span><a id="line.129">                        @Nonnull String filename,</a>
+<span class="sourceLineNo">130</span><a id="line.130">                        @Nonnull Long size,</a>
+<span class="sourceLineNo">131</span><a id="line.131">                        @Nonnull String etag,</a>
+<span class="sourceLineNo">132</span><a id="line.132">                        @Nonnull CompressionMode optimalCompression,</a>
+<span class="sourceLineNo">133</span><a id="line.133">                        @Nonnull Long compressedSize,</a>
+<span class="sourceLineNo">134</span><a id="line.134">                        @Nonnull Integer variantCount,</a>
+<span class="sourceLineNo">135</span><a id="line.135">                        @Nonnull EnumSet&lt;CompressionMode&gt; compressionOptions,</a>
+<span class="sourceLineNo">136</span><a id="line.136">                        @Nonnull AssetBundle.AssetContent content) {</a>
+<span class="sourceLineNo">137</span><a id="line.137">      this.token = token;</a>
+<span class="sourceLineNo">138</span><a id="line.138">      this.module = module;</a>
+<span class="sourceLineNo">139</span><a id="line.139">      this.filename = filename;</a>
+<span class="sourceLineNo">140</span><a id="line.140">      this.size = size;</a>
+<span class="sourceLineNo">141</span><a id="line.141">      this.etag = etag;</a>
+<span class="sourceLineNo">142</span><a id="line.142">      this.optimalCompression = optimalCompression;</a>
+<span class="sourceLineNo">143</span><a id="line.143">      this.compressedSize = compressedSize;</a>
+<span class="sourceLineNo">144</span><a id="line.144">      this.variantCount = variantCount;</a>
+<span class="sourceLineNo">145</span><a id="line.145">      this.compressionOptions = compressionOptions;</a>
+<span class="sourceLineNo">146</span><a id="line.146">      this.content = content;</a>
+<span class="sourceLineNo">147</span><a id="line.147">    }</a>
+<span class="sourceLineNo">148</span><a id="line.148"></a>
+<span class="sourceLineNo">149</span><a id="line.149">    /**</a>
+<span class="sourceLineNo">150</span><a id="line.150">     * Inflate a {@link ContentInfo} record from an {@link AssetBundle.AssetContent} definition. This method variant</a>
+<span class="sourceLineNo">151</span><a id="line.151">     * additionally allows specification of a custom `ETag` digest algorithm.</a>
+<span class="sourceLineNo">152</span><a id="line.152">     *</a>
+<span class="sourceLineNo">153</span><a id="line.153">     * @param content Asset content protocol object.</a>
+<span class="sourceLineNo">154</span><a id="line.154">     * @param algorithm Algorithm to use for etags.</a>
+<span class="sourceLineNo">155</span><a id="line.155">     * @return Checked content info object.</a>
+<span class="sourceLineNo">156</span><a id="line.156">     */</a>
+<span class="sourceLineNo">157</span><a id="line.157">    static @Nonnull ContentInfo fromProto(@Nonnull AssetBundle.AssetContent content, @Nonnull String algorithm) {</a>
+<span class="sourceLineNo">158</span><a id="line.158">      try {</a>
+<span class="sourceLineNo">159</span><a id="line.159">        MessageDigest digester = MessageDigest.getInstance(algorithm);</a>
+<span class="sourceLineNo">160</span><a id="line.160">        digester.update(content.getModule().getBytes(StandardCharsets.UTF_8));</a>
+<span class="sourceLineNo">161</span><a id="line.161">        digester.update(content.getFilename().getBytes(StandardCharsets.UTF_8));</a>
+<span class="sourceLineNo">162</span><a id="line.162">        digester.update(content.getToken().getBytes(StandardCharsets.UTF_8));</a>
+<span class="sourceLineNo">163</span><a id="line.163">        digester.update(String.valueOf(content.getVariantCount()).getBytes(StandardCharsets.UTF_8));</a>
+<span class="sourceLineNo">164</span><a id="line.164">        byte[] etagDigest = digester.digest();</a>
+<span class="sourceLineNo">165</span><a id="line.165"></a>
+<span class="sourceLineNo">166</span><a id="line.166">        // find uncompressed size</a>
+<span class="sourceLineNo">167</span><a id="line.167">        Long uncompressedAssetSize = content.getVariantList().stream()</a>
+<span class="sourceLineNo">168</span><a id="line.168">          .filter((variant) -&gt; variant.getCompression().equals(CompressionMode.IDENTITY))</a>
+<span class="sourceLineNo">169</span><a id="line.169">          .findFirst()</a>
+<span class="sourceLineNo">170</span><a id="line.170">          .orElseGet(CompressedData::getDefaultInstance)</a>
+<span class="sourceLineNo">171</span><a id="line.171">          .getSize();</a>
+<span class="sourceLineNo">172</span><a id="line.172"></a>
+<span class="sourceLineNo">173</span><a id="line.173">        // resolve optimal compression</a>
+<span class="sourceLineNo">174</span><a id="line.174">        Pair&lt;Long, CompressionMode&gt; optimalCompression = content.getVariantList().stream()</a>
+<span class="sourceLineNo">175</span><a id="line.175">          .map((data) -&gt; Pair.of(data.getSize(), data.getCompression()))</a>
+<span class="sourceLineNo">176</span><a id="line.176">          .min(Comparator.comparing(Pair::getKey))</a>
+<span class="sourceLineNo">177</span><a id="line.177">          .orElse(Pair.of(0L, CompressionMode.IDENTITY));</a>
+<span class="sourceLineNo">178</span><a id="line.178"></a>
+<span class="sourceLineNo">179</span><a id="line.179">        // resolve set of supported compression options for this asset</a>
+<span class="sourceLineNo">180</span><a id="line.180">        EnumSet&lt;CompressionMode&gt; compressionOptions = EnumSet.copyOf(content.getVariantList().parallelStream()</a>
+<span class="sourceLineNo">181</span><a id="line.181">          .map(CompressedData::getCompression)</a>
+<span class="sourceLineNo">182</span><a id="line.182">          .collect(Collectors.toList()));</a>
+<span class="sourceLineNo">183</span><a id="line.183"></a>
+<span class="sourceLineNo">184</span><a id="line.184">        return new ContentInfo(</a>
+<span class="sourceLineNo">185</span><a id="line.185">          content.getToken(),</a>
+<span class="sourceLineNo">186</span><a id="line.186">          content.getModule(),</a>
+<span class="sourceLineNo">187</span><a id="line.187">          content.getFilename(),</a>
+<span class="sourceLineNo">188</span><a id="line.188">          uncompressedAssetSize,</a>
+<span class="sourceLineNo">189</span><a id="line.189">          Hex.bytesToHex(etagDigest, ETAG_LENGTH),</a>
+<span class="sourceLineNo">190</span><a id="line.190">          optimalCompression.getValue(),</a>
+<span class="sourceLineNo">191</span><a id="line.191">          optimalCompression.getKey(),</a>
+<span class="sourceLineNo">192</span><a id="line.192">          content.getVariantCount(),</a>
+<span class="sourceLineNo">193</span><a id="line.193">          compressionOptions,</a>
+<span class="sourceLineNo">194</span><a id="line.194">          content);</a>
+<span class="sourceLineNo">195</span><a id="line.195"></a>
+<span class="sourceLineNo">196</span><a id="line.196">      } catch (NoSuchAlgorithmException exc) {</a>
+<span class="sourceLineNo">197</span><a id="line.197">        throw new RuntimeException(exc);</a>
+<span class="sourceLineNo">198</span><a id="line.198">      }</a>
+<span class="sourceLineNo">199</span><a id="line.199">    }</a>
+<span class="sourceLineNo">200</span><a id="line.200"></a>
+<span class="sourceLineNo">201</span><a id="line.201">    /**</a>
+<span class="sourceLineNo">202</span><a id="line.202">     * Inflate a {@link ContentInfo} record from an {@link AssetBundle.AssetContent} definition.</a>
+<span class="sourceLineNo">203</span><a id="line.203">     *</a>
+<span class="sourceLineNo">204</span><a id="line.204">     * @param content Asset content protocol object.</a>
+<span class="sourceLineNo">205</span><a id="line.205">     * @return Checked content info object.</a>
+<span class="sourceLineNo">206</span><a id="line.206">     */</a>
+<span class="sourceLineNo">207</span><a id="line.207">    static @Nonnull ContentInfo fromProto(AssetBundle.AssetContent content) {</a>
+<span class="sourceLineNo">208</span><a id="line.208">      return fromProto(content, ETAG_DIGEST_ALGORITHM);</a>
+<span class="sourceLineNo">209</span><a id="line.209">    }</a>
+<span class="sourceLineNo">210</span><a id="line.210">  }</a>
+<span class="sourceLineNo">211</span><a id="line.211"></a>
+<span class="sourceLineNo">212</span><a id="line.212">  /** Enumerates types of asset modules. */</a>
+<span class="sourceLineNo">213</span><a id="line.213">  public enum ModuleType {</a>
+<span class="sourceLineNo">214</span><a id="line.214">    /** The bundle contains JavaScript code. */</a>
+<span class="sourceLineNo">215</span><a id="line.215">    JS,</a>
+<span class="sourceLineNo">216</span><a id="line.216"></a>
+<span class="sourceLineNo">217</span><a id="line.217">    /** The bundle contains style declarations. */</a>
+<span class="sourceLineNo">218</span><a id="line.218">    CSS</a>
+<span class="sourceLineNo">219</span><a id="line.219">  }</a>
+<span class="sourceLineNo">220</span><a id="line.220"></a>
+<span class="sourceLineNo">221</span><a id="line.221">  /** Holds on to info related to an asset module's metadata. */</a>
+<span class="sourceLineNo">222</span><a id="line.222">  @Immutable</a>
+<span class="sourceLineNo">223</span><a id="line.223">  static final class ModuleMetadata&lt;M extends Message&gt; {</a>
+<span class="sourceLineNo">224</span><a id="line.224">    /** Name of this asset module. */</a>
+<span class="sourceLineNo">225</span><a id="line.225">    final @Nonnull String name;</a>
+<span class="sourceLineNo">226</span><a id="line.226"></a>
+<span class="sourceLineNo">227</span><a id="line.227">    /** Type of code/logic contained by this asset. */</a>
+<span class="sourceLineNo">228</span><a id="line.228">    final @Nonnull ModuleType type;</a>
+<span class="sourceLineNo">229</span><a id="line.229"></a>
+<span class="sourceLineNo">230</span><a id="line.230">    /** Raw asset records for this module. */</a>
+<span class="sourceLineNo">231</span><a id="line.231">    final @Nonnull List&lt;M&gt; assets;</a>
+<span class="sourceLineNo">232</span><a id="line.232"></a>
+<span class="sourceLineNo">233</span><a id="line.233">    /** Raw constructor for asset module metadata. */</a>
+<span class="sourceLineNo">234</span><a id="line.234">    private ModuleMetadata(@Nonnull ModuleType type,</a>
+<span class="sourceLineNo">235</span><a id="line.235">                           @Nonnull String name,</a>
+<span class="sourceLineNo">236</span><a id="line.236">                           @Nonnull List&lt;M&gt; assets) {</a>
+<span class="sourceLineNo">237</span><a id="line.237">      this.name = name;</a>
+<span class="sourceLineNo">238</span><a id="line.238">      this.type = type;</a>
+<span class="sourceLineNo">239</span><a id="line.239">      this.assets = assets;</a>
+<span class="sourceLineNo">240</span><a id="line.240">    }</a>
+<span class="sourceLineNo">241</span><a id="line.241"></a>
+<span class="sourceLineNo">242</span><a id="line.242">    /**</a>
+<span class="sourceLineNo">243</span><a id="line.243">     * Inflate a {@link ModuleMetadata} record from a {@link AssetBundle.StyleBundle} definition.</a>
+<span class="sourceLineNo">244</span><a id="line.244">     *</a>
+<span class="sourceLineNo">245</span><a id="line.245">     * @param content Asset content protocol object.</a>
+<span class="sourceLineNo">246</span><a id="line.246">     * @return Checked module info object.</a>
+<span class="sourceLineNo">247</span><a id="line.247">     */</a>
+<span class="sourceLineNo">248</span><a id="line.248">    static @Nonnull ModuleMetadata&lt;StyleAsset&gt; fromStyleProto(@Nonnull AssetBundle.StyleBundle content) {</a>
+<span class="sourceLineNo">249</span><a id="line.249">      return new ModuleMetadata&lt;&gt;(</a>
+<span class="sourceLineNo">250</span><a id="line.250">        ModuleType.CSS,</a>
+<span class="sourceLineNo">251</span><a id="line.251">        content.getModule(),</a>
+<span class="sourceLineNo">252</span><a id="line.252">        content.getAssetList());</a>
+<span class="sourceLineNo">253</span><a id="line.253">    }</a>
+<span class="sourceLineNo">254</span><a id="line.254"></a>
+<span class="sourceLineNo">255</span><a id="line.255">    /**</a>
+<span class="sourceLineNo">256</span><a id="line.256">     * Inflate a {@link ModuleMetadata} record from a {@link AssetBundle.ScriptBundle} definition.</a>
+<span class="sourceLineNo">257</span><a id="line.257">     *</a>
+<span class="sourceLineNo">258</span><a id="line.258">     * @param content Asset content protocol object.</a>
+<span class="sourceLineNo">259</span><a id="line.259">     * @return Checked module info object.</a>
+<span class="sourceLineNo">260</span><a id="line.260">     */</a>
+<span class="sourceLineNo">261</span><a id="line.261">    static @Nonnull ModuleMetadata&lt;ScriptAsset&gt; fromScriptProto(@Nonnull AssetBundle.ScriptBundle content) {</a>
+<span class="sourceLineNo">262</span><a id="line.262">      return new ModuleMetadata&lt;&gt;(</a>
+<span class="sourceLineNo">263</span><a id="line.263">        ModuleType.JS,</a>
+<span class="sourceLineNo">264</span><a id="line.264">        content.getModule(),</a>
+<span class="sourceLineNo">265</span><a id="line.265">        content.getAssetList());</a>
+<span class="sourceLineNo">266</span><a id="line.266">    }</a>
+<span class="sourceLineNo">267</span><a id="line.267">  }</a>
+<span class="sourceLineNo">268</span><a id="line.268"></a>
+<span class="sourceLineNo">269</span><a id="line.269">  /** Public API surface for interacting with raw asset content. */</a>
+<span class="sourceLineNo">270</span><a id="line.270">  @Immutable</a>
+<span class="sourceLineNo">271</span><a id="line.271">  @SuppressWarnings("unused")</a>
+<span class="sourceLineNo">272</span><a id="line.272">  public static final class ManagedAssetContent implements Comparable&lt;ManagedAssetContent&gt; {</a>
+<span class="sourceLineNo">273</span><a id="line.273">    /** Attached/encapsulated asset content and info. */</a>
+<span class="sourceLineNo">274</span><a id="line.274">    private final @Nonnull ContentInfo content;</a>
+<span class="sourceLineNo">275</span><a id="line.275"></a>
+<span class="sourceLineNo">276</span><a id="line.276">    /** Create a {@link ManagedAssetContent} object from scratch. */</a>
+<span class="sourceLineNo">277</span><a id="line.277">    ManagedAssetContent(@Nonnull ContentInfo content) {</a>
+<span class="sourceLineNo">278</span><a id="line.278">      this.content = content;</a>
+<span class="sourceLineNo">279</span><a id="line.279">    }</a>
+<span class="sourceLineNo">280</span><a id="line.280"></a>
+<span class="sourceLineNo">281</span><a id="line.281">    @Override</a>
+<span class="sourceLineNo">282</span><a id="line.282">    public boolean equals(Object other) {</a>
+<span class="sourceLineNo">283</span><a id="line.283">      if (this == other) return true;</a>
+<span class="sourceLineNo">284</span><a id="line.284">      if (other == null || getClass() != other.getClass()) return false;</a>
+<span class="sourceLineNo">285</span><a id="line.285">      ManagedAssetContent that = (ManagedAssetContent) other;</a>
+<span class="sourceLineNo">286</span><a id="line.286">      return com.google.common.base.Objects</a>
+<span class="sourceLineNo">287</span><a id="line.287">        .equal(content.token, that.content.token);</a>
+<span class="sourceLineNo">288</span><a id="line.288">    }</a>
+<span class="sourceLineNo">289</span><a id="line.289"></a>
+<span class="sourceLineNo">290</span><a id="line.290">    @Override</a>
+<span class="sourceLineNo">291</span><a id="line.291">    public int hashCode() {</a>
+<span class="sourceLineNo">292</span><a id="line.292">      return com.google.common.base.Objects.hashCode(content.token);</a>
+<span class="sourceLineNo">293</span><a id="line.293">    }</a>
+<span class="sourceLineNo">294</span><a id="line.294"></a>
+<span class="sourceLineNo">295</span><a id="line.295">    @Override</a>
+<span class="sourceLineNo">296</span><a id="line.296">    public int compareTo(@Nonnull ManagedAssetContent other) {</a>
+<span class="sourceLineNo">297</span><a id="line.297">      return this.content.token.compareTo(other.content.token);</a>
+<span class="sourceLineNo">298</span><a id="line.298">    }</a>
+<span class="sourceLineNo">299</span><a id="line.299"></a>
+<span class="sourceLineNo">300</span><a id="line.300">    /** @return Opaque token identifying this asset content. */</a>
+<span class="sourceLineNo">301</span><a id="line.301">    public @Nonnull String getToken() {</a>
+<span class="sourceLineNo">302</span><a id="line.302">      return content.token;</a>
+<span class="sourceLineNo">303</span><a id="line.303">    }</a>
+<span class="sourceLineNo">304</span><a id="line.304"></a>
+<span class="sourceLineNo">305</span><a id="line.305">    /** @return Module name for this content chunk. */</a>
+<span class="sourceLineNo">306</span><a id="line.306">    public @Nonnull String getModule() {</a>
+<span class="sourceLineNo">307</span><a id="line.307">      return content.module;</a>
+<span class="sourceLineNo">308</span><a id="line.308">    }</a>
+<span class="sourceLineNo">309</span><a id="line.309"></a>
+<span class="sourceLineNo">310</span><a id="line.310">    /** @return Pre-calculated ETag value for this asset. */</a>
+<span class="sourceLineNo">311</span><a id="line.311">    public @Nonnull String getETag() {</a>
+<span class="sourceLineNo">312</span><a id="line.312">      return content.etag;</a>
+<span class="sourceLineNo">313</span><a id="line.313">    }</a>
+<span class="sourceLineNo">314</span><a id="line.314"></a>
+<span class="sourceLineNo">315</span><a id="line.315">    /** @return Original filename for the asset. */</a>
+<span class="sourceLineNo">316</span><a id="line.316">    public @Nonnull String getFilename() {</a>
+<span class="sourceLineNo">317</span><a id="line.317">      return content.filename;</a>
+<span class="sourceLineNo">318</span><a id="line.318">    }</a>
+<span class="sourceLineNo">319</span><a id="line.319"></a>
+<span class="sourceLineNo">320</span><a id="line.320">    /** @return Last-modified-timestamp for this asset. */</a>
+<span class="sourceLineNo">321</span><a id="line.321">    public @Nonnull Timestamp getLastModified() {</a>
+<span class="sourceLineNo">322</span><a id="line.322">      return loadedBundle.getGenerated();</a>
+<span class="sourceLineNo">323</span><a id="line.323">    }</a>
+<span class="sourceLineNo">324</span><a id="line.324"></a>
+<span class="sourceLineNo">325</span><a id="line.325">    /** @return Un-compressed size of the asset. */</a>
+<span class="sourceLineNo">326</span><a id="line.326">    public @Nonnull Long getSize() {</a>
+<span class="sourceLineNo">327</span><a id="line.327">      return content.size;</a>
+<span class="sourceLineNo">328</span><a id="line.328">    }</a>
+<span class="sourceLineNo">329</span><a id="line.329"></a>
+<span class="sourceLineNo">330</span><a id="line.330">    /** @return Optimal compression mode. */</a>
+<span class="sourceLineNo">331</span><a id="line.331">    public @Nonnull CompressionMode getOptimalCompression() {</a>
+<span class="sourceLineNo">332</span><a id="line.332">      return content.optimalCompression;</a>
+<span class="sourceLineNo">333</span><a id="line.333">    }</a>
+<span class="sourceLineNo">334</span><a id="line.334"></a>
+<span class="sourceLineNo">335</span><a id="line.335">    /** @return Compressed size of the asset (optimal). */</a>
+<span class="sourceLineNo">336</span><a id="line.336">    @SuppressWarnings("WeakerAccess")</a>
+<span class="sourceLineNo">337</span><a id="line.337">    public @Nonnull Long getCompressedSize() {</a>
+<span class="sourceLineNo">338</span><a id="line.338">      return content.compressedSize;</a>
+<span class="sourceLineNo">339</span><a id="line.339">    }</a>
+<span class="sourceLineNo">340</span><a id="line.340"></a>
+<span class="sourceLineNo">341</span><a id="line.341">    /** @return Count of variants that exist for this asset. */</a>
+<span class="sourceLineNo">342</span><a id="line.342">    public @Nonnull Integer getVariantCount() {</a>
+<span class="sourceLineNo">343</span><a id="line.343">      return content.variantCount;</a>
+<span class="sourceLineNo">344</span><a id="line.344">    }</a>
+<span class="sourceLineNo">345</span><a id="line.345"></a>
+<span class="sourceLineNo">346</span><a id="line.346">    /** @return Set of supported compression modes for this asset. */</a>
+<span class="sourceLineNo">347</span><a id="line.347">    public @Nonnull EnumSet&lt;CompressionMode&gt; getCompressionOptions() {</a>
+<span class="sourceLineNo">348</span><a id="line.348">      return content.compressionOptions;</a>
+<span class="sourceLineNo">349</span><a id="line.349">    }</a>
+<span class="sourceLineNo">350</span><a id="line.350"></a>
+<span class="sourceLineNo">351</span><a id="line.351">    /** Retrieve the content backing this info record. */</a>
+<span class="sourceLineNo">352</span><a id="line.352">    public @Nonnull AssetBundle.AssetContent getContent() {</a>
+<span class="sourceLineNo">353</span><a id="line.353">      return content.content;</a>
+<span class="sourceLineNo">354</span><a id="line.354">    }</a>
+<span class="sourceLineNo">355</span><a id="line.355">  }</a>
+<span class="sourceLineNo">356</span><a id="line.356"></a>
+<span class="sourceLineNo">357</span><a id="line.357">  /** Public API surface for interacting with raw asset metadata. */</a>
+<span class="sourceLineNo">358</span><a id="line.358">  @Immutable</a>
+<span class="sourceLineNo">359</span><a id="line.359">  public static final class ManagedAsset&lt;M extends Message&gt; implements Comparable&lt;ManagedAsset&gt; {</a>
+<span class="sourceLineNo">360</span><a id="line.360">    /** Resolved module metadata for this asset. */</a>
+<span class="sourceLineNo">361</span><a id="line.361">    private final @Nonnull ModuleMetadata&lt;M&gt; module;</a>
+<span class="sourceLineNo">362</span><a id="line.362"></a>
+<span class="sourceLineNo">363</span><a id="line.363">    /** Logic references that constitute this managed asset, including dependencies, in reverse topological order. */</a>
+<span class="sourceLineNo">364</span><a id="line.364">    private final @Nonnull Collection&lt;ManagedAssetContent&gt; content;</a>
+<span class="sourceLineNo">365</span><a id="line.365"></a>
+<span class="sourceLineNo">366</span><a id="line.366">    /** Construct a new managed asset from scratch. */</a>
+<span class="sourceLineNo">367</span><a id="line.367">    ManagedAsset(@Nonnull ModuleMetadata&lt;M&gt; module,</a>
+<span class="sourceLineNo">368</span><a id="line.368">                 @Nonnull Collection&lt;ManagedAssetContent&gt; content) {</a>
+<span class="sourceLineNo">369</span><a id="line.369">      this.module = module;</a>
+<span class="sourceLineNo">370</span><a id="line.370">      this.content = content;</a>
+<span class="sourceLineNo">371</span><a id="line.371">    }</a>
+<span class="sourceLineNo">372</span><a id="line.372"></a>
+<span class="sourceLineNo">373</span><a id="line.373">    @Override</a>
+<span class="sourceLineNo">374</span><a id="line.374">    public boolean equals(Object o) {</a>
+<span class="sourceLineNo">375</span><a id="line.375">      if (this == o) return true;</a>
+<span class="sourceLineNo">376</span><a id="line.376">      if (o == null || getClass() != o.getClass()) return false;</a>
+<span class="sourceLineNo">377</span><a id="line.377">      ManagedAsset that = (ManagedAsset) o;</a>
+<span class="sourceLineNo">378</span><a id="line.378">      return com.google.common.base.Objects</a>
+<span class="sourceLineNo">379</span><a id="line.379">        .equal(module.name, that.module.name);</a>
+<span class="sourceLineNo">380</span><a id="line.380">    }</a>
+<span class="sourceLineNo">381</span><a id="line.381"></a>
+<span class="sourceLineNo">382</span><a id="line.382">    @Override</a>
+<span class="sourceLineNo">383</span><a id="line.383">    public int hashCode() {</a>
+<span class="sourceLineNo">384</span><a id="line.384">      return com.google.common.base.Objects</a>
+<span class="sourceLineNo">385</span><a id="line.385">        .hashCode(module.name);</a>
+<span class="sourceLineNo">386</span><a id="line.386">    }</a>
+<span class="sourceLineNo">387</span><a id="line.387"></a>
+<span class="sourceLineNo">388</span><a id="line.388">    @Override</a>
+<span class="sourceLineNo">389</span><a id="line.389">    public int compareTo(@Nonnull ManagedAsset other) {</a>
+<span class="sourceLineNo">390</span><a id="line.390">      return this.module.name.compareTo(other.module.name);</a>
+<span class="sourceLineNo">391</span><a id="line.391">    }</a>
+<span class="sourceLineNo">392</span><a id="line.392"></a>
+<span class="sourceLineNo">393</span><a id="line.393">    /** @return This module's assigned name. */</a>
+<span class="sourceLineNo">394</span><a id="line.394">    public @Nonnull String getName() {</a>
+<span class="sourceLineNo">395</span><a id="line.395">      return module.name;</a>
+<span class="sourceLineNo">396</span><a id="line.396">    }</a>
+<span class="sourceLineNo">397</span><a id="line.397"></a>
+<span class="sourceLineNo">398</span><a id="line.398">    /** @return This module's assigned type. */</a>
+<span class="sourceLineNo">399</span><a id="line.399">    public @Nonnull ModuleType getType() {</a>
+<span class="sourceLineNo">400</span><a id="line.400">      return module.type;</a>
+<span class="sourceLineNo">401</span><a id="line.401">    }</a>
+<span class="sourceLineNo">402</span><a id="line.402"></a>
+<span class="sourceLineNo">403</span><a id="line.403">    /** @return Collection of typed asset records constituting this bundle. */</a>
+<span class="sourceLineNo">404</span><a id="line.404">    public @Nonnull Collection&lt;M&gt; getAssets() {</a>
+<span class="sourceLineNo">405</span><a id="line.405">      return module.assets;</a>
+<span class="sourceLineNo">406</span><a id="line.406">    }</a>
+<span class="sourceLineNo">407</span><a id="line.407"></a>
+<span class="sourceLineNo">408</span><a id="line.408">    /** @return Content configurations associated with this asset bundle. */</a>
+<span class="sourceLineNo">409</span><a id="line.409">    public @Nonnull Collection&lt;ManagedAssetContent&gt; getContent() {</a>
+<span class="sourceLineNo">410</span><a id="line.410">      return this.content;</a>
+<span class="sourceLineNo">411</span><a id="line.411">    }</a>
+<span class="sourceLineNo">412</span><a id="line.412">  }</a>
+<span class="sourceLineNo">413</span><a id="line.413"></a>
+<span class="sourceLineNo">414</span><a id="line.414">  /** index the newly-installed asset bundle. */</a>
+<span class="sourceLineNo">415</span><a id="line.415">  private static void index() {</a>
+<span class="sourceLineNo">416</span><a id="line.416">    if (logging.isDebugEnabled())</a>
+<span class="sourceLineNo">417</span><a id="line.417">      logging.debug("Indexing raw assets by token...");</a>
+<span class="sourceLineNo">418</span><a id="line.418">    tokenMap.putAll(loadedBundle.getAssetList().stream()</a>
+<span class="sourceLineNo">419</span><a id="line.419">      .map(ContentInfo::fromProto)</a>
+<span class="sourceLineNo">420</span><a id="line.420">      .map((info) -&gt; Pair.of(info.token, info))</a>
+<span class="sourceLineNo">421</span><a id="line.421">      .peek((pair) -&gt; {</a>
+<span class="sourceLineNo">422</span><a id="line.422">        if (logging.isTraceEnabled())</a>
+<span class="sourceLineNo">423</span><a id="line.423">          logging.trace(format("- Indexing asset content at token '%s' from original file '%s'.",</a>
+<span class="sourceLineNo">424</span><a id="line.424">            pair.getKey(),</a>
+<span class="sourceLineNo">425</span><a id="line.425">            pair.getValue().filename));</a>
+<span class="sourceLineNo">426</span><a id="line.426">      })</a>
+<span class="sourceLineNo">427</span><a id="line.427">      .collect(Collectors.toMap(Pair::getKey, Pair::getValue)));</a>
+<span class="sourceLineNo">428</span><a id="line.428"></a>
+<span class="sourceLineNo">429</span><a id="line.429">    if (logging.isDebugEnabled())</a>
+<span class="sourceLineNo">430</span><a id="line.430">      logging.debug("Indexing CSS assets by module name...");</a>
+<span class="sourceLineNo">431</span><a id="line.431">    assetMap.putAll(loadedBundle.getStylesMap().entrySet().stream()</a>
+<span class="sourceLineNo">432</span><a id="line.432">      .map((entry) -&gt; Pair.of(entry.getKey(), ModuleMetadata.fromStyleProto(entry.getValue())))</a>
+<span class="sourceLineNo">433</span><a id="line.433">      .peek((pair) -&gt; {</a>
+<span class="sourceLineNo">434</span><a id="line.434">        // map each asset to its constituent module</a>
+<span class="sourceLineNo">435</span><a id="line.435">        pair.getValue().assets.forEach((asset) -&gt; modulesToTokens.put(pair.getKey(), asset.getToken()));</a>
+<span class="sourceLineNo">436</span><a id="line.436"></a>
+<span class="sourceLineNo">437</span><a id="line.437">        if (logging.isTraceEnabled())</a>
+<span class="sourceLineNo">438</span><a id="line.438">          logging.trace(format("- Indexing style module '%s' of type %s.",</a>
+<span class="sourceLineNo">439</span><a id="line.439">            pair.getKey(),</a>
+<span class="sourceLineNo">440</span><a id="line.440">            pair.getValue().type));</a>
+<span class="sourceLineNo">441</span><a id="line.441">      })</a>
+<span class="sourceLineNo">442</span><a id="line.442">      .collect(Collectors.toMap(Pair::getKey, Pair::getValue)));</a>
+<span class="sourceLineNo">443</span><a id="line.443"></a>
+<span class="sourceLineNo">444</span><a id="line.444">    if (logging.isDebugEnabled())</a>
+<span class="sourceLineNo">445</span><a id="line.445">      logging.debug("Indexing JS assets by module name...");</a>
+<span class="sourceLineNo">446</span><a id="line.446">    assetMap.putAll(loadedBundle.getScriptsMap().entrySet().stream()</a>
+<span class="sourceLineNo">447</span><a id="line.447">      .map((entry) -&gt; Pair.of(entry.getKey(), ModuleMetadata.fromScriptProto(entry.getValue())))</a>
+<span class="sourceLineNo">448</span><a id="line.448">      .peek((pair) -&gt; {</a>
+<span class="sourceLineNo">449</span><a id="line.449">        // map each asset to its constituent module</a>
+<span class="sourceLineNo">450</span><a id="line.450">        pair.getValue().assets.forEach((asset) -&gt; modulesToTokens.put(pair.getKey(), asset.getToken()));</a>
+<span class="sourceLineNo">451</span><a id="line.451"></a>
+<span class="sourceLineNo">452</span><a id="line.452">        if (logging.isTraceEnabled())</a>
+<span class="sourceLineNo">453</span><a id="line.453">          logging.trace(format("- Indexing script module '%s' of type %s.",</a>
+<span class="sourceLineNo">454</span><a id="line.454">            pair.getKey(),</a>
+<span class="sourceLineNo">455</span><a id="line.455">            pair.getValue().type));</a>
+<span class="sourceLineNo">456</span><a id="line.456">      })</a>
+<span class="sourceLineNo">457</span><a id="line.457">      .collect(Collectors.toMap(Pair::getKey, Pair::getValue)));</a>
+<span class="sourceLineNo">458</span><a id="line.458">  }</a>
+<span class="sourceLineNo">459</span><a id="line.459"></a>
+<span class="sourceLineNo">460</span><a id="line.460">  /**</a>
+<span class="sourceLineNo">461</span><a id="line.461">   * Attempt to force-load the asset manifest, in a static context, preparing our indexed read-only data regarding the</a>
+<span class="sourceLineNo">462</span><a id="line.462">   * data it contains. If we can't load the file, surface an exception so the invoking code can decide what to do.</a>
+<span class="sourceLineNo">463</span><a id="line.463">   *</a>
+<span class="sourceLineNo">464</span><a id="line.464">   * @throws IOException If some otherwise unmentioned I/O error occurs.</a>
+<span class="sourceLineNo">465</span><a id="line.465">   * @throws FileNotFoundException If the asset manifest could not be found.</a>
+<span class="sourceLineNo">466</span><a id="line.466">   * @throws InvalidProtocolBufferException If the enclosed Protocol Buffer data isn't recognizable.</a>
+<span class="sourceLineNo">467</span><a id="line.467">   */</a>
+<span class="sourceLineNo">468</span><a id="line.468">  public static void load() throws IOException, InvalidProtocolBufferException {</a>
+<span class="sourceLineNo">469</span><a id="line.469">    if (loadedBundle != null) return;</a>
+<span class="sourceLineNo">470</span><a id="line.470">    if (logging.isDebugEnabled())</a>
+<span class="sourceLineNo">471</span><a id="line.471">      logging.debug(format("Attempting to load manifest as resource (at path '%s')", manifestPath));</a>
+<span class="sourceLineNo">472</span><a id="line.472"></a>
+<span class="sourceLineNo">473</span><a id="line.473">    URL manifestURL = AssetManager.class.getResource(manifestPath);</a>
+<span class="sourceLineNo">474</span><a id="line.474">    if (manifestURL == null) {</a>
+<span class="sourceLineNo">475</span><a id="line.475">      logging.debug("No resource manifest found. Proceeding with empty manifest...");</a>
+<span class="sourceLineNo">476</span><a id="line.476">      loadedBundle = AssetBundle.getDefaultInstance();</a>
+<span class="sourceLineNo">477</span><a id="line.477">    } else {</a>
+<span class="sourceLineNo">478</span><a id="line.478">      if (logging.isDebugEnabled()) logging.debug("Loading resource manifest...");</a>
+<span class="sourceLineNo">479</span><a id="line.479">      try (InputStream assetBundle = AssetManager.class.getResourceAsStream(manifestPath)) {</a>
+<span class="sourceLineNo">480</span><a id="line.480">        try (BufferedInputStream buffer = new BufferedInputStream(assetBundle)) {</a>
+<span class="sourceLineNo">481</span><a id="line.481">          AssetBundle bundle = AssetBundle.parseDelimitedFrom(buffer);</a>
+<span class="sourceLineNo">482</span><a id="line.482">          Function&lt;Integer, Boolean&gt; plural = ((number) -&gt; (number &gt; 1 || number == 0));</a>
+<span class="sourceLineNo">483</span><a id="line.483"></a>
+<span class="sourceLineNo">484</span><a id="line.484">          if (bundle.isInitialized()) {</a>
+<span class="sourceLineNo">485</span><a id="line.485">            loadedBundle = bundle;</a>
+<span class="sourceLineNo">486</span><a id="line.486">            index();</a>
+<span class="sourceLineNo">487</span><a id="line.487">            logging.info(format("Asset bundle loaded with %s %s (%s %s, %s %s%s).",</a>
+<span class="sourceLineNo">488</span><a id="line.488">              bundle.getAssetCount(),</a>
+<span class="sourceLineNo">489</span><a id="line.489">              plural.apply(bundle.getAssetCount()) ? "assets" : "asset",</a>
+<span class="sourceLineNo">490</span><a id="line.490">              bundle.getScriptsCount(),</a>
+<span class="sourceLineNo">491</span><a id="line.491">              plural.apply(bundle.getScriptsCount()) ? "scripts" : "script",</a>
+<span class="sourceLineNo">492</span><a id="line.492">              bundle.getStylesCount(),</a>
+<span class="sourceLineNo">493</span><a id="line.493">              plural.apply(bundle.getStylesCount()) ? "stylesheets" : "stylesheet",</a>
+<span class="sourceLineNo">494</span><a id="line.494">              bundle.getRewrite() ? ", with rewriting ACTIVE" : ", with no style rewriting"));</a>
+<span class="sourceLineNo">495</span><a id="line.495">          }</a>
+<span class="sourceLineNo">496</span><a id="line.496">        }</a>
+<span class="sourceLineNo">497</span><a id="line.497">      }</a>
+<span class="sourceLineNo">498</span><a id="line.498">    }</a>
+<span class="sourceLineNo">499</span><a id="line.499">  }</a>
+<span class="sourceLineNo">500</span><a id="line.500"></a>
+<span class="sourceLineNo">501</span><a id="line.501">  /**</a>
+<span class="sourceLineNo">502</span><a id="line.502">   * Acquire a new instance of the asset manager. The instance provided by this method is not guaranteed to be fresh for</a>
+<span class="sourceLineNo">503</span><a id="line.503">   * every invocation (it may be a shared object), but all operations on the asset manager are threadsafe nonetheless.</a>
+<span class="sourceLineNo">504</span><a id="line.504">   *</a>
+<span class="sourceLineNo">505</span><a id="line.505">   * @return Asset manager instance.</a>
+<span class="sourceLineNo">506</span><a id="line.506">   */</a>
+<span class="sourceLineNo">507</span><a id="line.507">  public static AssetManager acquire() throws IOException {</a>
+<span class="sourceLineNo">508</span><a id="line.508">    AssetManager.load();</a>
+<span class="sourceLineNo">509</span><a id="line.509">    return new AssetManager();</a>
+<span class="sourceLineNo">510</span><a id="line.510">  }</a>
+<span class="sourceLineNo">511</span><a id="line.511"></a>
+<span class="sourceLineNo">512</span><a id="line.512">  /** Package-private constructor. Acquire an instance through {@link #acquire()}. */</a>
+<span class="sourceLineNo">513</span><a id="line.513">  @SuppressWarnings("WeakerAccess")</a>
+<span class="sourceLineNo">514</span><a id="line.514">  AssetManager() { /* Disallow instantiation except through DI. */ }</a>
+<span class="sourceLineNo">515</span><a id="line.515"></a>
+<span class="sourceLineNo">516</span><a id="line.516">  // -- Public API -- //</a>
+<span class="sourceLineNo">517</span><a id="line.517"></a>
+<span class="sourceLineNo">518</span><a id="line.518">  /**</a>
+<span class="sourceLineNo">519</span><a id="line.519">   * Resolve raw asset content by its opaque token. This will hand back an object containing representations of the</a>
+<span class="sourceLineNo">520</span><a id="line.520">   * asset for each enabled compression mode.</a>
+<span class="sourceLineNo">521</span><a id="line.521">   *</a>
+<span class="sourceLineNo">522</span><a id="line.522">   * &lt;p&gt;The object also knows how to resolve the most-optimal representation, based on the accepted compression modes</a>
+<span class="sourceLineNo">523</span><a id="line.523">   * indicated by the invoking client.&lt;/p&gt;</a>
+<span class="sourceLineNo">524</span><a id="line.524">   *</a>
+<span class="sourceLineNo">525</span><a id="line.525">   * @param token Token uniquely identifying this asset (generated from the module name and content fingerprint).</a>
+<span class="sourceLineNo">526</span><a id="line.526">   * @return Optional, either {@link Optional#empty()} if the asset could not be found, or wrapping the result.</a>
+<span class="sourceLineNo">527</span><a id="line.527">   */</a>
+<span class="sourceLineNo">528</span><a id="line.528">  public @Nonnull Optional&lt;ManagedAssetContent&gt; assetDataByToken(@Nonnull String token) {</a>
+<span class="sourceLineNo">529</span><a id="line.529">    if (logging.isTraceEnabled())</a>
+<span class="sourceLineNo">530</span><a id="line.530">      logging.trace(format("Resolving asset by token '%s'.", token));</a>
+<span class="sourceLineNo">531</span><a id="line.531">    if (!tokenMap.containsKey(token)) {</a>
+<span class="sourceLineNo">532</span><a id="line.532">      logging.warn(format("Asset not found at token '%s'.", token));</a>
+<span class="sourceLineNo">533</span><a id="line.533">      return Optional.empty();</a>
+<span class="sourceLineNo">534</span><a id="line.534">    }</a>
+<span class="sourceLineNo">535</span><a id="line.535">    if (logging.isDebugEnabled())</a>
+<span class="sourceLineNo">536</span><a id="line.536">      logging.debug(format("Resolved valid asset via token '%s'.", token));</a>
+<span class="sourceLineNo">537</span><a id="line.537">    return Optional.of(new ManagedAssetContent(Objects.requireNonNull(tokenMap.get(token))));</a>
+<span class="sourceLineNo">538</span><a id="line.538">  }</a>
+<span class="sourceLineNo">539</span><a id="line.539"></a>
+<span class="sourceLineNo">540</span><a id="line.540">  /**</a>
+<span class="sourceLineNo">541</span><a id="line.541">   * Resolve asset metadata by its module name. This will hand back an object specifying the type/name of the module,</a>
+<span class="sourceLineNo">542</span><a id="line.542">   * and links to each of the content blocks that constitute it.</a>
+<span class="sourceLineNo">543</span><a id="line.543">   *</a>
+<span class="sourceLineNo">544</span><a id="line.544">   * &lt;p&gt;This code path is generally used for resolving metadata for an asset so it can be &lt;i&gt;referenced&lt;/i&gt;. The serving</a>
+<span class="sourceLineNo">545</span><a id="line.545">   * for URL generated for the asset refers to a specific content block with an opaque token, rather than the module</a>
+<span class="sourceLineNo">546</span><a id="line.546">   * name, which refers to a bundle of assets or content.&lt;/p&gt;</a>
+<span class="sourceLineNo">547</span><a id="line.547">   *</a>
+<span class="sourceLineNo">548</span><a id="line.548">   * @param module Module name for which we should resolve asset metadata.</a>
+<span class="sourceLineNo">549</span><a id="line.549">   * @return Optional, either {@link Optional#empty()} if the asset group could not be found, or wrapping the result.</a>
+<span class="sourceLineNo">550</span><a id="line.550">   */</a>
+<span class="sourceLineNo">551</span><a id="line.551">  @SuppressWarnings("unused")</a>
+<span class="sourceLineNo">552</span><a id="line.552">  public @Nonnull &lt;M extends Message&gt; Optional&lt;ManagedAsset&lt;M&gt;&gt; assetMetadataByModule(@Nonnull String module) {</a>
+<span class="sourceLineNo">553</span><a id="line.553">    if (logging.isTraceEnabled())</a>
+<span class="sourceLineNo">554</span><a id="line.554">      logging.trace(format("Resolving asset metadata at module '%s'.", module));</a>
+<span class="sourceLineNo">555</span><a id="line.555">    if (!assetMap.containsKey(module)) {</a>
+<span class="sourceLineNo">556</span><a id="line.556">      if (assetMap.isEmpty()) {</a>
+<span class="sourceLineNo">557</span><a id="line.557">        logging.warn(format("Asset metadata not found in (EMPTY) module map, at module name '%s'.", module));</a>
+<span class="sourceLineNo">558</span><a id="line.558">      } else {</a>
+<span class="sourceLineNo">559</span><a id="line.559">        logging.warn(format("Asset metadata not found at module name '%s'.", module));</a>
+<span class="sourceLineNo">560</span><a id="line.560">      }</a>
+<span class="sourceLineNo">561</span><a id="line.561">      return Optional.empty();</a>
+<span class="sourceLineNo">562</span><a id="line.562">    }</a>
+<span class="sourceLineNo">563</span><a id="line.563"></a>
+<span class="sourceLineNo">564</span><a id="line.564">    // resolve content for the module</a>
+<span class="sourceLineNo">565</span><a id="line.565">    ImmutableSortedSet.Builder&lt;ManagedAssetContent&gt; assetsBuilder = ImmutableSortedSet.naturalOrder();</a>
+<span class="sourceLineNo">566</span><a id="line.566">    Collection&lt;String&gt; contentTokens = modulesToTokens.get(module);</a>
+<span class="sourceLineNo">567</span><a id="line.567"></a>
+<span class="sourceLineNo">568</span><a id="line.568">    Collection&lt;ManagedAssetContent&gt; contents = Collections.emptySet();</a>
+<span class="sourceLineNo">569</span><a id="line.569">    if (!contentTokens.isEmpty()) {</a>
+<span class="sourceLineNo">570</span><a id="line.570">      // resolve content for each token</a>
+<span class="sourceLineNo">571</span><a id="line.571">      assetsBuilder.addAll((Iterable&lt;ManagedAssetContent&gt;)contentTokens.parallelStream()</a>
+<span class="sourceLineNo">572</span><a id="line.572">        .map((token) -&gt; Pair.of(token, this.assetDataByToken(token)))</a>
+<span class="sourceLineNo">573</span><a id="line.573">        .peek((pair) -&gt; {</a>
+<span class="sourceLineNo">574</span><a id="line.574">          var content = pair.getValue();</a>
+<span class="sourceLineNo">575</span><a id="line.575">          if (content.isPresent() &amp;&amp; logging.isDebugEnabled()) {</a>
+<span class="sourceLineNo">576</span><a id="line.576">            logging.debug(format("Resolved content block at token '%s' for module '%s.'",</a>
+<span class="sourceLineNo">577</span><a id="line.577">              pair.getKey(),</a>
+<span class="sourceLineNo">578</span><a id="line.578">              module));</a>
+<span class="sourceLineNo">579</span><a id="line.579">          }</a>
+<span class="sourceLineNo">580</span><a id="line.580">        })</a>
+<span class="sourceLineNo">581</span><a id="line.581">        .filter((pair) -&gt; pair.getValue().isPresent())</a>
+<span class="sourceLineNo">582</span><a id="line.582">        .map(Pair::getValue)</a>
+<span class="sourceLineNo">583</span><a id="line.583">        .map(Optional::get)</a>
+<span class="sourceLineNo">584</span><a id="line.584">        .collect(Collectors.toCollection(ConcurrentSkipListSet::new)));</a>
+<span class="sourceLineNo">585</span><a id="line.585"></a>
+<span class="sourceLineNo">586</span><a id="line.586">      contents = assetsBuilder.build();</a>
+<span class="sourceLineNo">587</span><a id="line.587">    }</a>
+<span class="sourceLineNo">588</span><a id="line.588"></a>
+<span class="sourceLineNo">589</span><a id="line.589">    if (logging.isDebugEnabled())</a>
+<span class="sourceLineNo">590</span><a id="line.590">      logging.debug(format("Resolved valid asset metadata for module '%s'.", module));</a>
+<span class="sourceLineNo">591</span><a id="line.591">    //noinspection unchecked</a>
+<span class="sourceLineNo">592</span><a id="line.592">    return Optional.of(new ManagedAsset&lt;&gt;(</a>
+<span class="sourceLineNo">593</span><a id="line.593">      Objects.requireNonNull((ModuleMetadata&lt;M&gt;)assetMap.get(module)),</a>
+<span class="sourceLineNo">594</span><a id="line.594">      contents));</a>
+<span class="sourceLineNo">595</span><a id="line.595">  }</a>
+<span class="sourceLineNo">596</span><a id="line.596">}</a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</main>
+</body>
+</html>

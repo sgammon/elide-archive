@@ -55,7 +55,7 @@ public final class CollapsedMessageCodec<Model extends Message, ReadIntermediate
    * Create a collapsed message codec which adapts the provided builder to {@link CollapsedMessage} and back. These
    * "collapsed" messages follow the framework-defined protocol for serializing hierarchical data.
    *
-   * @param <M> Model type for which we will constructor or otherwise resolve a collapsed message codec.
+   * @param <M> Model type for which we will construct or otherwise resolve a collapsed message codec.
    * @return Collapsed message codec bound to the provided message type.
    */
   @Context
@@ -114,7 +114,8 @@ public final class CollapsedMessageCodec<Model extends Message, ReadIntermediate
   }
 
   /** @return Default model instance. */
-  public Model getInstance() {
-    return instance;
+  @Override
+  public @Nonnull Model instance() {
+    return this.instance;
   }
 }

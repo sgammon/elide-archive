@@ -1,0 +1,1959 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../stylesheet.css" title="Style">
+</head>
+<body>
+<main role="main">
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span><a id="line.1">/*</a>
+<span class="sourceLineNo">002</span><a id="line.2"> * Copyright © 2020, The Gust Framework Authors. All rights reserved.</a>
+<span class="sourceLineNo">003</span><a id="line.3"> *</a>
+<span class="sourceLineNo">004</span><a id="line.4"> * The Gust/Elide framework and tools, and all associated source or object computer code, except where otherwise noted,</a>
+<span class="sourceLineNo">005</span><a id="line.5"> * are licensed under the Zero Prosperity license, which is enclosed in this repository, in the file LICENSE.txt. Use of</a>
+<span class="sourceLineNo">006</span><a id="line.6"> * this code in object or source form requires and implies consent and agreement to that license in principle and</a>
+<span class="sourceLineNo">007</span><a id="line.7"> * practice. Source or object code not listing this header, or unless specified otherwise, remain the property of</a>
+<span class="sourceLineNo">008</span><a id="line.8"> * Elide LLC and its suppliers, if any. The intellectual and technical concepts contained herein are proprietary to</a>
+<span class="sourceLineNo">009</span><a id="line.9"> * Elide LLC and its suppliers and may be covered by U.S. and Foreign Patents, or patents in process, and are protected</a>
+<span class="sourceLineNo">010</span><a id="line.10"> * by trade secret and copyright law. Dissemination of this information, or reproduction of this material, in any form,</a>
+<span class="sourceLineNo">011</span><a id="line.11"> * is strictly forbidden except in adherence with assigned license requirements.</a>
+<span class="sourceLineNo">012</span><a id="line.12"> */</a>
+<span class="sourceLineNo">013</span><a id="line.13">package gust.backend;</a>
+<span class="sourceLineNo">014</span><a id="line.14"></a>
+<span class="sourceLineNo">015</span><a id="line.15">import com.google.common.annotations.VisibleForTesting;</a>
+<span class="sourceLineNo">016</span><a id="line.16">import com.google.common.base.Joiner;</a>
+<span class="sourceLineNo">017</span><a id="line.17">import com.google.common.collect.ImmutableSortedSet;</a>
+<span class="sourceLineNo">018</span><a id="line.18">import com.google.common.collect.Sets;</a>
+<span class="sourceLineNo">019</span><a id="line.19">import com.google.common.html.types.TrustedResourceUrlProto;</a>
+<span class="sourceLineNo">020</span><a id="line.20">import com.google.errorprone.annotations.CanIgnoreReturnValue;</a>
+<span class="sourceLineNo">021</span><a id="line.21">import com.google.protobuf.ByteString;</a>
+<span class="sourceLineNo">022</span><a id="line.22">import com.google.template.soy.msgs.SoyMsgBundle;</a>
+<span class="sourceLineNo">023</span><a id="line.23">import com.google.template.soy.data.SanitizedContent;</a>
+<span class="sourceLineNo">024</span><a id="line.24">import com.google.template.soy.data.UnsafeSanitizedContentOrdainer;</a>
+<span class="sourceLineNo">025</span><a id="line.25">import gust.backend.runtime.AssetManager;</a>
+<span class="sourceLineNo">026</span><a id="line.26">import gust.backend.runtime.AssetManager.ManagedAsset;</a>
+<span class="sourceLineNo">027</span><a id="line.27">import gust.backend.runtime.Logging;</a>
+<span class="sourceLineNo">028</span><a id="line.28">import gust.util.Hex;</a>
+<span class="sourceLineNo">029</span><a id="line.29">import io.micronaut.http.*;</a>
+<span class="sourceLineNo">030</span><a id="line.30">import io.micronaut.http.context.ServerRequestContext;</a>
+<span class="sourceLineNo">031</span><a id="line.31">import io.micronaut.runtime.http.scope.RequestScope;</a>
+<span class="sourceLineNo">032</span><a id="line.32">import io.micronaut.views.soy.SoyContext;</a>
+<span class="sourceLineNo">033</span><a id="line.33">import io.micronaut.views.soy.SoyNamingMapProvider;</a>
+<span class="sourceLineNo">034</span><a id="line.34">import org.slf4j.Logger;</a>
+<span class="sourceLineNo">035</span><a id="line.35">import tools.elide.assets.AssetBundle.StyleBundle.StyleAsset;</a>
+<span class="sourceLineNo">036</span><a id="line.36">import tools.elide.assets.AssetBundle.ScriptBundle.ScriptAsset;</a>
+<span class="sourceLineNo">037</span><a id="line.37">import tools.elide.page.Context;</a>
+<span class="sourceLineNo">038</span><a id="line.38">import tools.elide.page.Context.ClientHint;</a>
+<span class="sourceLineNo">039</span><a id="line.39">import tools.elide.page.Context.FramingPolicy;</a>
+<span class="sourceLineNo">040</span><a id="line.40">import tools.elide.page.Context.ClientHints;</a>
+<span class="sourceLineNo">041</span><a id="line.41">import tools.elide.page.Context.ConnectionHint;</a>
+<span class="sourceLineNo">042</span><a id="line.42">import tools.elide.page.Context.ReferrerPolicy;</a>
+<span class="sourceLineNo">043</span><a id="line.43">import tools.elide.page.Context.Styles.Stylesheet;</a>
+<span class="sourceLineNo">044</span><a id="line.44">import tools.elide.page.Context.Scripts.JavaScript;</a>
+<span class="sourceLineNo">045</span><a id="line.45"></a>
+<span class="sourceLineNo">046</span><a id="line.46">import javax.annotation.Nonnull;</a>
+<span class="sourceLineNo">047</span><a id="line.47">import javax.annotation.Nullable;</a>
+<span class="sourceLineNo">048</span><a id="line.48">import java.io.Closeable;</a>
+<span class="sourceLineNo">049</span><a id="line.49">import java.io.File;</a>
+<span class="sourceLineNo">050</span><a id="line.50">import java.io.IOException;</a>
+<span class="sourceLineNo">051</span><a id="line.51">import java.net.URI;</a>
+<span class="sourceLineNo">052</span><a id="line.52">import java.net.URL;</a>
+<span class="sourceLineNo">053</span><a id="line.53">import java.security.MessageDigest;</a>
+<span class="sourceLineNo">054</span><a id="line.54">import java.util.*;</a>
+<span class="sourceLineNo">055</span><a id="line.55">import java.util.concurrent.ConcurrentMap;</a>
+<span class="sourceLineNo">056</span><a id="line.56">import java.util.concurrent.ConcurrentSkipListMap;</a>
+<span class="sourceLineNo">057</span><a id="line.57">import java.util.concurrent.ConcurrentSkipListSet;</a>
+<span class="sourceLineNo">058</span><a id="line.58">import java.util.concurrent.atomic.AtomicBoolean;</a>
+<span class="sourceLineNo">059</span><a id="line.59">import java.util.function.Consumer;</a>
+<span class="sourceLineNo">060</span><a id="line.60">import java.util.function.Predicate;</a>
+<span class="sourceLineNo">061</span><a id="line.61">import java.util.stream.Collectors;</a>
+<span class="sourceLineNo">062</span><a id="line.62"></a>
+<span class="sourceLineNo">063</span><a id="line.63">import static java.lang.String.format;</a>
+<span class="sourceLineNo">064</span><a id="line.64"></a>
+<span class="sourceLineNo">065</span><a id="line.65"></a>
+<span class="sourceLineNo">066</span><a id="line.66">/**</a>
+<span class="sourceLineNo">067</span><a id="line.67"> * Manages the process of filling out {@link PageContext} objects before they are sealed, and delivered to Closure/Soy</a>
+<span class="sourceLineNo">068</span><a id="line.68"> * to be reduced and rendered into content.</a>
+<span class="sourceLineNo">069</span><a id="line.69"> *</a>
+<span class="sourceLineNo">070</span><a id="line.70"> * &lt;p&gt;This object may be used from controllers via dependency injection, or used via the base controller classes</a>
+<span class="sourceLineNo">071</span><a id="line.71"> * provided as part of the framework.&lt;/p&gt;</a>
+<span class="sourceLineNo">072</span><a id="line.72"> */</a>
+<span class="sourceLineNo">073</span><a id="line.73">@RequestScope</a>
+<span class="sourceLineNo">074</span><a id="line.74">@SuppressWarnings("unused")</a>
+<span class="sourceLineNo">075</span><a id="line.75">public class PageContextManager implements Closeable, AutoCloseable, PageRender {</a>
+<span class="sourceLineNo">076</span><a id="line.76">  private static final Logger logging = Logging.logger(PageContextManager.class);</a>
+<span class="sourceLineNo">077</span><a id="line.77"></a>
+<span class="sourceLineNo">078</span><a id="line.78">  private static final int ETAG_LENGTH = 6;</a>
+<span class="sourceLineNo">079</span><a id="line.79"></a>
+<span class="sourceLineNo">080</span><a id="line.80">  private static final String DPR_HEADER = "DPR";</a>
+<span class="sourceLineNo">081</span><a id="line.81">  private static final String ECT_HEADER = "ECT";</a>
+<span class="sourceLineNo">082</span><a id="line.82">  private static final String RTT_HEADER = "RTT";</a>
+<span class="sourceLineNo">083</span><a id="line.83">  private static final String LINK_HEADER = "Link";</a>
+<span class="sourceLineNo">084</span><a id="line.84">  private static final String MEMORY_HEADER = "Device-Memory";</a>
+<span class="sourceLineNo">085</span><a id="line.85">  private static final String DOWNLINK_HEADER = "Downlink";</a>
+<span class="sourceLineNo">086</span><a id="line.86">  private static final String VIEWPORT_WIDTH_HEADER = "Viewport-Width";</a>
+<span class="sourceLineNo">087</span><a id="line.87">  private static final String ACCEPT_CH_HEADER = "Accept-CH";</a>
+<span class="sourceLineNo">088</span><a id="line.88">  private static final String ACCEPT_CH_LIFETIME_HEADER = "Accept-CH-Lifetime";</a>
+<span class="sourceLineNo">089</span><a id="line.89">  private static final String FEATURE_POLICY_HEADER = "Feature-Policy";</a>
+<span class="sourceLineNo">090</span><a id="line.90">  private static final String X_FRAME_OPTIONS_HEADER = "X-Frame-Options";</a>
+<span class="sourceLineNo">091</span><a id="line.91">  private static final String X_CONTENT_TYPE_OPTIONS_HEADER = "X-Content-Type-Options";</a>
+<span class="sourceLineNo">092</span><a id="line.92">  private static final String X_XSS_PROTECTION_HEADER = "X-XSS-Protection";</a>
+<span class="sourceLineNo">093</span><a id="line.93">  private static final String LINK_DNS_PREFETCH_TOKEN = "dns-prefetch";</a>
+<span class="sourceLineNo">094</span><a id="line.94">  private static final String LINK_PRECONNECT_TOKEN = "preconnect";</a>
+<span class="sourceLineNo">095</span><a id="line.95">  private static final String REFERRER_POLICY_HEADER = "Referrer-Policy";</a>
+<span class="sourceLineNo">096</span><a id="line.96">  private static final ConnectionHint DEFAULT_ECT = ConnectionHint.FAST;</a>
+<span class="sourceLineNo">097</span><a id="line.97"></a>
+<span class="sourceLineNo">098</span><a id="line.98">  private static final String CDN_PREFIX_IJ_PROP = "cdn_prefix";</a>
+<span class="sourceLineNo">099</span><a id="line.99"></a>
+<span class="sourceLineNo">100</span><a id="line.100">  private static final String LIVE_RELOAD_TARGET_PROP = "live_reload_url";</a>
+<span class="sourceLineNo">101</span><a id="line.101">  private static final String LIVE_RELOAD_SWITCH_PROP = "live_reload_enabled";</a>
+<span class="sourceLineNo">102</span><a id="line.102">  private static final String LIVE_RELOAD_JS = "http://localhost:35729/livereload.js";</a>
+<span class="sourceLineNo">103</span><a id="line.103"></a>
+<span class="sourceLineNo">104</span><a id="line.104">  /** Access to the asset manager. */</a>
+<span class="sourceLineNo">105</span><a id="line.105">  private final @Nonnull AssetManager assetManager;</a>
+<span class="sourceLineNo">106</span><a id="line.106"></a>
+<span class="sourceLineNo">107</span><a id="line.107">  /** Page context builder. */</a>
+<span class="sourceLineNo">108</span><a id="line.108">  private final @Nonnull Context.Builder context;</a>
+<span class="sourceLineNo">109</span><a id="line.109"></a>
+<span class="sourceLineNo">110</span><a id="line.110">  /** Content type to serve from this endpoint. */</a>
+<span class="sourceLineNo">111</span><a id="line.111">  private @Nonnull String contentTypeValue = MediaType.TEXT_HTML;</a>
+<span class="sourceLineNo">112</span><a id="line.112"></a>
+<span class="sourceLineNo">113</span><a id="line.113">  /** HTTP request bound to this flow. */</a>
+<span class="sourceLineNo">114</span><a id="line.114">  @SuppressWarnings("rawtypes")</a>
+<span class="sourceLineNo">115</span><a id="line.115">  private final @Nonnull HttpRequest request;</a>
+<span class="sourceLineNo">116</span><a id="line.116"></a>
+<span class="sourceLineNo">117</span><a id="line.117">  /** Set of interpreted/immutable client hints. */</a>
+<span class="sourceLineNo">118</span><a id="line.118">  private final @Nonnull ClientHints hints;</a>
+<span class="sourceLineNo">119</span><a id="line.119"></a>
+<span class="sourceLineNo">120</span><a id="line.120">  /** Main properties to apply during Soy render. */</a>
+<span class="sourceLineNo">121</span><a id="line.121">  private final @Nonnull ConcurrentMap&lt;String, Object&gt; props;</a>
+<span class="sourceLineNo">122</span><a id="line.122"></a>
+<span class="sourceLineNo">123</span><a id="line.123">  /** Additional injected values to apply during Soy render. */</a>
+<span class="sourceLineNo">124</span><a id="line.124">  private final @Nonnull ConcurrentMap&lt;String, Object&gt; injected;</a>
+<span class="sourceLineNo">125</span><a id="line.125"></a>
+<span class="sourceLineNo">126</span><a id="line.126">  /** Set of headers that cause this response flow to vary. */</a>
+<span class="sourceLineNo">127</span><a id="line.127">  private final @Nonnull SortedSet&lt;String&gt; varySegments;</a>
+<span class="sourceLineNo">128</span><a id="line.128"></a>
+<span class="sourceLineNo">129</span><a id="line.129">  /** Naming map provider to apply during the Soy render flow. */</a>
+<span class="sourceLineNo">130</span><a id="line.130">  private @Nonnull Optional&lt;SoyNamingMapProvider&gt; namingMapProvider;</a>
+<span class="sourceLineNo">131</span><a id="line.131"></a>
+<span class="sourceLineNo">132</span><a id="line.132">  /** Predicate for selecting a Soy delegate package, if applicable. */</a>
+<span class="sourceLineNo">133</span><a id="line.133">  private @Nonnull Optional&lt;Predicate&lt;String&gt;&gt; delegatePredicate;</a>
+<span class="sourceLineNo">134</span><a id="line.134"></a>
+<span class="sourceLineNo">135</span><a id="line.135">  /** Translation file to apply during the Soy render flow. */</a>
+<span class="sourceLineNo">136</span><a id="line.136">  private @Nonnull Optional&lt;File&gt; translationsFile = Optional.empty();</a>
+<span class="sourceLineNo">137</span><a id="line.137"></a>
+<span class="sourceLineNo">138</span><a id="line.138">  /** Translation resource to apply during the Soy render flow. */</a>
+<span class="sourceLineNo">139</span><a id="line.139">  private @Nonnull Optional&lt;URL&gt; translationsResource = Optional.empty();</a>
+<span class="sourceLineNo">140</span><a id="line.140"></a>
+<span class="sourceLineNo">141</span><a id="line.141">  /** Pre-constructed message bundle to apply during the Soy render flow. */</a>
+<span class="sourceLineNo">142</span><a id="line.142">  private @Nonnull Optional&lt;SoyMsgBundle&gt; messageBundle = Optional.empty();</a>
+<span class="sourceLineNo">143</span><a id="line.143"></a>
+<span class="sourceLineNo">144</span><a id="line.144">  /** Built context: assembled when we "close" the page context manager. */</a>
+<span class="sourceLineNo">145</span><a id="line.145">  private @Nullable PageContext builtContext = null;</a>
+<span class="sourceLineNo">146</span><a id="line.146"></a>
+<span class="sourceLineNo">147</span><a id="line.147">  /** Whether to enable live-reload mode or not. */</a>
+<span class="sourceLineNo">148</span><a id="line.148">  private final boolean liveReload;</a>
+<span class="sourceLineNo">149</span><a id="line.149"></a>
+<span class="sourceLineNo">150</span><a id="line.150">  /** Whether we have closed context building or not. */</a>
+<span class="sourceLineNo">151</span><a id="line.151">  private @Nonnull final AtomicBoolean closed = new AtomicBoolean(false);</a>
+<span class="sourceLineNo">152</span><a id="line.152"></a>
+<span class="sourceLineNo">153</span><a id="line.153">  /** CDN prefix to apply to this HTTP cycle. */</a>
+<span class="sourceLineNo">154</span><a id="line.154">  private @Nonnull volatile Optional&lt;String&gt; cdnPrefix = Optional.empty();</a>
+<span class="sourceLineNo">155</span><a id="line.155"></a>
+<span class="sourceLineNo">156</span><a id="line.156">  /**</a>
+<span class="sourceLineNo">157</span><a id="line.157">   * Constructor for page context.</a>
+<span class="sourceLineNo">158</span><a id="line.158">   *</a>
+<span class="sourceLineNo">159</span><a id="line.159">   * @param assetManager Manager for static embedded application assets.</a>
+<span class="sourceLineNo">160</span><a id="line.160">   * @param namingMapProvider Style renaming map provider, if applicable.</a>
+<span class="sourceLineNo">161</span><a id="line.161">   * @throws IllegalStateException If an attempt is made to construct context outside of a server-side HTTP flow.</a>
+<span class="sourceLineNo">162</span><a id="line.162">   */</a>
+<span class="sourceLineNo">163</span><a id="line.163">  PageContextManager(@Nonnull AssetManager assetManager,</a>
+<span class="sourceLineNo">164</span><a id="line.164">                     @Nonnull Optional&lt;SoyNamingMapProvider&gt; namingMapProvider) {</a>
+<span class="sourceLineNo">165</span><a id="line.165">    if (logging.isDebugEnabled()) logging.debug("Initializing `PageContextManager`.");</a>
+<span class="sourceLineNo">166</span><a id="line.166">    //noinspection SimplifyOptionalCallChains</a>
+<span class="sourceLineNo">167</span><a id="line.167">    if (!ServerRequestContext.currentRequest().isPresent())</a>
+<span class="sourceLineNo">168</span><a id="line.168">      throw new IllegalStateException("Cannot construct `PageContext` outside of a server-side HTTP flow.");</a>
+<span class="sourceLineNo">169</span><a id="line.169">    this.request = ServerRequestContext.currentRequest().get();</a>
+<span class="sourceLineNo">170</span><a id="line.170">    this.context = interpretRequest(request);</a>
+<span class="sourceLineNo">171</span><a id="line.171">    this.hints = this.context.getHintsBuilder().build();</a>
+<span class="sourceLineNo">172</span><a id="line.172">    this.props = new ConcurrentSkipListMap&lt;&gt;();</a>
+<span class="sourceLineNo">173</span><a id="line.173">    this.injected = new ConcurrentSkipListMap&lt;&gt;();</a>
+<span class="sourceLineNo">174</span><a id="line.174">    this.varySegments = new ConcurrentSkipListSet&lt;&gt;();</a>
+<span class="sourceLineNo">175</span><a id="line.175">    this.namingMapProvider = namingMapProvider;</a>
+<span class="sourceLineNo">176</span><a id="line.176">    this.assetManager = assetManager;</a>
+<span class="sourceLineNo">177</span><a id="line.177"></a>
+<span class="sourceLineNo">178</span><a id="line.178">    // inject live-reload state</a>
+<span class="sourceLineNo">179</span><a id="line.179">    this.liveReload = "enabled".equals(System.getProperty("LIVE_RELOAD"));</a>
+<span class="sourceLineNo">180</span><a id="line.180">    this.injected.put(LIVE_RELOAD_SWITCH_PROP, this.liveReload);</a>
+<span class="sourceLineNo">181</span><a id="line.181">    if (this.liveReload) {</a>
+<span class="sourceLineNo">182</span><a id="line.182">      logging.info("Live-reload is currently ENABLED.");</a>
+<span class="sourceLineNo">183</span><a id="line.183">      this.injected.put(LIVE_RELOAD_TARGET_PROP, UnsafeSanitizedContentOrdainer.ordainAsSafe(</a>
+<span class="sourceLineNo">184</span><a id="line.184">        LIVE_RELOAD_JS,</a>
+<span class="sourceLineNo">185</span><a id="line.185">        SanitizedContent.ContentKind.TRUSTED_RESOURCE_URI)</a>
+<span class="sourceLineNo">186</span><a id="line.186">        .toTrustedResourceUrlProto());</a>
+<span class="sourceLineNo">187</span><a id="line.187">    }</a>
+<span class="sourceLineNo">188</span><a id="line.188">  }</a>
+<span class="sourceLineNo">189</span><a id="line.189"></a>
+<span class="sourceLineNo">190</span><a id="line.190">  /**</a>
+<span class="sourceLineNo">191</span><a id="line.191">   * Interpret the provided HTTP request, reading any properties and hints that are specified. For instance, this is</a>
+<span class="sourceLineNo">192</span><a id="line.192">   * where we can load/interpret &lt;i&gt;Client Hints&lt;/i&gt; provided by the browser, as applicable.</a>
+<span class="sourceLineNo">193</span><a id="line.193">   *</a>
+<span class="sourceLineNo">194</span><a id="line.194">   * @param request HTTP request to interpret/read.</a>
+<span class="sourceLineNo">195</span><a id="line.195">   * @return Context builder to use, factoring in the provided request.</a>
+<span class="sourceLineNo">196</span><a id="line.196">   */</a>
+<span class="sourceLineNo">197</span><a id="line.197">  @VisibleForTesting</a>
+<span class="sourceLineNo">198</span><a id="line.198">  @SuppressWarnings({"WeakerAccess", "rawtypes"})</a>
+<span class="sourceLineNo">199</span><a id="line.199">  static @Nonnull Context.Builder interpretRequest(@Nonnull HttpRequest request) {</a>
+<span class="sourceLineNo">200</span><a id="line.200">    Context.Builder builder = Context.newBuilder();</a>
+<span class="sourceLineNo">201</span><a id="line.201">    interpretHints(request, builder);</a>
+<span class="sourceLineNo">202</span><a id="line.202">    return builder;</a>
+<span class="sourceLineNo">203</span><a id="line.203">  }</a>
+<span class="sourceLineNo">204</span><a id="line.204"></a>
+<span class="sourceLineNo">205</span><a id="line.205">  /**</a>
+<span class="sourceLineNo">206</span><a id="line.206">   * Interpret &lt;i&gt;Client Hints&lt;/i&gt; headers from the provided HTTP request, and apply them to the provided context.</a>
+<span class="sourceLineNo">207</span><a id="line.207">   *</a>
+<span class="sourceLineNo">208</span><a id="line.208">   * @param request HTTP request to interpret hints from.</a>
+<span class="sourceLineNo">209</span><a id="line.209">   * @param builder Builder to apply the hints to, if found.</a>
+<span class="sourceLineNo">210</span><a id="line.210">   */</a>
+<span class="sourceLineNo">211</span><a id="line.211">  @VisibleForTesting</a>
+<span class="sourceLineNo">212</span><a id="line.212">  @SuppressWarnings({"WeakerAccess", "rawtypes"})</a>
+<span class="sourceLineNo">213</span><a id="line.213">  static void interpretHints(@Nonnull HttpRequest request, @Nonnull Context.Builder builder) {</a>
+<span class="sourceLineNo">214</span><a id="line.214">    HttpHeaders headers = request.getHeaders();</a>
+<span class="sourceLineNo">215</span><a id="line.215">    Context.ClientHints.Builder hints = builder.getHintsBuilder();</a>
+<span class="sourceLineNo">216</span><a id="line.216"></a>
+<span class="sourceLineNo">217</span><a id="line.217">    checkHint(ClientHint.DPR, headers, hints, (value) -&gt; hints.setDevicePixelRatio(Integer.parseUnsignedInt(value)));</a>
+<span class="sourceLineNo">218</span><a id="line.218">    checkHint(ClientHint.ECT, headers, hints, (value) -&gt;</a>
+<span class="sourceLineNo">219</span><a id="line.219">      hints.setEffectiveConnectionType(connectionHintForECT(value).orElse(DEFAULT_ECT)));</a>
+<span class="sourceLineNo">220</span><a id="line.220">    checkHint(ClientHint.RTT, headers, hints, (value) -&gt; hints.setRoundTripTime(Integer.parseUnsignedInt(value)));</a>
+<span class="sourceLineNo">221</span><a id="line.221">    checkHint(ClientHint.DOWNLINK, headers, hints, (value) -&gt; hints.setDownlink(Float.parseFloat(value)));</a>
+<span class="sourceLineNo">222</span><a id="line.222">    checkHint(ClientHint.DEVICE_MEMORY, headers, hints, (value) -&gt; hints.setDeviceMemory(Float.parseFloat(value)));</a>
+<span class="sourceLineNo">223</span><a id="line.223">    checkHint(ClientHint.SAVE_DATA, headers, hints, (value) -&gt; hints.setSaveData(true));</a>
+<span class="sourceLineNo">224</span><a id="line.224">    checkHint(ClientHint.WIDTH, headers, hints, (value) -&gt; hints.setWidth(Integer.parseUnsignedInt(value)));</a>
+<span class="sourceLineNo">225</span><a id="line.225">    checkHint(ClientHint.VIEWPORT_WIDTH, headers, hints,</a>
+<span class="sourceLineNo">226</span><a id="line.226">      (value) -&gt; hints.setViewportWidth(Integer.parseUnsignedInt(value)));</a>
+<span class="sourceLineNo">227</span><a id="line.227">  }</a>
+<span class="sourceLineNo">228</span><a id="line.228"></a>
+<span class="sourceLineNo">229</span><a id="line.229">  /**</a>
+<span class="sourceLineNo">230</span><a id="line.230">   * Check the provided set of HTTP headers for the specified client hint. If a value is found, dispatch the provided</a>
+<span class="sourceLineNo">231</span><a id="line.231">   * function with the hint, and the discovered header value.</a>
+<span class="sourceLineNo">232</span><a id="line.232">   *</a>
+<span class="sourceLineNo">233</span><a id="line.233">   * @param hint Client hint to check for in the specified headers.</a>
+<span class="sourceLineNo">234</span><a id="line.234">   * @param headers HTTP request headers to check.</a>
+<span class="sourceLineNo">235</span><a id="line.235">   * @param callable Callable to dispatch if the header is found.</a>
+<span class="sourceLineNo">236</span><a id="line.236">   */</a>
+<span class="sourceLineNo">237</span><a id="line.237">  @VisibleForTesting</a>
+<span class="sourceLineNo">238</span><a id="line.238">  @SuppressWarnings("WeakerAccess")</a>
+<span class="sourceLineNo">239</span><a id="line.239">  static void checkHint(@Nonnull ClientHint hint,</a>
+<span class="sourceLineNo">240</span><a id="line.240">                        @Nonnull HttpHeaders headers,</a>
+<span class="sourceLineNo">241</span><a id="line.241">                        @Nonnull ClientHints.Builder hints,</a>
+<span class="sourceLineNo">242</span><a id="line.242">                        Consumer&lt;String&gt; callable) {</a>
+<span class="sourceLineNo">243</span><a id="line.243">    String headerName = clientHintForEnum(hint);</a>
+<span class="sourceLineNo">244</span><a id="line.244">    if (headers.contains(headerName)) {</a>
+<span class="sourceLineNo">245</span><a id="line.245">      String headerValue = headers.get(headerName);</a>
+<span class="sourceLineNo">246</span><a id="line.246">      if (headerValue != null &amp;&amp; !headerValue.isEmpty()) {</a>
+<span class="sourceLineNo">247</span><a id="line.247">        try {</a>
+<span class="sourceLineNo">248</span><a id="line.248">          hints.addIndicated(hint);</a>
+<span class="sourceLineNo">249</span><a id="line.249">          callable.accept(headerValue);</a>
+<span class="sourceLineNo">250</span><a id="line.250">        } catch (IllegalArgumentException iae) {</a>
+<span class="sourceLineNo">251</span><a id="line.251">          logging.warn(format("Failed to parse client hint '%s': %s.", hint.name(), iae.getMessage()));</a>
+<span class="sourceLineNo">252</span><a id="line.252">        }</a>
+<span class="sourceLineNo">253</span><a id="line.253">      }</a>
+<span class="sourceLineNo">254</span><a id="line.254">    }</a>
+<span class="sourceLineNo">255</span><a id="line.255">  }</a>
+<span class="sourceLineNo">256</span><a id="line.256"></a>
+<span class="sourceLineNo">257</span><a id="line.257">  /**</a>
+<span class="sourceLineNo">258</span><a id="line.258">   * Resolve an enumerated connection hint for the provided connection hint name, which was presumably found in a</a>
+<span class="sourceLineNo">259</span><a id="line.259">   * &lt;i&gt;Client Hints&lt;/i&gt; Effective Connection Type header value.</a>
+<span class="sourceLineNo">260</span><a id="line.260">   *</a>
+<span class="sourceLineNo">261</span><a id="line.261">   * @param value Value to interpret.</a>
+<span class="sourceLineNo">262</span><a id="line.262">   * @return Connection hint type, resolved.</a>
+<span class="sourceLineNo">263</span><a id="line.263">   */</a>
+<span class="sourceLineNo">264</span><a id="line.264">  @VisibleForTesting</a>
+<span class="sourceLineNo">265</span><a id="line.265">  @SuppressWarnings("WeakerAccess")</a>
+<span class="sourceLineNo">266</span><a id="line.266">  static @Nonnull Optional&lt;ConnectionHint&gt; connectionHintForECT(@Nonnull String value) {</a>
+<span class="sourceLineNo">267</span><a id="line.267">    switch (value.toLowerCase().trim()) {</a>
+<span class="sourceLineNo">268</span><a id="line.268">      case "slow_2g": return Optional.of(ConnectionHint.SLOW_TWO);</a>
+<span class="sourceLineNo">269</span><a id="line.269">      case "2g": return Optional.of(ConnectionHint.SLOW);</a>
+<span class="sourceLineNo">270</span><a id="line.270">      case "3g": return Optional.of(ConnectionHint.TYPICAL);</a>
+<span class="sourceLineNo">271</span><a id="line.271">      case "4g": return Optional.of(ConnectionHint.FAST);</a>
+<span class="sourceLineNo">272</span><a id="line.272">      default: return Optional.empty();</a>
+<span class="sourceLineNo">273</span><a id="line.273">    }</a>
+<span class="sourceLineNo">274</span><a id="line.274">  }</a>
+<span class="sourceLineNo">275</span><a id="line.275"></a>
+<span class="sourceLineNo">276</span><a id="line.276">  /**</a>
+<span class="sourceLineNo">277</span><a id="line.277">   * Produce a string token for the provided client hint.</a>
+<span class="sourceLineNo">278</span><a id="line.278">   *</a>
+<span class="sourceLineNo">279</span><a id="line.279">   * @param hint Enumerated hint type.</a>
+<span class="sourceLineNo">280</span><a id="line.280">   * @return String token matching the hint.</a>
+<span class="sourceLineNo">281</span><a id="line.281">   */</a>
+<span class="sourceLineNo">282</span><a id="line.282">  @VisibleForTesting</a>
+<span class="sourceLineNo">283</span><a id="line.283">  @SuppressWarnings("WeakerAccess")</a>
+<span class="sourceLineNo">284</span><a id="line.284">  static @Nonnull String clientHintForEnum(@Nonnull ClientHint hint) {</a>
+<span class="sourceLineNo">285</span><a id="line.285">    switch (hint) {</a>
+<span class="sourceLineNo">286</span><a id="line.286">      case DPR: return "DPR";</a>
+<span class="sourceLineNo">287</span><a id="line.287">      case ECT: return "ECT";</a>
+<span class="sourceLineNo">288</span><a id="line.288">      case RTT: return "RTT";</a>
+<span class="sourceLineNo">289</span><a id="line.289">      case DOWNLINK: return "Downlink";</a>
+<span class="sourceLineNo">290</span><a id="line.290">      case DEVICE_MEMORY: return "Device-Memory";</a>
+<span class="sourceLineNo">291</span><a id="line.291">      case SAVE_DATA: return "Save-Data";</a>
+<span class="sourceLineNo">292</span><a id="line.292">      case WIDTH: return "Width";</a>
+<span class="sourceLineNo">293</span><a id="line.293">      case VIEWPORT_WIDTH: return "Viewport-Width";</a>
+<span class="sourceLineNo">294</span><a id="line.294">      default:</a>
+<span class="sourceLineNo">295</span><a id="line.295">        throw new IllegalStateException(format("Unrecognized client hint type: '%s'.", hint.name()));</a>
+<span class="sourceLineNo">296</span><a id="line.296">    }</a>
+<span class="sourceLineNo">297</span><a id="line.297">  }</a>
+<span class="sourceLineNo">298</span><a id="line.298"></a>
+<span class="sourceLineNo">299</span><a id="line.299">  /**</a>
+<span class="sourceLineNo">300</span><a id="line.300">   * Produce a token for the specified {@code Referrer-Policy} selection.</a>
+<span class="sourceLineNo">301</span><a id="line.301">   *</a>
+<span class="sourceLineNo">302</span><a id="line.302">   * @param policy Policy to produce a token for.</a>
+<span class="sourceLineNo">303</span><a id="line.303">   * @return String token.</a>
+<span class="sourceLineNo">304</span><a id="line.304">   */</a>
+<span class="sourceLineNo">305</span><a id="line.305">  @VisibleForTesting</a>
+<span class="sourceLineNo">306</span><a id="line.306">  @SuppressWarnings("WeakerAccess")</a>
+<span class="sourceLineNo">307</span><a id="line.307">  static @Nonnull Optional&lt;String&gt; tokenForReferrerPolicy(@Nonnull ReferrerPolicy policy) {</a>
+<span class="sourceLineNo">308</span><a id="line.308">    switch (policy) {</a>
+<span class="sourceLineNo">309</span><a id="line.309">      case NO_REFERRER: return Optional.of("no-referrer");</a>
+<span class="sourceLineNo">310</span><a id="line.310">      case NO_REFERRER_WHEN_DOWNGRADE: return Optional.of("no-referrer-when-downgrade");</a>
+<span class="sourceLineNo">311</span><a id="line.311">      case ORIGIN: return Optional.of("origin");</a>
+<span class="sourceLineNo">312</span><a id="line.312">      case ORIGIN_WHEN_CROSS_ORIGIN: return Optional.of("origin-when-cross-origin");</a>
+<span class="sourceLineNo">313</span><a id="line.313">      case SAME: return Optional.of("same-origin");</a>
+<span class="sourceLineNo">314</span><a id="line.314">      case STRICT_ORIGIN: return Optional.of("strict-origin");</a>
+<span class="sourceLineNo">315</span><a id="line.315">      case STRICT_ORIGIN_WHEN_CROSS_ORIGIN: return Optional.of("strict-origin-when-cross-origin");</a>
+<span class="sourceLineNo">316</span><a id="line.316">      case UNSAFE_URL: return Optional.of("unsafe-url");</a>
+<span class="sourceLineNo">317</span><a id="line.317">      default: return Optional.empty();</a>
+<span class="sourceLineNo">318</span><a id="line.318">    }</a>
+<span class="sourceLineNo">319</span><a id="line.319">  }</a>
+<span class="sourceLineNo">320</span><a id="line.320"></a>
+<span class="sourceLineNo">321</span><a id="line.321">  /**</a>
+<span class="sourceLineNo">322</span><a id="line.322">   * Produce a token for the specified {@code X-Frame-Options} policy.</a>
+<span class="sourceLineNo">323</span><a id="line.323">   *</a>
+<span class="sourceLineNo">324</span><a id="line.324">   * @param policy Policy to produce a token for.</a>
+<span class="sourceLineNo">325</span><a id="line.325">   * @return String token.</a>
+<span class="sourceLineNo">326</span><a id="line.326">   */</a>
+<span class="sourceLineNo">327</span><a id="line.327">  @VisibleForTesting</a>
+<span class="sourceLineNo">328</span><a id="line.328">  @SuppressWarnings("WeakerAccess")</a>
+<span class="sourceLineNo">329</span><a id="line.329">  static @Nonnull Optional&lt;String&gt; tokenForFramingPolicy(@Nonnull FramingPolicy policy) {</a>
+<span class="sourceLineNo">330</span><a id="line.330">    switch (policy) {</a>
+<span class="sourceLineNo">331</span><a id="line.331">      case SAMEORIGIN: return Optional.of("SAMEORIGIN");</a>
+<span class="sourceLineNo">332</span><a id="line.332">      case DENY: return Optional.of("DENY");</a>
+<span class="sourceLineNo">333</span><a id="line.333">      default: return Optional.empty();</a>
+<span class="sourceLineNo">334</span><a id="line.334">    }</a>
+<span class="sourceLineNo">335</span><a id="line.335">  }</a>
+<span class="sourceLineNo">336</span><a id="line.336"></a>
+<span class="sourceLineNo">337</span><a id="line.337">  /**</a>
+<span class="sourceLineNo">338</span><a id="line.338">   * Format a hostname for DNS pre-fetching by the browser.</a>
+<span class="sourceLineNo">339</span><a id="line.339">   *</a>
+<span class="sourceLineNo">340</span><a id="line.340">   * @param hostname Hostname to pre-fetch.</a>
+<span class="sourceLineNo">341</span><a id="line.341">   * @param relevance Indicates the type of link being specified.</a>
+<span class="sourceLineNo">342</span><a id="line.342">   * @return Formatted {@code Link} header value.</a>
+<span class="sourceLineNo">343</span><a id="line.343">   */</a>
+<span class="sourceLineNo">344</span><a id="line.344">  @VisibleForTesting</a>
+<span class="sourceLineNo">345</span><a id="line.345">  @SuppressWarnings("WeakerAccess")</a>
+<span class="sourceLineNo">346</span><a id="line.346">  static @Nonnull String formatLinkHeader(@Nonnull String hostname, @Nonnull String relevance) {</a>
+<span class="sourceLineNo">347</span><a id="line.347">    return "&lt;" + hostname + "&gt;; rel=" + relevance;</a>
+<span class="sourceLineNo">348</span><a id="line.348">  }</a>
+<span class="sourceLineNo">349</span><a id="line.349"></a>
+<span class="sourceLineNo">350</span><a id="line.350">  /** @return The current page context builder. */</a>
+<span class="sourceLineNo">351</span><a id="line.351">  public @Nonnull Context.Builder getContext() {</a>
+<span class="sourceLineNo">352</span><a id="line.352">    if (this.closed.get())</a>
+<span class="sourceLineNo">353</span><a id="line.353">      throw new IllegalStateException("Cannot access mutable context after closing page manager state.");</a>
+<span class="sourceLineNo">354</span><a id="line.354">    return context;</a>
+<span class="sourceLineNo">355</span><a id="line.355">  }</a>
+<span class="sourceLineNo">356</span><a id="line.356"></a>
+<span class="sourceLineNo">357</span><a id="line.357">  /** {@inheritDoc} */</a>
+<span class="sourceLineNo">358</span><a id="line.358">  @Override</a>
+<span class="sourceLineNo">359</span><a id="line.359">  public @Nonnull &lt;T&gt; MutableHttpResponse&lt;T&gt; finalizeResponse(@Nonnull HttpRequest&lt;?&gt; request,</a>
+<span class="sourceLineNo">360</span><a id="line.360">                                                              @Nonnull MutableHttpResponse&lt;T&gt; soyResponse,</a>
+<span class="sourceLineNo">361</span><a id="line.361">                                                              @Nonnull T body,</a>
+<span class="sourceLineNo">362</span><a id="line.362">                                                              @Nullable MessageDigest digester) {</a>
+<span class="sourceLineNo">363</span><a id="line.363">    MutableHttpResponse&lt;T&gt; response = soyResponse.body(body);</a>
+<span class="sourceLineNo">364</span><a id="line.364">    Optional&lt;Context&gt; pageContext = response.getAttribute("context", Context.class);</a>
+<span class="sourceLineNo">365</span><a id="line.365">    if (pageContext.isPresent()) {</a>
+<span class="sourceLineNo">366</span><a id="line.366">      if (logging.isDebugEnabled())</a>
+<span class="sourceLineNo">367</span><a id="line.367">        logging.debug("Found request context, finalizing headers.");</a>
+<span class="sourceLineNo">368</span><a id="line.368">      @Nonnull Context ctx = pageContext.get();</a>
+<span class="sourceLineNo">369</span><a id="line.369"></a>
+<span class="sourceLineNo">370</span><a id="line.370">      //noinspection ConstantConditions</a>
+<span class="sourceLineNo">371</span><a id="line.371">      if (this.contentTypeValue != null</a>
+<span class="sourceLineNo">372</span><a id="line.372">          &amp;&amp; !this.contentTypeValue.isEmpty()</a>
+<span class="sourceLineNo">373</span><a id="line.373">          &amp;&amp; !this.contentTypeValue.isBlank()) {</a>
+<span class="sourceLineNo">374</span><a id="line.374">        // set the content type</a>
+<span class="sourceLineNo">375</span><a id="line.375">        soyResponse.contentType(this.contentTypeValue);</a>
+<span class="sourceLineNo">376</span><a id="line.376">      }</a>
+<span class="sourceLineNo">377</span><a id="line.377"></a>
+<span class="sourceLineNo">378</span><a id="line.378">      // process `ETag` first, because if `If-None-Match` processing is enabled, this may kick is out of this response</a>
+<span class="sourceLineNo">379</span><a id="line.379">      // flow entirely.</a>
+<span class="sourceLineNo">380</span><a id="line.380">      if (digester != null) {</a>
+<span class="sourceLineNo">381</span><a id="line.381">        if (ctx.getEtag().hasPreimage()) {</a>
+<span class="sourceLineNo">382</span><a id="line.382">          digester.update(ctx.getEtag().getPreimage().getFingerprint().asReadOnlyByteBuffer().array());</a>
+<span class="sourceLineNo">383</span><a id="line.383">        }</a>
+<span class="sourceLineNo">384</span><a id="line.384">        String contentDigest = Hex.bytesToHex(digester.digest(), ETAG_LENGTH);</a>
+<span class="sourceLineNo">385</span><a id="line.385">        if (!Objects.requireNonNull(contentDigest).isEmpty()) {</a>
+<span class="sourceLineNo">386</span><a id="line.386">          if (request.getHeaders().contains(HttpHeaders.IF_NONE_MATCH)) {</a>
+<span class="sourceLineNo">387</span><a id="line.387">            // we have a potential conditional match</a>
+<span class="sourceLineNo">388</span><a id="line.388">            if (contentDigest.equals(Objects.requireNonNull(request.getHeaders()</a>
+<span class="sourceLineNo">389</span><a id="line.389">                  .get(HttpHeaders.IF_NONE_MATCH))</a>
+<span class="sourceLineNo">390</span><a id="line.390">                .replace("\"", "")</a>
+<span class="sourceLineNo">391</span><a id="line.391">                .replace("W/", ""))) {</a>
+<span class="sourceLineNo">392</span><a id="line.392">              if (logging.isDebugEnabled()) {</a>
+<span class="sourceLineNo">393</span><a id="line.393">                logging.debug(format(</a>
+<span class="sourceLineNo">394</span><a id="line.394">                  "Response matched `If-None-Match` etag value '%s'. Sending 304.", ("W/" + contentDigest)));</a>
+<span class="sourceLineNo">395</span><a id="line.395">              }</a>
+<span class="sourceLineNo">396</span><a id="line.396"></a>
+<span class="sourceLineNo">397</span><a id="line.397">              // drop the body - explicitly truncate so we don't get caught by chunked TE - and reset the status to</a>
+<span class="sourceLineNo">398</span><a id="line.398">              // indicate a conditional request match</a>
+<span class="sourceLineNo">399</span><a id="line.399">              response.body(null);</a>
+<span class="sourceLineNo">400</span><a id="line.400">              response.contentLength(0);</a>
+<span class="sourceLineNo">401</span><a id="line.401">              response.status(HttpStatus.NOT_MODIFIED.getCode());</a>
+<span class="sourceLineNo">402</span><a id="line.402">              return response;</a>
+<span class="sourceLineNo">403</span><a id="line.403">            }</a>
+<span class="sourceLineNo">404</span><a id="line.404">          }</a>
+<span class="sourceLineNo">405</span><a id="line.405">          response.getHeaders().add(HttpHeaders.ETAG, "W/" + "\"" + contentDigest + "\"");</a>
+<span class="sourceLineNo">406</span><a id="line.406">        }</a>
+<span class="sourceLineNo">407</span><a id="line.407">      } else if (logging.isTraceEnabled()) {</a>
+<span class="sourceLineNo">408</span><a id="line.408">        logging.trace("Dynamic ETags are disabled.");</a>
+<span class="sourceLineNo">409</span><a id="line.409">      }</a>
+<span class="sourceLineNo">410</span><a id="line.410"></a>
+<span class="sourceLineNo">411</span><a id="line.411">      // `Accept-CH`</a>
+<span class="sourceLineNo">412</span><a id="line.412">      if (ctx.hasHints() &amp;&amp;  // we must support hints to emit this header</a>
+<span class="sourceLineNo">413</span><a id="line.413">          ctx.getHints().getSupportedCount() &gt; 0 &amp;&amp;  // there must be hint types to send</a>
+<span class="sourceLineNo">414</span><a id="line.414">          (ctx.getHints().getIndicatedCount() == 0 ||  // we should only send if there are no hints from the client, or</a>
+<span class="sourceLineNo">415</span><a id="line.415">           ctx.getHints().getIndicatedList() != ctx.getHints().getSupportedList() ||  // the lists differ in length, or</a>
+<span class="sourceLineNo">416</span><a id="line.416">          !(Sets.difference(  // the provided set of hints from the client doesn't match with the supported set</a>
+<span class="sourceLineNo">417</span><a id="line.417">             ImmutableSortedSet.copyOf(ctx.getHints().getIndicatedList()),</a>
+<span class="sourceLineNo">418</span><a id="line.418">             ImmutableSortedSet.copyOf(ctx.getHints().getSupportedList()))</a>
+<span class="sourceLineNo">419</span><a id="line.419">            .isEmpty()))) {</a>
+<span class="sourceLineNo">420</span><a id="line.420">        SortedSet&lt;String&gt; tokens = ctx.getHints().getSupportedList().stream()</a>
+<span class="sourceLineNo">421</span><a id="line.421">          .map(PageContextManager::clientHintForEnum)</a>
+<span class="sourceLineNo">422</span><a id="line.422">          .collect(Collectors.toCollection(TreeSet::new));</a>
+<span class="sourceLineNo">423</span><a id="line.423"></a>
+<span class="sourceLineNo">424</span><a id="line.424">        String renderedHints = Joiner.on(", ").join(tokens);</a>
+<span class="sourceLineNo">425</span><a id="line.425">        if (logging.isDebugEnabled())</a>
+<span class="sourceLineNo">426</span><a id="line.426">          logging.debug(format("Indicating `Accept-CH`: '%s'.", renderedHints.toLowerCase()));</a>
+<span class="sourceLineNo">427</span><a id="line.427">        response.getHeaders().add(ACCEPT_CH_HEADER, renderedHints.toLowerCase());</a>
+<span class="sourceLineNo">428</span><a id="line.428"></a>
+<span class="sourceLineNo">429</span><a id="line.429">        // since we've appended `Accept-CH`, check for a lifetime</a>
+<span class="sourceLineNo">430</span><a id="line.430">        long lifetime = ctx.getHints().getLifetime();</a>
+<span class="sourceLineNo">431</span><a id="line.431">        if (lifetime &gt; 0) {</a>
+<span class="sourceLineNo">432</span><a id="line.432">          response.getHeaders().add(ACCEPT_CH_LIFETIME_HEADER, String.valueOf(lifetime));</a>
+<span class="sourceLineNo">433</span><a id="line.433">        }</a>
+<span class="sourceLineNo">434</span><a id="line.434">      } else if (logging.isTraceEnabled()) {</a>
+<span class="sourceLineNo">435</span><a id="line.435">        logging.trace("`Accept-CH` not configured for response.");</a>
+<span class="sourceLineNo">436</span><a id="line.436">      }</a>
+<span class="sourceLineNo">437</span><a id="line.437"></a>
+<span class="sourceLineNo">438</span><a id="line.438">      // `Content-Language`</a>
+<span class="sourceLineNo">439</span><a id="line.439">      if (ctx.getLanguage() != null &amp;&amp; !ctx.getLanguage().isEmpty())</a>
+<span class="sourceLineNo">440</span><a id="line.440">        response.getHeaders().add(HttpHeaders.CONTENT_LANGUAGE, ctx.getLanguage());</a>
+<span class="sourceLineNo">441</span><a id="line.441">      else if (logging.isTraceEnabled())</a>
+<span class="sourceLineNo">442</span><a id="line.442">        logging.trace("`Content-Language` not configured for response.");</a>
+<span class="sourceLineNo">443</span><a id="line.443"></a>
+<span class="sourceLineNo">444</span><a id="line.444">      // `Vary`</a>
+<span class="sourceLineNo">445</span><a id="line.445">      if (ctx.getVaryCount() &gt; 0)</a>
+<span class="sourceLineNo">446</span><a id="line.446">        response.getHeaders().add(</a>
+<span class="sourceLineNo">447</span><a id="line.447">          HttpHeaders.VARY,</a>
+<span class="sourceLineNo">448</span><a id="line.448">          Joiner.on(", ").join(new TreeSet&lt;&gt;(ctx.getVaryList())));</a>
+<span class="sourceLineNo">449</span><a id="line.449">      else if (logging.isTraceEnabled())</a>
+<span class="sourceLineNo">450</span><a id="line.450">        logging.trace("`Vary` not configured for response.");</a>
+<span class="sourceLineNo">451</span><a id="line.451"></a>
+<span class="sourceLineNo">452</span><a id="line.452">      // `Feature-Policy`</a>
+<span class="sourceLineNo">453</span><a id="line.453">      if (ctx.getFeaturePolicyCount() &gt; 0) {</a>
+<span class="sourceLineNo">454</span><a id="line.454">        // gather policies</a>
+<span class="sourceLineNo">455</span><a id="line.455">        SortedSet&lt;String&gt; segments = new TreeSet&lt;&gt;(ctx.getFeaturePolicyList());</a>
+<span class="sourceLineNo">456</span><a id="line.456">        if (!segments.isEmpty()) {</a>
+<span class="sourceLineNo">457</span><a id="line.457">          String renderedPolicy = Joiner.on(" ").join(segments);</a>
+<span class="sourceLineNo">458</span><a id="line.458">          response.getHeaders().add(FEATURE_POLICY_HEADER, renderedPolicy);</a>
+<span class="sourceLineNo">459</span><a id="line.459">        }</a>
+<span class="sourceLineNo">460</span><a id="line.460">      } else if (logging.isTraceEnabled()) {</a>
+<span class="sourceLineNo">461</span><a id="line.461">        logging.trace("`Feature-Policy` not configured for response.");</a>
+<span class="sourceLineNo">462</span><a id="line.462">      }</a>
+<span class="sourceLineNo">463</span><a id="line.463"></a>
+<span class="sourceLineNo">464</span><a id="line.464">      // `Referrer-Policy`</a>
+<span class="sourceLineNo">465</span><a id="line.465">      Optional&lt;String&gt; referrerPolicyToken = tokenForReferrerPolicy(ctx.getReferrerPolicy());</a>
+<span class="sourceLineNo">466</span><a id="line.466">      if (referrerPolicyToken.isPresent()) {</a>
+<span class="sourceLineNo">467</span><a id="line.467">        if (logging.isDebugEnabled())</a>
+<span class="sourceLineNo">468</span><a id="line.468">          logging.debug(format("Indicating `Referrer-Policy`: '%s'.", referrerPolicyToken.get()));</a>
+<span class="sourceLineNo">469</span><a id="line.469">        response.getHeaders().add(</a>
+<span class="sourceLineNo">470</span><a id="line.470">          REFERRER_POLICY_HEADER,</a>
+<span class="sourceLineNo">471</span><a id="line.471">          referrerPolicyToken.get());</a>
+<span class="sourceLineNo">472</span><a id="line.472">      } else if (logging.isTraceEnabled()) {</a>
+<span class="sourceLineNo">473</span><a id="line.473">        logging.trace("`Referrer-Policy` not configured for response.");</a>
+<span class="sourceLineNo">474</span><a id="line.474">      }</a>
+<span class="sourceLineNo">475</span><a id="line.475"></a>
+<span class="sourceLineNo">476</span><a id="line.476">      // `X-Frame-Options`</a>
+<span class="sourceLineNo">477</span><a id="line.477">      Optional&lt;String&gt; framingToken = tokenForFramingPolicy(ctx.getFramingPolicy());</a>
+<span class="sourceLineNo">478</span><a id="line.478">      if (framingToken.isPresent()) {</a>
+<span class="sourceLineNo">479</span><a id="line.479">        if (logging.isDebugEnabled())</a>
+<span class="sourceLineNo">480</span><a id="line.480">          logging.debug(format("Indicating `X-Frame-Options`: '%s'.", ctx.getFramingPolicy().name()));</a>
+<span class="sourceLineNo">481</span><a id="line.481">        response.getHeaders().add(</a>
+<span class="sourceLineNo">482</span><a id="line.482">          X_FRAME_OPTIONS_HEADER,</a>
+<span class="sourceLineNo">483</span><a id="line.483">          framingToken.get());</a>
+<span class="sourceLineNo">484</span><a id="line.484"></a>
+<span class="sourceLineNo">485</span><a id="line.485">      } else if (logging.isTraceEnabled()) {</a>
+<span class="sourceLineNo">486</span><a id="line.486">        logging.trace("No `X-Frame-Options` configured for this response.");</a>
+<span class="sourceLineNo">487</span><a id="line.487">      }</a>
+<span class="sourceLineNo">488</span><a id="line.488"></a>
+<span class="sourceLineNo">489</span><a id="line.489">      // `X-Content-Type-Options`</a>
+<span class="sourceLineNo">490</span><a id="line.490">      if (ctx.getContentTypeNosniff()) {</a>
+<span class="sourceLineNo">491</span><a id="line.491">        if (logging.isDebugEnabled())</a>
+<span class="sourceLineNo">492</span><a id="line.492">          logging.debug("Indicating `X-Content-Type-Options`: 'nosniff'.");</a>
+<span class="sourceLineNo">493</span><a id="line.493">        response.getHeaders().add(</a>
+<span class="sourceLineNo">494</span><a id="line.494">          X_CONTENT_TYPE_OPTIONS_HEADER,</a>
+<span class="sourceLineNo">495</span><a id="line.495">          "nosniff");</a>
+<span class="sourceLineNo">496</span><a id="line.496">      } else if (logging.isTraceEnabled()) {</a>
+<span class="sourceLineNo">497</span><a id="line.497">        logging.trace("No `X-Content-Type-Options` configured for this response.");</a>
+<span class="sourceLineNo">498</span><a id="line.498">      }</a>
+<span class="sourceLineNo">499</span><a id="line.499"></a>
+<span class="sourceLineNo">500</span><a id="line.500">      // `Link` (domain pre-connection)</a>
+<span class="sourceLineNo">501</span><a id="line.501">      if (ctx.getPreconnectCount() &gt; 0) {</a>
+<span class="sourceLineNo">502</span><a id="line.502">        SortedSet&lt;String&gt; preconnectList = new TreeSet&lt;&gt;(ctx.getPreconnectList());</a>
+<span class="sourceLineNo">503</span><a id="line.503">        preconnectList.forEach((preconnect) -&gt;</a>
+<span class="sourceLineNo">504</span><a id="line.504">          response.getHeaders().add(LINK_HEADER, formatLinkHeader(preconnect, LINK_PRECONNECT_TOKEN)));</a>
+<span class="sourceLineNo">505</span><a id="line.505"></a>
+<span class="sourceLineNo">506</span><a id="line.506">        if (logging.isDebugEnabled()) {</a>
+<span class="sourceLineNo">507</span><a id="line.507">          logging.debug(format("Indicated (via `Link`) %s domains for pre-connection.", ctx.getPreconnectCount()));</a>
+<span class="sourceLineNo">508</span><a id="line.508">        }</a>
+<span class="sourceLineNo">509</span><a id="line.509">        if (logging.isTraceEnabled()) {</a>
+<span class="sourceLineNo">510</span><a id="line.510">          logging.trace(format("Domains for pre-connection: %s.", Joiner.on(", ").join(preconnectList)));</a>
+<span class="sourceLineNo">511</span><a id="line.511">        }</a>
+<span class="sourceLineNo">512</span><a id="line.512">      } else if (logging.isTraceEnabled()) {</a>
+<span class="sourceLineNo">513</span><a id="line.513">        logging.trace("No domains to apply to pre-connect hints.");</a>
+<span class="sourceLineNo">514</span><a id="line.514">      }</a>
+<span class="sourceLineNo">515</span><a id="line.515"></a>
+<span class="sourceLineNo">516</span><a id="line.516">      // `Link` (DNS pre-fetching)</a>
+<span class="sourceLineNo">517</span><a id="line.517">      if (ctx.getDnsPrefetchCount() &gt; 0) {</a>
+<span class="sourceLineNo">518</span><a id="line.518">        SortedSet&lt;String&gt; dnsPrefetches = new TreeSet&lt;&gt;(ctx.getDnsPrefetchList());</a>
+<span class="sourceLineNo">519</span><a id="line.519">        dnsPrefetches.forEach((prefetch) -&gt;</a>
+<span class="sourceLineNo">520</span><a id="line.520">          response.getHeaders().add(LINK_HEADER, formatLinkHeader(prefetch, LINK_DNS_PREFETCH_TOKEN)));</a>
+<span class="sourceLineNo">521</span><a id="line.521"></a>
+<span class="sourceLineNo">522</span><a id="line.522">        if (logging.isDebugEnabled()) {</a>
+<span class="sourceLineNo">523</span><a id="line.523">          logging.debug(format("Indicated (via `Link`) %s domains for DNS prefetching.", ctx.getDnsPrefetchCount()));</a>
+<span class="sourceLineNo">524</span><a id="line.524">        }</a>
+<span class="sourceLineNo">525</span><a id="line.525">        if (logging.isTraceEnabled()) {</a>
+<span class="sourceLineNo">526</span><a id="line.526">          logging.trace(format("DNS domains prefetched: %s.", Joiner.on(", ").join(dnsPrefetches)));</a>
+<span class="sourceLineNo">527</span><a id="line.527">        }</a>
+<span class="sourceLineNo">528</span><a id="line.528">      } else if (logging.isTraceEnabled()) {</a>
+<span class="sourceLineNo">529</span><a id="line.529">        logging.trace("No domains to apply to DNS prefetch hints.");</a>
+<span class="sourceLineNo">530</span><a id="line.530">      }</a>
+<span class="sourceLineNo">531</span><a id="line.531"></a>
+<span class="sourceLineNo">532</span><a id="line.532">      // `X-XSS-Protection`</a>
+<span class="sourceLineNo">533</span><a id="line.533">      if (ctx.getXssProtection() != null &amp;&amp; !ctx.getXssProtection().isEmpty()) {</a>
+<span class="sourceLineNo">534</span><a id="line.534">        if (logging.isDebugEnabled())</a>
+<span class="sourceLineNo">535</span><a id="line.535">          logging.debug(format("Applying `X-XSS-Protection` policy: '%s'.", ctx.getXssProtection()));</a>
+<span class="sourceLineNo">536</span><a id="line.536">        response.getHeaders().add(X_XSS_PROTECTION_HEADER, ctx.getXssProtection());</a>
+<span class="sourceLineNo">537</span><a id="line.537">      } else if (logging.isTraceEnabled()) {</a>
+<span class="sourceLineNo">538</span><a id="line.538">        logging.trace("No `X-XSS-Protection` policy configured for this response cycle.");</a>
+<span class="sourceLineNo">539</span><a id="line.539">      }</a>
+<span class="sourceLineNo">540</span><a id="line.540"></a>
+<span class="sourceLineNo">541</span><a id="line.541">      // additional headers</a>
+<span class="sourceLineNo">542</span><a id="line.542">      if (ctx.getHeaderCount() &gt; 0)</a>
+<span class="sourceLineNo">543</span><a id="line.543">        ctx.getHeaderList().forEach(</a>
+<span class="sourceLineNo">544</span><a id="line.544">          (header) -&gt; response.getHeaders().add(header.getName(), header.getValue()));</a>
+<span class="sourceLineNo">545</span><a id="line.545">      else if (logging.isTraceEnabled())</a>
+<span class="sourceLineNo">546</span><a id="line.546">        logging.trace("No additional headers to apply.");</a>
+<span class="sourceLineNo">547</span><a id="line.547">    } else {</a>
+<span class="sourceLineNo">548</span><a id="line.548">      logging.warn("Failed to find HTTP cycle context: cannot finalize headers.");</a>
+<span class="sourceLineNo">549</span><a id="line.549">    }</a>
+<span class="sourceLineNo">550</span><a id="line.550">    return response;</a>
+<span class="sourceLineNo">551</span><a id="line.551">  }</a>
+<span class="sourceLineNo">552</span><a id="line.552"></a>
+<span class="sourceLineNo">553</span><a id="line.553">  /** @return Built context. After calling this method the first time, context may no longer be mutated. */</a>
+<span class="sourceLineNo">554</span><a id="line.554">  public @Nonnull PageContext render() {</a>
+<span class="sourceLineNo">555</span><a id="line.555">    if (this.closed.get()) {</a>
+<span class="sourceLineNo">556</span><a id="line.556">      assert this.builtContext != null;</a>
+<span class="sourceLineNo">557</span><a id="line.557">    } else {</a>
+<span class="sourceLineNo">558</span><a id="line.558">      this.closed.compareAndSet(false, true);</a>
+<span class="sourceLineNo">559</span><a id="line.559">      this.builtContext = PageContext.fromProto(</a>
+<span class="sourceLineNo">560</span><a id="line.560">        this.context.build(),</a>
+<span class="sourceLineNo">561</span><a id="line.561">        this.props,</a>
+<span class="sourceLineNo">562</span><a id="line.562">        this.injected,</a>
+<span class="sourceLineNo">563</span><a id="line.563">        this.namingMapProvider.orElse(null),</a>
+<span class="sourceLineNo">564</span><a id="line.564">        new SoyContext.SoyI18NContext(</a>
+<span class="sourceLineNo">565</span><a id="line.565">          this.messageBundle,</a>
+<span class="sourceLineNo">566</span><a id="line.566">          this.translationsFile,</a>
+<span class="sourceLineNo">567</span><a id="line.567">          this.translationsResource</a>
+<span class="sourceLineNo">568</span><a id="line.568">        ),</a>
+<span class="sourceLineNo">569</span><a id="line.569">        this.delegatePredicate.orElse(null));</a>
+<span class="sourceLineNo">570</span><a id="line.570">      if (logging.isDebugEnabled()) {</a>
+<span class="sourceLineNo">571</span><a id="line.571">        logging.debug(format("Exported page context with: %s props, %s injecteds, and proto follows \n%s",</a>
+<span class="sourceLineNo">572</span><a id="line.572">          this.props.size(),</a>
+<span class="sourceLineNo">573</span><a id="line.573">          this.injected.size(),</a>
+<span class="sourceLineNo">574</span><a id="line.574">          this.builtContext.getPageContext()));</a>
+<span class="sourceLineNo">575</span><a id="line.575">      }</a>
+<span class="sourceLineNo">576</span><a id="line.576">    }</a>
+<span class="sourceLineNo">577</span><a id="line.577">    return this.builtContext;</a>
+<span class="sourceLineNo">578</span><a id="line.578">  }</a>
+<span class="sourceLineNo">579</span><a id="line.579"></a>
+<span class="sourceLineNo">580</span><a id="line.580">  // -- Builder Interface (Context) -- //</a>
+<span class="sourceLineNo">581</span><a id="line.581"></a>
+<span class="sourceLineNo">582</span><a id="line.582">  /**</a>
+<span class="sourceLineNo">583</span><a id="line.583">   * Returns the currently-set content type for this response render flow. This value generally defaults to</a>
+<span class="sourceLineNo">584</span><a id="line.584">   * {@link MediaType#TEXT_HTML}.</a>
+<span class="sourceLineNo">585</span><a id="line.585">   *</a>
+<span class="sourceLineNo">586</span><a id="line.586">   * @return Content type set to serve for this render flow.</a>
+<span class="sourceLineNo">587</span><a id="line.587">   */</a>
+<span class="sourceLineNo">588</span><a id="line.588">  public @Nonnull String contentType() {</a>
+<span class="sourceLineNo">589</span><a id="line.589">    return this.contentTypeValue;</a>
+<span class="sourceLineNo">590</span><a id="line.590">  }</a>
+<span class="sourceLineNo">591</span><a id="line.591"></a>
+<span class="sourceLineNo">592</span><a id="line.592">  /**</a>
+<span class="sourceLineNo">593</span><a id="line.593">   * Sets the content type to return for the current render response flow. This value should typically be set from one</a>
+<span class="sourceLineNo">594</span><a id="line.594">   * of the options on {@link MediaType}, or as a raw {@code Content-Type} header value.</a>
+<span class="sourceLineNo">595</span><a id="line.595">   *</a>
+<span class="sourceLineNo">596</span><a id="line.596">   * @param type Content type to set.</a>
+<span class="sourceLineNo">597</span><a id="line.597">   * @return Current page context manager (for call chain-ability).</a>
+<span class="sourceLineNo">598</span><a id="line.598">   */</a>
+<span class="sourceLineNo">599</span><a id="line.599">  public @Nonnull PageContextManager contentType(@Nonnull String type) {</a>
+<span class="sourceLineNo">600</span><a id="line.600">    //noinspection ConstantConditions</a>
+<span class="sourceLineNo">601</span><a id="line.601">    if (type == null) throw new IllegalArgumentException("Cannot pass `null` for content type.");</a>
+<span class="sourceLineNo">602</span><a id="line.602">    this.contentTypeValue = type;</a>
+<span class="sourceLineNo">603</span><a id="line.603">    return this;</a>
+<span class="sourceLineNo">604</span><a id="line.604">  }</a>
+<span class="sourceLineNo">605</span><a id="line.605"></a>
+<span class="sourceLineNo">606</span><a id="line.606">  /**</a>
+<span class="sourceLineNo">607</span><a id="line.607">   * Add a `Feature-Policy` entry for the current response render flow. This value will be appended to whatever current</a>
+<span class="sourceLineNo">608</span><a id="line.608">   * values are set for the `Feature-Policy` header.</a>
+<span class="sourceLineNo">609</span><a id="line.609">   *</a>
+<span class="sourceLineNo">610</span><a id="line.610">   * @param policies Policies to add for the current page. Do not pass `null`.</a>
+<span class="sourceLineNo">611</span><a id="line.611">   * @return Current page context manager (for call chain-ability).</a>
+<span class="sourceLineNo">612</span><a id="line.612">   * @throws IllegalArgumentException If `null` is passed for the provided policies.</a>
+<span class="sourceLineNo">613</span><a id="line.613">   */</a>
+<span class="sourceLineNo">614</span><a id="line.614">  @CanIgnoreReturnValue</a>
+<span class="sourceLineNo">615</span><a id="line.615">  public @Nonnull PageContextManager addFeaturePolicy(@Nonnull String... policies) {</a>
+<span class="sourceLineNo">616</span><a id="line.616">    //noinspection ConstantConditions</a>
+<span class="sourceLineNo">617</span><a id="line.617">    if (policies == null) throw new IllegalArgumentException("Cannot pass `null` for feature policies.");</a>
+<span class="sourceLineNo">618</span><a id="line.618">    for (String policy : policies) {</a>
+<span class="sourceLineNo">619</span><a id="line.619">      this.context.addFeaturePolicy(policy);</a>
+<span class="sourceLineNo">620</span><a id="line.620">    }</a>
+<span class="sourceLineNo">621</span><a id="line.621">    return this;</a>
+<span class="sourceLineNo">622</span><a id="line.622">  }</a>
+<span class="sourceLineNo">623</span><a id="line.623"></a>
+<span class="sourceLineNo">624</span><a id="line.624">  /**</a>
+<span class="sourceLineNo">625</span><a id="line.625">   * Clear the current set of `Feature-Policy` entries. If the app makes use of the framework's built-in page frame and</a>
+<span class="sourceLineNo">626</span><a id="line.626">   * response cycle, the value will automatically be used.</a>
+<span class="sourceLineNo">627</span><a id="line.627">   *</a>
+<span class="sourceLineNo">628</span><a id="line.628">   * @return Current page context manager (for call chain-ability).</a>
+<span class="sourceLineNo">629</span><a id="line.629">   */</a>
+<span class="sourceLineNo">630</span><a id="line.630">  @CanIgnoreReturnValue</a>
+<span class="sourceLineNo">631</span><a id="line.631">  public @Nonnull PageContextManager clearFeaturePolicy() {</a>
+<span class="sourceLineNo">632</span><a id="line.632">    this.context.clearFeaturePolicy();</a>
+<span class="sourceLineNo">633</span><a id="line.633">    return this;</a>
+<span class="sourceLineNo">634</span><a id="line.634">  }</a>
+<span class="sourceLineNo">635</span><a id="line.635"></a>
+<span class="sourceLineNo">636</span><a id="line.636">  /**</a>
+<span class="sourceLineNo">637</span><a id="line.637">   * Overwrite the set of `Feature-Policy` entries for the current render flow. If the app makes use of the framework's</a>
+<span class="sourceLineNo">638</span><a id="line.638">   * built-in page frame and response cycle, the value will automatically be used.</a>
+<span class="sourceLineNo">639</span><a id="line.639">   *</a>
+<span class="sourceLineNo">640</span><a id="line.640">   * @param policies Policies to set for the current page. Do not pass `null`.</a>
+<span class="sourceLineNo">641</span><a id="line.641">   * @return Current page context manager (for call chain-ability).</a>
+<span class="sourceLineNo">642</span><a id="line.642">   * @throws IllegalArgumentException If `null` is passed for the policy collection to apply.</a>
+<span class="sourceLineNo">643</span><a id="line.643">   */</a>
+<span class="sourceLineNo">644</span><a id="line.644">  @CanIgnoreReturnValue</a>
+<span class="sourceLineNo">645</span><a id="line.645">  public @Nonnull PageContextManager setFeaturePolicy(@Nonnull Collection&lt;String&gt; policies) {</a>
+<span class="sourceLineNo">646</span><a id="line.646">    //noinspection ConstantConditions</a>
+<span class="sourceLineNo">647</span><a id="line.647">    if (policies == null) throw new IllegalArgumentException("Cannot pass `null` for `Feature-Policy` set.");</a>
+<span class="sourceLineNo">648</span><a id="line.648">    this.clearFeaturePolicy();</a>
+<span class="sourceLineNo">649</span><a id="line.649">    if (!policies.isEmpty()) this.context.addAllFeaturePolicy(policies);</a>
+<span class="sourceLineNo">650</span><a id="line.650">    return this;</a>
+<span class="sourceLineNo">651</span><a id="line.651">  }</a>
+<span class="sourceLineNo">652</span><a id="line.652"></a>
+<span class="sourceLineNo">653</span><a id="line.653">  /**</a>
+<span class="sourceLineNo">654</span><a id="line.654">   * Retrieve the current value for the page title, set in the builder. If there is no value, {@link Optional#empty()}</a>
+<span class="sourceLineNo">655</span><a id="line.655">   * is supplied as the return value.</a>
+<span class="sourceLineNo">656</span><a id="line.656">   *</a>
+<span class="sourceLineNo">657</span><a id="line.657">   * @return Current page title, wrapped in an optional value.</a>
+<span class="sourceLineNo">658</span><a id="line.658">   */</a>
+<span class="sourceLineNo">659</span><a id="line.659">  public @Nonnull Optional&lt;String&gt; title() {</a>
+<span class="sourceLineNo">660</span><a id="line.660">    final String val = this.context.getMetaBuilder().getTitle();</a>
+<span class="sourceLineNo">661</span><a id="line.661">    return "".equals(val) ? Optional.empty() : Optional.of(val);</a>
+<span class="sourceLineNo">662</span><a id="line.662">  }</a>
+<span class="sourceLineNo">663</span><a id="line.663"></a>
+<span class="sourceLineNo">664</span><a id="line.664">  /**</a>
+<span class="sourceLineNo">665</span><a id="line.665">   * Set the page title for the current render flow. If the app makes use of the framework's built-in page frame, the</a>
+<span class="sourceLineNo">666</span><a id="line.666">   * title will automatically be used.</a>
+<span class="sourceLineNo">667</span><a id="line.667">   *</a>
+<span class="sourceLineNo">668</span><a id="line.668">   * @param title Title to set for the current page. Do not pass `null`.</a>
+<span class="sourceLineNo">669</span><a id="line.669">   * @return Current page context manager (for call chain-ability).</a>
+<span class="sourceLineNo">670</span><a id="line.670">   * @throws IllegalArgumentException If `null` is passed for the title.</a>
+<span class="sourceLineNo">671</span><a id="line.671">   */</a>
+<span class="sourceLineNo">672</span><a id="line.672">  @CanIgnoreReturnValue</a>
+<span class="sourceLineNo">673</span><a id="line.673">  public @Nonnull PageContextManager title(@Nonnull String title) {</a>
+<span class="sourceLineNo">674</span><a id="line.674">    //noinspection ConstantConditions</a>
+<span class="sourceLineNo">675</span><a id="line.675">    if (title == null) throw new IllegalArgumentException("Cannot pass `null` for page title.");</a>
+<span class="sourceLineNo">676</span><a id="line.676">    this.context.getMetaBuilder().setTitle(title);</a>
+<span class="sourceLineNo">677</span><a id="line.677">    return this;</a>
+<span class="sourceLineNo">678</span><a id="line.678">  }</a>
+<span class="sourceLineNo">679</span><a id="line.679"></a>
+<span class="sourceLineNo">680</span><a id="line.680">  /**</a>
+<span class="sourceLineNo">681</span><a id="line.681">   * Retrieve the current value for the page description, set in the builder. If there is no value set,</a>
+<span class="sourceLineNo">682</span><a id="line.682">   * {@link Optional#empty()} is supplied as the return value.</a>
+<span class="sourceLineNo">683</span><a id="line.683">   *</a>
+<span class="sourceLineNo">684</span><a id="line.684">   * @return Current page description, wrapped in an optional value.</a>
+<span class="sourceLineNo">685</span><a id="line.685">   */</a>
+<span class="sourceLineNo">686</span><a id="line.686">  public @Nonnull Optional&lt;String&gt; description() {</a>
+<span class="sourceLineNo">687</span><a id="line.687">    final String val = this.context.getMetaBuilder().getDescription();</a>
+<span class="sourceLineNo">688</span><a id="line.688">    return "".equals(val) ? Optional.empty() : Optional.of(val);</a>
+<span class="sourceLineNo">689</span><a id="line.689">  }</a>
+<span class="sourceLineNo">690</span><a id="line.690"></a>
+<span class="sourceLineNo">691</span><a id="line.691">  /**</a>
+<span class="sourceLineNo">692</span><a id="line.692">   * Set the page description for the current render flow. If the app makes use of the framework's built-in page frame,</a>
+<span class="sourceLineNo">693</span><a id="line.693">   * the value will automatically be used.</a>
+<span class="sourceLineNo">694</span><a id="line.694">   *</a>
+<span class="sourceLineNo">695</span><a id="line.695">   * @param description Description to set for the current page. Do not pass `null`.</a>
+<span class="sourceLineNo">696</span><a id="line.696">   * @return Current page context manager (for call chain-ability).</a>
+<span class="sourceLineNo">697</span><a id="line.697">   * @throws IllegalArgumentException If `null` is passed for the description.</a>
+<span class="sourceLineNo">698</span><a id="line.698">   */</a>
+<span class="sourceLineNo">699</span><a id="line.699">  @CanIgnoreReturnValue</a>
+<span class="sourceLineNo">700</span><a id="line.700">  public @Nonnull PageContextManager description(@Nonnull String description) {</a>
+<span class="sourceLineNo">701</span><a id="line.701">    //noinspection ConstantConditions</a>
+<span class="sourceLineNo">702</span><a id="line.702">    if (description == null) throw new IllegalArgumentException("Cannot pass `null` for page description.");</a>
+<span class="sourceLineNo">703</span><a id="line.703">    this.context.getMetaBuilder().setDescription(description);</a>
+<span class="sourceLineNo">704</span><a id="line.704">    return this;</a>
+<span class="sourceLineNo">705</span><a id="line.705">  }</a>
+<span class="sourceLineNo">706</span><a id="line.706"></a>
+<span class="sourceLineNo">707</span><a id="line.707">  /**</a>
+<span class="sourceLineNo">708</span><a id="line.708">   * Retrieve the current value for the page keywords, set in the builder. If there is no value set,</a>
+<span class="sourceLineNo">709</span><a id="line.709">   * {@link Optional#empty()} is supplied as the return value.</a>
+<span class="sourceLineNo">710</span><a id="line.710">   *</a>
+<span class="sourceLineNo">711</span><a id="line.711">   * @return Current page keywords, wrapped in an optional value.</a>
+<span class="sourceLineNo">712</span><a id="line.712">   */</a>
+<span class="sourceLineNo">713</span><a id="line.713">  public @Nonnull Optional&lt;List&lt;String&gt;&gt; keywords() {</a>
+<span class="sourceLineNo">714</span><a id="line.714">    final ArrayList&lt;String&gt; val = this.context.getMetaBuilder().getKeywordList().asByteStringList()</a>
+<span class="sourceLineNo">715</span><a id="line.715">            .stream()</a>
+<span class="sourceLineNo">716</span><a id="line.716">            .map(ByteString::toString)</a>
+<span class="sourceLineNo">717</span><a id="line.717">            .collect(Collectors.toCollection(() -&gt; new ArrayList&lt;&gt;(this.context.getMetaBuilder().getKeywordCount())));</a>
+<span class="sourceLineNo">718</span><a id="line.718">    return val.isEmpty() ? Optional.empty() : Optional.of(val);</a>
+<span class="sourceLineNo">719</span><a id="line.719">  }</a>
+<span class="sourceLineNo">720</span><a id="line.720"></a>
+<span class="sourceLineNo">721</span><a id="line.721">  /**</a>
+<span class="sourceLineNo">722</span><a id="line.722">   * Add the provided page keywords for the current render flow. If the app makes use of the framework's built-in page</a>
+<span class="sourceLineNo">723</span><a id="line.723">   * frame, the value will automatically be used.</a>
+<span class="sourceLineNo">724</span><a id="line.724">   *</a>
+<span class="sourceLineNo">725</span><a id="line.725">   * @param keywords Keywords to set for the current page. Do not pass `null`.</a>
+<span class="sourceLineNo">726</span><a id="line.726">   * @return Current page context manager (for call chain-ability).</a>
+<span class="sourceLineNo">727</span><a id="line.727">   * @throws IllegalArgumentException If `null` is passed for the keywords.</a>
+<span class="sourceLineNo">728</span><a id="line.728">   */</a>
+<span class="sourceLineNo">729</span><a id="line.729">  @CanIgnoreReturnValue</a>
+<span class="sourceLineNo">730</span><a id="line.730">  public @Nonnull PageContextManager addKeyword(@Nonnull String... keywords) {</a>
+<span class="sourceLineNo">731</span><a id="line.731">    //noinspection ConstantConditions</a>
+<span class="sourceLineNo">732</span><a id="line.732">    if (keywords == null) throw new IllegalArgumentException("Cannot pass `null` for page keywords.");</a>
+<span class="sourceLineNo">733</span><a id="line.733">    for (String keyword : keywords) {</a>
+<span class="sourceLineNo">734</span><a id="line.734">      this.context.getMetaBuilder().addKeyword(keyword);</a>
+<span class="sourceLineNo">735</span><a id="line.735">    }</a>
+<span class="sourceLineNo">736</span><a id="line.736">    return this;</a>
+<span class="sourceLineNo">737</span><a id="line.737">  }</a>
+<span class="sourceLineNo">738</span><a id="line.738"></a>
+<span class="sourceLineNo">739</span><a id="line.739">  /**</a>
+<span class="sourceLineNo">740</span><a id="line.740">   * Clear the current set of page keywords for the current render flow. If the app makes use of the framework's</a>
+<span class="sourceLineNo">741</span><a id="line.741">   * built-in page frame, the value will automatically be used.</a>
+<span class="sourceLineNo">742</span><a id="line.742">   *</a>
+<span class="sourceLineNo">743</span><a id="line.743">   * @return Current page context manager (for call chain-ability).</a>
+<span class="sourceLineNo">744</span><a id="line.744">   */</a>
+<span class="sourceLineNo">745</span><a id="line.745">  @CanIgnoreReturnValue</a>
+<span class="sourceLineNo">746</span><a id="line.746">  public @Nonnull PageContextManager clearKeywords() {</a>
+<span class="sourceLineNo">747</span><a id="line.747">    this.context.getMetaBuilder().clearKeyword();</a>
+<span class="sourceLineNo">748</span><a id="line.748">    return this;</a>
+<span class="sourceLineNo">749</span><a id="line.749">  }</a>
+<span class="sourceLineNo">750</span><a id="line.750"></a>
+<span class="sourceLineNo">751</span><a id="line.751">  /**</a>
+<span class="sourceLineNo">752</span><a id="line.752">   * Overwrite the current set of page keywords for the current render flow. If the app makes use of the framework's</a>
+<span class="sourceLineNo">753</span><a id="line.753">   * built-in page frame, the value will automatically be used.</a>
+<span class="sourceLineNo">754</span><a id="line.754">   *</a>
+<span class="sourceLineNo">755</span><a id="line.755">   * @param keywords Keywords to set for the current page. Do not pass `null`.</a>
+<span class="sourceLineNo">756</span><a id="line.756">   * @return Current page context manager (for call chain-ability).</a>
+<span class="sourceLineNo">757</span><a id="line.757">   * @throws IllegalArgumentException If `null` is passed for the keywords.</a>
+<span class="sourceLineNo">758</span><a id="line.758">   */</a>
+<span class="sourceLineNo">759</span><a id="line.759">  @CanIgnoreReturnValue</a>
+<span class="sourceLineNo">760</span><a id="line.760">  public @Nonnull PageContextManager setKeywords(@Nonnull Collection&lt;String&gt; keywords) {</a>
+<span class="sourceLineNo">761</span><a id="line.761">    //noinspection ConstantConditions</a>
+<span class="sourceLineNo">762</span><a id="line.762">    if (keywords == null) throw new IllegalArgumentException("Cannot pass `null` for page keywords.");</a>
+<span class="sourceLineNo">763</span><a id="line.763">    this.clearKeywords();</a>
+<span class="sourceLineNo">764</span><a id="line.764">    if (!keywords.isEmpty()) this.context.getMetaBuilder().addAllKeyword(keywords);</a>
+<span class="sourceLineNo">765</span><a id="line.765">    return this;</a>
+<span class="sourceLineNo">766</span><a id="line.766">  }</a>
+<span class="sourceLineNo">767</span><a id="line.767"></a>
+<span class="sourceLineNo">768</span><a id="line.768">  /**</a>
+<span class="sourceLineNo">769</span><a id="line.769">   * Retrieve the full set of regular HTML metadata links attached to the current render flow. If the app makes use of</a>
+<span class="sourceLineNo">770</span><a id="line.770">   * the framework's built-in age frame, these links will automatically be applied.</a>
+<span class="sourceLineNo">771</span><a id="line.771">   *</a>
+<span class="sourceLineNo">772</span><a id="line.772">   * @return Current set of links that will be listed in page metadata.</a>
+<span class="sourceLineNo">773</span><a id="line.773">   */</a>
+<span class="sourceLineNo">774</span><a id="line.774">  public @Nonnull Optional&lt;List&lt;Context.PageLink&gt;&gt; links() {</a>
+<span class="sourceLineNo">775</span><a id="line.775">    final List&lt;Context.PageLink&gt; links = this.context.getMetaBuilder().getLinkList();</a>
+<span class="sourceLineNo">776</span><a id="line.776">    return links.isEmpty() ? Optional.empty() : Optional.of(links);</a>
+<span class="sourceLineNo">777</span><a id="line.777">  }</a>
+<span class="sourceLineNo">778</span><a id="line.778"></a>
+<span class="sourceLineNo">779</span><a id="line.779">  /**</a>
+<span class="sourceLineNo">780</span><a id="line.780">   * Add a regular HTML metadata link to the current render flow, specified by a {@link Context.PageLink} proto record.</a>
+<span class="sourceLineNo">781</span><a id="line.781">   * Adding via this method is sufficient for the link to make it into the rendered page, so long as the framework's</a>
+<span class="sourceLineNo">782</span><a id="line.782">   * page frame is invoked.</a>
+<span class="sourceLineNo">783</span><a id="line.783">   *</a>
+<span class="sourceLineNo">784</span><a id="line.784">   * @param link HTML metadata link to add to the page.</a>
+<span class="sourceLineNo">785</span><a id="line.785">   * @return Current page context manager (for call chain-ability).</a>
+<span class="sourceLineNo">786</span><a id="line.786">   * @throws IllegalArgumentException If `null` is passed for the link.</a>
+<span class="sourceLineNo">787</span><a id="line.787">   */</a>
+<span class="sourceLineNo">788</span><a id="line.788">  @CanIgnoreReturnValue</a>
+<span class="sourceLineNo">789</span><a id="line.789">  public @Nonnull PageContextManager addLink(@Nonnull Context.PageLink.Builder link) {</a>
+<span class="sourceLineNo">790</span><a id="line.790">    //noinspection ConstantConditions</a>
+<span class="sourceLineNo">791</span><a id="line.791">    if (link == null) throw new IllegalArgumentException("Cannot pass `null` for page link spec.");</a>
+<span class="sourceLineNo">792</span><a id="line.792">    this.context.getMetaBuilder().addLink(link);</a>
+<span class="sourceLineNo">793</span><a id="line.793">    return this;</a>
+<span class="sourceLineNo">794</span><a id="line.794">  }</a>
+<span class="sourceLineNo">795</span><a id="line.795"></a>
+<span class="sourceLineNo">796</span><a id="line.796">  /**</a>
+<span class="sourceLineNo">797</span><a id="line.797">   * Add a regular HTML metadata link to the current render flow, specified by the provided method parameters. Each</a>
+<span class="sourceLineNo">798</span><a id="line.798">   * parameter maps to an attribute specified for the &lt;pre&gt;link&lt;/pre&gt; HTML element.</a>
+<span class="sourceLineNo">799</span><a id="line.799">   *</a>
+<span class="sourceLineNo">800</span><a id="line.800">   * @param relevance HTML "rel" attribute.</a>
+<span class="sourceLineNo">801</span><a id="line.801">   * @param href HTML "href" attribute.</a>
+<span class="sourceLineNo">802</span><a id="line.802">   * @param type HTML "type" attribute. Wrapped in an optional.</a>
+<span class="sourceLineNo">803</span><a id="line.803">   * @return Current page context manager (for call chain-ability).</a>
+<span class="sourceLineNo">804</span><a id="line.804">   * @throws IllegalArgumentException If `null` is passed for any parameter.</a>
+<span class="sourceLineNo">805</span><a id="line.805">   */</a>
+<span class="sourceLineNo">806</span><a id="line.806">  @CanIgnoreReturnValue</a>
+<span class="sourceLineNo">807</span><a id="line.807">  @SuppressWarnings({"ConstantConditions", "OptionalAssignedToNull"})</a>
+<span class="sourceLineNo">808</span><a id="line.808">  public @Nonnull PageContextManager addLink(@Nonnull String relevance,</a>
+<span class="sourceLineNo">809</span><a id="line.809">                                             @Nonnull URI href,</a>
+<span class="sourceLineNo">810</span><a id="line.810">                                             @Nonnull Optional&lt;String&gt; type) {</a>
+<span class="sourceLineNo">811</span><a id="line.811">    if (relevance == null) throw new IllegalArgumentException("Cannot pass `null` for page link relevance.");</a>
+<span class="sourceLineNo">812</span><a id="line.812">    if (href == null) throw new IllegalArgumentException("Cannot pass `null` for page link href.");</a>
+<span class="sourceLineNo">813</span><a id="line.813">    if (type == null) throw new IllegalArgumentException("Cannot pass `null` for page link type.");</a>
+<span class="sourceLineNo">814</span><a id="line.814">    final Context.PageLink.Builder builder = Context.PageLink.newBuilder()</a>
+<span class="sourceLineNo">815</span><a id="line.815">      .setRelevance(relevance)</a>
+<span class="sourceLineNo">816</span><a id="line.816">      .setHref(this.trustedResource(href));</a>
+<span class="sourceLineNo">817</span><a id="line.817">    type.ifPresent(builder::setType);</a>
+<span class="sourceLineNo">818</span><a id="line.818">    this.context.getMetaBuilder().addLink(builder);</a>
+<span class="sourceLineNo">819</span><a id="line.819">    return this;</a>
+<span class="sourceLineNo">820</span><a id="line.820">  }</a>
+<span class="sourceLineNo">821</span><a id="line.821"></a>
+<span class="sourceLineNo">822</span><a id="line.822">  /**</a>
+<span class="sourceLineNo">823</span><a id="line.823">   * Clear the set of HTML metadata links assigned to the current render flow.</a>
+<span class="sourceLineNo">824</span><a id="line.824">   *</a>
+<span class="sourceLineNo">825</span><a id="line.825">   * @return Current page context manager (for call chain-ability).</a>
+<span class="sourceLineNo">826</span><a id="line.826">   */</a>
+<span class="sourceLineNo">827</span><a id="line.827">  @CanIgnoreReturnValue</a>
+<span class="sourceLineNo">828</span><a id="line.828">  public @Nonnull PageContextManager clearLinks() {</a>
+<span class="sourceLineNo">829</span><a id="line.829">    this.context.getMetaBuilder().clearLink();</a>
+<span class="sourceLineNo">830</span><a id="line.830">    return this;</a>
+<span class="sourceLineNo">831</span><a id="line.831">  }</a>
+<span class="sourceLineNo">832</span><a id="line.832"></a>
+<span class="sourceLineNo">833</span><a id="line.833">  /**</a>
+<span class="sourceLineNo">834</span><a id="line.834">   * Overwrite the set of page metadata links for the current render flow. If the app makes use of the framework's</a>
+<span class="sourceLineNo">835</span><a id="line.835">   * built-in page frame, the value will automatically be used.</a>
+<span class="sourceLineNo">836</span><a id="line.836">   *</a>
+<span class="sourceLineNo">837</span><a id="line.837">   * @param links Link directives to set for the current page. Do not pass `null`.</a>
+<span class="sourceLineNo">838</span><a id="line.838">   * @return Current page context manager (for call chain-ability).</a>
+<span class="sourceLineNo">839</span><a id="line.839">   * @throws IllegalArgumentException If `null` is passed for the provided links.</a>
+<span class="sourceLineNo">840</span><a id="line.840">   */</a>
+<span class="sourceLineNo">841</span><a id="line.841">  @CanIgnoreReturnValue</a>
+<span class="sourceLineNo">842</span><a id="line.842">  @SuppressWarnings("ConstantConditions")</a>
+<span class="sourceLineNo">843</span><a id="line.843">  public @Nonnull PageContextManager setLinks(@Nonnull Collection&lt;Context.PageLink.Builder&gt; links) {</a>
+<span class="sourceLineNo">844</span><a id="line.844">    if (links == null) throw new IllegalArgumentException("Cannot pass `null` for page links.");</a>
+<span class="sourceLineNo">845</span><a id="line.845">    this.clearLinks();</a>
+<span class="sourceLineNo">846</span><a id="line.846">    links.forEach(this::addLink);</a>
+<span class="sourceLineNo">847</span><a id="line.847">    return this;</a>
+<span class="sourceLineNo">848</span><a id="line.848">  }</a>
+<span class="sourceLineNo">849</span><a id="line.849"></a>
+<span class="sourceLineNo">850</span><a id="line.850">  /**</a>
+<span class="sourceLineNo">851</span><a id="line.851">   * Overwrite the value specified for the "robots" metadata key in the current render flow. If the app makes use of the</a>
+<span class="sourceLineNo">852</span><a id="line.852">   * framework's built-in page frame, the value will automatically be used.</a>
+<span class="sourceLineNo">853</span><a id="line.853">   *</a>
+<span class="sourceLineNo">854</span><a id="line.854">   * @param value Robots metadata value to use.</a>
+<span class="sourceLineNo">855</span><a id="line.855">   * @return Current page context manager (for call chain-ability).</a>
+<span class="sourceLineNo">856</span><a id="line.856">   * @throws IllegalArgumentException If `null` is passed for the provided value.</a>
+<span class="sourceLineNo">857</span><a id="line.857">   */</a>
+<span class="sourceLineNo">858</span><a id="line.858">  @CanIgnoreReturnValue</a>
+<span class="sourceLineNo">859</span><a id="line.859">  @SuppressWarnings("ConstantConditions")</a>
+<span class="sourceLineNo">860</span><a id="line.860">  public @Nonnull PageContextManager setRobots(@Nonnull String value) {</a>
+<span class="sourceLineNo">861</span><a id="line.861">    if (value == null) throw new IllegalArgumentException("Cannot pass `null` for robots value.");</a>
+<span class="sourceLineNo">862</span><a id="line.862">    this.context.getMetaBuilder().setRobots(value);</a>
+<span class="sourceLineNo">863</span><a id="line.863">    return this;</a>
+<span class="sourceLineNo">864</span><a id="line.864">  }</a>
+<span class="sourceLineNo">865</span><a id="line.865"></a>
+<span class="sourceLineNo">866</span><a id="line.866">  /**</a>
+<span class="sourceLineNo">867</span><a id="line.867">   * Overwrite the value specified for the "googlebot" metadata key in the current render flow. If the app makes use of</a>
+<span class="sourceLineNo">868</span><a id="line.868">   * the framework's built-in page frame, the value will automatically be used.</a>
+<span class="sourceLineNo">869</span><a id="line.869">   *</a>
+<span class="sourceLineNo">870</span><a id="line.870">   * @param value Googlebot metadata value to use.</a>
+<span class="sourceLineNo">871</span><a id="line.871">   * @return Current page context manager (for call chain-ability).</a>
+<span class="sourceLineNo">872</span><a id="line.872">   * @throws IllegalArgumentException If `null` is passed for the provided value.</a>
+<span class="sourceLineNo">873</span><a id="line.873">   */</a>
+<span class="sourceLineNo">874</span><a id="line.874">  @CanIgnoreReturnValue</a>
+<span class="sourceLineNo">875</span><a id="line.875">  @SuppressWarnings("ConstantConditions")</a>
+<span class="sourceLineNo">876</span><a id="line.876">  public @Nonnull PageContextManager setGooglebot(@Nonnull String value) {</a>
+<span class="sourceLineNo">877</span><a id="line.877">    if (value == null) throw new IllegalArgumentException("Cannot pass `null` for googlebot value.");</a>
+<span class="sourceLineNo">878</span><a id="line.878">    this.context.getMetaBuilder().setGooglebot(value);</a>
+<span class="sourceLineNo">879</span><a id="line.879">    return this;</a>
+<span class="sourceLineNo">880</span><a id="line.880">  }</a>
+<span class="sourceLineNo">881</span><a id="line.881"></a>
+<span class="sourceLineNo">882</span><a id="line.882">  /**</a>
+<span class="sourceLineNo">883</span><a id="line.883">   * Clear the current value, if any, set for &lt;pre&gt;robots&lt;/pre&gt; in the current render flow metadata.</a>
+<span class="sourceLineNo">884</span><a id="line.884">   *</a>
+<span class="sourceLineNo">885</span><a id="line.885">   * @return Current page context manager (for call chain-ability).</a>
+<span class="sourceLineNo">886</span><a id="line.886">   */</a>
+<span class="sourceLineNo">887</span><a id="line.887">  @CanIgnoreReturnValue</a>
+<span class="sourceLineNo">888</span><a id="line.888">  public @Nonnull PageContextManager clearRobots() {</a>
+<span class="sourceLineNo">889</span><a id="line.889">    this.context.getMetaBuilder().clearRobots();</a>
+<span class="sourceLineNo">890</span><a id="line.890">    return this;</a>
+<span class="sourceLineNo">891</span><a id="line.891">  }</a>
+<span class="sourceLineNo">892</span><a id="line.892"></a>
+<span class="sourceLineNo">893</span><a id="line.893">  /**</a>
+<span class="sourceLineNo">894</span><a id="line.894">   * Clear the current value, if any, set for &lt;pre&gt;googlebot&lt;/pre&gt; in the current render flow metadata.</a>
+<span class="sourceLineNo">895</span><a id="line.895">   *</a>
+<span class="sourceLineNo">896</span><a id="line.896">   * @return Current page context manager (for call chain-ability).</a>
+<span class="sourceLineNo">897</span><a id="line.897">   */</a>
+<span class="sourceLineNo">898</span><a id="line.898">  @CanIgnoreReturnValue</a>
+<span class="sourceLineNo">899</span><a id="line.899">  public @Nonnull PageContextManager clearGooglebot() {</a>
+<span class="sourceLineNo">900</span><a id="line.900">    this.context.getMetaBuilder().clearGooglebot();</a>
+<span class="sourceLineNo">901</span><a id="line.901">    return this;</a>
+<span class="sourceLineNo">902</span><a id="line.902">  }</a>
+<span class="sourceLineNo">903</span><a id="line.903"></a>
+<span class="sourceLineNo">904</span><a id="line.904">  /**</a>
+<span class="sourceLineNo">905</span><a id="line.905">   * Retrieve OpenGraph settings specified in the current page context. This method always returns a builder, to avoid</a>
+<span class="sourceLineNo">906</span><a id="line.906">   * re-builds of protocol buffers during page context construction. If no OpenGraph settings are available, an empty</a>
+<span class="sourceLineNo">907</span><a id="line.907">   * {@link Optional} is returned instead.</a>
+<span class="sourceLineNo">908</span><a id="line.908">   *</a>
+<span class="sourceLineNo">909</span><a id="line.909">   * @return {@link Optional}-wrapped OpenGraph settings, or {@link Optional#empty()}.</a>
+<span class="sourceLineNo">910</span><a id="line.910">   */</a>
+<span class="sourceLineNo">911</span><a id="line.911">  public @Nonnull Optional&lt;Context.Metadata.OpenGraph.Builder&gt; getOpenGraph() {</a>
+<span class="sourceLineNo">912</span><a id="line.912">    return this.context.getMetaBuilder().hasOpenGraph() ?</a>
+<span class="sourceLineNo">913</span><a id="line.913">      Optional.of(this.context.getMetaBuilder().getOpenGraphBuilder()) :</a>
+<span class="sourceLineNo">914</span><a id="line.914">      Optional.empty();</a>
+<span class="sourceLineNo">915</span><a id="line.915">  }</a>
+<span class="sourceLineNo">916</span><a id="line.916"></a>
+<span class="sourceLineNo">917</span><a id="line.917">  /**</a>
+<span class="sourceLineNo">918</span><a id="line.918">   * Overwrite the OpenGraph metadata configuration for the current render flow, with the provided OpenGraph metadata</a>
+<span class="sourceLineNo">919</span><a id="line.919">   * configuration. If the rendered page uses the framework's page template, the values will be serialized and rendered</a>
+<span class="sourceLineNo">920</span><a id="line.920">   * into the page head.</a>
+<span class="sourceLineNo">921</span><a id="line.921">   *</a>
+<span class="sourceLineNo">922</span><a id="line.922">   * @param content OpenGraph content to render.</a>
+<span class="sourceLineNo">923</span><a id="line.923">   * @return Current page context manager (for call chain-ability).</a>
+<span class="sourceLineNo">924</span><a id="line.924">   * @throws IllegalArgumentException If `null` is passed for the provided content.</a>
+<span class="sourceLineNo">925</span><a id="line.925">   */</a>
+<span class="sourceLineNo">926</span><a id="line.926">  @CanIgnoreReturnValue</a>
+<span class="sourceLineNo">927</span><a id="line.927">  @SuppressWarnings("ConstantConditions")</a>
+<span class="sourceLineNo">928</span><a id="line.928">  public @Nonnull PageContextManager setOpenGraph(@Nonnull Context.Metadata.OpenGraph.Builder content) {</a>
+<span class="sourceLineNo">929</span><a id="line.929">    if (content == null) throw new IllegalArgumentException("Cannot pass `null` for OpenGraph content.");</a>
+<span class="sourceLineNo">930</span><a id="line.930">    this.clearOpenGraph();</a>
+<span class="sourceLineNo">931</span><a id="line.931">    this.context.getMetaBuilder().setOpenGraph(content);</a>
+<span class="sourceLineNo">932</span><a id="line.932">    return this;</a>
+<span class="sourceLineNo">933</span><a id="line.933">  }</a>
+<span class="sourceLineNo">934</span><a id="line.934"></a>
+<span class="sourceLineNo">935</span><a id="line.935">  /**</a>
+<span class="sourceLineNo">936</span><a id="line.936">   * Apply the provided OpenGraph metadata configuration to the &lt;i&gt;current&lt;/i&gt; OpenGraph metadata configuration, if any.</a>
+<span class="sourceLineNo">937</span><a id="line.937">   * If no OpenGraph metadata configuration is set, this method effectively overwrites it.</a>
+<span class="sourceLineNo">938</span><a id="line.938">   *</a>
+<span class="sourceLineNo">939</span><a id="line.939">   * @param content OpenGraph content to merge and apply.</a>
+<span class="sourceLineNo">940</span><a id="line.940">   * @return Current page context manager (for call chain-ability).</a>
+<span class="sourceLineNo">941</span><a id="line.941">   * @throws IllegalArgumentException If `null` is passed for the provided content.</a>
+<span class="sourceLineNo">942</span><a id="line.942">   */</a>
+<span class="sourceLineNo">943</span><a id="line.943">  @CanIgnoreReturnValue</a>
+<span class="sourceLineNo">944</span><a id="line.944">  @SuppressWarnings("ConstantConditions")</a>
+<span class="sourceLineNo">945</span><a id="line.945">  public @Nonnull PageContextManager applyOpenGraph(@Nonnull Context.Metadata.OpenGraph.Builder content) {</a>
+<span class="sourceLineNo">946</span><a id="line.946">    if (content == null) throw new IllegalArgumentException("Cannot pass `null` for OpenGraph content.");</a>
+<span class="sourceLineNo">947</span><a id="line.947">    Context.Metadata.OpenGraph.Builder ogContent = this.context.getMetaBuilder().getOpenGraphBuilder();</a>
+<span class="sourceLineNo">948</span><a id="line.948">    this.setOpenGraph(ogContent.mergeFrom(content.build()));</a>
+<span class="sourceLineNo">949</span><a id="line.949">    return this;</a>
+<span class="sourceLineNo">950</span><a id="line.950">  }</a>
+<span class="sourceLineNo">951</span><a id="line.951"></a>
+<span class="sourceLineNo">952</span><a id="line.952">  /**</a>
+<span class="sourceLineNo">953</span><a id="line.953">   * Clear any OpenGraph metadata configuration attached to the current render flow. If there is no such configuration,</a>
+<span class="sourceLineNo">954</span><a id="line.954">   * this method is a no-op.</a>
+<span class="sourceLineNo">955</span><a id="line.955">   *</a>
+<span class="sourceLineNo">956</span><a id="line.956">   * @return Current page context manager (for call chain-ability).</a>
+<span class="sourceLineNo">957</span><a id="line.957">   */</a>
+<span class="sourceLineNo">958</span><a id="line.958">  @CanIgnoreReturnValue</a>
+<span class="sourceLineNo">959</span><a id="line.959">  public @Nonnull PageContextManager clearOpenGraph() {</a>
+<span class="sourceLineNo">960</span><a id="line.960">    this.context.getMetaBuilder().clearOpenGraph();</a>
+<span class="sourceLineNo">961</span><a id="line.961">    return this;</a>
+<span class="sourceLineNo">962</span><a id="line.962">  }</a>
+<span class="sourceLineNo">963</span><a id="line.963"></a>
+<span class="sourceLineNo">964</span><a id="line.964">  /**</a>
+<span class="sourceLineNo">965</span><a id="line.965">   * Return the set of RDFa prefixes affixed to the current render flow, if any. If none are found,</a>
+<span class="sourceLineNo">966</span><a id="line.966">   * {@link Optional#empty()} is returned.</a>
+<span class="sourceLineNo">967</span><a id="line.967">   *</a>
+<span class="sourceLineNo">968</span><a id="line.968">   * @return Set of prefixes available on the current render flow, if any.</a>
+<span class="sourceLineNo">969</span><a id="line.969">   */</a>
+<span class="sourceLineNo">970</span><a id="line.970">  public @Nonnull Optional&lt;List&lt;Context.RDFPrefix&gt;&gt; prefixes() {</a>
+<span class="sourceLineNo">971</span><a id="line.971">    if (this.context.getMetaBuilder().getPrefixCount() &gt; 0) {</a>
+<span class="sourceLineNo">972</span><a id="line.972">      return Optional.of(this.context.getMetaBuilder().getPrefixList());</a>
+<span class="sourceLineNo">973</span><a id="line.973">    }</a>
+<span class="sourceLineNo">974</span><a id="line.974">    return Optional.empty();</a>
+<span class="sourceLineNo">975</span><a id="line.975">  }</a>
+<span class="sourceLineNo">976</span><a id="line.976"></a>
+<span class="sourceLineNo">977</span><a id="line.977">  /**</a>
+<span class="sourceLineNo">978</span><a id="line.978">   * Overwrite the full set of RDFa prefixes for the current render flow. If the rendered page uses the framework's page</a>
+<span class="sourceLineNo">979</span><a id="line.979">   * template, the values will be serialized and rendered into the page head.</a>
+<span class="sourceLineNo">980</span><a id="line.980">   *</a>
+<span class="sourceLineNo">981</span><a id="line.981">   * @return Current page context manager (for call chain-ability).</a>
+<span class="sourceLineNo">982</span><a id="line.982">   */</a>
+<span class="sourceLineNo">983</span><a id="line.983">  public @Nonnull PageContextManager setPrefixes(@Nonnull Optional&lt;List&lt;Context.RDFPrefix&gt;&gt; prefixes) {</a>
+<span class="sourceLineNo">984</span><a id="line.984">    if (prefixes.isPresent()) {</a>
+<span class="sourceLineNo">985</span><a id="line.985">      List&lt;Context.RDFPrefix&gt; prefixList = prefixes.get();</a>
+<span class="sourceLineNo">986</span><a id="line.986">      prefixList.forEach((prefix) -&gt; {</a>
+<span class="sourceLineNo">987</span><a id="line.987">        this.context.getMetaBuilder().addPrefix(Context.RDFPrefix.newBuilder()</a>
+<span class="sourceLineNo">988</span><a id="line.988">          .setPrefix(prefix.getPrefix())</a>
+<span class="sourceLineNo">989</span><a id="line.989">          .setTarget(prefix.getTarget()));</a>
+<span class="sourceLineNo">990</span><a id="line.990">      });</a>
+<span class="sourceLineNo">991</span><a id="line.991">      return this;</a>
+<span class="sourceLineNo">992</span><a id="line.992">    }</a>
+<span class="sourceLineNo">993</span><a id="line.993">    this.context.getMetaBuilder().clearPrefix();</a>
+<span class="sourceLineNo">994</span><a id="line.994">    return this;</a>
+<span class="sourceLineNo">995</span><a id="line.995">  }</a>
+<span class="sourceLineNo">996</span><a id="line.996"></a>
+<span class="sourceLineNo">997</span><a id="line.997">  /**</a>
+<span class="sourceLineNo">998</span><a id="line.998">   * Include the specified JavaScript resource in the rendered page, according to the specified settings. The module is</a>
+<span class="sourceLineNo">999</span><a id="line.999">   * expected to exist and be included in the application's asset bundle.</a>
+<span class="sourceLineNo">1000</span><a id="line.1000">   *</a>
+<span class="sourceLineNo">1001</span><a id="line.1001">   * @param name Name of the script module to load into the page.</a>
+<span class="sourceLineNo">1002</span><a id="line.1002">   * @return Current page context manager (for call chain-ability).</a>
+<span class="sourceLineNo">1003</span><a id="line.1003">   * @throws IllegalArgumentException If `null` is passed for the module name, or it cannot be located, or is invalid.</a>
+<span class="sourceLineNo">1004</span><a id="line.1004">   */</a>
+<span class="sourceLineNo">1005</span><a id="line.1005">  @CanIgnoreReturnValue</a>
+<span class="sourceLineNo">1006</span><a id="line.1006">  public @Nonnull PageContextManager script(@Nonnull String name) {</a>
+<span class="sourceLineNo">1007</span><a id="line.1007">    // sensible defaults for script embedding</a>
+<span class="sourceLineNo">1008</span><a id="line.1008">    return this.script(</a>
+<span class="sourceLineNo">1009</span><a id="line.1009">      name, null, true, false, false, false, false, false);</a>
+<span class="sourceLineNo">1010</span><a id="line.1010">  }</a>
+<span class="sourceLineNo">1011</span><a id="line.1011"></a>
+<span class="sourceLineNo">1012</span><a id="line.1012">  /**</a>
+<span class="sourceLineNo">1013</span><a id="line.1013">   * Include the specified JavaScript resource in the rendered page, according to the specified settings. The module is</a>
+<span class="sourceLineNo">1014</span><a id="line.1014">   * expected to exist and be included in the application's asset bundle. This variant allows specification of the most</a>
+<span class="sourceLineNo">1015</span><a id="line.1015">   * frequent attributes used with scripts.</a>
+<span class="sourceLineNo">1016</span><a id="line.1016">   *</a>
+<span class="sourceLineNo">1017</span><a id="line.1017">   * @param name Name of the script module to load into the page.</a>
+<span class="sourceLineNo">1018</span><a id="line.1018">   * @param defer Whether to add the {@code defer} attribute to the script tag.</a>
+<span class="sourceLineNo">1019</span><a id="line.1019">   * @param async Whether to add the {@code async} attribute to the script tag.</a>
+<span class="sourceLineNo">1020</span><a id="line.1020">   * @return Current page context manager (for call chain-ability).</a>
+<span class="sourceLineNo">1021</span><a id="line.1021">   * @throws IllegalArgumentException If `null` is passed for the module name, or it cannot be located, or is invalid.</a>
+<span class="sourceLineNo">1022</span><a id="line.1022">   */</a>
+<span class="sourceLineNo">1023</span><a id="line.1023">  @CanIgnoreReturnValue</a>
+<span class="sourceLineNo">1024</span><a id="line.1024">  public @Nonnull PageContextManager script(@Nonnull String name, @Nonnull Boolean defer, @Nonnull Boolean async) {</a>
+<span class="sourceLineNo">1025</span><a id="line.1025">    return this.script(</a>
+<span class="sourceLineNo">1026</span><a id="line.1026">      name, null, defer, async, false, false, false, false);</a>
+<span class="sourceLineNo">1027</span><a id="line.1027">  }</a>
+<span class="sourceLineNo">1028</span><a id="line.1028"></a>
+<span class="sourceLineNo">1029</span><a id="line.1029">  /**</a>
+<span class="sourceLineNo">1030</span><a id="line.1030">   * Include the specified JavaScript resource in the rendered page, according to the specified settings. The module is</a>
+<span class="sourceLineNo">1031</span><a id="line.1031">   * expected to exist and be included in the application's asset bundle.</a>
+<span class="sourceLineNo">1032</span><a id="line.1032">   *</a>
+<span class="sourceLineNo">1033</span><a id="line.1033">   * &lt;p&gt;&lt;b&gt;Behavior:&lt;/b&gt; Script assets included in this manner are always loaded in the document head, so be judicious</a>
+<span class="sourceLineNo">1034</span><a id="line.1034">   * with {@code defer} if you are loading a significant amount of JavaScript. There are no default script assets.</a>
+<span class="sourceLineNo">1035</span><a id="line.1035">   * Scripts are emitted in the order in which they are attached to the page context (i.e. via this method).&lt;/p&gt;</a>
+<span class="sourceLineNo">1036</span><a id="line.1036">   *</a>
+<span class="sourceLineNo">1037</span><a id="line.1037">   * &lt;p&gt;&lt;b&gt;Optimization:&lt;/b&gt; Activating the {@code preload} flag causes the script asset to be mentioned in a</a>
+<span class="sourceLineNo">1038</span><a id="line.1038">   * {@code Link} header, which makes supporting browsers aware of it before loading the DOM. For more aggressive</a>
+<span class="sourceLineNo">1039</span><a id="line.1039">   * circumstances, the {@code push} flag proactively pushes the asset to the browser (where supported), unless the</a>
+<span class="sourceLineNo">1040</span><a id="line.1040">   * framework knows the client has seen the asset already. Where HTTP/2 is not supported, special triggering</a>
+<span class="sourceLineNo">1041</span><a id="line.1041">   * {@code Link} headers may be used.&lt;/p&gt;</a>
+<span class="sourceLineNo">1042</span><a id="line.1042">   *</a>
+<span class="sourceLineNo">1043</span><a id="line.1043">   * @param name Name of the script module to load into the page.</a>
+<span class="sourceLineNo">1044</span><a id="line.1044">   * @param id ID to assign the script block in the DOM, so it may be located dynamically.</a>
+<span class="sourceLineNo">1045</span><a id="line.1045">   * @param defer Whether to add the {@code defer} attribute to the script tag.</a>
+<span class="sourceLineNo">1046</span><a id="line.1046">   * @param async Whether to add the {@code async} attribute to the script tag.</a>
+<span class="sourceLineNo">1047</span><a id="line.1047">   * @param module Whether to add the {@code module} attribute to the script tag.</a>
+<span class="sourceLineNo">1048</span><a id="line.1048">   * @param nomodule Whether to add the {@code nomodule} attribute to the script tag.</a>
+<span class="sourceLineNo">1049</span><a id="line.1049">   * @param preload Whether to link/hint about the asset in response headers.</a>
+<span class="sourceLineNo">1050</span><a id="line.1050">   * @param push Whether to pro-actively push the asset, if we think the client doesn't have it.</a>
+<span class="sourceLineNo">1051</span><a id="line.1051">   * @return Current page context manager (for call chain-ability).</a>
+<span class="sourceLineNo">1052</span><a id="line.1052">   * @throws IllegalArgumentException If `null` is passed for the module name, or it cannot be located, or is invalid.</a>
+<span class="sourceLineNo">1053</span><a id="line.1053">   */</a>
+<span class="sourceLineNo">1054</span><a id="line.1054">  @CanIgnoreReturnValue</a>
+<span class="sourceLineNo">1055</span><a id="line.1055">  public @Nonnull PageContextManager script(@Nonnull String name,</a>
+<span class="sourceLineNo">1056</span><a id="line.1056">                                            @Nullable String id,</a>
+<span class="sourceLineNo">1057</span><a id="line.1057">                                            @Nonnull Boolean defer,</a>
+<span class="sourceLineNo">1058</span><a id="line.1058">                                            @Nonnull Boolean async,</a>
+<span class="sourceLineNo">1059</span><a id="line.1059">                                            @Nonnull Boolean module,</a>
+<span class="sourceLineNo">1060</span><a id="line.1060">                                            @Nonnull Boolean nomodule,</a>
+<span class="sourceLineNo">1061</span><a id="line.1061">                                            @Nonnull Boolean preload,</a>
+<span class="sourceLineNo">1062</span><a id="line.1062">                                            @Nonnull Boolean push) {</a>
+<span class="sourceLineNo">1063</span><a id="line.1063">    Optional&lt;ManagedAsset&lt;ScriptAsset&gt;&gt; maybeAsset = (</a>
+<span class="sourceLineNo">1064</span><a id="line.1064">      this.assetManager.assetMetadataByModule(Objects.requireNonNull(name)));</a>
+<span class="sourceLineNo">1065</span><a id="line.1065"></a>
+<span class="sourceLineNo">1066</span><a id="line.1066">    // fail if not present</a>
+<span class="sourceLineNo">1067</span><a id="line.1067">    if (maybeAsset.isEmpty())</a>
+<span class="sourceLineNo">1068</span><a id="line.1068">      throw new IllegalArgumentException(format("Failed to locate script module '%s'.", name));</a>
+<span class="sourceLineNo">1069</span><a id="line.1069">    ManagedAsset&lt;ScriptAsset&gt; asset = maybeAsset.get();</a>
+<span class="sourceLineNo">1070</span><a id="line.1070"></a>
+<span class="sourceLineNo">1071</span><a id="line.1071">    if (!asset.getType().equals(AssetManager.ModuleType.JS))</a>
+<span class="sourceLineNo">1072</span><a id="line.1072">      throw new IllegalArgumentException(format("Cannot include asset '%s' as %s, it is of type JS.",</a>
+<span class="sourceLineNo">1073</span><a id="line.1073">        name,</a>
+<span class="sourceLineNo">1074</span><a id="line.1074">        asset.getType().name()));</a>
+<span class="sourceLineNo">1075</span><a id="line.1075"></a>
+<span class="sourceLineNo">1076</span><a id="line.1076">    // resolve constituent scripts</a>
+<span class="sourceLineNo">1077</span><a id="line.1077">    for (ScriptAsset script : asset.getAssets()) {</a>
+<span class="sourceLineNo">1078</span><a id="line.1078">      // pre-filled URI js record</a>
+<span class="sourceLineNo">1079</span><a id="line.1079">      JavaScript.Builder js = JavaScript.newBuilder(script.getScript())</a>
+<span class="sourceLineNo">1080</span><a id="line.1080">        .setDefer(defer)</a>
+<span class="sourceLineNo">1081</span><a id="line.1081">        .setAsync(async)</a>
+<span class="sourceLineNo">1082</span><a id="line.1082">        .setModule(module)</a>
+<span class="sourceLineNo">1083</span><a id="line.1083">        .setNoModule(nomodule)</a>
+<span class="sourceLineNo">1084</span><a id="line.1084">        .setPreload(preload)</a>
+<span class="sourceLineNo">1085</span><a id="line.1085">        .setPush(push);</a>
+<span class="sourceLineNo">1086</span><a id="line.1086"></a>
+<span class="sourceLineNo">1087</span><a id="line.1087">      if (id != null) js.setId(id);</a>
+<span class="sourceLineNo">1088</span><a id="line.1088">      this.script(js);</a>
+<span class="sourceLineNo">1089</span><a id="line.1089">    }</a>
+<span class="sourceLineNo">1090</span><a id="line.1090">    return this;</a>
+<span class="sourceLineNo">1091</span><a id="line.1091">  }</a>
+<span class="sourceLineNo">1092</span><a id="line.1092"></a>
+<span class="sourceLineNo">1093</span><a id="line.1093">  /**</a>
+<span class="sourceLineNo">1094</span><a id="line.1094">   * Include the specified JavaScript resource in the rendered page, according to enclosed settings (i.e. respecting</a>
+<span class="sourceLineNo">1095</span><a id="line.1095">   * {@code defer}, {@code async}, and other attributes). If the script asset has an ID, it will &lt;b&gt;not&lt;/b&gt; be</a>
+<span class="sourceLineNo">1096</span><a id="line.1096">   * passed through ID rewriting before being rendered.</a>
+<span class="sourceLineNo">1097</span><a id="line.1097">   *</a>
+<span class="sourceLineNo">1098</span><a id="line.1098">   * &lt;p&gt;&lt;b&gt;Behavior:&lt;/b&gt; Script assets included in this manner are always loaded in the document head, so be judicious</a>
+<span class="sourceLineNo">1099</span><a id="line.1099">   * with {@code defer} if you are loading a significant amount of JavaScript. There are no default script assets.</a>
+<span class="sourceLineNo">1100</span><a id="line.1100">   * Scripts are emitted in the order in which they are attached to the page context (i.e. via this method).&lt;/p&gt;</a>
+<span class="sourceLineNo">1101</span><a id="line.1101">   *</a>
+<span class="sourceLineNo">1102</span><a id="line.1102">   * @param script Script asset to load in the rendered page output. Do not pass `null`.</a>
+<span class="sourceLineNo">1103</span><a id="line.1103">   * @return Current page context manager (for call chain-ability).</a>
+<span class="sourceLineNo">1104</span><a id="line.1104">   * @throws IllegalArgumentException If `null` is passed for the module name, or it cannot be located, or is invalid.</a>
+<span class="sourceLineNo">1105</span><a id="line.1105">   */</a>
+<span class="sourceLineNo">1106</span><a id="line.1106">  @CanIgnoreReturnValue</a>
+<span class="sourceLineNo">1107</span><a id="line.1107">  public @Nonnull PageContextManager script(@Nonnull Context.Scripts.JavaScript.Builder script) {</a>
+<span class="sourceLineNo">1108</span><a id="line.1108">    //noinspection ConstantConditions</a>
+<span class="sourceLineNo">1109</span><a id="line.1109">    if (script == null) throw new IllegalArgumentException("Cannot pass `null` for script.");</a>
+<span class="sourceLineNo">1110</span><a id="line.1110">    this.context.getScriptsBuilder().addLink(script);</a>
+<span class="sourceLineNo">1111</span><a id="line.1111">    return this;</a>
+<span class="sourceLineNo">1112</span><a id="line.1112">  }</a>
+<span class="sourceLineNo">1113</span><a id="line.1113"></a>
+<span class="sourceLineNo">1114</span><a id="line.1114">  /**</a>
+<span class="sourceLineNo">1115</span><a id="line.1115">   * Include the specified CSS stylesheet in the rendered page with default settings. The module is expected to exist</a>
+<span class="sourceLineNo">1116</span><a id="line.1116">   * and be included in the application's asset bundle.</a>
+<span class="sourceLineNo">1117</span><a id="line.1117">   *</a>
+<span class="sourceLineNo">1118</span><a id="line.1118">   * @param name Name of the module to load.</a>
+<span class="sourceLineNo">1119</span><a id="line.1119">   * @return Current page context manager (for call chain-ability).</a>
+<span class="sourceLineNo">1120</span><a id="line.1120">   * @throws IllegalArgumentException If `null` is passed for the module name, or it cannot be located, or is invalid.</a>
+<span class="sourceLineNo">1121</span><a id="line.1121">   */</a>
+<span class="sourceLineNo">1122</span><a id="line.1122">  @CanIgnoreReturnValue</a>
+<span class="sourceLineNo">1123</span><a id="line.1123">  public @Nonnull PageContextManager stylesheet(@Nonnull String name) {</a>
+<span class="sourceLineNo">1124</span><a id="line.1124">    return stylesheet(name, null);</a>
+<span class="sourceLineNo">1125</span><a id="line.1125">  }</a>
+<span class="sourceLineNo">1126</span><a id="line.1126"></a>
+<span class="sourceLineNo">1127</span><a id="line.1127">  /**</a>
+<span class="sourceLineNo">1128</span><a id="line.1128">   * Include the specified CSS stylesheet in the rendered page, along with the specified media setting. The module is</a>
+<span class="sourceLineNo">1129</span><a id="line.1129">   * expected to exist and be included in the application's asset bundle.</a>
+<span class="sourceLineNo">1130</span><a id="line.1130">   *</a>
+<span class="sourceLineNo">1131</span><a id="line.1131">   * @param name Name of the module to load.</a>
+<span class="sourceLineNo">1132</span><a id="line.1132">   * @param media Media assignment for the stylesheet.</a>
+<span class="sourceLineNo">1133</span><a id="line.1133">   * @return Current page context manager (for call chain-ability).</a>
+<span class="sourceLineNo">1134</span><a id="line.1134">   * @throws IllegalArgumentException If `null` is passed for the module name, or the module cannot be located.</a>
+<span class="sourceLineNo">1135</span><a id="line.1135">   */</a>
+<span class="sourceLineNo">1136</span><a id="line.1136">  @CanIgnoreReturnValue</a>
+<span class="sourceLineNo">1137</span><a id="line.1137">  public @Nonnull PageContextManager stylesheet(@Nonnull String name, @Nullable String media) {</a>
+<span class="sourceLineNo">1138</span><a id="line.1138">    return stylesheet(name, null, null, false, false);</a>
+<span class="sourceLineNo">1139</span><a id="line.1139">  }</a>
+<span class="sourceLineNo">1140</span><a id="line.1140"></a>
+<span class="sourceLineNo">1141</span><a id="line.1141">  /**</a>
+<span class="sourceLineNo">1142</span><a id="line.1142">   * Include the specified CSS stylesheet in the rendered page, according to the specified settings. The module is</a>
+<span class="sourceLineNo">1143</span><a id="line.1143">   * expected to exist and be included in the application's asset bundle.</a>
+<span class="sourceLineNo">1144</span><a id="line.1144">   *</a>
+<span class="sourceLineNo">1145</span><a id="line.1145">   * &lt;p&gt;&lt;b&gt;Optimization:&lt;/b&gt; Activating the {@code preload} flag causes the style asset to be mentioned in a</a>
+<span class="sourceLineNo">1146</span><a id="line.1146">   * {@code Link} header, which makes supporting browsers aware of it before loading the DOM. For more aggressive</a>
+<span class="sourceLineNo">1147</span><a id="line.1147">   * circumstances, the {@code push} flag proactively pushes the asset to the browser (where supported), unless the</a>
+<span class="sourceLineNo">1148</span><a id="line.1148">   * framework knows the client has seen the asset already. Where HTTP/2 is not supported, special triggering</a>
+<span class="sourceLineNo">1149</span><a id="line.1149">   * {@code Link} headers may be used.&lt;/p&gt;</a>
+<span class="sourceLineNo">1150</span><a id="line.1150">   *</a>
+<span class="sourceLineNo">1151</span><a id="line.1151">   * @param name Name of the module to load.</a>
+<span class="sourceLineNo">1152</span><a id="line.1152">   * @param id ID to assign the link tag in the DOM.</a>
+<span class="sourceLineNo">1153</span><a id="line.1153">   * @param media Media assignment for the stylesheet.</a>
+<span class="sourceLineNo">1154</span><a id="line.1154">   * @param preload Whether to link/hint about the asset in response headers.</a>
+<span class="sourceLineNo">1155</span><a id="line.1155">   * @param push Whether to pro-actively push the asset, if we think the client doesn't have it.</a>
+<span class="sourceLineNo">1156</span><a id="line.1156">   * @return Current page context manager (for call chain-ability).</a>
+<span class="sourceLineNo">1157</span><a id="line.1157">   * @throws IllegalArgumentException If `null` is passed for the module name, or it cannot be located, or is invalid.</a>
+<span class="sourceLineNo">1158</span><a id="line.1158">   */</a>
+<span class="sourceLineNo">1159</span><a id="line.1159">  @CanIgnoreReturnValue</a>
+<span class="sourceLineNo">1160</span><a id="line.1160">  public @Nonnull PageContextManager stylesheet(@Nonnull String name,</a>
+<span class="sourceLineNo">1161</span><a id="line.1161">                                                @Nullable String id,</a>
+<span class="sourceLineNo">1162</span><a id="line.1162">                                                @Nullable String media,</a>
+<span class="sourceLineNo">1163</span><a id="line.1163">                                                @Nonnull Boolean preload,</a>
+<span class="sourceLineNo">1164</span><a id="line.1164">                                                @Nonnull Boolean push) {</a>
+<span class="sourceLineNo">1165</span><a id="line.1165">    Optional&lt;ManagedAsset&lt;StyleAsset&gt;&gt; maybeAsset = (</a>
+<span class="sourceLineNo">1166</span><a id="line.1166">      this.assetManager.assetMetadataByModule(Objects.requireNonNull(name)));</a>
+<span class="sourceLineNo">1167</span><a id="line.1167"></a>
+<span class="sourceLineNo">1168</span><a id="line.1168">    // fail if not present</a>
+<span class="sourceLineNo">1169</span><a id="line.1169">    if (maybeAsset.isEmpty())</a>
+<span class="sourceLineNo">1170</span><a id="line.1170">      throw new IllegalArgumentException(format("Failed to locate style module '%s'.", name));</a>
+<span class="sourceLineNo">1171</span><a id="line.1171">    ManagedAsset&lt;StyleAsset&gt; asset = maybeAsset.get();</a>
+<span class="sourceLineNo">1172</span><a id="line.1172"></a>
+<span class="sourceLineNo">1173</span><a id="line.1173">    if (!asset.getType().equals(AssetManager.ModuleType.CSS))</a>
+<span class="sourceLineNo">1174</span><a id="line.1174">      throw new IllegalArgumentException(format("Cannot include asset '%s' as %s, it is of type CSS.",</a>
+<span class="sourceLineNo">1175</span><a id="line.1175">        name,</a>
+<span class="sourceLineNo">1176</span><a id="line.1176">        asset.getType().name()));</a>
+<span class="sourceLineNo">1177</span><a id="line.1177"></a>
+<span class="sourceLineNo">1178</span><a id="line.1178">    // resolve constituent stylesheets</a>
+<span class="sourceLineNo">1179</span><a id="line.1179">    for (StyleAsset styleBundle : asset.getAssets()) {</a>
+<span class="sourceLineNo">1180</span><a id="line.1180">      // pre-filled URI js record</a>
+<span class="sourceLineNo">1181</span><a id="line.1181">      Stylesheet.Builder styles = Stylesheet.newBuilder(styleBundle.getStylesheet())</a>
+<span class="sourceLineNo">1182</span><a id="line.1182">        .setPush(push)</a>
+<span class="sourceLineNo">1183</span><a id="line.1183">        .setPreload(preload);</a>
+<span class="sourceLineNo">1184</span><a id="line.1184"></a>
+<span class="sourceLineNo">1185</span><a id="line.1185">      if (id != null) styles.setId(id);</a>
+<span class="sourceLineNo">1186</span><a id="line.1186">      if (media != null) styles.setMedia(media);</a>
+<span class="sourceLineNo">1187</span><a id="line.1187">      this.stylesheet(styles);</a>
+<span class="sourceLineNo">1188</span><a id="line.1188">    }</a>
+<span class="sourceLineNo">1189</span><a id="line.1189">    return this;</a>
+<span class="sourceLineNo">1190</span><a id="line.1190">  }</a>
+<span class="sourceLineNo">1191</span><a id="line.1191"></a>
+<span class="sourceLineNo">1192</span><a id="line.1192">  /**</a>
+<span class="sourceLineNo">1193</span><a id="line.1193">   * Include the specified CSS stylesheet resource in the rendered page, according to the enclosed settings (i.e.</a>
+<span class="sourceLineNo">1194</span><a id="line.1194">   * respecting properties like &lt;pre&gt;media&lt;/pre&gt;). If the stylesheet has an ID, it will &lt;b&gt;not&lt;/b&gt; be passed through ID</a>
+<span class="sourceLineNo">1195</span><a id="line.1195">   * rewriting before being rendered.</a>
+<span class="sourceLineNo">1196</span><a id="line.1196">   *</a>
+<span class="sourceLineNo">1197</span><a id="line.1197">   * &lt;p&gt;Stylesheets included in this manner are always loaded in the head, via a link tag. If you want to defer loading</a>
+<span class="sourceLineNo">1198</span><a id="line.1198">   * of styles, you'll have to do so from JS. Stylesheet links are emitted in the order in which they are attached to</a>
+<span class="sourceLineNo">1199</span><a id="line.1199">   * the page context (i.e. via this method).&lt;/p&gt;</a>
+<span class="sourceLineNo">1200</span><a id="line.1200">   *</a>
+<span class="sourceLineNo">1201</span><a id="line.1201">   * @param stylesheet Stylesheet asset to load in the rendered page output. Do not pass `null`.</a>
+<span class="sourceLineNo">1202</span><a id="line.1202">   * @return Current page context manager (for call chain-ability).</a>
+<span class="sourceLineNo">1203</span><a id="line.1203">   * @throws IllegalArgumentException If `null` is passed for the stylesheet.</a>
+<span class="sourceLineNo">1204</span><a id="line.1204">   */</a>
+<span class="sourceLineNo">1205</span><a id="line.1205">  @CanIgnoreReturnValue</a>
+<span class="sourceLineNo">1206</span><a id="line.1206">  public @Nonnull PageContextManager stylesheet(@Nonnull Context.Styles.Stylesheet.Builder stylesheet) {</a>
+<span class="sourceLineNo">1207</span><a id="line.1207">    //noinspection ConstantConditions</a>
+<span class="sourceLineNo">1208</span><a id="line.1208">    if (stylesheet == null) throw new IllegalArgumentException("Cannot pass `null` for stylesheet.");</a>
+<span class="sourceLineNo">1209</span><a id="line.1209">    this.context.getStylesBuilder().addLink(stylesheet);</a>
+<span class="sourceLineNo">1210</span><a id="line.1210">    return this;</a>
+<span class="sourceLineNo">1211</span><a id="line.1211">  }</a>
+<span class="sourceLineNo">1212</span><a id="line.1212"></a>
+<span class="sourceLineNo">1213</span><a id="line.1213">  // -- Map-like Interface (Props) -- //</a>
+<span class="sourceLineNo">1214</span><a id="line.1214"></a>
+<span class="sourceLineNo">1215</span><a id="line.1215">  /**</a>
+<span class="sourceLineNo">1216</span><a id="line.1216">   * Install a regular context value, at the named key provided. This will make the value available in any bound Soy</a>
+<span class="sourceLineNo">1217</span><a id="line.1217">   * render flow via a &lt;pre&gt;@param&lt;/pre&gt; declaration on the subject template to be rendered.</a>
+<span class="sourceLineNo">1218</span><a id="line.1218">   *</a>
+<span class="sourceLineNo">1219</span><a id="line.1219">   * @param key Key at which to make this available as a param.</a>
+<span class="sourceLineNo">1220</span><a id="line.1220">   * @param value Value to provide for the parameter.</a>
+<span class="sourceLineNo">1221</span><a id="line.1221">   * @return Current page context manager (for call chain-ability).</a>
+<span class="sourceLineNo">1222</span><a id="line.1222">   * @throws IllegalArgumentException If the provided &lt;pre&gt;key&lt;/pre&gt; is &lt;pre&gt;null&lt;/pre&gt;, or a disallowed value, like</a>
+<span class="sourceLineNo">1223</span><a id="line.1223">   *         &lt;pre&gt;context&lt;/pre&gt; (which cannot be overridden).</a>
+<span class="sourceLineNo">1224</span><a id="line.1224">   */</a>
+<span class="sourceLineNo">1225</span><a id="line.1225">  @CanIgnoreReturnValue</a>
+<span class="sourceLineNo">1226</span><a id="line.1226">  public @Nonnull PageContextManager put(@Nonnull String key, @Nonnull Object value) {</a>
+<span class="sourceLineNo">1227</span><a id="line.1227">    //noinspection ConstantConditions</a>
+<span class="sourceLineNo">1228</span><a id="line.1228">    if (key == null)</a>
+<span class="sourceLineNo">1229</span><a id="line.1229">      throw new IllegalArgumentException("Must provide a key to put a Soy context property. Got `null` for key.");</a>
+<span class="sourceLineNo">1230</span><a id="line.1230">    this.props.put(key, value);</a>
+<span class="sourceLineNo">1231</span><a id="line.1231">    return this;</a>
+<span class="sourceLineNo">1232</span><a id="line.1232">  }</a>
+<span class="sourceLineNo">1233</span><a id="line.1233"></a>
+<span class="sourceLineNo">1234</span><a id="line.1234">  /**</a>
+<span class="sourceLineNo">1235</span><a id="line.1235">   * Safely retrieve a value from the current render context properties. If no property is found at the provided key,</a>
+<span class="sourceLineNo">1236</span><a id="line.1236">   * an empty {@link Optional} is returned. Otherwise, an {@link Optional} is returned wrapping whatever value was</a>
+<span class="sourceLineNo">1237</span><a id="line.1237">   * found.</a>
+<span class="sourceLineNo">1238</span><a id="line.1238">   *</a>
+<span class="sourceLineNo">1239</span><a id="line.1239">   * @param key Key at which to retrieve the desired render context property.</a>
+<span class="sourceLineNo">1240</span><a id="line.1240">   * @return Optional-wrapped context property value.</a>
+<span class="sourceLineNo">1241</span><a id="line.1241">   */</a>
+<span class="sourceLineNo">1242</span><a id="line.1242">  public @Nonnull Optional&lt;Object&gt; get(@Nonnull String key) {</a>
+<span class="sourceLineNo">1243</span><a id="line.1243">    return this.get(key, false);</a>
+<span class="sourceLineNo">1244</span><a id="line.1244">  }</a>
+<span class="sourceLineNo">1245</span><a id="line.1245"></a>
+<span class="sourceLineNo">1246</span><a id="line.1246">  /**</a>
+<span class="sourceLineNo">1247</span><a id="line.1247">   * Safely retrieve a value from either the current render context properties, or the current injected values. If no</a>
+<span class="sourceLineNo">1248</span><a id="line.1248">   * value is found in whatever context we're looking in, an empty {@link Optional} is returned. Otherwise, an</a>
+<span class="sourceLineNo">1249</span><a id="line.1249">   * {@link Optional} is returned wrapping whatever value was found.</a>
+<span class="sourceLineNo">1250</span><a id="line.1250">   *</a>
+<span class="sourceLineNo">1251</span><a id="line.1251">   * @param key Key at which to retrieve the desired render property or injected value.</a>
+<span class="sourceLineNo">1252</span><a id="line.1252">   * @param injected Whether to look in the injected values, or regular property values.</a>
+<span class="sourceLineNo">1253</span><a id="line.1253">   * @return Empty optional if nothing was found, otherwise, the found value wrapped in an optional.</a>
+<span class="sourceLineNo">1254</span><a id="line.1254">   */</a>
+<span class="sourceLineNo">1255</span><a id="line.1255">  public @Nonnull Optional&lt;Object&gt; get(@Nonnull String key, boolean injected) {</a>
+<span class="sourceLineNo">1256</span><a id="line.1256">    final ConcurrentMap&lt;String, Object&gt; base = injected ? this.injected : this.props;</a>
+<span class="sourceLineNo">1257</span><a id="line.1257">    if (base.containsKey(key))</a>
+<span class="sourceLineNo">1258</span><a id="line.1258">      return Optional.of(base.get(key));</a>
+<span class="sourceLineNo">1259</span><a id="line.1259">    return Optional.empty();</a>
+<span class="sourceLineNo">1260</span><a id="line.1260">  }</a>
+<span class="sourceLineNo">1261</span><a id="line.1261"></a>
+<span class="sourceLineNo">1262</span><a id="line.1262">  /**</a>
+<span class="sourceLineNo">1263</span><a id="line.1263">   * Install an injected context value, at the named key provided. This will make the value available in any bound Soy</a>
+<span class="sourceLineNo">1264</span><a id="line.1264">   * render flow via the &lt;pre&gt;@inject&lt;/pre&gt; declaration, on any template in the render flow.</a>
+<span class="sourceLineNo">1265</span><a id="line.1265">   *</a>
+<span class="sourceLineNo">1266</span><a id="line.1266">   * @param key Key at which to make this available as an injected value.</a>
+<span class="sourceLineNo">1267</span><a id="line.1267">   * @param value Value to provide for the parameter.</a>
+<span class="sourceLineNo">1268</span><a id="line.1268">   * @return Current page context manager (for call chain-ability).</a>
+<span class="sourceLineNo">1269</span><a id="line.1269">   * @throws IllegalArgumentException If the provided &lt;pre&gt;key&lt;/pre&gt; is &lt;pre&gt;null&lt;/pre&gt;, or a disallowed value, like</a>
+<span class="sourceLineNo">1270</span><a id="line.1270">   *         &lt;pre&gt;context&lt;/pre&gt; (which cannot be overridden).</a>
+<span class="sourceLineNo">1271</span><a id="line.1271">   */</a>
+<span class="sourceLineNo">1272</span><a id="line.1272">  @CanIgnoreReturnValue</a>
+<span class="sourceLineNo">1273</span><a id="line.1273">  public @Nonnull PageContextManager inject(@Nonnull String key, @Nonnull Object value) {</a>
+<span class="sourceLineNo">1274</span><a id="line.1274">    //noinspection ConstantConditions</a>
+<span class="sourceLineNo">1275</span><a id="line.1275">    if (key == null)</a>
+<span class="sourceLineNo">1276</span><a id="line.1276">      throw new IllegalArgumentException("Must provide a key to put a Soy context property. Got `null` for key.");</a>
+<span class="sourceLineNo">1277</span><a id="line.1277">    if ("context".equals(key.toLowerCase()))</a>
+<span class="sourceLineNo">1278</span><a id="line.1278">      throw new IllegalArgumentException("Cannot use key 'context' for injected property.");</a>
+<span class="sourceLineNo">1279</span><a id="line.1279">    this.injected.put(key, value);</a>
+<span class="sourceLineNo">1280</span><a id="line.1280">    return this;</a>
+<span class="sourceLineNo">1281</span><a id="line.1281">  }</a>
+<span class="sourceLineNo">1282</span><a id="line.1282"></a>
+<span class="sourceLineNo">1283</span><a id="line.1283">  /**</a>
+<span class="sourceLineNo">1284</span><a id="line.1284">   * Install, or uninstall, the request-scoped renaming map provider. This object will be used to lookup style classes</a>
+<span class="sourceLineNo">1285</span><a id="line.1285">   * and IDs for render-time rewriting. To disable an existing naming map provider override, simply pass an empty</a>
+<span class="sourceLineNo">1286</span><a id="line.1286">   * {@link Optional}.</a>
+<span class="sourceLineNo">1287</span><a id="line.1287">   *</a>
+<span class="sourceLineNo">1288</span><a id="line.1288">   * &lt;p&gt;If no renaming map provider is set here, but a global one is, and renaming is enabled, the global map will be</a>
+<span class="sourceLineNo">1289</span><a id="line.1289">   * used. If a renaming map is set here, but renaming is &lt;i&gt;not&lt;/i&gt; enabled, no renaming takes place.&lt;/p&gt;</a>
+<span class="sourceLineNo">1290</span><a id="line.1290">   *</a>
+<span class="sourceLineNo">1291</span><a id="line.1291">   * @param namingMapProvider Renaming map provider to install, or {@link Optional#empty()} to uninstall any existing</a>
+<span class="sourceLineNo">1292</span><a id="line.1292">   *                          overriding renaming map provider.</a>
+<span class="sourceLineNo">1293</span><a id="line.1293">   * @return Current page context manager (for call chain-ability).</a>
+<span class="sourceLineNo">1294</span><a id="line.1294">   */</a>
+<span class="sourceLineNo">1295</span><a id="line.1295">  @CanIgnoreReturnValue</a>
+<span class="sourceLineNo">1296</span><a id="line.1296">  public @Nonnull PageContextManager rewrite(@Nonnull Optional&lt;SoyNamingMapProvider&gt; namingMapProvider) {</a>
+<span class="sourceLineNo">1297</span><a id="line.1297">    this.namingMapProvider = namingMapProvider;</a>
+<span class="sourceLineNo">1298</span><a id="line.1298">    return this;</a>
+<span class="sourceLineNo">1299</span><a id="line.1299">  }</a>
+<span class="sourceLineNo">1300</span><a id="line.1300"></a>
+<span class="sourceLineNo">1301</span><a id="line.1301">  /**</a>
+<span class="sourceLineNo">1302</span><a id="line.1302">   * Indicate whether message translation is enabled for the rendering layer. This checks the presence of either a</a>
+<span class="sourceLineNo">1303</span><a id="line.1303">   * translations file, or a translations URL resource. Additionally, a check is performed for any pre-fabricated Soy</a>
+<span class="sourceLineNo">1304</span><a id="line.1304">   * messages bundle. If any of those are present, `true` is returned.</a>
+<span class="sourceLineNo">1305</span><a id="line.1305">   *</a>
+<span class="sourceLineNo">1306</span><a id="line.1306">   * @return Whether translations will be enabled during render.</a>
+<span class="sourceLineNo">1307</span><a id="line.1307">   */</a>
+<span class="sourceLineNo">1308</span><a id="line.1308">  @Override</a>
+<span class="sourceLineNo">1309</span><a id="line.1309">  public boolean translate() {</a>
+<span class="sourceLineNo">1310</span><a id="line.1310">    return (</a>
+<span class="sourceLineNo">1311</span><a id="line.1311">      this.translationsFile.isPresent() ||</a>
+<span class="sourceLineNo">1312</span><a id="line.1312">      this.translationsResource.isPresent() ||</a>
+<span class="sourceLineNo">1313</span><a id="line.1313">      this.messageBundle.isPresent()</a>
+<span class="sourceLineNo">1314</span><a id="line.1314">    );</a>
+<span class="sourceLineNo">1315</span><a id="line.1315">  }</a>
+<span class="sourceLineNo">1316</span><a id="line.1316"></a>
+<span class="sourceLineNo">1317</span><a id="line.1317">  /**</a>
+<span class="sourceLineNo">1318</span><a id="line.1318">   * Mount a loaded XLIFF file for use during render. Messages mentioned in the XLIFF file and in the corresponding</a>
+<span class="sourceLineNo">1319</span><a id="line.1319">   * template are replaced as the renderer proceeds through the template. Passing {@link Optional#empty()} clears any</a>
+<span class="sourceLineNo">1320</span><a id="line.1320">   * active translation file.</a>
+<span class="sourceLineNo">1321</span><a id="line.1321">   *</a>
+<span class="sourceLineNo">1322</span><a id="line.1322">   * @param xliffFile Translations file to apply.</a>
+<span class="sourceLineNo">1323</span><a id="line.1323">   * @return Current page context manager (for call chain-ability).</a>
+<span class="sourceLineNo">1324</span><a id="line.1324">   */</a>
+<span class="sourceLineNo">1325</span><a id="line.1325">  public @Nonnull PageContextManager messagesFile(@Nonnull Optional&lt;File&gt; xliffFile) {</a>
+<span class="sourceLineNo">1326</span><a id="line.1326">    this.translationsFile = xliffFile;</a>
+<span class="sourceLineNo">1327</span><a id="line.1327">    return this;</a>
+<span class="sourceLineNo">1328</span><a id="line.1328">  }</a>
+<span class="sourceLineNo">1329</span><a id="line.1329"></a>
+<span class="sourceLineNo">1330</span><a id="line.1330">  /**</a>
+<span class="sourceLineNo">1331</span><a id="line.1331">   * Return the current translation file that will be applied during the next render routine, if available.</a>
+<span class="sourceLineNo">1332</span><a id="line.1332">   *</a>
+<span class="sourceLineNo">1333</span><a id="line.1333">   * @return Translation file, or {@link Optional#empty()}.</a>
+<span class="sourceLineNo">1334</span><a id="line.1334">   */</a>
+<span class="sourceLineNo">1335</span><a id="line.1335">  @Override</a>
+<span class="sourceLineNo">1336</span><a id="line.1336">  public @Nonnull Optional&lt;File&gt; messagesFile() {</a>
+<span class="sourceLineNo">1337</span><a id="line.1337">    return this.translationsFile;</a>
+<span class="sourceLineNo">1338</span><a id="line.1338">  }</a>
+<span class="sourceLineNo">1339</span><a id="line.1339"></a>
+<span class="sourceLineNo">1340</span><a id="line.1340">  /**</a>
+<span class="sourceLineNo">1341</span><a id="line.1341">   * Load and mount a referenced XLIFF resource for use during render. Messages mentioned in the XLIFF resource and in</a>
+<span class="sourceLineNo">1342</span><a id="line.1342">   * the corresponding template are replaced as the renderer proceeds through the template.</a>
+<span class="sourceLineNo">1343</span><a id="line.1343">   *</a>
+<span class="sourceLineNo">1344</span><a id="line.1344">   * @param xliffData Translations data to apply.</a>
+<span class="sourceLineNo">1345</span><a id="line.1345">   * @return Current page context manager (for call chain-ability).</a>
+<span class="sourceLineNo">1346</span><a id="line.1346">   */</a>
+<span class="sourceLineNo">1347</span><a id="line.1347">  public @Nonnull PageContextManager messagesResource(@Nonnull Optional&lt;URL&gt; xliffData) {</a>
+<span class="sourceLineNo">1348</span><a id="line.1348">    this.translationsResource = xliffData;</a>
+<span class="sourceLineNo">1349</span><a id="line.1349">    return this;</a>
+<span class="sourceLineNo">1350</span><a id="line.1350">  }</a>
+<span class="sourceLineNo">1351</span><a id="line.1351"></a>
+<span class="sourceLineNo">1352</span><a id="line.1352">  /**</a>
+<span class="sourceLineNo">1353</span><a id="line.1353">   * Return the current translation resource that will be applied during the next render routine, if available.</a>
+<span class="sourceLineNo">1354</span><a id="line.1354">   *</a>
+<span class="sourceLineNo">1355</span><a id="line.1355">   * @return Translation resource, or {@link Optional#empty()}.</a>
+<span class="sourceLineNo">1356</span><a id="line.1356">   */</a>
+<span class="sourceLineNo">1357</span><a id="line.1357">  @Override</a>
+<span class="sourceLineNo">1358</span><a id="line.1358">  public @Nonnull Optional&lt;URL&gt; messagesResource() {</a>
+<span class="sourceLineNo">1359</span><a id="line.1359">    return this.translationsResource;</a>
+<span class="sourceLineNo">1360</span><a id="line.1360">  }</a>
+<span class="sourceLineNo">1361</span><a id="line.1361"></a>
+<span class="sourceLineNo">1362</span><a id="line.1362">  /**</a>
+<span class="sourceLineNo">1363</span><a id="line.1363">   * Mount a pre-fabricated Soy message bundle for translation use during render. Messages mentioned in the bundle and</a>
+<span class="sourceLineNo">1364</span><a id="line.1364">   * in the corresponding template are replaced as the renderer proceeds through the template.</a>
+<span class="sourceLineNo">1365</span><a id="line.1365">   *</a>
+<span class="sourceLineNo">1366</span><a id="line.1366">   * @param soyMsgBundle Soy message bundle to apply.</a>
+<span class="sourceLineNo">1367</span><a id="line.1367">   * @return Current page context manager (for call chain-ability).</a>
+<span class="sourceLineNo">1368</span><a id="line.1368">   */</a>
+<span class="sourceLineNo">1369</span><a id="line.1369">  public @Nonnull PageContextManager messageBundle(@Nonnull Optional&lt;SoyMsgBundle&gt; soyMsgBundle) {</a>
+<span class="sourceLineNo">1370</span><a id="line.1370">    this.messageBundle = soyMsgBundle;</a>
+<span class="sourceLineNo">1371</span><a id="line.1371">    return this;</a>
+<span class="sourceLineNo">1372</span><a id="line.1372">  }</a>
+<span class="sourceLineNo">1373</span><a id="line.1373"></a>
+<span class="sourceLineNo">1374</span><a id="line.1374">  /**</a>
+<span class="sourceLineNo">1375</span><a id="line.1375">   * Return the current pre-fabricated Soy message bundle that will be applied during the next render routine, if</a>
+<span class="sourceLineNo">1376</span><a id="line.1376">   * available.</a>
+<span class="sourceLineNo">1377</span><a id="line.1377">   *</a>
+<span class="sourceLineNo">1378</span><a id="line.1378">   * @return Soy message bundle, or {@link Optional#empty()}.</a>
+<span class="sourceLineNo">1379</span><a id="line.1379">   */</a>
+<span class="sourceLineNo">1380</span><a id="line.1380">  @Override</a>
+<span class="sourceLineNo">1381</span><a id="line.1381">  public @Nonnull Optional&lt;SoyMsgBundle&gt; messageBundle() throws IOException {</a>
+<span class="sourceLineNo">1382</span><a id="line.1382">    if (this.messageBundle.isPresent()) {</a>
+<span class="sourceLineNo">1383</span><a id="line.1383">      return this.messageBundle;</a>
+<span class="sourceLineNo">1384</span><a id="line.1384">    }</a>
+<span class="sourceLineNo">1385</span><a id="line.1385">    return PageRender.super.messageBundle();</a>
+<span class="sourceLineNo">1386</span><a id="line.1386">  }</a>
+<span class="sourceLineNo">1387</span><a id="line.1387"></a>
+<span class="sourceLineNo">1388</span><a id="line.1388">  // -- Delegate Rendering -- //</a>
+<span class="sourceLineNo">1389</span><a id="line.1389"></a>
+<span class="sourceLineNo">1390</span><a id="line.1390">  /**</a>
+<span class="sourceLineNo">1391</span><a id="line.1391">   * Fetch the active delegate package, or return {@link Optional#empty()}. Either a {@link Predicate} is returned which</a>
+<span class="sourceLineNo">1392</span><a id="line.1392">   * is invoked to match the delegate package, or {@link Optional#empty()} indicates that no package should be available</a>
+<span class="sourceLineNo">1393</span><a id="line.1393">   * (or that defaults should be used, where available).</a>
+<span class="sourceLineNo">1394</span><a id="line.1394">   *</a>
+<span class="sourceLineNo">1395</span><a id="line.1395">   * @return Returns the active predicate, as applicable.</a>
+<span class="sourceLineNo">1396</span><a id="line.1396">   */</a>
+<span class="sourceLineNo">1397</span><a id="line.1397">  @Override</a>
+<span class="sourceLineNo">1398</span><a id="line.1398">  public @Nonnull Optional&lt;Predicate&lt;String&gt;&gt; delegatePackage() {</a>
+<span class="sourceLineNo">1399</span><a id="line.1399">    return this.delegatePredicate;</a>
+<span class="sourceLineNo">1400</span><a id="line.1400">  }</a>
+<span class="sourceLineNo">1401</span><a id="line.1401"></a>
+<span class="sourceLineNo">1402</span><a id="line.1402">  /**</a>
+<span class="sourceLineNo">1403</span><a id="line.1403">   * Set the active delegate package name, wrapped in an implied predicate which filters explicitly against the provided</a>
+<span class="sourceLineNo">1404</span><a id="line.1404">   * name value. If the referenced Soy package is included in the build, it should be selected explicitly as the active</a>
+<span class="sourceLineNo">1405</span><a id="line.1405">   * package during render.</a>
+<span class="sourceLineNo">1406</span><a id="line.1406">   *</a>
+<span class="sourceLineNo">1407</span><a id="line.1407">   * &lt;p&gt;Calling this method overwrites any current delegate package.&lt;/p&gt;</a>
+<span class="sourceLineNo">1408</span><a id="line.1408">   *</a>
+<span class="sourceLineNo">1409</span><a id="line.1409">   * @param packageName Package name to match for delegation.</a>
+<span class="sourceLineNo">1410</span><a id="line.1410">   * @return Current page context manager (for call chain-ability).</a>
+<span class="sourceLineNo">1411</span><a id="line.1411">   */</a>
+<span class="sourceLineNo">1412</span><a id="line.1412">  public @Nonnull PageContextManager delegatePackage(@Nonnull String packageName) {</a>
+<span class="sourceLineNo">1413</span><a id="line.1413">    this.delegatePredicate = Optional.of(packageName::equals);</a>
+<span class="sourceLineNo">1414</span><a id="line.1414">    return this;</a>
+<span class="sourceLineNo">1415</span><a id="line.1415">  }</a>
+<span class="sourceLineNo">1416</span><a id="line.1416"></a>
+<span class="sourceLineNo">1417</span><a id="line.1417">  /**</a>
+<span class="sourceLineNo">1418</span><a id="line.1418">   * Set the active delegate package predicate directly. This predicate is invoked to match a delegate package at</a>
+<span class="sourceLineNo">1419</span><a id="line.1419">   * runtime, if and when one is needed.</a>
+<span class="sourceLineNo">1420</span><a id="line.1420">   *</a>
+<span class="sourceLineNo">1421</span><a id="line.1421">   * &lt;p&gt;Calling this method overwrites any current delegate package.&lt;/p&gt;</a>
+<span class="sourceLineNo">1422</span><a id="line.1422">   *</a>
+<span class="sourceLineNo">1423</span><a id="line.1423">   * @param packagePredicate Predicate to match packages.</a>
+<span class="sourceLineNo">1424</span><a id="line.1424">   * @return Current page context manager (for call chain-ability).</a>
+<span class="sourceLineNo">1425</span><a id="line.1425">   */</a>
+<span class="sourceLineNo">1426</span><a id="line.1426">  public @Nonnull PageContextManager delegatePackage(@Nonnull Predicate&lt;String&gt; packagePredicate) {</a>
+<span class="sourceLineNo">1427</span><a id="line.1427">    this.delegatePredicate = Optional.of(packagePredicate);</a>
+<span class="sourceLineNo">1428</span><a id="line.1428">    return this;</a>
+<span class="sourceLineNo">1429</span><a id="line.1429">  }</a>
+<span class="sourceLineNo">1430</span><a id="line.1430"></a>
+<span class="sourceLineNo">1431</span><a id="line.1431">  /**</a>
+<span class="sourceLineNo">1432</span><a id="line.1432">   * Clear any current delegate package.</a>
+<span class="sourceLineNo">1433</span><a id="line.1433">   *</a>
+<span class="sourceLineNo">1434</span><a id="line.1434">   * @return Current page context manager (for call chain-ability).</a>
+<span class="sourceLineNo">1435</span><a id="line.1435">   */</a>
+<span class="sourceLineNo">1436</span><a id="line.1436">  public @Nonnull PageContextManager clearDelegatePackage() {</a>
+<span class="sourceLineNo">1437</span><a id="line.1437">    this.delegatePredicate = Optional.empty();</a>
+<span class="sourceLineNo">1438</span><a id="line.1438">    return this;</a>
+<span class="sourceLineNo">1439</span><a id="line.1439">  }</a>
+<span class="sourceLineNo">1440</span><a id="line.1440"></a>
+<span class="sourceLineNo">1441</span><a id="line.1441">  // -- Builder Interface (Response) -- //</a>
+<span class="sourceLineNo">1442</span><a id="line.1442"></a>
+<span class="sourceLineNo">1443</span><a id="line.1443">  /**</a>
+<span class="sourceLineNo">1444</span><a id="line.1444">   * Affix an arbitrary HTTP header to the response eventually produced by this page context, assuming no errors occur.</a>
+<span class="sourceLineNo">1445</span><a id="line.1445">   * If an error occurs while rendering, an error page is served &lt;b&gt;without&lt;/b&gt; the additional header (unless</a>
+<span class="sourceLineNo">1446</span><a id="line.1446">   * {@code force} is passed via the companion method to this one).</a>
+<span class="sourceLineNo">1447</span><a id="line.1447">   *</a>
+<span class="sourceLineNo">1448</span><a id="line.1448">   * @param name Name of the header value to affix to the response.</a>
+<span class="sourceLineNo">1449</span><a id="line.1449">   * @param value Value of the header to affix to the response, at {@code name}.</a>
+<span class="sourceLineNo">1450</span><a id="line.1450">   * @return Current page context manager (for call chain-ability).</a>
+<span class="sourceLineNo">1451</span><a id="line.1451">   */</a>
+<span class="sourceLineNo">1452</span><a id="line.1452">  @CanIgnoreReturnValue</a>
+<span class="sourceLineNo">1453</span><a id="line.1453">  public @Nonnull PageContextManager header(@Nonnull String name, @Nonnull String value) {</a>
+<span class="sourceLineNo">1454</span><a id="line.1454">    return this.header(name, value, false);</a>
+<span class="sourceLineNo">1455</span><a id="line.1455">  }</a>
+<span class="sourceLineNo">1456</span><a id="line.1456"></a>
+<span class="sourceLineNo">1457</span><a id="line.1457">  /**</a>
+<span class="sourceLineNo">1458</span><a id="line.1458">   * Affix an arbitrary HTTP header to the response eventually produced by this page context, assuming no errors occur.</a>
+<span class="sourceLineNo">1459</span><a id="line.1459">   * If an error occurs while rendering, an error page is served &lt;b&gt;without&lt;/b&gt; the additional header (unless</a>
+<span class="sourceLineNo">1460</span><a id="line.1460">   * {@code force} is passed via the companion method to this one).</a>
+<span class="sourceLineNo">1461</span><a id="line.1461">   *</a>
+<span class="sourceLineNo">1462</span><a id="line.1462">   * @param name Name of the header value to affix to the response.</a>
+<span class="sourceLineNo">1463</span><a id="line.1463">   * @param value Value of the header to affix to the response, at {@code name}.</a>
+<span class="sourceLineNo">1464</span><a id="line.1464">   * @param force Whether to force the header to be applied, even when an error occurs.</a>
+<span class="sourceLineNo">1465</span><a id="line.1465">   * @return Current page context manager (for call chain-ability).</a>
+<span class="sourceLineNo">1466</span><a id="line.1466">   */</a>
+<span class="sourceLineNo">1467</span><a id="line.1467">  @CanIgnoreReturnValue</a>
+<span class="sourceLineNo">1468</span><a id="line.1468">  public @Nonnull PageContextManager header(@Nonnull String name, @Nonnull String value, @Nonnull Boolean force) {</a>
+<span class="sourceLineNo">1469</span><a id="line.1469">    if (HttpHeaders.CONTENT_LANGUAGE.equals(name))</a>
+<span class="sourceLineNo">1470</span><a id="line.1470">      throw new IllegalArgumentException("Please use `language()` instead of setting a `Content-Language` header.");</a>
+<span class="sourceLineNo">1471</span><a id="line.1471">    if (HttpHeaders.VARY.equals(name))</a>
+<span class="sourceLineNo">1472</span><a id="line.1472">      throw new IllegalArgumentException("Please use `vary()` instead of setting a `Vary` header.");</a>
+<span class="sourceLineNo">1473</span><a id="line.1473">    if (HttpHeaders.ETAG.equals(name))</a>
+<span class="sourceLineNo">1474</span><a id="line.1474">      throw new IllegalArgumentException("Please use `enableETags()` instead of setting an `ETag` header.");</a>
+<span class="sourceLineNo">1475</span><a id="line.1475">    if (ACCEPT_CH_HEADER.equals(name))</a>
+<span class="sourceLineNo">1476</span><a id="line.1476">      throw new IllegalArgumentException("Please use `clientHints()` instead of setting an `Accept-CH` header.");</a>
+<span class="sourceLineNo">1477</span><a id="line.1477">    this.context.addHeader(Context.ResponseHeader.newBuilder()</a>
+<span class="sourceLineNo">1478</span><a id="line.1478">      .setName(name)</a>
+<span class="sourceLineNo">1479</span><a id="line.1479">      .setValue(value)</a>
+<span class="sourceLineNo">1480</span><a id="line.1480">      .setForce(force));</a>
+<span class="sourceLineNo">1481</span><a id="line.1481">    return this;</a>
+<span class="sourceLineNo">1482</span><a id="line.1482">  }</a>
+<span class="sourceLineNo">1483</span><a id="line.1483"></a>
+<span class="sourceLineNo">1484</span><a id="line.1484">  /**</a>
+<span class="sourceLineNo">1485</span><a id="line.1485">   * Enable a dynamic {@code ETag} header value, which is computed from the rendered content produced by this page</a>
+<span class="sourceLineNo">1486</span><a id="line.1486">   * context record.</a>
+<span class="sourceLineNo">1487</span><a id="line.1487">   *</a>
+<span class="sourceLineNo">1488</span><a id="line.1488">   * @param enableETags Whether to enable the {@code ETag} header.</a>
+<span class="sourceLineNo">1489</span><a id="line.1489">   * @return Current page context manager (for call chain-ability).</a>
+<span class="sourceLineNo">1490</span><a id="line.1490">   */</a>
+<span class="sourceLineNo">1491</span><a id="line.1491">  @CanIgnoreReturnValue</a>
+<span class="sourceLineNo">1492</span><a id="line.1492">  @SuppressWarnings("WeakerAccess")</a>
+<span class="sourceLineNo">1493</span><a id="line.1493">  public @Nonnull PageContextManager enableETags(@Nonnull Boolean enableETags) {</a>
+<span class="sourceLineNo">1494</span><a id="line.1494">    this.context.setEtag(Context.DynamicETag.newBuilder()</a>
+<span class="sourceLineNo">1495</span><a id="line.1495">      .setEnabled(enableETags)</a>
+<span class="sourceLineNo">1496</span><a id="line.1496">      .setStrong(true));</a>
+<span class="sourceLineNo">1497</span><a id="line.1497">    return this;</a>
+<span class="sourceLineNo">1498</span><a id="line.1498">  }</a>
+<span class="sourceLineNo">1499</span><a id="line.1499"></a>
+<span class="sourceLineNo">1500</span><a id="line.1500">  /**</a>
+<span class="sourceLineNo">1501</span><a id="line.1501">   * Enable the provided set of server-indicated client hint types. If the client supports any of the indicated types,</a>
+<span class="sourceLineNo">1502</span><a id="line.1502">   * it will enclose matching client-hints accordingly, on subsequent requests for resources. If an empty optional</a>
+<span class="sourceLineNo">1503</span><a id="line.1503">   * ({@link Optional#empty()}) is passed, the current set of client hints are cleared. This method is additive.</a>
+<span class="sourceLineNo">1504</span><a id="line.1504">   *</a>
+<span class="sourceLineNo">1505</span><a id="line.1505">   * @param hints Client hints to indicate as supported by the server.</a>
+<span class="sourceLineNo">1506</span><a id="line.1506">   * @return Current page context manager (for call chain-ability).</a>
+<span class="sourceLineNo">1507</span><a id="line.1507">   */</a>
+<span class="sourceLineNo">1508</span><a id="line.1508">  @CanIgnoreReturnValue</a>
+<span class="sourceLineNo">1509</span><a id="line.1509">  @SuppressWarnings("WeakerAccess")</a>
+<span class="sourceLineNo">1510</span><a id="line.1510">  public @Nonnull PageContextManager supportedClientHints(Optional&lt;Iterable&lt;ClientHint&gt;&gt; hints,</a>
+<span class="sourceLineNo">1511</span><a id="line.1511">                                                          @Nonnull Optional&lt;Long&gt; ttl) {</a>
+<span class="sourceLineNo">1512</span><a id="line.1512">    if (hints.isPresent()) {</a>
+<span class="sourceLineNo">1513</span><a id="line.1513">      // add hints to indicated set</a>
+<span class="sourceLineNo">1514</span><a id="line.1514">      this.context.getHintsBuilder().addAllSupported(hints.get());</a>
+<span class="sourceLineNo">1515</span><a id="line.1515">      ttl.ifPresent(aLong -&gt; this.context.getHintsBuilder().setLifetime(aLong));</a>
+<span class="sourceLineNo">1516</span><a id="line.1516">    } else {</a>
+<span class="sourceLineNo">1517</span><a id="line.1517">      // if an empty optional is passed, clear the current set</a>
+<span class="sourceLineNo">1518</span><a id="line.1518">      this.context.getHintsBuilder().clearIndicated();</a>
+<span class="sourceLineNo">1519</span><a id="line.1519">    }</a>
+<span class="sourceLineNo">1520</span><a id="line.1520">    return this;</a>
+<span class="sourceLineNo">1521</span><a id="line.1521">  }</a>
+<span class="sourceLineNo">1522</span><a id="line.1522"></a>
+<span class="sourceLineNo">1523</span><a id="line.1523">  /**</a>
+<span class="sourceLineNo">1524</span><a id="line.1524">   * Enable the provided set of server-indicated client hint types. This method is additive. If the client supports any</a>
+<span class="sourceLineNo">1525</span><a id="line.1525">   * of the indicated types, it will enclose matching client-hints accordingly, on subsequent requests for resources.</a>
+<span class="sourceLineNo">1526</span><a id="line.1526">   *</a>
+<span class="sourceLineNo">1527</span><a id="line.1527">   * @param hints Client hints to indicate as supported by the server.</a>
+<span class="sourceLineNo">1528</span><a id="line.1528">   * @return Current page context manager (for call chain-ability).</a>
+<span class="sourceLineNo">1529</span><a id="line.1529">   */</a>
+<span class="sourceLineNo">1530</span><a id="line.1530">  @CanIgnoreReturnValue</a>
+<span class="sourceLineNo">1531</span><a id="line.1531">  public @Nonnull PageContextManager supportedClientHints(ClientHint... hints) {</a>
+<span class="sourceLineNo">1532</span><a id="line.1532">    return supportedClientHints(Optional.of(Arrays.asList(hints)), Optional.empty());</a>
+<span class="sourceLineNo">1533</span><a id="line.1533">  }</a>
+<span class="sourceLineNo">1534</span><a id="line.1534"></a>
+<span class="sourceLineNo">1535</span><a id="line.1535">  /**</a>
+<span class="sourceLineNo">1536</span><a id="line.1536">   * Set the value to send back in this response's {@code Content-Language} header. If an {@link Optional#empty()}</a>
+<span class="sourceLineNo">1537</span><a id="line.1537">   * instance is passed, no header is sent.</a>
+<span class="sourceLineNo">1538</span><a id="line.1538">   *</a>
+<span class="sourceLineNo">1539</span><a id="line.1539">   * @param language Language, or empty value, to send.</a>
+<span class="sourceLineNo">1540</span><a id="line.1540">   * @return Current page context manager (for call chain-ability).</a>
+<span class="sourceLineNo">1541</span><a id="line.1541">   */</a>
+<span class="sourceLineNo">1542</span><a id="line.1542">  @CanIgnoreReturnValue</a>
+<span class="sourceLineNo">1543</span><a id="line.1543">  public @Nonnull PageContextManager language(@Nonnull Optional&lt;String&gt; language) {</a>
+<span class="sourceLineNo">1544</span><a id="line.1544">    if (language.isPresent()) {</a>
+<span class="sourceLineNo">1545</span><a id="line.1545">      this.context.setLanguage(language.get());</a>
+<span class="sourceLineNo">1546</span><a id="line.1546">    } else {</a>
+<span class="sourceLineNo">1547</span><a id="line.1547">      this.context.clearLanguage();</a>
+<span class="sourceLineNo">1548</span><a id="line.1548">    }</a>
+<span class="sourceLineNo">1549</span><a id="line.1549">    return this;</a>
+<span class="sourceLineNo">1550</span><a id="line.1550">  }</a>
+<span class="sourceLineNo">1551</span><a id="line.1551"></a>
+<span class="sourceLineNo">1552</span><a id="line.1552">  /**</a>
+<span class="sourceLineNo">1553</span><a id="line.1553">   * Return the language value set for the current render routine - i.e. bound to the current request cycle. This is</a>
+<span class="sourceLineNo">1554</span><a id="line.1554">   * often driven by the user's browser settings.</a>
+<span class="sourceLineNo">1555</span><a id="line.1555">   *</a>
+<span class="sourceLineNo">1556</span><a id="line.1556">   * @return Current language for this request cycle.</a>
+<span class="sourceLineNo">1557</span><a id="line.1557">   */</a>
+<span class="sourceLineNo">1558</span><a id="line.1558">  public @Nonnull Optional&lt;String&gt; language() {</a>
+<span class="sourceLineNo">1559</span><a id="line.1559">    if (this.context.getLanguage().length() &gt; 0) {</a>
+<span class="sourceLineNo">1560</span><a id="line.1560">      return Optional.of(this.context.getLanguage());</a>
+<span class="sourceLineNo">1561</span><a id="line.1561">    }</a>
+<span class="sourceLineNo">1562</span><a id="line.1562">    return Optional.empty();</a>
+<span class="sourceLineNo">1563</span><a id="line.1563">  }</a>
+<span class="sourceLineNo">1564</span><a id="line.1564"></a>
+<span class="sourceLineNo">1565</span><a id="line.1565">  /**</a>
+<span class="sourceLineNo">1566</span><a id="line.1566">   * Append an HTTP request header considered as part of the {@code Vary} header in the response. These values are de-</a>
+<span class="sourceLineNo">1567</span><a id="line.1567">   * duplicated before joining and affixing.</a>
+<span class="sourceLineNo">1568</span><a id="line.1568">   *</a>
+<span class="sourceLineNo">1569</span><a id="line.1569">   * @param variance HTTP request header which causes the associated response to vary.</a>
+<span class="sourceLineNo">1570</span><a id="line.1570">   * @return Current page context manager (for call chain-ability).</a>
+<span class="sourceLineNo">1571</span><a id="line.1571">   */</a>
+<span class="sourceLineNo">1572</span><a id="line.1572">  @CanIgnoreReturnValue</a>
+<span class="sourceLineNo">1573</span><a id="line.1573">  public @Nonnull PageContextManager vary(@Nonnull String variance) {</a>
+<span class="sourceLineNo">1574</span><a id="line.1574">    return this.vary(Collections.singleton(variance));</a>
+<span class="sourceLineNo">1575</span><a id="line.1575">  }</a>
+<span class="sourceLineNo">1576</span><a id="line.1576"></a>
+<span class="sourceLineNo">1577</span><a id="line.1577">  /**</a>
+<span class="sourceLineNo">1578</span><a id="line.1578">   * Append an HTTP request header considered as part of the {@code Vary} header in the response. These values are de-</a>
+<span class="sourceLineNo">1579</span><a id="line.1579">   * duplicated before joining and affixing.</a>
+<span class="sourceLineNo">1580</span><a id="line.1580">   *</a>
+<span class="sourceLineNo">1581</span><a id="line.1581">   * @param variance HTTP request header which causes the associated response to vary.</a>
+<span class="sourceLineNo">1582</span><a id="line.1582">   * @return Current page context manager (for call chain-ability).</a>
+<span class="sourceLineNo">1583</span><a id="line.1583">   */</a>
+<span class="sourceLineNo">1584</span><a id="line.1584">  @CanIgnoreReturnValue</a>
+<span class="sourceLineNo">1585</span><a id="line.1585">  public @Nonnull PageContextManager vary(@Nonnull String... variance) {</a>
+<span class="sourceLineNo">1586</span><a id="line.1586">    return this.vary(Arrays.asList(variance));</a>
+<span class="sourceLineNo">1587</span><a id="line.1587">  }</a>
+<span class="sourceLineNo">1588</span><a id="line.1588"></a>
+<span class="sourceLineNo">1589</span><a id="line.1589">  /**</a>
+<span class="sourceLineNo">1590</span><a id="line.1590">   * Append an HTTP request header considered as part of the {@code Vary} header in the response. These values are de-</a>
+<span class="sourceLineNo">1591</span><a id="line.1591">   * duplicated before joining and affixing.</a>
+<span class="sourceLineNo">1592</span><a id="line.1592">   *</a>
+<span class="sourceLineNo">1593</span><a id="line.1593">   * @param variance HTTP request header which causes the associated response to vary.</a>
+<span class="sourceLineNo">1594</span><a id="line.1594">   * @return Current page context manager (for call chain-ability).</a>
+<span class="sourceLineNo">1595</span><a id="line.1595">   */</a>
+<span class="sourceLineNo">1596</span><a id="line.1596">  @CanIgnoreReturnValue</a>
+<span class="sourceLineNo">1597</span><a id="line.1597">  @SuppressWarnings("WeakerAccess")</a>
+<span class="sourceLineNo">1598</span><a id="line.1598">  public @Nonnull PageContextManager vary(@Nonnull Iterable&lt;String&gt; variance) {</a>
+<span class="sourceLineNo">1599</span><a id="line.1599">    variance.forEach((segment) -&gt; {</a>
+<span class="sourceLineNo">1600</span><a id="line.1600">      if (this.varySegments.add(segment))</a>
+<span class="sourceLineNo">1601</span><a id="line.1601">        this.context.addVary(segment);</a>
+<span class="sourceLineNo">1602</span><a id="line.1602">    });</a>
+<span class="sourceLineNo">1603</span><a id="line.1603">    return this;</a>
+<span class="sourceLineNo">1604</span><a id="line.1604">  }</a>
+<span class="sourceLineNo">1605</span><a id="line.1605"></a>
+<span class="sourceLineNo">1606</span><a id="line.1606">  /**</a>
+<span class="sourceLineNo">1607</span><a id="line.1607">   * Set the specified {@code prefix} as the Content Distribution Network hostname prefix to use when rendering asset</a>
+<span class="sourceLineNo">1608</span><a id="line.1608">   * links for this HTTP cycle. &lt;b&gt;Do not use a user-provided value for this.&lt;/b&gt; If no prefix is set, or one is cleared</a>
+<span class="sourceLineNo">1609</span><a id="line.1609">   * by passing {@link Optional#empty()}, configuration will be read and used instead.</a>
+<span class="sourceLineNo">1610</span><a id="line.1610">   *</a>
+<span class="sourceLineNo">1611</span><a id="line.1611">   * @param prefix Prefix to apply as a CDN hostname for static assets.</a>
+<span class="sourceLineNo">1612</span><a id="line.1612">   * @return Current page context manager (for call chain-ability).</a>
+<span class="sourceLineNo">1613</span><a id="line.1613">   */</a>
+<span class="sourceLineNo">1614</span><a id="line.1614">  @CanIgnoreReturnValue</a>
+<span class="sourceLineNo">1615</span><a id="line.1615">  @SuppressWarnings("WeakerAccess")</a>
+<span class="sourceLineNo">1616</span><a id="line.1616">  public @Nonnull PageContextManager cdnPrefix(@Nonnull Optional&lt;String&gt; prefix) {</a>
+<span class="sourceLineNo">1617</span><a id="line.1617">    this.cdnPrefix = prefix;</a>
+<span class="sourceLineNo">1618</span><a id="line.1618">    if (prefix.isPresent()) {</a>
+<span class="sourceLineNo">1619</span><a id="line.1619">      TrustedResourceUrlProto proto = this.trustedResource(URI.create(prefix.get()));</a>
+<span class="sourceLineNo">1620</span><a id="line.1620">      this.context.setCdnPrefix(proto);</a>
+<span class="sourceLineNo">1621</span><a id="line.1621">      this.injected.put(CDN_PREFIX_IJ_PROP, proto);</a>
+<span class="sourceLineNo">1622</span><a id="line.1622">    } else {</a>
+<span class="sourceLineNo">1623</span><a id="line.1623">      this.context.clearCdnPrefix();</a>
+<span class="sourceLineNo">1624</span><a id="line.1624">      this.injected.remove(CDN_PREFIX_IJ_PROP);</a>
+<span class="sourceLineNo">1625</span><a id="line.1625">    }</a>
+<span class="sourceLineNo">1626</span><a id="line.1626">    return this;</a>
+<span class="sourceLineNo">1627</span><a id="line.1627">  }</a>
+<span class="sourceLineNo">1628</span><a id="line.1628"></a>
+<span class="sourceLineNo">1629</span><a id="line.1629">  /**</a>
+<span class="sourceLineNo">1630</span><a id="line.1630">   * Retrieve the currently-configured CDN prefix value, if one exists. If none can be located, return an empty optional</a>
+<span class="sourceLineNo">1631</span><a id="line.1631">   * via {@link Optional#empty()}.</a>
+<span class="sourceLineNo">1632</span><a id="line.1632">   *</a>
+<span class="sourceLineNo">1633</span><a id="line.1633">   * @return Current CDN prefix value.</a>
+<span class="sourceLineNo">1634</span><a id="line.1634">   */</a>
+<span class="sourceLineNo">1635</span><a id="line.1635">  @SuppressWarnings("WeakerAccess")</a>
+<span class="sourceLineNo">1636</span><a id="line.1636">  public @Nonnull Optional&lt;String&gt; getCdnPrefix() {</a>
+<span class="sourceLineNo">1637</span><a id="line.1637">    return this.cdnPrefix;</a>
+<span class="sourceLineNo">1638</span><a id="line.1638">  }</a>
+<span class="sourceLineNo">1639</span><a id="line.1639"></a>
+<span class="sourceLineNo">1640</span><a id="line.1640">  /**</a>
+<span class="sourceLineNo">1641</span><a id="line.1641">   * Inject the specified list of hosts as DNS records to prefetch from the browser. There is no guarantee made by the</a>
+<span class="sourceLineNo">1642</span><a id="line.1642">   * browser that the records will be fetched, it's just a performance hint.</a>
+<span class="sourceLineNo">1643</span><a id="line.1643">   *</a>
+<span class="sourceLineNo">1644</span><a id="line.1644">   * @param hosts Hosts to add to the DNS prefetch list.</a>
+<span class="sourceLineNo">1645</span><a id="line.1645">   * @return Current page context manager (for call chain-ability).</a>
+<span class="sourceLineNo">1646</span><a id="line.1646">   */</a>
+<span class="sourceLineNo">1647</span><a id="line.1647">  @CanIgnoreReturnValue</a>
+<span class="sourceLineNo">1648</span><a id="line.1648">  @SuppressWarnings("WeakerAccess")</a>
+<span class="sourceLineNo">1649</span><a id="line.1649">  public @Nonnull PageContextManager dnsPrefetch(Iterable&lt;String&gt; hosts) {</a>
+<span class="sourceLineNo">1650</span><a id="line.1650">    hosts.forEach(this.context::addDnsPrefetch);</a>
+<span class="sourceLineNo">1651</span><a id="line.1651">    return this;</a>
+<span class="sourceLineNo">1652</span><a id="line.1652">  }</a>
+<span class="sourceLineNo">1653</span><a id="line.1653"></a>
+<span class="sourceLineNo">1654</span><a id="line.1654">  /**</a>
+<span class="sourceLineNo">1655</span><a id="line.1655">   * Inject the specified DNS hostname(s) as records to prefetch from the browser. There is no guarantee made by the</a>
+<span class="sourceLineNo">1656</span><a id="line.1656">   * browser that the records will be fetched, it's just a performance hint.</a>
+<span class="sourceLineNo">1657</span><a id="line.1657">   *</a>
+<span class="sourceLineNo">1658</span><a id="line.1658">   * @param hosts Hosts to add to the DNS prefetch list.</a>
+<span class="sourceLineNo">1659</span><a id="line.1659">   * @return Current page context manager (for call chain-ability).</a>
+<span class="sourceLineNo">1660</span><a id="line.1660">   */</a>
+<span class="sourceLineNo">1661</span><a id="line.1661">  @CanIgnoreReturnValue</a>
+<span class="sourceLineNo">1662</span><a id="line.1662">  @SuppressWarnings("WeakerAccess")</a>
+<span class="sourceLineNo">1663</span><a id="line.1663">  public @Nonnull PageContextManager dnsPrefetch(String... hosts) {</a>
+<span class="sourceLineNo">1664</span><a id="line.1664">    return dnsPrefetch(Arrays.asList(hosts));</a>
+<span class="sourceLineNo">1665</span><a id="line.1665">  }</a>
+<span class="sourceLineNo">1666</span><a id="line.1666"></a>
+<span class="sourceLineNo">1667</span><a id="line.1667">  /**</a>
+<span class="sourceLineNo">1668</span><a id="line.1668">   * Inject the specified list of hosts as pre-connect hints for the browser. There is no guarantee made by the browser</a>
+<span class="sourceLineNo">1669</span><a id="line.1669">   * that the connections will be established, it's just a performance hint.</a>
+<span class="sourceLineNo">1670</span><a id="line.1670">   *</a>
+<span class="sourceLineNo">1671</span><a id="line.1671">   * @param hosts Hosts to add to the server pre-connection list.</a>
+<span class="sourceLineNo">1672</span><a id="line.1672">   * @return Current page context manager (for call chain-ability).</a>
+<span class="sourceLineNo">1673</span><a id="line.1673">   */</a>
+<span class="sourceLineNo">1674</span><a id="line.1674">  @CanIgnoreReturnValue</a>
+<span class="sourceLineNo">1675</span><a id="line.1675">  @SuppressWarnings("WeakerAccess")</a>
+<span class="sourceLineNo">1676</span><a id="line.1676">  public @Nonnull PageContextManager preconnect(Iterable&lt;String&gt; hosts) {</a>
+<span class="sourceLineNo">1677</span><a id="line.1677">    hosts.forEach(this.context::addPreconnect);</a>
+<span class="sourceLineNo">1678</span><a id="line.1678">    return this;</a>
+<span class="sourceLineNo">1679</span><a id="line.1679">  }</a>
+<span class="sourceLineNo">1680</span><a id="line.1680"></a>
+<span class="sourceLineNo">1681</span><a id="line.1681">  /**</a>
+<span class="sourceLineNo">1682</span><a id="line.1682">   * Inject the specified list of hosts as pre-connect hints for the browser. There is no guarantee made by the browser</a>
+<span class="sourceLineNo">1683</span><a id="line.1683">   * that the connections will be established, it's just a performance hint.</a>
+<span class="sourceLineNo">1684</span><a id="line.1684">   *</a>
+<span class="sourceLineNo">1685</span><a id="line.1685">   * @param hosts Hosts to add to the server pre-connection list.</a>
+<span class="sourceLineNo">1686</span><a id="line.1686">   * @return Current page context manager (for call chain-ability).</a>
+<span class="sourceLineNo">1687</span><a id="line.1687">   */</a>
+<span class="sourceLineNo">1688</span><a id="line.1688">  @CanIgnoreReturnValue</a>
+<span class="sourceLineNo">1689</span><a id="line.1689">  @SuppressWarnings("WeakerAccess")</a>
+<span class="sourceLineNo">1690</span><a id="line.1690">  public @Nonnull PageContextManager preconnect(String... hosts) {</a>
+<span class="sourceLineNo">1691</span><a id="line.1691">    return preconnect(Arrays.asList(hosts));</a>
+<span class="sourceLineNo">1692</span><a id="line.1692">  }</a>
+<span class="sourceLineNo">1693</span><a id="line.1693"></a>
+<span class="sourceLineNo">1694</span><a id="line.1694">  // -- API: Trusted Resources -- //</a>
+<span class="sourceLineNo">1695</span><a id="line.1695"></a>
+<span class="sourceLineNo">1696</span><a id="line.1696">  /**</a>
+<span class="sourceLineNo">1697</span><a id="line.1697">   * Generate a trusted resource URL for the provided Java URL.</a>
+<span class="sourceLineNo">1698</span><a id="line.1698">   *</a>
+<span class="sourceLineNo">1699</span><a id="line.1699">   * @param url Pre-ordained trusted resource URL.</a>
+<span class="sourceLineNo">1700</span><a id="line.1700">   * @return Trusted resource URL specification proto.</a>
+<span class="sourceLineNo">1701</span><a id="line.1701">   */</a>
+<span class="sourceLineNo">1702</span><a id="line.1702">  @SuppressWarnings("WeakerAccess")</a>
+<span class="sourceLineNo">1703</span><a id="line.1703">  public @Nonnull TrustedResourceUrlProto trustedResource(@Nonnull URL url) {</a>
+<span class="sourceLineNo">1704</span><a id="line.1704">    return UnsafeSanitizedContentOrdainer.ordainAsSafe(</a>
+<span class="sourceLineNo">1705</span><a id="line.1705">      url.toString(),</a>
+<span class="sourceLineNo">1706</span><a id="line.1706">      SanitizedContent.ContentKind.TRUSTED_RESOURCE_URI)</a>
+<span class="sourceLineNo">1707</span><a id="line.1707">      .toTrustedResourceUrlProto();</a>
+<span class="sourceLineNo">1708</span><a id="line.1708">  }</a>
+<span class="sourceLineNo">1709</span><a id="line.1709"></a>
+<span class="sourceLineNo">1710</span><a id="line.1710">  /**</a>
+<span class="sourceLineNo">1711</span><a id="line.1711">   * Generate a trusted resource URL for the provided Java URI.</a>
+<span class="sourceLineNo">1712</span><a id="line.1712">   *</a>
+<span class="sourceLineNo">1713</span><a id="line.1713">   * @param uri Pre-ordained trusted resource URI.</a>
+<span class="sourceLineNo">1714</span><a id="line.1714">   * @return Trusted resource URL specification proto.</a>
+<span class="sourceLineNo">1715</span><a id="line.1715">   */</a>
+<span class="sourceLineNo">1716</span><a id="line.1716">  @SuppressWarnings("WeakerAccess")</a>
+<span class="sourceLineNo">1717</span><a id="line.1717">  public @Nonnull TrustedResourceUrlProto trustedResource(@Nonnull URI uri) {</a>
+<span class="sourceLineNo">1718</span><a id="line.1718">    return UnsafeSanitizedContentOrdainer.ordainAsSafe(</a>
+<span class="sourceLineNo">1719</span><a id="line.1719">      uri.toString(),</a>
+<span class="sourceLineNo">1720</span><a id="line.1720">      SanitizedContent.ContentKind.TRUSTED_RESOURCE_URI)</a>
+<span class="sourceLineNo">1721</span><a id="line.1721">      .toTrustedResourceUrlProto();</a>
+<span class="sourceLineNo">1722</span><a id="line.1722">  }</a>
+<span class="sourceLineNo">1723</span><a id="line.1723"></a>
+<span class="sourceLineNo">1724</span><a id="line.1724">  // -- Interface: Client Hints -- //</a>
+<span class="sourceLineNo">1725</span><a id="line.1725"></a>
+<span class="sourceLineNo">1726</span><a id="line.1726">  /**</a>
+<span class="sourceLineNo">1727</span><a id="line.1727">   * Attempt to retrieve an interpreted &lt;i&gt;Client Hints&lt;/i&gt; client-indicated value from the current HTTP request. If no</a>
+<span class="sourceLineNo">1728</span><a id="line.1728">   * value can be found, or no valid value can be decoded for the hint type specified, {@link Optional#empty()} is</a>
+<span class="sourceLineNo">1729</span><a id="line.1729">   * returned.</a>
+<span class="sourceLineNo">1730</span><a id="line.1730">   *</a>
+<span class="sourceLineNo">1731</span><a id="line.1731">   * @param hint Hint type to look for on the current request.</a>
+<span class="sourceLineNo">1732</span><a id="line.1732">   * @param &lt;V&gt; Value type to return for this hint. If incorrect, a warning is logged and an empty value returned.</a>
+<span class="sourceLineNo">1733</span><a id="line.1733">   * @return Optional-wrapped found value, or {@link Optional#empty()} if no value could be located.</a>
+<span class="sourceLineNo">1734</span><a id="line.1734">   */</a>
+<span class="sourceLineNo">1735</span><a id="line.1735">  @SuppressWarnings("unchecked")</a>
+<span class="sourceLineNo">1736</span><a id="line.1736">  public @Nonnull &lt;V&gt; Optional&lt;V&gt; hint(@Nonnull ClientHint hint) {</a>
+<span class="sourceLineNo">1737</span><a id="line.1737">    if (this.hints.getIndicatedCount() &gt; 0 &amp;&amp; this.hints.getIndicatedList().contains(hint)) {</a>
+<span class="sourceLineNo">1738</span><a id="line.1738">      // we found the hint - try to decode the value</a>
+<span class="sourceLineNo">1739</span><a id="line.1739">      try {</a>
+<span class="sourceLineNo">1740</span><a id="line.1740">        final V value;</a>
+<span class="sourceLineNo">1741</span><a id="line.1741">        switch (hint) {</a>
+<span class="sourceLineNo">1742</span><a id="line.1742">          case DPR: value = (V)(Integer.valueOf(this.hints.getDevicePixelRatio())); break;</a>
+<span class="sourceLineNo">1743</span><a id="line.1743">          case ECT: value = (V)(this.hints.getEffectiveConnectionType()); break;</a>
+<span class="sourceLineNo">1744</span><a id="line.1744">          case RTT: value = (V)(Integer.valueOf(this.hints.getRoundTripTime())); break;</a>
+<span class="sourceLineNo">1745</span><a id="line.1745">          case DOWNLINK: value = (V)(Float.valueOf(this.hints.getDownlink())); break;</a>
+<span class="sourceLineNo">1746</span><a id="line.1746">          case DEVICE_MEMORY: value = (V)(Float.valueOf(this.hints.getDevicePixelRatio())); break;</a>
+<span class="sourceLineNo">1747</span><a id="line.1747">          case SAVE_DATA: value = (V)(Boolean.valueOf(this.hints.getSaveData())); break;</a>
+<span class="sourceLineNo">1748</span><a id="line.1748">          case WIDTH: value = (V)(Integer.valueOf(this.hints.getWidth())); break;</a>
+<span class="sourceLineNo">1749</span><a id="line.1749">          case VIEWPORT_WIDTH: value = (V)(Integer.valueOf(this.hints.getViewportWidth())); break;</a>
+<span class="sourceLineNo">1750</span><a id="line.1750">          default:</a>
+<span class="sourceLineNo">1751</span><a id="line.1751">            logging.warn(format("Unrecognized client hint: '%s'.", hint.name()));</a>
+<span class="sourceLineNo">1752</span><a id="line.1752">            return Optional.empty();</a>
+<span class="sourceLineNo">1753</span><a id="line.1753">        }</a>
+<span class="sourceLineNo">1754</span><a id="line.1754">        return Optional.of(value);</a>
+<span class="sourceLineNo">1755</span><a id="line.1755"></a>
+<span class="sourceLineNo">1756</span><a id="line.1756">      } catch (ClassCastException cce) {</a>
+<span class="sourceLineNo">1757</span><a id="line.1757">        logging.warn(format("Failed to cast client hint value '%s'.", hint.name()));</a>
+<span class="sourceLineNo">1758</span><a id="line.1758">      }</a>
+<span class="sourceLineNo">1759</span><a id="line.1759">    }</a>
+<span class="sourceLineNo">1760</span><a id="line.1760">    return Optional.empty();</a>
+<span class="sourceLineNo">1761</span><a id="line.1761">  }</a>
+<span class="sourceLineNo">1762</span><a id="line.1762"></a>
+<span class="sourceLineNo">1763</span><a id="line.1763">  // -- Interface: HTTP Request -- //</a>
+<span class="sourceLineNo">1764</span><a id="line.1764"></a>
+<span class="sourceLineNo">1765</span><a id="line.1765">  /**</a>
+<span class="sourceLineNo">1766</span><a id="line.1766">   * Return the currently-active HTTP request object, to which the current render/controller flow is bound.</a>
+<span class="sourceLineNo">1767</span><a id="line.1767">   *</a>
+<span class="sourceLineNo">1768</span><a id="line.1768">   * @return Active HTTP request object.</a>
+<span class="sourceLineNo">1769</span><a id="line.1769">   */</a>
+<span class="sourceLineNo">1770</span><a id="line.1770">  @SuppressWarnings("rawtypes")</a>
+<span class="sourceLineNo">1771</span><a id="line.1771">  public @Nonnull HttpRequest getRequest() {</a>
+<span class="sourceLineNo">1772</span><a id="line.1772">    return this.request;</a>
+<span class="sourceLineNo">1773</span><a id="line.1773">  }</a>
+<span class="sourceLineNo">1774</span><a id="line.1774"></a>
+<span class="sourceLineNo">1775</span><a id="line.1775">  /**</a>
+<span class="sourceLineNo">1776</span><a id="line.1776">   * Return the set of interpreted &lt;i&gt;Client Hints&lt;/i&gt; headers for the current request.</a>
+<span class="sourceLineNo">1777</span><a id="line.1777">   *</a>
+<span class="sourceLineNo">1778</span><a id="line.1778">   * @return Client hints configuration.</a>
+<span class="sourceLineNo">1779</span><a id="line.1779">   */</a>
+<span class="sourceLineNo">1780</span><a id="line.1780">  public @Nonnull ClientHints getHints() {</a>
+<span class="sourceLineNo">1781</span><a id="line.1781">    return this.hints;</a>
+<span class="sourceLineNo">1782</span><a id="line.1782">  }</a>
+<span class="sourceLineNo">1783</span><a id="line.1783"></a>
+<span class="sourceLineNo">1784</span><a id="line.1784">  // -- Interface: HTTP `ETag`s -- //</a>
+<span class="sourceLineNo">1785</span><a id="line.1785"></a>
+<span class="sourceLineNo">1786</span><a id="line.1786">  /** {@inheritDoc} */</a>
+<span class="sourceLineNo">1787</span><a id="line.1787">  @Override</a>
+<span class="sourceLineNo">1788</span><a id="line.1788">  public boolean enableETags() {</a>
+<span class="sourceLineNo">1789</span><a id="line.1789">    return this.builtContext != null ?</a>
+<span class="sourceLineNo">1790</span><a id="line.1790">      this.builtContext.getPageContext().getEtag().getEnabled() :</a>
+<span class="sourceLineNo">1791</span><a id="line.1791">      this.context.getEtag().getEnabled();</a>
+<span class="sourceLineNo">1792</span><a id="line.1792">  }</a>
+<span class="sourceLineNo">1793</span><a id="line.1793"></a>
+<span class="sourceLineNo">1794</span><a id="line.1794">  /** {@inheritDoc} */</a>
+<span class="sourceLineNo">1795</span><a id="line.1795">  @Override</a>
+<span class="sourceLineNo">1796</span><a id="line.1796">  public boolean strongETags() {</a>
+<span class="sourceLineNo">1797</span><a id="line.1797">    return this.builtContext != null ?</a>
+<span class="sourceLineNo">1798</span><a id="line.1798">      this.builtContext.getPageContext().getEtag().getStrong() :</a>
+<span class="sourceLineNo">1799</span><a id="line.1799">      this.context.getEtag().getStrong();</a>
+<span class="sourceLineNo">1800</span><a id="line.1800">  }</a>
+<span class="sourceLineNo">1801</span><a id="line.1801"></a>
+<span class="sourceLineNo">1802</span><a id="line.1802">  // -- Interface: Closeable -- //</a>
+<span class="sourceLineNo">1803</span><a id="line.1803"></a>
+<span class="sourceLineNo">1804</span><a id="line.1804">  /**</a>
+<span class="sourceLineNo">1805</span><a id="line.1805">   * Closes this stream and releases any system resources associated with it. If the stream is already closed then</a>
+<span class="sourceLineNo">1806</span><a id="line.1806">   * invoking this method has no effect.</a>
+<span class="sourceLineNo">1807</span><a id="line.1807">   *</a>
+<span class="sourceLineNo">1808</span><a id="line.1808">   * &lt;p&gt;As noted in {@link AutoCloseable#close()}, cases where the close may fail require careful attention. It is</a>
+<span class="sourceLineNo">1809</span><a id="line.1809">   * strongly advised to relinquish the underlying resources and to internally &lt;em&gt;mark&lt;/em&gt; the {@code Closeable} as</a>
+<span class="sourceLineNo">1810</span><a id="line.1810">   * closed, prior to throwing the {@code IOException}.</a>
+<span class="sourceLineNo">1811</span><a id="line.1811">   */</a>
+<span class="sourceLineNo">1812</span><a id="line.1812">  @Override</a>
+<span class="sourceLineNo">1813</span><a id="line.1813">  public void close() {</a>
+<span class="sourceLineNo">1814</span><a id="line.1814">    if (!this.closed.get()) {</a>
+<span class="sourceLineNo">1815</span><a id="line.1815">      this.render();</a>
+<span class="sourceLineNo">1816</span><a id="line.1816">    }</a>
+<span class="sourceLineNo">1817</span><a id="line.1817">  }</a>
+<span class="sourceLineNo">1818</span><a id="line.1818"></a>
+<span class="sourceLineNo">1819</span><a id="line.1819">  // -- Interface: Delegated Context -- //</a>
+<span class="sourceLineNo">1820</span><a id="line.1820"></a>
+<span class="sourceLineNo">1821</span><a id="line.1821">  /**</a>
+<span class="sourceLineNo">1822</span><a id="line.1822">   * Retrieve serializable server-side-rendered page context, which should be assigned to the render flow bound to this</a>
+<span class="sourceLineNo">1823</span><a id="line.1823">   * context mediator.</a>
+<span class="sourceLineNo">1824</span><a id="line.1824">   *</a>
+<span class="sourceLineNo">1825</span><a id="line.1825">   * @return Server-side rendered page context.</a>
+<span class="sourceLineNo">1826</span><a id="line.1826">   */</a>
+<span class="sourceLineNo">1827</span><a id="line.1827">  @Override</a>
+<span class="sourceLineNo">1828</span><a id="line.1828">  public @Nonnull Context getPageContext() {</a>
+<span class="sourceLineNo">1829</span><a id="line.1829">    this.close();</a>
+<span class="sourceLineNo">1830</span><a id="line.1830">    if (this.builtContext == null) throw new IllegalStateException("Unable to read page context.");</a>
+<span class="sourceLineNo">1831</span><a id="line.1831">    return this.builtContext.getPageContext();</a>
+<span class="sourceLineNo">1832</span><a id="line.1832">  }</a>
+<span class="sourceLineNo">1833</span><a id="line.1833"></a>
+<span class="sourceLineNo">1834</span><a id="line.1834">  /**</a>
+<span class="sourceLineNo">1835</span><a id="line.1835">   * Retrieve properties which should be made available via regular, declared `@param` statements.</a>
+<span class="sourceLineNo">1836</span><a id="line.1836">   *</a>
+<span class="sourceLineNo">1837</span><a id="line.1837">   * @return Map of regular template properties.</a>
+<span class="sourceLineNo">1838</span><a id="line.1838">   */</a>
+<span class="sourceLineNo">1839</span><a id="line.1839">  @Nonnull</a>
+<span class="sourceLineNo">1840</span><a id="line.1840">  @Override</a>
+<span class="sourceLineNo">1841</span><a id="line.1841">  public Map&lt;String, Object&gt; getProperties() {</a>
+<span class="sourceLineNo">1842</span><a id="line.1842">    this.close();</a>
+<span class="sourceLineNo">1843</span><a id="line.1843">    if (this.builtContext == null) throw new IllegalStateException("Unable to read page context.");</a>
+<span class="sourceLineNo">1844</span><a id="line.1844">    return this.builtContext.getProperties();</a>
+<span class="sourceLineNo">1845</span><a id="line.1845">  }</a>
+<span class="sourceLineNo">1846</span><a id="line.1846"></a>
+<span class="sourceLineNo">1847</span><a id="line.1847">  /**</a>
+<span class="sourceLineNo">1848</span><a id="line.1848">   * Retrieve properties and values that should be made available via `@inject`.</a>
+<span class="sourceLineNo">1849</span><a id="line.1849">   *</a>
+<span class="sourceLineNo">1850</span><a id="line.1850">   * @param framework Framework-injected properties.</a>
+<span class="sourceLineNo">1851</span><a id="line.1851">   * @return Map of injected properties and their values.</a>
+<span class="sourceLineNo">1852</span><a id="line.1852">   */</a>
+<span class="sourceLineNo">1853</span><a id="line.1853">  @Nonnull</a>
+<span class="sourceLineNo">1854</span><a id="line.1854">  @Override</a>
+<span class="sourceLineNo">1855</span><a id="line.1855">  public Map&lt;String, Object&gt; getInjectedProperties(@Nonnull Map&lt;String, Object&gt; framework) {</a>
+<span class="sourceLineNo">1856</span><a id="line.1856">    this.close();</a>
+<span class="sourceLineNo">1857</span><a id="line.1857">    if (this.builtContext == null) throw new IllegalStateException("Unable to read page context.");</a>
+<span class="sourceLineNo">1858</span><a id="line.1858">    return this.builtContext.getInjectedProperties(framework);</a>
+<span class="sourceLineNo">1859</span><a id="line.1859">  }</a>
+<span class="sourceLineNo">1860</span><a id="line.1860"></a>
+<span class="sourceLineNo">1861</span><a id="line.1861">  /**</a>
+<span class="sourceLineNo">1862</span><a id="line.1862">   * Specify a Soy renaming map which overrides the globally-installed map, if any. Renaming must still be activated via</a>
+<span class="sourceLineNo">1863</span><a id="line.1863">   * config, or manually, for the return value of this method to have any effect.</a>
+<span class="sourceLineNo">1864</span><a id="line.1864">   *</a>
+<span class="sourceLineNo">1865</span><a id="line.1865">   * @return {@link SoyNamingMapProvider} that should be used for this render routine.</a>
+<span class="sourceLineNo">1866</span><a id="line.1866">   */</a>
+<span class="sourceLineNo">1867</span><a id="line.1867">  @Nonnull</a>
+<span class="sourceLineNo">1868</span><a id="line.1868">  @Override</a>
+<span class="sourceLineNo">1869</span><a id="line.1869">  public Optional&lt;SoyNamingMapProvider&gt; overrideNamingMap() {</a>
+<span class="sourceLineNo">1870</span><a id="line.1870">    this.close();</a>
+<span class="sourceLineNo">1871</span><a id="line.1871">    if (this.builtContext == null) throw new IllegalStateException("Unable to read page context.");</a>
+<span class="sourceLineNo">1872</span><a id="line.1872">    return this.builtContext.overrideNamingMap();</a>
+<span class="sourceLineNo">1873</span><a id="line.1873">  }</a>
+<span class="sourceLineNo">1874</span><a id="line.1874"></a>
+<span class="sourceLineNo">1875</span><a id="line.1875">  /**</a>
+<span class="sourceLineNo">1876</span><a id="line.1876">   * Indicate whether live-reload mode is enabled or not, which is governed by the built toolchain (i.e. a Bazel</a>
+<span class="sourceLineNo">1877</span><a id="line.1877">   * condition, activated by the Makefile, which injects a JDK system property). Live-reload features additionally</a>
+<span class="sourceLineNo">1878</span><a id="line.1878">   * require dev mode to be active.</a>
+<span class="sourceLineNo">1879</span><a id="line.1879">   *</a>
+<span class="sourceLineNo">1880</span><a id="line.1880">   * @return Whether live-reload is enabled.</a>
+<span class="sourceLineNo">1881</span><a id="line.1881">   */</a>
+<span class="sourceLineNo">1882</span><a id="line.1882">  public boolean isLiveReload() {</a>
+<span class="sourceLineNo">1883</span><a id="line.1883">    return liveReload;</a>
+<span class="sourceLineNo">1884</span><a id="line.1884">  }</a>
+<span class="sourceLineNo">1885</span><a id="line.1885">}</a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</main>
+</body>
+</html>

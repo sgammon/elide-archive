@@ -1,0 +1,231 @@
+##
+# Copyright © 2020, The Gust Framework Authors. All rights reserved.
+#
+# The Gust/Elide framework and tools, and all associated source or object computer code, except where otherwise noted,
+# are licensed under the Zero Prosperity license, which is enclosed in this repository, in the file LICENSE.txt. Use of
+# this code in object or source form requires and implies consent and agreement to that license in principle and
+# practice. Source or object code not listing this header, or unless specified otherwise, remain the property of
+# Elide LLC and its suppliers, if any. The intellectual and technical concepts contained herein are proprietary to
+# Elide LLC and its suppliers and may be covered by U.S. and Foreign Patents, or patents in process, and are protected
+# by trade secret and copyright law. Dissemination of this information, or reproduction of this material, in any form,
+# is strictly forbidden except in adherence with assigned license requirements.
+##
+
+package(
+    default_visibility = ["//visibility:public"],
+)
+
+load(
+    "//defs/toolchain/java:rules.bzl",
+    java_library = "jdk_library",
+)
+load(
+    "//defs/toolchain:deps.bzl",
+    "javaproto",
+    "maven",
+)
+
+_COMMON_DEPS = [
+    "@javax_annotation_api",
+    "@com_google_code_findbugs_jsr305",
+    "@com_google_protobuf//:protobuf_java",
+    "//java/gust/backend/runtime:runtime",
+    "//java/gust/backend/model:ModelMetadata",
+    maven("org.slf4j:slf4j-api"),
+    maven("com.google.cloud:google-cloud-spanner"),
+    maven("com.google.cloud:google-cloud-core"),
+    maven("com.google.guava:guava"),
+    maven("io.grpc:grpc-alts"),
+    maven("io.micronaut:micronaut-inject"),
+    maven("io.micronaut:micronaut-runtime"),
+    maven("io.micronaut:micronaut-context"),
+    maven("org.reactivestreams:reactive-streams"),
+    maven("javax.validation:validation-api"),
+    maven("com.google.api.grpc:proto-google-common-protos"),
+]
+
+java_library(
+    name = "package-info",
+    srcs = ["package-info.java"],
+)
+
+java_library(
+    name = "SpannerAdapter",
+    srcs = ["SpannerAdapter.java"],
+    deps = [
+        ":SpannerDriverSettings",
+        ":SpannerDriver",
+        ":SpannerCodec",
+        ":SpannerStructDeserializer",
+        ":SpannerMutationSerializer",
+        "//java/gust/backend/model:CacheDriver",
+        "//java/gust/backend/model:DatabaseAdapter",
+        "//java/gust/backend/model:DatabaseDriver",
+        "//java/gust/backend/model:ModelCodec",
+        "//java/gust/backend/model:PersistenceDriver",
+        "//java/gust/backend/transport:GoogleService",
+        "//java/gust/backend/transport:GoogleTransportConfig",
+        "//java/gust/backend/transport:GoogleTransportManager",
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "SpannerCodec",
+    srcs = ["SpannerCodec.java"],
+    deps = [
+        ":SpannerDriverSettings",
+        ":SpannerMutationSerializer",
+        ":SpannerStructDeserializer",
+        "//java/gust/backend/model:ModelSerializer",
+        "//java/gust/backend/model:ModelDeserializer",
+        "//java/gust/backend/model:ModelCodec",
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "SpannerDriver",
+    srcs = ["SpannerDriver.java"],
+    exports = [
+        maven("io.grpc:grpc-api"),
+        maven("io.grpc:grpc-core"),
+        maven("io.grpc:grpc-auth"),
+        maven("io.grpc:grpc-stub"),
+        maven("io.grpc:grpc-protobuf"),
+        maven("com.google.api:gax"),
+        maven("com.google.api:gax-grpc"),
+        maven("com.google.cloud:google-cloud-core"),
+        maven("com.google.cloud:google-cloud-core-grpc"),
+    ],
+    deps = [
+        ":SpannerCodec",
+        ":SpannerDriverSettings",
+        ":SpannerMutationSerializer",
+        ":SpannerStructDeserializer",
+        ":SpannerUtil",
+        "//java/gust/backend/model:DatabaseDriver",
+        "//java/gust/backend/model:DeleteOptions",
+        "//java/gust/backend/model:FetchOptions",
+        "//java/gust/backend/model:ModelCodec",
+        "//java/gust/backend/model:OperationOptions",
+        "//java/gust/backend/model:SerializedModel",
+        "//java/gust/backend/model:UpdateOptions",
+        "//java/gust/backend/model:WriteOptions",
+        "//java/gust/backend/model:WriteProxy",
+        "//java/gust/backend/transport:GoogleService",
+        "//java/gust/backend/transport:GoogleTransportManager",
+        javaproto("//gust/core:datamodel"),
+        maven("io.grpc:grpc-api"),
+        maven("com.google.api:gax"),
+        maven("com.google.api:gax-grpc"),
+        maven("com.google.api:api-common"),
+        maven("com.google.cloud:google-cloud-core"),
+        maven("com.google.cloud:google-cloud-core-grpc"),
+        "@com_google_protobuf//java/util",
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "SpannerDriverSettings",
+    srcs = ["SpannerDriverSettings.java"],
+    deps = [
+        ":SpannerTransportConfig",
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "SpannerGeneratedDDL",
+    srcs = ["SpannerGeneratedDDL.java"],
+    deps = [
+        ":SpannerDriverSettings",
+        ":SpannerUtil",
+        javaproto("//gust/core:datamodel"),
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "SpannerManager",
+    srcs = ["SpannerManager.java"],
+    deps = [
+        ":SpannerAdapter",
+        ":SpannerDriver",
+        ":SpannerDriverSettings",
+        "//java/gust/backend/model:CacheDriver",
+        "//java/gust/backend/model:DatabaseManager",
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "SpannerMutationSerializer",
+    srcs = ["SpannerMutationSerializer.java"],
+    deps = [
+        ":SpannerUtil",
+        ":SpannerDriverSettings",
+        ":SpannerTemporalConverter",
+        "@com_google_protobuf//java/util",
+        "//java/gust/backend/model:ModelDeflateException",
+        "//java/gust/backend/model:ModelSerializer",
+        javaproto("//gust/core:datamodel"),
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "SpannerStructDeserializer",
+    srcs = ["SpannerStructDeserializer.java"],
+    deps = [
+        ":SpannerUtil",
+        ":SpannerDriverSettings",
+        ":SpannerTemporalConverter",
+        "@com_google_protobuf//java/util",
+        "//java/gust/backend/model:ModelDeserializer",
+        "//java/gust/backend/model:ModelInflateException",
+        javaproto("//gust/core:datamodel"),
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "SpannerTemporalConverter",
+    srcs = ["SpannerTemporalConverter.java"],
+    deps = [
+        # None yet.
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "SpannerTransportConfig",
+    srcs = ["SpannerTransportConfig.java"],
+    deps = [
+        "//java/gust/backend/transport:GoogleTransportManager",
+        "//java/gust/backend/transport:GrpcTransportConfig",
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "SpannerUtil",
+    srcs = ["SpannerUtil.java"],
+    deps = [
+        ":SpannerDriverSettings",
+        "//java/gust/util:Pair",
+        javaproto("//gust/core:datamodel"),
+    ] + _COMMON_DEPS,
+)
+
+java_library(
+    name = "spanner",
+    exports = [
+        ":SpannerAdapter",
+        ":SpannerCodec",
+        ":SpannerDriver",
+        ":SpannerDriverSettings",
+        ":SpannerManager",
+        ":SpannerMutationSerializer",
+        ":SpannerStructDeserializer",
+        ":SpannerTransportConfig",
+        ":SpannerUtil",
+        ":package-info",
+    ],
+)
+
+filegroup(
+    name = "sources",
+    srcs = glob(["*.java"]),
+)

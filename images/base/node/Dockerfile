@@ -1,4 +1,4 @@
 
-FROM node:13-alpine
+FROM node:lts-alpine3.14@sha256:e64db06f244b6248e33820eafb5a26ab291bc342ddc50745999de1f951f40c8b
 ENV ELIDE=1
 

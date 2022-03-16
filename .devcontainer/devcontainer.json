@@ -1,0 +1,31 @@
+{
+    "build": {
+        "dockerfile": "./Dockerfile",
+        "context": ".."
+    },
+    "containerEnv": {
+        "DEVCONTAINER": "yes",
+        "HOME": "/home/dev",
+        "GOOGLE_APPLICATION_CREDENTIALS": "/home/dev/.config/gcloud/application_default_credentials.json"
+    },
+    "postCreateCommand": "bash tools/container-init.sh",
+    "postAttachCommand": "make help",
+    "containerUser": "dev",
+    "extensions": [
+        "BazelBuild.vscode-bazel",
+        "bufbuild.vscode-buf",
+        "redhat.java",
+        "redhat.vscode-commons",
+        "redhat.vscode-yaml",
+        "StackBuild.bazel-stack-vscode",
+        "TeamHub.teamhub",
+        "VisualStudioExptTeam.vscodeintellicode",
+        "vscjava.vscode-java-debug",
+        "vscjava.vscode-java-dependency",
+        "vscjava.vscode-java-pack",
+        "vscjava.vscode-java-test",
+        "vscjava.vscode-maven",
+        "zhengrenzhe.nyan-cat",
+        "zxh404.vscode-proto3"
+    ]
+}

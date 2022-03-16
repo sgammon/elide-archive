@@ -1,0 +1,526 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<main role="main">
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span><a id="line.1">/*</a>
+<span class="sourceLineNo">002</span><a id="line.2"> * Copyright © 2020, The Gust Framework Authors. All rights reserved.</a>
+<span class="sourceLineNo">003</span><a id="line.3"> *</a>
+<span class="sourceLineNo">004</span><a id="line.4"> * The Gust/Elide framework and tools, and all associated source or object computer code, except where otherwise noted,</a>
+<span class="sourceLineNo">005</span><a id="line.5"> * are licensed under the Zero Prosperity license, which is enclosed in this repository, in the file LICENSE.txt. Use of</a>
+<span class="sourceLineNo">006</span><a id="line.6"> * this code in object or source form requires and implies consent and agreement to that license in principle and</a>
+<span class="sourceLineNo">007</span><a id="line.7"> * practice. Source or object code not listing this header, or unless specified otherwise, remain the property of</a>
+<span class="sourceLineNo">008</span><a id="line.8"> * Elide LLC and its suppliers, if any. The intellectual and technical concepts contained herein are proprietary to</a>
+<span class="sourceLineNo">009</span><a id="line.9"> * Elide LLC and its suppliers and may be covered by U.S. and Foreign Patents, or patents in process, and are protected</a>
+<span class="sourceLineNo">010</span><a id="line.10"> * by trade secret and copyright law. Dissemination of this information, or reproduction of this material, in any form,</a>
+<span class="sourceLineNo">011</span><a id="line.11"> * is strictly forbidden except in adherence with assigned license requirements.</a>
+<span class="sourceLineNo">012</span><a id="line.12"> */</a>
+<span class="sourceLineNo">013</span><a id="line.13">package gust.backend.driver.spanner;</a>
+<span class="sourceLineNo">014</span><a id="line.14"></a>
+<span class="sourceLineNo">015</span><a id="line.15">import com.google.api.gax.core.CredentialsProvider;</a>
+<span class="sourceLineNo">016</span><a id="line.16">import com.google.api.gax.rpc.TransportChannelProvider;</a>
+<span class="sourceLineNo">017</span><a id="line.17">import com.google.cloud.grpc.GrpcTransportOptions;</a>
+<span class="sourceLineNo">018</span><a id="line.18">import com.google.cloud.spanner.*;</a>
+<span class="sourceLineNo">019</span><a id="line.19">import com.google.cloud.spanner.v1.stub.SpannerStubSettings;</a>
+<span class="sourceLineNo">020</span><a id="line.20">import com.google.common.util.concurrent.ListeningScheduledExecutorService;</a>
+<span class="sourceLineNo">021</span><a id="line.21">import com.google.common.util.concurrent.MoreExecutors;</a>
+<span class="sourceLineNo">022</span><a id="line.22">import com.google.protobuf.Message;</a>
+<span class="sourceLineNo">023</span><a id="line.23">import gust.backend.model.*;</a>
+<span class="sourceLineNo">024</span><a id="line.24">import gust.backend.transport.GoogleAPIChannel;</a>
+<span class="sourceLineNo">025</span><a id="line.25">import gust.backend.transport.GoogleService;</a>
+<span class="sourceLineNo">026</span><a id="line.26">import io.micronaut.context.annotation.Context;</a>
+<span class="sourceLineNo">027</span><a id="line.27">import io.micronaut.context.annotation.Factory;</a>
+<span class="sourceLineNo">028</span><a id="line.28">import io.micronaut.runtime.context.scope.Refreshable;</a>
+<span class="sourceLineNo">029</span><a id="line.29"></a>
+<span class="sourceLineNo">030</span><a id="line.30">import javax.annotation.Nonnull;</a>
+<span class="sourceLineNo">031</span><a id="line.31">import javax.annotation.concurrent.Immutable;</a>
+<span class="sourceLineNo">032</span><a id="line.32">import javax.annotation.concurrent.ThreadSafe;</a>
+<span class="sourceLineNo">033</span><a id="line.33">import java.io.Closeable;</a>
+<span class="sourceLineNo">034</span><a id="line.34">import java.util.Optional;</a>
+<span class="sourceLineNo">035</span><a id="line.35">import java.util.concurrent.Executors;</a>
+<span class="sourceLineNo">036</span><a id="line.36"></a>
+<span class="sourceLineNo">037</span><a id="line.37"></a>
+<span class="sourceLineNo">038</span><a id="line.38">/**</a>
+<span class="sourceLineNo">039</span><a id="line.39"> * Implementation of a {@link DatabaseAdapter} backed by Google Cloud Spanner, capable of marshalling arbitrary</a>
+<span class="sourceLineNo">040</span><a id="line.40"> * schema-generated {@link Message} objects back and forth from structured columnar storage.</a>
+<span class="sourceLineNo">041</span><a id="line.41"> *</a>
+<span class="sourceLineNo">042</span><a id="line.42"> * &lt;p&gt;This adapter is implemented by the {@link SpannerDriver} and related codec classes ({@link SpannerCodec},</a>
+<span class="sourceLineNo">043</span><a id="line.43"> * {@link SpannerStructDeserializer} and {@link SpannerMutationSerializer}). Background execution and gRPC channels are</a>
+<span class="sourceLineNo">044</span><a id="line.44"> * hooked into driver acquisition and may be managed by the developer, or by the framework automatically. See below for</a>
+<span class="sourceLineNo">045</span><a id="line.45"> * a summary of application-level Spanner features supported by this engine:&lt;/p&gt;</a>
+<span class="sourceLineNo">046</span><a id="line.46"> *</a>
+<span class="sourceLineNo">047</span><a id="line.47"> * &lt;p&gt;&lt;b&gt;Caching&lt;/b&gt; may be facilitated by any compliant model {@link CacheDriver}.&lt;/p&gt;</a>
+<span class="sourceLineNo">048</span><a id="line.48"> *</a>
+<span class="sourceLineNo">049</span><a id="line.49"> * &lt;p&gt;&lt;b&gt;Transactions&lt;/b&gt; are supported under the hood, and can be controlled via Spanner-extended operation options</a>
+<span class="sourceLineNo">050</span><a id="line.50"> * interfaces (such as {@link SpannerDriver.SpannerWriteOptions} and {@link SpannerDriver.SpannerFetchOptions}).</a>
+<span class="sourceLineNo">051</span><a id="line.51"> * Invoking code may either opt-in to transactional protection automatically, or drive external transactions with this</a>
+<span class="sourceLineNo">052</span><a id="line.52"> * adapter/driver by specifying an input transaction for a given operation.&lt;/p&gt;</a>
+<span class="sourceLineNo">053</span><a id="line.53"> *</a>
+<span class="sourceLineNo">054</span><a id="line.54"> * &lt;p&gt;&lt;b&gt;Collections&lt;/b&gt; are supported by this engine, with additional support for nested models encoded via JSON. In</a>
+<span class="sourceLineNo">055</span><a id="line.55"> * cases where model JSON is involved, {@link com.google.protobuf.util.JsonFormat} is used to produce and consume</a>
+<span class="sourceLineNo">056</span><a id="line.56"> * compliant Proto-JSON.&lt;/p&gt;</a>
+<span class="sourceLineNo">057</span><a id="line.57"> *</a>
+<span class="sourceLineNo">058</span><a id="line.58"> * @param &lt;Key&gt; Typed {@link Message} which implements a concrete model key structure, as defined and annotated by the</a>
+<span class="sourceLineNo">059</span><a id="line.59"> *              core Gust annotations.</a>
+<span class="sourceLineNo">060</span><a id="line.60"> * @param &lt;Model&gt; Typed {@link Message} which implements a concrete model object structure, as defined and annotated by</a>
+<span class="sourceLineNo">061</span><a id="line.61"> *              the core Gust annotations.</a>
+<span class="sourceLineNo">062</span><a id="line.62"> * @see SpannerManager Adapter instance manager and factory.</a>
+<span class="sourceLineNo">063</span><a id="line.63"> * @see SpannerDriverSettings Driver-level settings specific to Spanner.</a>
+<span class="sourceLineNo">064</span><a id="line.64"> * @see gust.backend.driver.firestore.FirestoreAdapter Similar adapter implementation, built on top of Cloud Firestore,</a>
+<span class="sourceLineNo">065</span><a id="line.65"> *      which itself is implemented on top of Cloud Spanner.</a>
+<span class="sourceLineNo">066</span><a id="line.66"> */</a>
+<span class="sourceLineNo">067</span><a id="line.67">@Immutable @ThreadSafe</a>
+<span class="sourceLineNo">068</span><a id="line.68">@SuppressWarnings({"OptionalUsedAsFieldOrParameterType", "UnstableApiUsage"})</a>
+<span class="sourceLineNo">069</span><a id="line.69">public final class SpannerAdapter&lt;Key extends Message, Model extends Message&gt;</a>
+<span class="sourceLineNo">070</span><a id="line.70">        implements DatabaseAdapter&lt;Key, Model, Struct, Mutation&gt;, Closeable, AutoCloseable {</a>
+<span class="sourceLineNo">071</span><a id="line.71">    /** Spanner database driver. */</a>
+<span class="sourceLineNo">072</span><a id="line.72">    private final @Nonnull SpannerDriver&lt;Key, Model&gt; driver;</a>
+<span class="sourceLineNo">073</span><a id="line.73"></a>
+<span class="sourceLineNo">074</span><a id="line.74">    /** Serializer and deserializer for this model. */</a>
+<span class="sourceLineNo">075</span><a id="line.75">    private final @Nonnull ModelCodec&lt;Model, Mutation, Struct&gt; codec;</a>
+<span class="sourceLineNo">076</span><a id="line.76"></a>
+<span class="sourceLineNo">077</span><a id="line.77">    /** Cache to use for model interactions through this adapter (optional). */</a>
+<span class="sourceLineNo">078</span><a id="line.78">    private final @Nonnull Optional&lt;CacheDriver&lt;Key, Model&gt;&gt; cache;</a>
+<span class="sourceLineNo">079</span><a id="line.79"></a>
+<span class="sourceLineNo">080</span><a id="line.80">    /**</a>
+<span class="sourceLineNo">081</span><a id="line.81">     * Private constructor for a model-specialized Spanner adapter instance.</a>
+<span class="sourceLineNo">082</span><a id="line.82">     *</a>
+<span class="sourceLineNo">083</span><a id="line.83">     * @param driver Driver instance created to power this adapter.</a>
+<span class="sourceLineNo">084</span><a id="line.84">     * @param codec Codec to use when marshalling objects with this adapter.</a>
+<span class="sourceLineNo">085</span><a id="line.85">     * @param cache Optionally, cache to employ when interacting with the underlying driver.</a>
+<span class="sourceLineNo">086</span><a id="line.86">     */</a>
+<span class="sourceLineNo">087</span><a id="line.87">    private SpannerAdapter(@Nonnull SpannerDriver&lt;Key, Model&gt; driver,</a>
+<span class="sourceLineNo">088</span><a id="line.88">                           @Nonnull ModelCodec&lt;Model, Mutation, Struct&gt; codec,</a>
+<span class="sourceLineNo">089</span><a id="line.89">                           @Nonnull Optional&lt;CacheDriver&lt;Key, Model&gt;&gt; cache) {</a>
+<span class="sourceLineNo">090</span><a id="line.90">        this.driver = driver;</a>
+<span class="sourceLineNo">091</span><a id="line.91">        this.codec = codec;</a>
+<span class="sourceLineNo">092</span><a id="line.92">        this.cache = cache;</a>
+<span class="sourceLineNo">093</span><a id="line.93">    }</a>
+<span class="sourceLineNo">094</span><a id="line.94"></a>
+<span class="sourceLineNo">095</span><a id="line.95">    /**</a>
+<span class="sourceLineNo">096</span><a id="line.96">     * Create or resolve a {@link SpannerAdapter} for the pre-fabricated {@link SpannerDriver}.</a>
+<span class="sourceLineNo">097</span><a id="line.97">     *</a>
+<span class="sourceLineNo">098</span><a id="line.98">     * &lt;p&gt;Note: this method has no way to specify a cache. See below for alternatives.&lt;/p&gt;</a>
+<span class="sourceLineNo">099</span><a id="line.99">     *</a>
+<span class="sourceLineNo">100</span><a id="line.100">     * @see #forModel(SpannerDriver, Optional) Variant of this method that allows invoking code to provide a</a>
+<span class="sourceLineNo">101</span><a id="line.101">     *      compliant {@link CacheDriver} instance.</a>
+<span class="sourceLineNo">102</span><a id="line.102">     * @param driver Pre-fabricated Spanner driver to wrap with an adapter instance.</a>
+<span class="sourceLineNo">103</span><a id="line.103">     * @param &lt;K&gt; Typed model key structure which the resulting adapter should be specialized to.</a>
+<span class="sourceLineNo">104</span><a id="line.104">     * @param &lt;M&gt; Typed model object structure which the resulting adapter should be specialized to.</a>
+<span class="sourceLineNo">105</span><a id="line.105">     * @return Adapter instance, wrapping the provided driver.</a>
+<span class="sourceLineNo">106</span><a id="line.106">     */</a>
+<span class="sourceLineNo">107</span><a id="line.107">    public static @Nonnull &lt;K extends Message, M extends Message&gt; SpannerAdapter&lt;K, M&gt; forModel(</a>
+<span class="sourceLineNo">108</span><a id="line.108">            @Nonnull SpannerDriver&lt;K, M&gt; driver) {</a>
+<span class="sourceLineNo">109</span><a id="line.109">        return forModel(driver, Optional.empty());</a>
+<span class="sourceLineNo">110</span><a id="line.110">    }</a>
+<span class="sourceLineNo">111</span><a id="line.111"></a>
+<span class="sourceLineNo">112</span><a id="line.112">    /**</a>
+<span class="sourceLineNo">113</span><a id="line.113">     * Create or resolve a {@link SpannerAdapter} for the pre-fabricated {@link SpannerDriver}, optionally using the</a>
+<span class="sourceLineNo">114</span><a id="line.114">     * provided {@link CacheDriver}, if present.</a>
+<span class="sourceLineNo">115</span><a id="line.115">     *</a>
+<span class="sourceLineNo">116</span><a id="line.116">     * @param driver Pre-fabricated Spanner driver to wrap with an adapter instance.</a>
+<span class="sourceLineNo">117</span><a id="line.117">     * @param cacheDriver Optional cache engine to employ when interacting with the provided driver.</a>
+<span class="sourceLineNo">118</span><a id="line.118">     * @param &lt;K&gt; Typed model key structure which the resulting adapter should be specialized to.</a>
+<span class="sourceLineNo">119</span><a id="line.119">     * @param &lt;M&gt; Typed model object structure which the resulting adapter should be specialized to.</a>
+<span class="sourceLineNo">120</span><a id="line.120">     * @return Adapter instance, wrapping the provided driver.</a>
+<span class="sourceLineNo">121</span><a id="line.121">     */</a>
+<span class="sourceLineNo">122</span><a id="line.122">    public static @Nonnull &lt;K extends Message, M extends Message&gt; SpannerAdapter&lt;K, M&gt; forModel(</a>
+<span class="sourceLineNo">123</span><a id="line.123">            @Nonnull SpannerDriver&lt;K, M&gt; driver,</a>
+<span class="sourceLineNo">124</span><a id="line.124">            @Nonnull Optional&lt;CacheDriver&lt;K, M&gt;&gt; cacheDriver) {</a>
+<span class="sourceLineNo">125</span><a id="line.125">        return new SpannerAdapter&lt;&gt;(</a>
+<span class="sourceLineNo">126</span><a id="line.126">            driver,</a>
+<span class="sourceLineNo">127</span><a id="line.127">            driver.codec(),</a>
+<span class="sourceLineNo">128</span><a id="line.128">            cacheDriver</a>
+<span class="sourceLineNo">129</span><a id="line.129">        );</a>
+<span class="sourceLineNo">130</span><a id="line.130">    }</a>
+<span class="sourceLineNo">131</span><a id="line.131"></a>
+<span class="sourceLineNo">132</span><a id="line.132">    /** Factory responsible for creating {@link SpannerAdapter} instances from injected dependencies. */</a>
+<span class="sourceLineNo">133</span><a id="line.133">    @Factory static final class SpannerAdapterFactory {</a>
+<span class="sourceLineNo">134</span><a id="line.134">        private SpannerAdapterFactory() { /* Disallow construction. */ }</a>
+<span class="sourceLineNo">135</span><a id="line.135"></a>
+<span class="sourceLineNo">136</span><a id="line.136">        /**</a>
+<span class="sourceLineNo">137</span><a id="line.137">         * Acquire a new instance of the Spanner adapter, using the specified component objects to facilitate model</a>
+<span class="sourceLineNo">138</span><a id="line.138">         * serialization/deserialization, and transport communication with Cloud Spanner.</a>
+<span class="sourceLineNo">139</span><a id="line.139">         *</a>
+<span class="sourceLineNo">140</span><a id="line.140">         * @param driver Driver with which we should talk to Spanner.</a>
+<span class="sourceLineNo">141</span><a id="line.141">         * @param cache Driver with which we should cache eligible data.</a>
+<span class="sourceLineNo">142</span><a id="line.142">         * @return Spanner driver instance.</a>
+<span class="sourceLineNo">143</span><a id="line.143">         */</a>
+<span class="sourceLineNo">144</span><a id="line.144">        @Context</a>
+<span class="sourceLineNo">145</span><a id="line.145">        @Refreshable</a>
+<span class="sourceLineNo">146</span><a id="line.146">        public static @Nonnull &lt;K extends Message, M extends Message&gt; SpannerAdapter&lt;K, M&gt; acquire(</a>
+<span class="sourceLineNo">147</span><a id="line.147">                @Nonnull SpannerDriver&lt;K, M&gt; driver,</a>
+<span class="sourceLineNo">148</span><a id="line.148">                @Nonnull Optional&lt;CacheDriver&lt;K, M&gt;&gt; cache) {</a>
+<span class="sourceLineNo">149</span><a id="line.149">            // resolve model builder from type</a>
+<span class="sourceLineNo">150</span><a id="line.150">            return SpannerAdapter.forModel(</a>
+<span class="sourceLineNo">151</span><a id="line.151">                driver,</a>
+<span class="sourceLineNo">152</span><a id="line.152">                cache</a>
+<span class="sourceLineNo">153</span><a id="line.153">            );</a>
+<span class="sourceLineNo">154</span><a id="line.154">        }</a>
+<span class="sourceLineNo">155</span><a id="line.155">    }</a>
+<span class="sourceLineNo">156</span><a id="line.156"></a>
+<span class="sourceLineNo">157</span><a id="line.157">    /**</a>
+<span class="sourceLineNo">158</span><a id="line.158">     * Create or acquire a {@link SpannerAdapter} and matching {@link SpannerDriver} for the provided generated model</a>
+<span class="sourceLineNo">159</span><a id="line.159">     * key and object structures, working against the provided Spanner {@link DatabaseId}.</a>
+<span class="sourceLineNo">160</span><a id="line.160">     *</a>
+<span class="sourceLineNo">161</span><a id="line.161">     * &lt;p&gt;This method variant is the simplest invocation option for acquiring an adapter. Variants of this method</a>
+<span class="sourceLineNo">162</span><a id="line.162">     * provide deeper control over interactions with the Spanner service. See below for alternatives if deeper control</a>
+<span class="sourceLineNo">163</span><a id="line.163">     * is necessary. Generally, it is best to let the framework manage transport and stub settings.&lt;/p&gt;</a>
+<span class="sourceLineNo">164</span><a id="line.164">     *</a>
+<span class="sourceLineNo">165</span><a id="line.165">     * @see #acquire(Message, Message, DatabaseId, ListeningScheduledExecutorService) For an option which lets invoking</a>
+<span class="sourceLineNo">166</span><a id="line.166">     *      code specify a background executor for RPC transmission and followup.</a>
+<span class="sourceLineNo">167</span><a id="line.167">     * @see #acquire(Message, Message, DatabaseId, SpannerOptions.Builder, ListeningScheduledExecutorService) Variant of</a>
+<span class="sourceLineNo">168</span><a id="line.168">     *      this same method which offers control of the {@link SpannerOptions} used to spawn RPC clients.</a>
+<span class="sourceLineNo">169</span><a id="line.169">     * @see #acquire(SpannerOptions.Builder, DatabaseId, TransportChannelProvider, Optional, Optional,</a>
+<span class="sourceLineNo">170</span><a id="line.170">     *      GrpcTransportOptions, ListeningScheduledExecutorService, Message, Message, SpannerDriverSettings, Optional)</a>
+<span class="sourceLineNo">171</span><a id="line.171">     *      Full control over creation of the Spanner adapter and driver.</a>
+<span class="sourceLineNo">172</span><a id="line.172">     * @param keyInstance Generated key {@link Message} structure, for which the adapter should be specialized.</a>
+<span class="sourceLineNo">173</span><a id="line.173">     * @param messageInstance Generated object {@link Message} structure, for which the adapter should be specialized.</a>
+<span class="sourceLineNo">174</span><a id="line.174">     * @param defaultDatabase Default Spanner database to use when interacting with this adapter. This value may be</a>
+<span class="sourceLineNo">175</span><a id="line.175">     *                        overridden on an individual operation basis via specifying custom</a>
+<span class="sourceLineNo">176</span><a id="line.176">     *                        {@link SpannerDriver.SpannerOperationOptions} and descendents.</a>
+<span class="sourceLineNo">177</span><a id="line.177">     * @param &lt;K&gt; Model key structure for which the resulting adapter should be specialized.</a>
+<span class="sourceLineNo">178</span><a id="line.178">     * @param &lt;M&gt; Model object structure for which the resulting adapter should be specialized.</a>
+<span class="sourceLineNo">179</span><a id="line.179">     * @return Spanner adapter instance, specialized to the provided model and key {@link Message}s.</a>
+<span class="sourceLineNo">180</span><a id="line.180">     */</a>
+<span class="sourceLineNo">181</span><a id="line.181">    public static @Nonnull &lt;K extends Message, M extends Message&gt; SpannerAdapter&lt;K, M&gt; acquire(</a>
+<span class="sourceLineNo">182</span><a id="line.182">            @Nonnull K keyInstance,</a>
+<span class="sourceLineNo">183</span><a id="line.183">            @Nonnull M messageInstance,</a>
+<span class="sourceLineNo">184</span><a id="line.184">            @Nonnull DatabaseId defaultDatabase) {</a>
+<span class="sourceLineNo">185</span><a id="line.185">        return acquire(</a>
+<span class="sourceLineNo">186</span><a id="line.186">                SpannerOptions.newBuilder(),</a>
+<span class="sourceLineNo">187</span><a id="line.187">                defaultDatabase,</a>
+<span class="sourceLineNo">188</span><a id="line.188">                SpannerStubSettings.defaultTransportChannelProvider(),</a>
+<span class="sourceLineNo">189</span><a id="line.189">                Optional.of(SpannerStubSettings.defaultCredentialsProviderBuilder().build()),</a>
+<span class="sourceLineNo">190</span><a id="line.190">                Optional.empty(),</a>
+<span class="sourceLineNo">191</span><a id="line.191">                GrpcTransportOptions.newBuilder().build(),</a>
+<span class="sourceLineNo">192</span><a id="line.192">                MoreExecutors.listeningDecorator(</a>
+<span class="sourceLineNo">193</span><a id="line.193">                    Executors.newScheduledThreadPool(3)</a>
+<span class="sourceLineNo">194</span><a id="line.194">                ),</a>
+<span class="sourceLineNo">195</span><a id="line.195">                keyInstance,</a>
+<span class="sourceLineNo">196</span><a id="line.196">                messageInstance,</a>
+<span class="sourceLineNo">197</span><a id="line.197">                SpannerDriverSettings.DEFAULTS,</a>
+<span class="sourceLineNo">198</span><a id="line.198">                Optional.empty()</a>
+<span class="sourceLineNo">199</span><a id="line.199">        );</a>
+<span class="sourceLineNo">200</span><a id="line.200">    }</a>
+<span class="sourceLineNo">201</span><a id="line.201"></a>
+<span class="sourceLineNo">202</span><a id="line.202">    /**</a>
+<span class="sourceLineNo">203</span><a id="line.203">     * Create or acquire a {@link SpannerAdapter} and matching {@link SpannerDriver} for the provided generated model</a>
+<span class="sourceLineNo">204</span><a id="line.204">     * key and object structures, working against the provided Spanner {@link DatabaseId}.</a>
+<span class="sourceLineNo">205</span><a id="line.205">     *</a>
+<span class="sourceLineNo">206</span><a id="line.206">     * &lt;p&gt;This method variant additionally allows the developer to specify a custom</a>
+<span class="sourceLineNo">207</span><a id="line.207">     * {@link ListeningScheduledExecutorService} to use for background operation execution. This executor service is</a>
+<span class="sourceLineNo">208</span><a id="line.208">     * injected directly into the {@link SpannerDriver} and underlying Spanner RPC client, and is used for both RPC</a>
+<span class="sourceLineNo">209</span><a id="line.209">     * operational execution and async followup.&lt;/p&gt;</a>
+<span class="sourceLineNo">210</span><a id="line.210">     *</a>
+<span class="sourceLineNo">211</span><a id="line.211">     * &lt;p&gt;Variants of this method provide deeper control over interactions with the Spanner service. See below for</a>
+<span class="sourceLineNo">212</span><a id="line.212">     * alternatives.&lt;/p&gt;</a>
+<span class="sourceLineNo">213</span><a id="line.213">     *</a>
+<span class="sourceLineNo">214</span><a id="line.214">     * @see #acquire(Message, Message, DatabaseId) For a simpler version of this method which uses managed driver</a>
+<span class="sourceLineNo">215</span><a id="line.215">     *      settings and a sensible cached threadpool executor.</a>
+<span class="sourceLineNo">216</span><a id="line.216">     * @see #acquire(Message, Message, DatabaseId, SpannerOptions.Builder, ListeningScheduledExecutorService) Variant of</a>
+<span class="sourceLineNo">217</span><a id="line.217">     *      this same method which offers control of the {@link SpannerOptions} used to spawn RPC clients.</a>
+<span class="sourceLineNo">218</span><a id="line.218">     * @see #acquire(SpannerOptions.Builder, DatabaseId, TransportChannelProvider, Optional, Optional,</a>
+<span class="sourceLineNo">219</span><a id="line.219">     *      GrpcTransportOptions, ListeningScheduledExecutorService, Message, Message, SpannerDriverSettings, Optional)</a>
+<span class="sourceLineNo">220</span><a id="line.220">     *      Full control over creation of the Spanner adapter and driver.</a>
+<span class="sourceLineNo">221</span><a id="line.221">     * @param keyInstance Generated key {@link Message} structure, for which the adapter should be specialized.</a>
+<span class="sourceLineNo">222</span><a id="line.222">     * @param messageInstance Generated object {@link Message} structure, for which the adapter should be specialized.</a>
+<span class="sourceLineNo">223</span><a id="line.223">     * @param defaultDatabase Default Spanner database to use when interacting with this adapter. This value may be</a>
+<span class="sourceLineNo">224</span><a id="line.224">     *                        overridden on an individual operation basis via specifying custom</a>
+<span class="sourceLineNo">225</span><a id="line.225">     *                        {@link SpannerDriver.SpannerOperationOptions} and descendents.</a>
+<span class="sourceLineNo">226</span><a id="line.226">     * @param executorService Executor service to use for primary RPC execution and related followup.</a>
+<span class="sourceLineNo">227</span><a id="line.227">     * @param &lt;K&gt; Model key structure for which the resulting adapter should be specialized.</a>
+<span class="sourceLineNo">228</span><a id="line.228">     * @param &lt;M&gt; Model object structure for which the resulting adapter should be specialized.</a>
+<span class="sourceLineNo">229</span><a id="line.229">     * @return Spanner adapter instance, specialized to the provided model and key {@link Message}s.</a>
+<span class="sourceLineNo">230</span><a id="line.230">     */</a>
+<span class="sourceLineNo">231</span><a id="line.231">    public static @Nonnull &lt;K extends Message, M extends Message&gt; SpannerAdapter&lt;K, M&gt; acquire(</a>
+<span class="sourceLineNo">232</span><a id="line.232">            @Nonnull K keyInstance,</a>
+<span class="sourceLineNo">233</span><a id="line.233">            @Nonnull M messageInstance,</a>
+<span class="sourceLineNo">234</span><a id="line.234">            @Nonnull DatabaseId defaultDatabase,</a>
+<span class="sourceLineNo">235</span><a id="line.235">            @Nonnull ListeningScheduledExecutorService executorService) {</a>
+<span class="sourceLineNo">236</span><a id="line.236">        return acquire(</a>
+<span class="sourceLineNo">237</span><a id="line.237">            SpannerOptions.newBuilder(),</a>
+<span class="sourceLineNo">238</span><a id="line.238">            defaultDatabase,</a>
+<span class="sourceLineNo">239</span><a id="line.239">            SpannerStubSettings.defaultTransportChannelProvider(),</a>
+<span class="sourceLineNo">240</span><a id="line.240">            Optional.of(SpannerStubSettings.defaultCredentialsProviderBuilder().build()),</a>
+<span class="sourceLineNo">241</span><a id="line.241">            Optional.empty(),</a>
+<span class="sourceLineNo">242</span><a id="line.242">            GrpcTransportOptions.newBuilder().build(),</a>
+<span class="sourceLineNo">243</span><a id="line.243">            executorService,</a>
+<span class="sourceLineNo">244</span><a id="line.244">            keyInstance,</a>
+<span class="sourceLineNo">245</span><a id="line.245">            messageInstance,</a>
+<span class="sourceLineNo">246</span><a id="line.246">            SpannerDriverSettings.DEFAULTS,</a>
+<span class="sourceLineNo">247</span><a id="line.247">            Optional.empty()</a>
+<span class="sourceLineNo">248</span><a id="line.248">        );</a>
+<span class="sourceLineNo">249</span><a id="line.249">    }</a>
+<span class="sourceLineNo">250</span><a id="line.250"></a>
+<span class="sourceLineNo">251</span><a id="line.251">    /**</a>
+<span class="sourceLineNo">252</span><a id="line.252">     * Create or acquire a {@link SpannerAdapter} and matching {@link SpannerDriver} for the provided generated model</a>
+<span class="sourceLineNo">253</span><a id="line.253">     * key and object structures, working against the provided Spanner {@link DatabaseId}.</a>
+<span class="sourceLineNo">254</span><a id="line.254">     *</a>
+<span class="sourceLineNo">255</span><a id="line.255">     * &lt;p&gt;This method variant is a balanced invocation which allows invoking code to control &lt;i&gt;most&lt;/i&gt; settings,</a>
+<span class="sourceLineNo">256</span><a id="line.256">     * without coupling too tightly to Google SDKs.&lt;/p&gt;</a>
+<span class="sourceLineNo">257</span><a id="line.257">     *</a>
+<span class="sourceLineNo">258</span><a id="line.258">     * @see #acquire(Message, Message, DatabaseId, ListeningScheduledExecutorService) For an option which lets invoking</a>
+<span class="sourceLineNo">259</span><a id="line.259">     *      code specify a background executor for RPC transmission and followup.</a>
+<span class="sourceLineNo">260</span><a id="line.260">     * @see #acquire(Message, Message, DatabaseId, SpannerOptions.Builder, ListeningScheduledExecutorService) Variant of</a>
+<span class="sourceLineNo">261</span><a id="line.261">     *      this same method which offers control of the {@link SpannerOptions} used to spawn RPC clients.</a>
+<span class="sourceLineNo">262</span><a id="line.262">     * @see #acquire(SpannerOptions.Builder, DatabaseId, TransportChannelProvider, Optional, Optional,</a>
+<span class="sourceLineNo">263</span><a id="line.263">     *      GrpcTransportOptions, ListeningScheduledExecutorService, Message, Message, SpannerDriverSettings, Optional)</a>
+<span class="sourceLineNo">264</span><a id="line.264">     *      Full control over creation of the Spanner adapter and driver.</a>
+<span class="sourceLineNo">265</span><a id="line.265">     * @param keyInstance Generated key {@link Message} structure, for which the adapter should be specialized.</a>
+<span class="sourceLineNo">266</span><a id="line.266">     * @param messageInstance Generated object {@link Message} structure, for which the adapter should be specialized.</a>
+<span class="sourceLineNo">267</span><a id="line.267">     * @param defaultDatabase Default Spanner database to use when interacting with this adapter. This value may be</a>
+<span class="sourceLineNo">268</span><a id="line.268">     *                        overridden on an individual operation basis via specifying custom</a>
+<span class="sourceLineNo">269</span><a id="line.269">     *                        {@link SpannerDriver.SpannerOperationOptions} and descendents.</a>
+<span class="sourceLineNo">270</span><a id="line.270">     * @param executorService Executor service to use for primary RPC execution and related followup.</a>
+<span class="sourceLineNo">271</span><a id="line.271">     * @param driverSettings Custom driver settings to apply. {@link SpannerDriverSettings#DEFAULTS} is a good start.</a>
+<span class="sourceLineNo">272</span><a id="line.272">     * @param &lt;K&gt; Model key structure for which the resulting adapter should be specialized.</a>
+<span class="sourceLineNo">273</span><a id="line.273">     * @param &lt;M&gt; Model object structure for which the resulting adapter should be specialized.</a>
+<span class="sourceLineNo">274</span><a id="line.274">     * @return Spanner adapter instance, specialized to the provided model and key {@link Message}s.</a>
+<span class="sourceLineNo">275</span><a id="line.275">     */</a>
+<span class="sourceLineNo">276</span><a id="line.276">    public static @Nonnull &lt;K extends Message, M extends Message&gt; SpannerAdapter&lt;K, M&gt; acquire(</a>
+<span class="sourceLineNo">277</span><a id="line.277">            @Nonnull K keyInstance,</a>
+<span class="sourceLineNo">278</span><a id="line.278">            @Nonnull M messageInstance,</a>
+<span class="sourceLineNo">279</span><a id="line.279">            @Nonnull DatabaseId defaultDatabase,</a>
+<span class="sourceLineNo">280</span><a id="line.280">            @Nonnull Optional&lt;ListeningScheduledExecutorService&gt; executorService,</a>
+<span class="sourceLineNo">281</span><a id="line.281">            @Nonnull Optional&lt;SpannerDriverSettings&gt; driverSettings,</a>
+<span class="sourceLineNo">282</span><a id="line.282">            @Nonnull Optional&lt;SpannerOptions.Builder&gt; baseOptions,</a>
+<span class="sourceLineNo">283</span><a id="line.283">            @Nonnull Optional&lt;CacheDriver&lt;K, M&gt;&gt; cacheDriver) {</a>
+<span class="sourceLineNo">284</span><a id="line.284">        return acquire(</a>
+<span class="sourceLineNo">285</span><a id="line.285">            baseOptions.orElse(SpannerOptions.newBuilder()),</a>
+<span class="sourceLineNo">286</span><a id="line.286">            defaultDatabase,</a>
+<span class="sourceLineNo">287</span><a id="line.287">            SpannerStubSettings.defaultTransportChannelProvider(),</a>
+<span class="sourceLineNo">288</span><a id="line.288">            Optional.of(SpannerStubSettings.defaultCredentialsProviderBuilder().build()),</a>
+<span class="sourceLineNo">289</span><a id="line.289">            Optional.empty(),</a>
+<span class="sourceLineNo">290</span><a id="line.290">            GrpcTransportOptions.newBuilder().build(),</a>
+<span class="sourceLineNo">291</span><a id="line.291">            executorService.orElseGet(() -&gt; MoreExecutors.listeningDecorator(</a>
+<span class="sourceLineNo">292</span><a id="line.292">                Executors.newScheduledThreadPool(3)</a>
+<span class="sourceLineNo">293</span><a id="line.293">            )),</a>
+<span class="sourceLineNo">294</span><a id="line.294">            keyInstance,</a>
+<span class="sourceLineNo">295</span><a id="line.295">            messageInstance,</a>
+<span class="sourceLineNo">296</span><a id="line.296">            driverSettings.orElse(SpannerDriverSettings.DEFAULTS),</a>
+<span class="sourceLineNo">297</span><a id="line.297">            cacheDriver</a>
+<span class="sourceLineNo">298</span><a id="line.298">        );</a>
+<span class="sourceLineNo">299</span><a id="line.299">    }</a>
+<span class="sourceLineNo">300</span><a id="line.300"></a>
+<span class="sourceLineNo">301</span><a id="line.301">    /**</a>
+<span class="sourceLineNo">302</span><a id="line.302">     * Create or acquire a {@link SpannerAdapter} and matching {@link SpannerDriver} for the provided generated model</a>
+<span class="sourceLineNo">303</span><a id="line.303">     * key and object structures, working against the provided Spanner {@link DatabaseId}.</a>
+<span class="sourceLineNo">304</span><a id="line.304">     *</a>
+<span class="sourceLineNo">305</span><a id="line.305">     * &lt;p&gt;This method variant additionally allows the developer to specify a custom</a>
+<span class="sourceLineNo">306</span><a id="line.306">     * {@link ListeningScheduledExecutorService} to use for background operation execution, and a set of</a>
+<span class="sourceLineNo">307</span><a id="line.307">     * {@link SpannerOptions} to use when spawning RPC clients. This executor service is injected directly into the</a>
+<span class="sourceLineNo">308</span><a id="line.308">     * {@link SpannerDriver} and underlying Spanner RPC clients, and is used for both RPC operational execution and</a>
+<span class="sourceLineNo">309</span><a id="line.309">     * async followup.&lt;/p&gt;</a>
+<span class="sourceLineNo">310</span><a id="line.310">     *</a>
+<span class="sourceLineNo">311</span><a id="line.311">     * &lt;p&gt;Variants of this method provide either simpler invocation, or deeper control over interactions with the</a>
+<span class="sourceLineNo">312</span><a id="line.312">     * Spanner service. See below for alternatives.&lt;/p&gt;</a>
+<span class="sourceLineNo">313</span><a id="line.313">     *</a>
+<span class="sourceLineNo">314</span><a id="line.314">     * @see #acquire(Message, Message, DatabaseId) For a simpler version of this method which uses managed driver</a>
+<span class="sourceLineNo">315</span><a id="line.315">     *      settings and a sensible cached threadpool executor.</a>
+<span class="sourceLineNo">316</span><a id="line.316">     * @see #acquire(Message, Message, DatabaseId, ListeningScheduledExecutorService) For a simpler version of this</a>
+<span class="sourceLineNo">317</span><a id="line.317">     *      method which uses managed driver settings.</a>
+<span class="sourceLineNo">318</span><a id="line.318">     * @see #acquire(SpannerOptions.Builder, DatabaseId, TransportChannelProvider, Optional, Optional,</a>
+<span class="sourceLineNo">319</span><a id="line.319">     *      GrpcTransportOptions, ListeningScheduledExecutorService, Message, Message, SpannerDriverSettings, Optional)</a>
+<span class="sourceLineNo">320</span><a id="line.320">     *      Full control over creation of the Spanner adapter and driver.</a>
+<span class="sourceLineNo">321</span><a id="line.321">     * @param keyInstance Generated key {@link Message} structure, for which the adapter should be specialized.</a>
+<span class="sourceLineNo">322</span><a id="line.322">     * @param messageInstance Generated object {@link Message} structure, for which the adapter should be specialized.</a>
+<span class="sourceLineNo">323</span><a id="line.323">     * @param defaultDatabase Default Spanner database to use when interacting with this adapter. This value may be</a>
+<span class="sourceLineNo">324</span><a id="line.324">     *                        overridden on an individual operation basis via specifying custom</a>
+<span class="sourceLineNo">325</span><a id="line.325">     *                        {@link SpannerDriver.SpannerOperationOptions} and descendents.</a>
+<span class="sourceLineNo">326</span><a id="line.326">     * @param baseOptions Spanner options to use when spawning RPC clients.</a>
+<span class="sourceLineNo">327</span><a id="line.327">     * @param executorService Executor service to use for primary RPC execution and related followup.</a>
+<span class="sourceLineNo">328</span><a id="line.328">     * @param &lt;K&gt; Model key structure for which the resulting adapter should be specialized.</a>
+<span class="sourceLineNo">329</span><a id="line.329">     * @param &lt;M&gt; Model object structure for which the resulting adapter should be specialized.</a>
+<span class="sourceLineNo">330</span><a id="line.330">     * @return Spanner adapter instance, specialized to the provided model and key {@link Message}s.</a>
+<span class="sourceLineNo">331</span><a id="line.331">     */</a>
+<span class="sourceLineNo">332</span><a id="line.332">    public static @Nonnull &lt;K extends Message, M extends Message&gt; SpannerAdapter&lt;K, M&gt; acquire(</a>
+<span class="sourceLineNo">333</span><a id="line.333">            @Nonnull K keyInstance,</a>
+<span class="sourceLineNo">334</span><a id="line.334">            @Nonnull M messageInstance,</a>
+<span class="sourceLineNo">335</span><a id="line.335">            @Nonnull DatabaseId defaultDatabase,</a>
+<span class="sourceLineNo">336</span><a id="line.336">            @Nonnull SpannerOptions.Builder baseOptions,</a>
+<span class="sourceLineNo">337</span><a id="line.337">            @Nonnull ListeningScheduledExecutorService executorService) {</a>
+<span class="sourceLineNo">338</span><a id="line.338">        return acquire(</a>
+<span class="sourceLineNo">339</span><a id="line.339">            baseOptions,</a>
+<span class="sourceLineNo">340</span><a id="line.340">            defaultDatabase,</a>
+<span class="sourceLineNo">341</span><a id="line.341">            SpannerStubSettings.defaultTransportChannelProvider(),</a>
+<span class="sourceLineNo">342</span><a id="line.342">            Optional.of(SpannerStubSettings.defaultCredentialsProviderBuilder().build()),</a>
+<span class="sourceLineNo">343</span><a id="line.343">            Optional.empty(),</a>
+<span class="sourceLineNo">344</span><a id="line.344">            GrpcTransportOptions.newBuilder().build(),</a>
+<span class="sourceLineNo">345</span><a id="line.345">            executorService,</a>
+<span class="sourceLineNo">346</span><a id="line.346">            keyInstance,</a>
+<span class="sourceLineNo">347</span><a id="line.347">            messageInstance,</a>
+<span class="sourceLineNo">348</span><a id="line.348">            SpannerDriverSettings.DEFAULTS,</a>
+<span class="sourceLineNo">349</span><a id="line.349">            Optional.empty()</a>
+<span class="sourceLineNo">350</span><a id="line.350">        );</a>
+<span class="sourceLineNo">351</span><a id="line.351">    }</a>
+<span class="sourceLineNo">352</span><a id="line.352"></a>
+<span class="sourceLineNo">353</span><a id="line.353">    /**</a>
+<span class="sourceLineNo">354</span><a id="line.354">     * Create or acquire a {@link SpannerAdapter} and matching {@link SpannerDriver} for the provided generated model</a>
+<span class="sourceLineNo">355</span><a id="line.355">     * key and object structures, working against the provided Spanner {@link DatabaseId}.</a>
+<span class="sourceLineNo">356</span><a id="line.356">     *</a>
+<span class="sourceLineNo">357</span><a id="line.357">     * &lt;p&gt;This method variant additionally allows the developer to specify all custom settings available for the Spanner</a>
+<span class="sourceLineNo">358</span><a id="line.358">     * driver and adapter.&lt;/p&gt;</a>
+<span class="sourceLineNo">359</span><a id="line.359">     *</a>
+<span class="sourceLineNo">360</span><a id="line.360">     * &lt;p&gt;Variants of this method provide simpler invocation, for looser coupling with applications. See below to</a>
+<span class="sourceLineNo">361</span><a id="line.361">     * consider these alternatives for situations where deep control isn't necessary.&lt;/p&gt;</a>
+<span class="sourceLineNo">362</span><a id="line.362">     *</a>
+<span class="sourceLineNo">363</span><a id="line.363">     * @param baseOptions Spanner options to use when spawning RPC clients.</a>
+<span class="sourceLineNo">364</span><a id="line.364">     * @param defaultDatabase Default Spanner database to use when interacting with this adapter. This value may be</a>
+<span class="sourceLineNo">365</span><a id="line.365">     *                        overridden on an individual operation basis via specifying custom</a>
+<span class="sourceLineNo">366</span><a id="line.366">     *                        {@link SpannerDriver.SpannerOperationOptions} and descendents.</a>
+<span class="sourceLineNo">367</span><a id="line.367">     * @param spannerChannel Transport channel provider to use when spawning RPC connections to Spanner.</a>
+<span class="sourceLineNo">368</span><a id="line.368">     * @param credentialsProvider Credentials provider to use when authorizing calls to Spanner.</a>
+<span class="sourceLineNo">369</span><a id="line.369">     * @param callCredentialProvider Call-level credentials provider to use when authorizing calls to Spanner. Optional.</a>
+<span class="sourceLineNo">370</span><a id="line.370">     * @param transportOptions Transport options to apply when interacting with Spanner services.</a>
+<span class="sourceLineNo">371</span><a id="line.371">     * @param executorService Executor service to use for primary RPC execution and related followup.</a>
+<span class="sourceLineNo">372</span><a id="line.372">     * @param keyInstance Generated key {@link Message} structure, for which the adapter should be specialized.</a>
+<span class="sourceLineNo">373</span><a id="line.373">     * @param messageInstance Generated object {@link Message} structure, for which the adapter should be specialized.</a>
+<span class="sourceLineNo">374</span><a id="line.374">     * @param driverSettings Settings to apply to the Spanner driver and adapter itself.</a>
+<span class="sourceLineNo">375</span><a id="line.375">     * @param cacheDriver Cache engine to use when interacting with the underlying driver.</a>
+<span class="sourceLineNo">376</span><a id="line.376">     * @param &lt;K&gt; Model key structure for which the resulting adapter should be specialized.</a>
+<span class="sourceLineNo">377</span><a id="line.377">     * @param &lt;M&gt; Model object structure for which the resulting adapter should be specialized.</a>
+<span class="sourceLineNo">378</span><a id="line.378">     * @return Spanner adapter instance, specialized to the provided model and key {@link Message}s.</a>
+<span class="sourceLineNo">379</span><a id="line.379">     */</a>
+<span class="sourceLineNo">380</span><a id="line.380">    public static @Nonnull &lt;K extends Message, M extends Message&gt; SpannerAdapter&lt;K, M&gt; acquire(</a>
+<span class="sourceLineNo">381</span><a id="line.381">            @Nonnull SpannerOptions.Builder baseOptions,</a>
+<span class="sourceLineNo">382</span><a id="line.382">            @Nonnull DatabaseId defaultDatabase,</a>
+<span class="sourceLineNo">383</span><a id="line.383">            @Nonnull @GoogleAPIChannel(service = GoogleService.SPANNER) TransportChannelProvider spannerChannel,</a>
+<span class="sourceLineNo">384</span><a id="line.384">            @Nonnull Optional&lt;CredentialsProvider&gt; credentialsProvider,</a>
+<span class="sourceLineNo">385</span><a id="line.385">            @Nonnull Optional&lt;SpannerOptions.CallCredentialsProvider&gt; callCredentialProvider,</a>
+<span class="sourceLineNo">386</span><a id="line.386">            @Nonnull GrpcTransportOptions transportOptions,</a>
+<span class="sourceLineNo">387</span><a id="line.387">            @Nonnull ListeningScheduledExecutorService executorService,</a>
+<span class="sourceLineNo">388</span><a id="line.388">            @Nonnull K keyInstance,</a>
+<span class="sourceLineNo">389</span><a id="line.389">            @Nonnull M messageInstance,</a>
+<span class="sourceLineNo">390</span><a id="line.390">            @Nonnull SpannerDriverSettings driverSettings,</a>
+<span class="sourceLineNo">391</span><a id="line.391">            @Nonnull Optional&lt;CacheDriver&lt;K, M&gt;&gt; cacheDriver) {</a>
+<span class="sourceLineNo">392</span><a id="line.392">        return SpannerAdapterFactory.acquire(</a>
+<span class="sourceLineNo">393</span><a id="line.393">            SpannerDriver.SpannerDriverFactory.acquireDriver(</a>
+<span class="sourceLineNo">394</span><a id="line.394">                baseOptions,</a>
+<span class="sourceLineNo">395</span><a id="line.395">                defaultDatabase,</a>
+<span class="sourceLineNo">396</span><a id="line.396">                spannerChannel,</a>
+<span class="sourceLineNo">397</span><a id="line.397">                credentialsProvider,</a>
+<span class="sourceLineNo">398</span><a id="line.398">                callCredentialProvider,</a>
+<span class="sourceLineNo">399</span><a id="line.399">                transportOptions,</a>
+<span class="sourceLineNo">400</span><a id="line.400">                executorService,</a>
+<span class="sourceLineNo">401</span><a id="line.401">                keyInstance,</a>
+<span class="sourceLineNo">402</span><a id="line.402">                messageInstance,</a>
+<span class="sourceLineNo">403</span><a id="line.403">                driverSettings</a>
+<span class="sourceLineNo">404</span><a id="line.404">            ),</a>
+<span class="sourceLineNo">405</span><a id="line.405">            cacheDriver</a>
+<span class="sourceLineNo">406</span><a id="line.406">        );</a>
+<span class="sourceLineNo">407</span><a id="line.407">    }</a>
+<span class="sourceLineNo">408</span><a id="line.408"></a>
+<span class="sourceLineNo">409</span><a id="line.409">    // -- API: Closeable -- //</a>
+<span class="sourceLineNo">410</span><a id="line.410"></a>
+<span class="sourceLineNo">411</span><a id="line.411">    @Override</a>
+<span class="sourceLineNo">412</span><a id="line.412">    public void close() {</a>
+<span class="sourceLineNo">413</span><a id="line.413">        // Not yet implemented.</a>
+<span class="sourceLineNo">414</span><a id="line.414">    }</a>
+<span class="sourceLineNo">415</span><a id="line.415"></a>
+<span class="sourceLineNo">416</span><a id="line.416">    // -- Components -- //</a>
+<span class="sourceLineNo">417</span><a id="line.417"></a>
+<span class="sourceLineNo">418</span><a id="line.418">    /** {@inheritDoc} */</a>
+<span class="sourceLineNo">419</span><a id="line.419">    @Override</a>
+<span class="sourceLineNo">420</span><a id="line.420">    public @Nonnull ModelCodec&lt;Model, Mutation, Struct&gt; codec() {</a>
+<span class="sourceLineNo">421</span><a id="line.421">        return this.codec;</a>
+<span class="sourceLineNo">422</span><a id="line.422">    }</a>
+<span class="sourceLineNo">423</span><a id="line.423"></a>
+<span class="sourceLineNo">424</span><a id="line.424">    /** {@inheritDoc} */</a>
+<span class="sourceLineNo">425</span><a id="line.425">    @Override</a>
+<span class="sourceLineNo">426</span><a id="line.426">    public @Nonnull Optional&lt;CacheDriver&lt;Key, Model&gt;&gt; cache() {</a>
+<span class="sourceLineNo">427</span><a id="line.427">        return this.cache;</a>
+<span class="sourceLineNo">428</span><a id="line.428">    }</a>
+<span class="sourceLineNo">429</span><a id="line.429"></a>
+<span class="sourceLineNo">430</span><a id="line.430">    /** {@inheritDoc} */</a>
+<span class="sourceLineNo">431</span><a id="line.431">    @Override</a>
+<span class="sourceLineNo">432</span><a id="line.432">    public @Nonnull DatabaseDriver&lt;Key, Model, Struct, Mutation&gt; engine() {</a>
+<span class="sourceLineNo">433</span><a id="line.433">        return this.driver;</a>
+<span class="sourceLineNo">434</span><a id="line.434">    }</a>
+<span class="sourceLineNo">435</span><a id="line.435"></a>
+<span class="sourceLineNo">436</span><a id="line.436">    /** {@inheritDoc} */</a>
+<span class="sourceLineNo">437</span><a id="line.437">    @Override</a>
+<span class="sourceLineNo">438</span><a id="line.438">    public @Nonnull ListeningScheduledExecutorService executorService() {</a>
+<span class="sourceLineNo">439</span><a id="line.439">        return driver.executorService();</a>
+<span class="sourceLineNo">440</span><a id="line.440">    }</a>
+<span class="sourceLineNo">441</span><a id="line.441"></a>
+<span class="sourceLineNo">442</span><a id="line.442">    // -- Spanner: Extended API -- //</a>
+<span class="sourceLineNo">443</span><a id="line.443"></a>
+<span class="sourceLineNo">444</span><a id="line.444">    /**</a>
+<span class="sourceLineNo">445</span><a id="line.445">     * Acquire the Spanner for Java client powering this adapter.</a>
+<span class="sourceLineNo">446</span><a id="line.446">     *</a>
+<span class="sourceLineNo">447</span><a id="line.447">     * @return Spanner client for Java.</a>
+<span class="sourceLineNo">448</span><a id="line.448">     */</a>
+<span class="sourceLineNo">449</span><a id="line.449">    public @Nonnull Spanner spanner() {</a>
+<span class="sourceLineNo">450</span><a id="line.450">        return ((SpannerDriver&lt;Key, Model&gt;)engine()).engine;</a>
+<span class="sourceLineNo">451</span><a id="line.451">    }</a>
+<span class="sourceLineNo">452</span><a id="line.452">}</a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</main>
+</body>
+</html>

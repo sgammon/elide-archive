@@ -16,6 +16,7 @@ package gust.backend.model;
 /**
  *
  */
-public interface DatabaseManager<Driver extends DatabaseDriver> extends PersistenceManager<Driver> {
-  /* Nothing yet. */
+@SuppressWarnings("rawtypes")
+public interface DatabaseManager<Adapter extends DatabaseAdapter, Driver extends DatabaseDriver>
+         extends PersistenceManager<Driver> {
 }

@@ -35,6 +35,7 @@ ENABLE_REPORTCI ?= yes
 JS_COVERAGE_REPORT ?= no
 REPORTS ?= reports
 CI_REPO ?= sgammon/elide
+DEVCONTAINER ?= $(shell echo $$DEVCONTAINER)
 
 SAMPLES ?= //samples/rest_mvc/java:MicronautMVCSample //samples/soy_ssr/src:MicronautSSRSample
 
@@ -54,13 +55,12 @@ OUTPATH ?= $(DISTPATH)/out
 BINPATH ?= $(DISTPATH)/bin
 UNZIP ?= $(shell which unzip)
 REVISION ?= $(shell git describe --abbrev=7 --always --tags HEAD)
-BASE_VERSION ?= v1b
+BASE_VERSION ?= v2a
 VERSION ?= $(shell (cat package.json | grep version | head -1 | awk -F: '{ print $2 }' | sed 's/[",]//g' | tr -d '[[:space:]]' | sed 's/version\://g'))
 CHROME_COVERAGE ?= $(shell find dist/out/$(OUTPUT_BASE)/bin -name "coverage*.dat" | grep chrome | xargs)
 COVERAGE_DATA ?= $(OUTPATH)/_coverage/_coverage_report.dat
 COVERAGE_REPORT ?= $(REPORTS)/coverage
 COVERAGE_ARGS ?= --function-coverage \
-                 --branch-coverage \
                  --highlight \
                  --demangle-cpp \
                  --show-details \
@@ -74,7 +74,7 @@ COVERAGE_ARGS ?= --function-coverage \
 APP ?=
 TARGETS ?= //java/... //gust/... //style/...
 LABS_TARGETS ?= //js/...
-TESTS ?= //javatests:suite
+TESTS ?= //javatests:suite //tests:suite
 LABS_TESTS ?= //jstests/...
 COVERABLE ?= $(TESTS)
 
@@ -84,7 +84,7 @@ TEST_ARGS ?=
 else
 TEST_ARGS ?= --test_output=errors
 endif
-TEST_ARGS_WITH_COVERAGE ?= --combined_report=lcov --nocache_test_results
+TEST_ARGS_WITH_COVERAGE ?= --combined_report=lcov
 BUILD_ARGS ?= --define project=$(PROJECT)
 
 BUILDKEY_PLAINTEXT ?= $(shell pwd)/crypto/build-key.json
@@ -168,15 +168,29 @@ LN ?= $(shell which ln)
 CURL ?= $(shell which curl)
 CHMOD ?= $(shell which chmod)
 MKDIR ?= $(shell which mkdir)
-BAZELISK ?= $(ENV)/bin/bazelisk
 GENHTML ?= $(shell which genhtml)
+DOCKER ?= $(shell which docker)
+
+ifeq ($(DEVCONTAINER),yes)
+BAZELISK ?= $(shell which bazelisk)
+IBAZEL ?= $(shell which ibazel)
+else
+BAZELISK ?= $(ENV)/bin/bazelisk
 IBAZEL ?= $(ENV)/bin/ibazel
+endif
+
+PYTHON ?= $(shell which python)
+VIRTUALENV ?= $(shell which virtualenv)
 
 # Flag: `CI`
 ifeq ($(CI),yes)
 TAG += --config=ci
 else
-TAG += --config=dev
+ifeq ($(DEVCONTAINER),yes)
+TAG += --config=dev --config=labs
+else
+TAG += --config=dev-local --config=labs
+endif
 endif
 
 # Flag: `DEBUG`
@@ -202,7 +216,11 @@ endif
 
 all: devtools build test  ## Build and test all framework targets.
 
+ifeq ($(DEVCONTAINER),yes)
+build:
+else
 build: $(ENV)  ## Build all framework targets.
+endif
 	$(info Building $(PROJECT_NAME)...)
 	$(_RULE)$(BAZELISK) $(BAZELISK_ARGS) build $(TAG) $(BASE_ARGS) $(BUILD_ARGS) -- $(TARGETS)
 
@@ -218,11 +236,11 @@ clean: clean-docs clean-reports  ## Clean ephemeral targets.
 
 clean-docs:  ## Clean built documentation.
 	@echo "Cleaning docs..."
-	$(_RULE)rm -fr $(POSIX_FLAGS) $(DOCS)
+	$(_RULE)rm -fr $(POSIX_FLAGS) $(DOCS)/java
 
 clean-reports:  ## Clean built reports.
 	@echo "Cleaning reports..."
-	$(_RULE) -fr $(POSIX_FLAGS) $(REPORTS)
+	$(_RULE)rm -fr $(POSIX_FLAGS) $(REPORTS)
 
 bases:  ## Build base images and push them.
 	@echo "Building Alpine base ('$(BASE_VERSION)')..."
@@ -287,8 +305,7 @@ serve-coverage:  ## Serve the current coverage report (must generate first).
 
 report-tests: ## Report test results to Report.CI.
 	@echo "Scanning for test results..."
-	$(_RULE)pip install -r tools/requirements.txt
-	$(_RULE)find dist/out/$(OUTPUT_BASE) -name test.xml | xargs python3 tools/merge_test_results.py reports/tests.xml
+	$(_RULE)find dist/out/$(OUTPUT_BASE) -name test.xml | xargs $(ENV)/bin/python tools/merge_test_results.py reports/tests.xml
 	@echo "Generating HTML test report..."
 	$(_RULE)cd reports && python3 -m junit2htmlreport tests.xml
 ifeq ($(ENABLE_REPORTCI),yes)
@@ -348,6 +365,10 @@ $(ENV):
 	$(_RULE)$(LN) -s $(ENV)/bazel/ibazel-$(PLATFORM) $(ENV)/bin/ibazel
 	$(_RULE)$(CHMOD) +x $(ENV)/bazel/bazelisk-$(PLATFORM) $(ENV)/bin/bazelisk $(ENV)/bazel/ibazel-$(PLATFORM) $(ENV)/bin/ibazel
 	$(_RULE)$(ENV)/bin/bazelisk version
+	@echo "Creating virtualenv..."
+	$(_RULE)$(VIRTUALENV) $(ENV)/python --python=$(PYTHON)
+	$(_RULE)$(LN) -s $(ENV)/python/bin/python3 $(ENV)/bin/python
+	$(_RULE)$(ENV)/python/bin/pip install -r $(PWD)/tools/requirements.txt
 	@echo "Build environment ready."	
 
 ## Crypto
@@ -366,5 +387,5 @@ decrypt: $(BUILDKEY_PLAINTEXT)  ## Decrypt private key material.
 	@echo "Key material decrypted."
 
 
-.PHONY: build test help samples release-images update-deps devtools
+.PHONY: build test help samples release-images update-deps devtools docs
 

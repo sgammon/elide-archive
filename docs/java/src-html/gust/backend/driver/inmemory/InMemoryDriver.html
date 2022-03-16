@@ -1,0 +1,337 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<main role="main">
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span><a id="line.1">/*</a>
+<span class="sourceLineNo">002</span><a id="line.2"> * Copyright © 2020, The Gust Framework Authors. All rights reserved.</a>
+<span class="sourceLineNo">003</span><a id="line.3"> *</a>
+<span class="sourceLineNo">004</span><a id="line.4"> * The Gust/Elide framework and tools, and all associated source or object computer code, except where otherwise noted,</a>
+<span class="sourceLineNo">005</span><a id="line.5"> * are licensed under the Zero Prosperity license, which is enclosed in this repository, in the file LICENSE.txt. Use of</a>
+<span class="sourceLineNo">006</span><a id="line.6"> * this code in object or source form requires and implies consent and agreement to that license in principle and</a>
+<span class="sourceLineNo">007</span><a id="line.7"> * practice. Source or object code not listing this header, or unless specified otherwise, remain the property of</a>
+<span class="sourceLineNo">008</span><a id="line.8"> * Elide LLC and its suppliers, if any. The intellectual and technical concepts contained herein are proprietary to</a>
+<span class="sourceLineNo">009</span><a id="line.9"> * Elide LLC and its suppliers and may be covered by U.S. and Foreign Patents, or patents in process, and are protected</a>
+<span class="sourceLineNo">010</span><a id="line.10"> * by trade secret and copyright law. Dissemination of this information, or reproduction of this material, in any form,</a>
+<span class="sourceLineNo">011</span><a id="line.11"> * is strictly forbidden except in adherence with assigned license requirements.</a>
+<span class="sourceLineNo">012</span><a id="line.12"> */</a>
+<span class="sourceLineNo">013</span><a id="line.13">package gust.backend.driver.inmemory;</a>
+<span class="sourceLineNo">014</span><a id="line.14"></a>
+<span class="sourceLineNo">015</span><a id="line.15">import com.google.common.util.concurrent.ListeningScheduledExecutorService;</a>
+<span class="sourceLineNo">016</span><a id="line.16">import com.google.errorprone.annotations.CanIgnoreReturnValue;</a>
+<span class="sourceLineNo">017</span><a id="line.17">import com.google.protobuf.Message;</a>
+<span class="sourceLineNo">018</span><a id="line.18">import gust.backend.model.*;</a>
+<span class="sourceLineNo">019</span><a id="line.19">import gust.backend.runtime.Logging;</a>
+<span class="sourceLineNo">020</span><a id="line.20">import gust.backend.runtime.ReactiveFuture;</a>
+<span class="sourceLineNo">021</span><a id="line.21">import org.slf4j.Logger;</a>
+<span class="sourceLineNo">022</span><a id="line.22">import tools.elide.core.DatapointType;</a>
+<span class="sourceLineNo">023</span><a id="line.23"></a>
+<span class="sourceLineNo">024</span><a id="line.24">import javax.annotation.Nonnull;</a>
+<span class="sourceLineNo">025</span><a id="line.25">import javax.annotation.Nullable;</a>
+<span class="sourceLineNo">026</span><a id="line.26">import javax.annotation.concurrent.Immutable;</a>
+<span class="sourceLineNo">027</span><a id="line.27">import java.util.Objects;</a>
+<span class="sourceLineNo">028</span><a id="line.28">import java.util.Optional;</a>
+<span class="sourceLineNo">029</span><a id="line.29">import java.util.concurrent.ConcurrentMap;</a>
+<span class="sourceLineNo">030</span><a id="line.30">import java.util.concurrent.ConcurrentSkipListMap;</a>
+<span class="sourceLineNo">031</span><a id="line.31"></a>
+<span class="sourceLineNo">032</span><a id="line.32">import static java.lang.String.format;</a>
+<span class="sourceLineNo">033</span><a id="line.33">import static gust.backend.model.ModelMetadata.*;</a>
+<span class="sourceLineNo">034</span><a id="line.34"></a>
+<span class="sourceLineNo">035</span><a id="line.35"></a>
+<span class="sourceLineNo">036</span><a id="line.36">/**</a>
+<span class="sourceLineNo">037</span><a id="line.37"> * Proxies calls to a static concurrent map, held by a private singleton. This nicely supplies local entity storage for</a>
+<span class="sourceLineNo">038</span><a id="line.38"> * simple testing and mocking purposes. Please do not use this in production. The in-memory data engine does not support</a>
+<span class="sourceLineNo">039</span><a id="line.39"> * queries, persistence, or nearly anything except get/put/delete.</a>
+<span class="sourceLineNo">040</span><a id="line.40"> *</a>
+<span class="sourceLineNo">041</span><a id="line.41"> * @param &lt;Model&gt; Model/message type which we are storing with this driver.</a>
+<span class="sourceLineNo">042</span><a id="line.42"> */</a>
+<span class="sourceLineNo">043</span><a id="line.43">@SuppressWarnings("UnstableApiUsage")</a>
+<span class="sourceLineNo">044</span><a id="line.44">public final class InMemoryDriver&lt;Key extends Message, Model extends Message&gt;</a>
+<span class="sourceLineNo">045</span><a id="line.45">  implements PersistenceDriver&lt;Key, Model, EncodedModel, EncodedModel&gt; {</a>
+<span class="sourceLineNo">046</span><a id="line.46">  /** Private logging pipe. */</a>
+<span class="sourceLineNo">047</span><a id="line.47">  private static final Logger logging = Logging.logger(InMemoryStorage.class);</a>
+<span class="sourceLineNo">048</span><a id="line.48"></a>
+<span class="sourceLineNo">049</span><a id="line.49">  /** Codec to use for model serialization/de-serialization. */</a>
+<span class="sourceLineNo">050</span><a id="line.50">  private final @Nonnull ModelCodec&lt;Model, EncodedModel, EncodedModel&gt; codec;</a>
+<span class="sourceLineNo">051</span><a id="line.51"></a>
+<span class="sourceLineNo">052</span><a id="line.52">  /** Executor service to use for storage calls. */</a>
+<span class="sourceLineNo">053</span><a id="line.53">  private final @Nonnull ListeningScheduledExecutorService executorService;</a>
+<span class="sourceLineNo">054</span><a id="line.54"></a>
+<span class="sourceLineNo">055</span><a id="line.55">  /** Holds private "data storage" via in-memory concurrent map. */</a>
+<span class="sourceLineNo">056</span><a id="line.56">  @Immutable</a>
+<span class="sourceLineNo">057</span><a id="line.57">  private final static class InMemoryStorage {</a>
+<span class="sourceLineNo">058</span><a id="line.58">    /** Storage singleton instance. */</a>
+<span class="sourceLineNo">059</span><a id="line.59">    private final static InMemoryStorage INSTANCE;</a>
+<span class="sourceLineNo">060</span><a id="line.60"></a>
+<span class="sourceLineNo">061</span><a id="line.61">    /** Backing storage map. */</a>
+<span class="sourceLineNo">062</span><a id="line.62">    private final @Nonnull ConcurrentMap&lt;Object, EncodedModel&gt; storageMap;</a>
+<span class="sourceLineNo">063</span><a id="line.63"></a>
+<span class="sourceLineNo">064</span><a id="line.64">    static {</a>
+<span class="sourceLineNo">065</span><a id="line.65">      INSTANCE = new InMemoryStorage();</a>
+<span class="sourceLineNo">066</span><a id="line.66">    }</a>
+<span class="sourceLineNo">067</span><a id="line.67"></a>
+<span class="sourceLineNo">068</span><a id="line.68">    /** Private constructor. Acquire via {@link #acquire()}. */</a>
+<span class="sourceLineNo">069</span><a id="line.69">    private InMemoryStorage() {</a>
+<span class="sourceLineNo">070</span><a id="line.70">      storageMap = new ConcurrentSkipListMap&lt;&gt;();</a>
+<span class="sourceLineNo">071</span><a id="line.71">    }</a>
+<span class="sourceLineNo">072</span><a id="line.72"></a>
+<span class="sourceLineNo">073</span><a id="line.73">    /** @return In-memory storage window singleton. */</a>
+<span class="sourceLineNo">074</span><a id="line.74">    @CanIgnoreReturnValue</a>
+<span class="sourceLineNo">075</span><a id="line.75">    private static @Nonnull ConcurrentMap&lt;Object, EncodedModel&gt; acquire() {</a>
+<span class="sourceLineNo">076</span><a id="line.76">      return INSTANCE.storageMap;</a>
+<span class="sourceLineNo">077</span><a id="line.77">    }</a>
+<span class="sourceLineNo">078</span><a id="line.78">  }</a>
+<span class="sourceLineNo">079</span><a id="line.79"></a>
+<span class="sourceLineNo">080</span><a id="line.80">  /**</a>
+<span class="sourceLineNo">081</span><a id="line.81">   * Construct a new in-memory driver from scratch. This constructor is private to force use of static factory methods</a>
+<span class="sourceLineNo">082</span><a id="line.82">   * also defined on this class.</a>
+<span class="sourceLineNo">083</span><a id="line.83">   *</a>
+<span class="sourceLineNo">084</span><a id="line.84">   * @param codec Codec to use when serializing and de-serializing models with this driver.</a>
+<span class="sourceLineNo">085</span><a id="line.85">   * @param executorService Executor service to run against.</a>
+<span class="sourceLineNo">086</span><a id="line.86">   */</a>
+<span class="sourceLineNo">087</span><a id="line.87">  private InMemoryDriver(@Nonnull ModelCodec&lt;Model, EncodedModel, EncodedModel&gt; codec,</a>
+<span class="sourceLineNo">088</span><a id="line.88">                         @Nonnull ListeningScheduledExecutorService executorService) {</a>
+<span class="sourceLineNo">089</span><a id="line.89">    this.codec = codec;</a>
+<span class="sourceLineNo">090</span><a id="line.90">    this.executorService = executorService;</a>
+<span class="sourceLineNo">091</span><a id="line.91">  }</a>
+<span class="sourceLineNo">092</span><a id="line.92"></a>
+<span class="sourceLineNo">093</span><a id="line.93">  /**</a>
+<span class="sourceLineNo">094</span><a id="line.94">   * Acquire an in-memory driver instance for the provided model type and builder. Although the driver object itself is</a>
+<span class="sourceLineNo">095</span><a id="line.95">   * created for the purpose, it accesses a static concurrent map backing all in-memory driver instances to facilitate</a>
+<span class="sourceLineNo">096</span><a id="line.96">   * storage.</a>
+<span class="sourceLineNo">097</span><a id="line.97">   *</a>
+<span class="sourceLineNo">098</span><a id="line.98">   * &lt;p&gt;It is generally recommended to acquire an instance of this driver through the adapter instead. This can be</a>
+<span class="sourceLineNo">099</span><a id="line.99">   * accomplished via {@link InMemoryAdapter#acquire(Message, Message, Optional, ListeningScheduledExecutorService)},</a>
+<span class="sourceLineNo">100</span><a id="line.100">   * followed by {@link InMemoryAdapter#engine()}.&lt;/p&gt;</a>
+<span class="sourceLineNo">101</span><a id="line.101">   *</a>
+<span class="sourceLineNo">102</span><a id="line.102">   * @see InMemoryAdapter#acquire(Message, Message, ListeningScheduledExecutorService) to acquire a full adapter.</a>
+<span class="sourceLineNo">103</span><a id="line.103">   * @param &lt;K&gt; Key type to specify for the attached model type.</a>
+<span class="sourceLineNo">104</span><a id="line.104">   * @param &lt;M&gt; Model/message type for which we should return an in-memory storage driver.</a>
+<span class="sourceLineNo">105</span><a id="line.105">   * @param codec Codec to use when serializing and de-serializing models with this driver.</a>
+<span class="sourceLineNo">106</span><a id="line.106">   * @param executorService Executor service to use for storage calls.</a>
+<span class="sourceLineNo">107</span><a id="line.107">   * @return In-memory driver instance created for the specified message type.</a>
+<span class="sourceLineNo">108</span><a id="line.108">   */</a>
+<span class="sourceLineNo">109</span><a id="line.109">  static @Nonnull &lt;K extends Message, M extends Message&gt; InMemoryDriver&lt;K, M&gt; acquire(</a>
+<span class="sourceLineNo">110</span><a id="line.110">    @Nonnull ModelCodec&lt;M, EncodedModel, EncodedModel&gt; codec,</a>
+<span class="sourceLineNo">111</span><a id="line.111">    @Nonnull ListeningScheduledExecutorService executorService) {</a>
+<span class="sourceLineNo">112</span><a id="line.112">    return new InMemoryDriver&lt;&gt;(codec, executorService);</a>
+<span class="sourceLineNo">113</span><a id="line.113">  }</a>
+<span class="sourceLineNo">114</span><a id="line.114"></a>
+<span class="sourceLineNo">115</span><a id="line.115">  // -- Getters -- //</a>
+<span class="sourceLineNo">116</span><a id="line.116">  /** {@inheritDoc} */</a>
+<span class="sourceLineNo">117</span><a id="line.117">  @Override</a>
+<span class="sourceLineNo">118</span><a id="line.118">  public @Nonnull ModelCodec&lt;Model, EncodedModel, EncodedModel&gt; codec() {</a>
+<span class="sourceLineNo">119</span><a id="line.119">    return this.codec;</a>
+<span class="sourceLineNo">120</span><a id="line.120">  }</a>
+<span class="sourceLineNo">121</span><a id="line.121"></a>
+<span class="sourceLineNo">122</span><a id="line.122">  /** {@inheritDoc} */</a>
+<span class="sourceLineNo">123</span><a id="line.123">  @Override</a>
+<span class="sourceLineNo">124</span><a id="line.124">  public @Nonnull ListeningScheduledExecutorService executorService() {</a>
+<span class="sourceLineNo">125</span><a id="line.125">    return this.executorService;</a>
+<span class="sourceLineNo">126</span><a id="line.126">  }</a>
+<span class="sourceLineNo">127</span><a id="line.127"></a>
+<span class="sourceLineNo">128</span><a id="line.128">  // -- API: Fetch -- //</a>
+<span class="sourceLineNo">129</span><a id="line.129">  /** {@inheritDoc} */</a>
+<span class="sourceLineNo">130</span><a id="line.130">  @Override</a>
+<span class="sourceLineNo">131</span><a id="line.131">  public @Nonnull ReactiveFuture&lt;Optional&lt;Model&gt;&gt; retrieve(final @Nonnull Key key,</a>
+<span class="sourceLineNo">132</span><a id="line.132">                                                           final @Nonnull FetchOptions options) {</a>
+<span class="sourceLineNo">133</span><a id="line.133">    Objects.requireNonNull(key, "Cannot fetch model with `null` for key.");</a>
+<span class="sourceLineNo">134</span><a id="line.134">    Objects.requireNonNull(options, "Cannot fetch model without `options`.");</a>
+<span class="sourceLineNo">135</span><a id="line.135">    enforceRole(key, DatapointType.OBJECT_KEY);</a>
+<span class="sourceLineNo">136</span><a id="line.136">    final var id = id(key).orElseThrow(() -&gt; new IllegalArgumentException("Cannot fetch model with empty key."));</a>
+<span class="sourceLineNo">137</span><a id="line.137"></a>
+<span class="sourceLineNo">138</span><a id="line.138">    if (logging.isDebugEnabled())</a>
+<span class="sourceLineNo">139</span><a id="line.139">      logging.debug(format("Retrieving model at ID '%s' from in-memory storage.", id));</a>
+<span class="sourceLineNo">140</span><a id="line.140"></a>
+<span class="sourceLineNo">141</span><a id="line.141">    return ReactiveFuture.wrap(this.executorService.submit(() -&gt; {</a>
+<span class="sourceLineNo">142</span><a id="line.142">      if (logging.isTraceEnabled())</a>
+<span class="sourceLineNo">143</span><a id="line.143">        logging.trace(format("Began async task to retrieve model at ID '%s' from in-memory storage.", id));</a>
+<span class="sourceLineNo">144</span><a id="line.144"></a>
+<span class="sourceLineNo">145</span><a id="line.145">      EncodedModel data = InMemoryStorage.acquire().get(id);</a>
+<span class="sourceLineNo">146</span><a id="line.146">      if (data != null) {</a>
+<span class="sourceLineNo">147</span><a id="line.147">        if (logging.isTraceEnabled())</a>
+<span class="sourceLineNo">148</span><a id="line.148">          logging.trace(format("Model found at ID '%s'. Sending to deserializer...", id));</a>
+<span class="sourceLineNo">149</span><a id="line.149"></a>
+<span class="sourceLineNo">150</span><a id="line.150">        var deserialized = this.codec.deserialize(data);</a>
+<span class="sourceLineNo">151</span><a id="line.151">        if (logging.isDebugEnabled())</a>
+<span class="sourceLineNo">152</span><a id="line.152">          logging.debug(format("Found and deserialized model at ID '%s'. Record follows:\n%s", id, deserialized));</a>
+<span class="sourceLineNo">153</span><a id="line.153">        if (logging.isInfoEnabled())</a>
+<span class="sourceLineNo">154</span><a id="line.154">          logging.info(format("Retrieved record at ID '%s' from in-memory storage.", id));</a>
+<span class="sourceLineNo">155</span><a id="line.155"></a>
+<span class="sourceLineNo">156</span><a id="line.156">        // we found encoded data at the provided key. inflate it with the codec.</a>
+<span class="sourceLineNo">157</span><a id="line.157">        return Optional.of(spliceKey(applyMask(deserialized, options), Optional.of(key)));</a>
+<span class="sourceLineNo">158</span><a id="line.158">      } else {</a>
+<span class="sourceLineNo">159</span><a id="line.159">        if (logging.isWarnEnabled())</a>
+<span class="sourceLineNo">160</span><a id="line.160">          logging.warn(format("Model not found at ID '%s'.", id));</a>
+<span class="sourceLineNo">161</span><a id="line.161"></a>
+<span class="sourceLineNo">162</span><a id="line.162">        // the model was not found.</a>
+<span class="sourceLineNo">163</span><a id="line.163">        return Optional.empty();</a>
+<span class="sourceLineNo">164</span><a id="line.164">      }</a>
+<span class="sourceLineNo">165</span><a id="line.165">    }), options.executorService().orElse(this.executorService));</a>
+<span class="sourceLineNo">166</span><a id="line.166">  }</a>
+<span class="sourceLineNo">167</span><a id="line.167"></a>
+<span class="sourceLineNo">168</span><a id="line.168">  // -- API: Persist -- //</a>
+<span class="sourceLineNo">169</span><a id="line.169">  /** {@inheritDoc} */</a>
+<span class="sourceLineNo">170</span><a id="line.170">  @Override</a>
+<span class="sourceLineNo">171</span><a id="line.171">  public @Nonnull ReactiveFuture&lt;Model&gt; persist(final @Nullable Key key,</a>
+<span class="sourceLineNo">172</span><a id="line.172">                                                final @Nonnull Model model,</a>
+<span class="sourceLineNo">173</span><a id="line.173">                                                final @Nonnull WriteOptions options) {</a>
+<span class="sourceLineNo">174</span><a id="line.174">    Objects.requireNonNull(model, "Cannot persist `null` model.");</a>
+<span class="sourceLineNo">175</span><a id="line.175">    Objects.requireNonNull(options, "Cannot persist model without `options`.");</a>
+<span class="sourceLineNo">176</span><a id="line.176">    if (key != null) enforceRole(key, DatapointType.OBJECT_KEY);</a>
+<span class="sourceLineNo">177</span><a id="line.177"></a>
+<span class="sourceLineNo">178</span><a id="line.178">    // resolve target key, and then write mode</a>
+<span class="sourceLineNo">179</span><a id="line.179">    final @Nonnull Key targetKey = key != null ? key : generateKey(model);</a>
+<span class="sourceLineNo">180</span><a id="line.180">    //noinspection OptionalGetWithoutIsPresent</a>
+<span class="sourceLineNo">181</span><a id="line.181">    final @Nonnull Object targetId = id(targetKey).get();</a>
+<span class="sourceLineNo">182</span><a id="line.182"></a>
+<span class="sourceLineNo">183</span><a id="line.183">    if (logging.isDebugEnabled())</a>
+<span class="sourceLineNo">184</span><a id="line.184">      logging.debug(format("Persisting model at ID '%s' using in-memory storage.", targetId));</a>
+<span class="sourceLineNo">185</span><a id="line.185"></a>
+<span class="sourceLineNo">186</span><a id="line.186">    return ReactiveFuture.wrap(this.executorService.submit(() -&gt; {</a>
+<span class="sourceLineNo">187</span><a id="line.187">      WriteOptions.WriteDisposition writeMode = (</a>
+<span class="sourceLineNo">188</span><a id="line.188">        key == null ? WriteOptions.WriteDisposition.MUST_NOT_EXIST : options.writeMode()</a>
+<span class="sourceLineNo">189</span><a id="line.189">          .orElse(WriteOptions.WriteDisposition.BLIND));</a>
+<span class="sourceLineNo">190</span><a id="line.190"></a>
+<span class="sourceLineNo">191</span><a id="line.191">      if (logging.isTraceEnabled())</a>
+<span class="sourceLineNo">192</span><a id="line.192">        logging.trace(format(</a>
+<span class="sourceLineNo">193</span><a id="line.193">          "Began async task to write model at ID '%s' to in-memory storage. Write disposition: '%s'.",</a>
+<span class="sourceLineNo">194</span><a id="line.194">          targetId,</a>
+<span class="sourceLineNo">195</span><a id="line.195">          writeMode.name()));</a>
+<span class="sourceLineNo">196</span><a id="line.196"></a>
+<span class="sourceLineNo">197</span><a id="line.197">      // enforce write mode</a>
+<span class="sourceLineNo">198</span><a id="line.198">      boolean conflictFailure = false;</a>
+<span class="sourceLineNo">199</span><a id="line.199">      switch (writeMode) {</a>
+<span class="sourceLineNo">200</span><a id="line.200">        case MUST_NOT_EXIST: conflictFailure = InMemoryStorage.acquire().containsKey(targetId); break;</a>
+<span class="sourceLineNo">201</span><a id="line.201">        case MUST_EXIST: conflictFailure = !InMemoryStorage.acquire().containsKey(targetId); break;</a>
+<span class="sourceLineNo">202</span><a id="line.202">        case BLIND: break;</a>
+<span class="sourceLineNo">203</span><a id="line.203">      }</a>
+<span class="sourceLineNo">204</span><a id="line.204">      if (conflictFailure) {</a>
+<span class="sourceLineNo">205</span><a id="line.205">        logging.error(format("Encountered conflict failure: key collision at ID '%s'.", targetId));</a>
+<span class="sourceLineNo">206</span><a id="line.206">        throw new ModelWriteConflict(targetId, model, writeMode);</a>
+<span class="sourceLineNo">207</span><a id="line.207">      }</a>
+<span class="sourceLineNo">208</span><a id="line.208"></a>
+<span class="sourceLineNo">209</span><a id="line.209">      // if we make it this far, we're ready to write. serialize and put.</a>
+<span class="sourceLineNo">210</span><a id="line.210">      InMemoryStorage</a>
+<span class="sourceLineNo">211</span><a id="line.211">        .acquire()</a>
+<span class="sourceLineNo">212</span><a id="line.212">        .put(targetId, codec.serialize(model));</a>
+<span class="sourceLineNo">213</span><a id="line.213"></a>
+<span class="sourceLineNo">214</span><a id="line.214">      if (logging.isTraceEnabled())</a>
+<span class="sourceLineNo">215</span><a id="line.215">        logging.trace(format(</a>
+<span class="sourceLineNo">216</span><a id="line.216">          "No conflict failure encountered, model was written at ID '%s'.",</a>
+<span class="sourceLineNo">217</span><a id="line.217">          targetId));</a>
+<span class="sourceLineNo">218</span><a id="line.218"></a>
+<span class="sourceLineNo">219</span><a id="line.219">      var rval = ModelMetadata.&lt;Model, Key&gt;spliceKey(model, Optional.of(targetKey));</a>
+<span class="sourceLineNo">220</span><a id="line.220">      if (logging.isInfoEnabled())</a>
+<span class="sourceLineNo">221</span><a id="line.221">        logging.info(format(</a>
+<span class="sourceLineNo">222</span><a id="line.222">          "Wrote record to in-memory storage at ID '%s'.",</a>
+<span class="sourceLineNo">223</span><a id="line.223">          targetId));</a>
+<span class="sourceLineNo">224</span><a id="line.224">      if (logging.isDebugEnabled())</a>
+<span class="sourceLineNo">225</span><a id="line.225">        logging.debug(format(</a>
+<span class="sourceLineNo">226</span><a id="line.226">          "Returning written model at ID '%s' after write to in-memory storage. Record follows:\n%s",</a>
+<span class="sourceLineNo">227</span><a id="line.227">          targetId,</a>
+<span class="sourceLineNo">228</span><a id="line.228">          rval));</a>
+<span class="sourceLineNo">229</span><a id="line.229"></a>
+<span class="sourceLineNo">230</span><a id="line.230">      return rval;</a>
+<span class="sourceLineNo">231</span><a id="line.231"></a>
+<span class="sourceLineNo">232</span><a id="line.232">    }), options.executorService().orElse(this.executorService));</a>
+<span class="sourceLineNo">233</span><a id="line.233">  }</a>
+<span class="sourceLineNo">234</span><a id="line.234"></a>
+<span class="sourceLineNo">235</span><a id="line.235">  // -- API: Delete -- //</a>
+<span class="sourceLineNo">236</span><a id="line.236">  /** {@inheritDoc} */</a>
+<span class="sourceLineNo">237</span><a id="line.237">  @Override</a>
+<span class="sourceLineNo">238</span><a id="line.238">  public @Nonnull ReactiveFuture&lt;Key&gt; delete(@Nonnull Key key, @Nonnull DeleteOptions options) {</a>
+<span class="sourceLineNo">239</span><a id="line.239">    Objects.requireNonNull(key, "Cannot delete `null` key.");</a>
+<span class="sourceLineNo">240</span><a id="line.240">    Objects.requireNonNull(options, "Cannot delete model without `options`.");</a>
+<span class="sourceLineNo">241</span><a id="line.241">    ModelMetadata.enforceRole(key, DatapointType.OBJECT_KEY);</a>
+<span class="sourceLineNo">242</span><a id="line.242"></a>
+<span class="sourceLineNo">243</span><a id="line.243">    final @Nonnull Object targetId = id(key)</a>
+<span class="sourceLineNo">244</span><a id="line.244">      .orElseThrow(() -&gt; new IllegalStateException("Cannot delete record with empty key/ID."));</a>
+<span class="sourceLineNo">245</span><a id="line.245"></a>
+<span class="sourceLineNo">246</span><a id="line.246">    if (logging.isDebugEnabled())</a>
+<span class="sourceLineNo">247</span><a id="line.247">      logging.debug(format("Deleting model at ID '%s' from in-memory storage.", targetId));</a>
+<span class="sourceLineNo">248</span><a id="line.248"></a>
+<span class="sourceLineNo">249</span><a id="line.249">    return ReactiveFuture.wrap(this.executorService.submit(() -&gt; {</a>
+<span class="sourceLineNo">250</span><a id="line.250">      if (logging.isTraceEnabled())</a>
+<span class="sourceLineNo">251</span><a id="line.251">        logging.trace(format("Began async task to delete model at ID '%s' from in-memory storage.", targetId));</a>
+<span class="sourceLineNo">252</span><a id="line.252"></a>
+<span class="sourceLineNo">253</span><a id="line.253">      InMemoryStorage</a>
+<span class="sourceLineNo">254</span><a id="line.254">        .acquire()</a>
+<span class="sourceLineNo">255</span><a id="line.255">        .remove(targetId);</a>
+<span class="sourceLineNo">256</span><a id="line.256"></a>
+<span class="sourceLineNo">257</span><a id="line.257">      if (logging.isInfoEnabled())</a>
+<span class="sourceLineNo">258</span><a id="line.258">        logging.info(format("Model at ID '%s' deleted from in-memory storage.", targetId));</a>
+<span class="sourceLineNo">259</span><a id="line.259"></a>
+<span class="sourceLineNo">260</span><a id="line.260">      return key;</a>
+<span class="sourceLineNo">261</span><a id="line.261">    }));</a>
+<span class="sourceLineNo">262</span><a id="line.262">  }</a>
+<span class="sourceLineNo">263</span><a id="line.263">}</a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</main>
+</body>
+</html>

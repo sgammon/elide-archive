@@ -1,0 +1,131 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<main role="main">
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span><a id="line.1">/*</a>
+<span class="sourceLineNo">002</span><a id="line.2"> * Copyright © 2020, The Gust Framework Authors. All rights reserved.</a>
+<span class="sourceLineNo">003</span><a id="line.3"> *</a>
+<span class="sourceLineNo">004</span><a id="line.4"> * The Gust/Elide framework and tools, and all associated source or object computer code, except where otherwise noted,</a>
+<span class="sourceLineNo">005</span><a id="line.5"> * are licensed under the Zero Prosperity license, which is enclosed in this repository, in the file LICENSE.txt. Use of</a>
+<span class="sourceLineNo">006</span><a id="line.6"> * this code in object or source form requires and implies consent and agreement to that license in principle and</a>
+<span class="sourceLineNo">007</span><a id="line.7"> * practice. Source or object code not listing this header, or unless specified otherwise, remain the property of</a>
+<span class="sourceLineNo">008</span><a id="line.8"> * Elide LLC and its suppliers, if any. The intellectual and technical concepts contained herein are proprietary to</a>
+<span class="sourceLineNo">009</span><a id="line.9"> * Elide LLC and its suppliers and may be covered by U.S. and Foreign Patents, or patents in process, and are protected</a>
+<span class="sourceLineNo">010</span><a id="line.10"> * by trade secret and copyright law. Dissemination of this information, or reproduction of this material, in any form,</a>
+<span class="sourceLineNo">011</span><a id="line.11"> * is strictly forbidden except in adherence with assigned license requirements.</a>
+<span class="sourceLineNo">012</span><a id="line.12"> */</a>
+<span class="sourceLineNo">013</span><a id="line.13">package gust.backend.transport;</a>
+<span class="sourceLineNo">014</span><a id="line.14"></a>
+<span class="sourceLineNo">015</span><a id="line.15">import com.google.api.gax.core.CredentialsProvider;</a>
+<span class="sourceLineNo">016</span><a id="line.16">import com.google.api.gax.core.GoogleCredentialsProvider;</a>
+<span class="sourceLineNo">017</span><a id="line.17"></a>
+<span class="sourceLineNo">018</span><a id="line.18">import javax.annotation.Nonnull;</a>
+<span class="sourceLineNo">019</span><a id="line.19">import java.util.Collections;</a>
+<span class="sourceLineNo">020</span><a id="line.20">import java.util.List;</a>
+<span class="sourceLineNo">021</span><a id="line.21">import java.util.Optional;</a>
+<span class="sourceLineNo">022</span><a id="line.22"></a>
+<span class="sourceLineNo">023</span><a id="line.23"></a>
+<span class="sourceLineNo">024</span><a id="line.24">/**</a>
+<span class="sourceLineNo">025</span><a id="line.25"> * Provides sensible defaults and additional configuration when applying transport settings specifically to Google-</a>
+<span class="sourceLineNo">026</span><a id="line.26"> * provided or hosted services. These generally do not need to be changed.</a>
+<span class="sourceLineNo">027</span><a id="line.27"> *</a>
+<span class="sourceLineNo">028</span><a id="line.28"> * &lt;p&gt;Namely, this enforces authentication by default, and resolves Application Default Credentials. This behavior can</a>
+<span class="sourceLineNo">029</span><a id="line.29"> * be overridden by specifying configuration properties in your &lt;code&gt;application.yml&lt;/code&gt;. See</a>
+<span class="sourceLineNo">030</span><a id="line.30"> * {@link GoogleTransportManager} for more information.&lt;/p&gt;</a>
+<span class="sourceLineNo">031</span><a id="line.31"> *</a>
+<span class="sourceLineNo">032</span><a id="line.32"> * @see GoogleTransportManager for information about transport credential settings.</a>
+<span class="sourceLineNo">033</span><a id="line.33"> */</a>
+<span class="sourceLineNo">034</span><a id="line.34">public interface GoogleTransportConfig extends GrpcTransportConfig {</a>
+<span class="sourceLineNo">035</span><a id="line.35">  /**</a>
+<span class="sourceLineNo">036</span><a id="line.36">   * @return Whether a transport requires credentials. This defaults to &lt;code&gt;true&lt;/code&gt; for</a>
+<span class="sourceLineNo">037</span><a id="line.37">   *         {@link GoogleTransportConfig} and descendents.</a>
+<span class="sourceLineNo">038</span><a id="line.38">   */</a>
+<span class="sourceLineNo">039</span><a id="line.39">  @Override</a>
+<span class="sourceLineNo">040</span><a id="line.40">  default @Nonnull Boolean requiresCredentials() {</a>
+<span class="sourceLineNo">041</span><a id="line.41">    return true;</a>
+<span class="sourceLineNo">042</span><a id="line.42">  }</a>
+<span class="sourceLineNo">043</span><a id="line.43"></a>
+<span class="sourceLineNo">044</span><a id="line.44">  /**</a>
+<span class="sourceLineNo">045</span><a id="line.45">   * Resolve a credentials provider bound to the specified auth requirements.</a>
+<span class="sourceLineNo">046</span><a id="line.46">   *</a>
+<span class="sourceLineNo">047</span><a id="line.47">   * @param scopes Authorization scopes to request.</a>
+<span class="sourceLineNo">048</span><a id="line.48">   * @return Credentials provider that should be active for managed RPC channel calls. By default, for configurations</a>
+<span class="sourceLineNo">049</span><a id="line.49">   *         that inherit from {@link GoogleTransportConfig}, this will read and use Application Default Credentials.</a>
+<span class="sourceLineNo">050</span><a id="line.50">   */</a>
+<span class="sourceLineNo">051</span><a id="line.51">  @Override</a>
+<span class="sourceLineNo">052</span><a id="line.52">  default @Nonnull Optional&lt;CredentialsProvider&gt; credentialsProvider(@Nonnull Optional&lt;List&lt;String&gt;&gt; scopes) {</a>
+<span class="sourceLineNo">053</span><a id="line.53">    return Optional.of(GoogleCredentialsProvider.newBuilder()</a>
+<span class="sourceLineNo">054</span><a id="line.54">      .setScopesToApply(scopes.isPresent() ? scopes.get() : Collections.emptyList())</a>
+<span class="sourceLineNo">055</span><a id="line.55">      .build());</a>
+<span class="sourceLineNo">056</span><a id="line.56">  }</a>
+<span class="sourceLineNo">057</span><a id="line.57">}</a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</main>
+</body>
+</html>
