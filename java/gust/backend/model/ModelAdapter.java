@@ -181,7 +181,6 @@ public interface ModelAdapter<Key extends Message, Model extends Message, ReadIn
     return engine().persist(key, model, options);
   }
 
-  // -- Interface: Delete -- //
   /** {@inheritDoc} */
   @Override
   default @Nonnull ReactiveFuture<Key> delete(@Nonnull Key key,

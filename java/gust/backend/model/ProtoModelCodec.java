@@ -217,6 +217,12 @@ public final class ProtoModelCodec<Model extends Message> implements ModelCodec<
   }
 
   // -- API: Codec -- //
+  /** @inheritDoc */
+  @Override
+  public @Nonnull Model instance() {
+    return instance;
+  }
+
   /**
    * Acquire an instance of the {@link ModelSerializer} attached to this adapter. The instance is not guaranteed to be
    * created fresh for this invocation.

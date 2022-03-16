@@ -54,9 +54,9 @@ VALIDATION_VERSION = "2.0.0.Final"
 JUNIT_JUPITER_VERSION = "5.6.0"
 JUNIT_PLATFORM_VERSION = "1.6.0"
 
-GAX_VERSION = "1.66.0"
-NETTY_VERSION = "4.1.52.Final"
-NETTY_BORINGSSL_VERSION = "2.0.34.Final"
+GAX_VERSION = "2.5.0"
+NETTY_VERSION = "4.1.66.Final"
+NETTY_BORINGSSL_VERSION = "2.0.40.Final"
 RXJAVA_VERSION = "2.2.21"
 PICOCLI_VERSION = "4.2.0"
 REACTIVE_VERSION = "1.0.3"
@@ -68,7 +68,8 @@ GCLOUD_GRPC_VERSION = "1.95.4"
 GCLOUD_TASKS_VERSION = "1.33.2"
 GCLOUD_PUBSUB_VERSION = "1.113.5"
 GCLOUD_STORAGE_VERSION = "1.118.0"
-GCLOUD_FIRESTORE_VERSION = "2.6.1"
+GCLOUD_FIRESTORE_VERSION = "2.6.2"
+GCLOUD_SPANNER_VERSION = "6.13.0"
 GCLOUD_MONITORING_VERSION = "2.3.4"
 COMMON_PROTOS_VERSION = "2.3.2"
 KOTLIN_TEST_VERSION = "3.4.2"
@@ -83,19 +84,27 @@ GRPC_JAVA_VERSION = "1.38.1"
 AUTO_VALUE_VERSION = "1.8.1"
 TOMCAT_ANNOTATIONS_VERSION = "6.0.53"
 OPENTRACING_VERSION = "0.2.3"
+GOOGLE_TRUTH_VERSION = "1.1.3"
 
-MICRONAUT_VERSION = "3.0.0-M2"
-MICRONAUT_DATA_VERSION = "2.4.7"
+MICRONAUT_VERSION = "2.5.12"
+MICRONAUT_DATA_VERSION = "2.5.0"
 MICRONAUT_CONTEXT_VERSION = MICRONAUT_VERSION
-MICRONAUT_GRPC_VERSION = "3.0.0.RC1"
-MICRONAUT_TEST_VERSION = "2.3.4"
-MICRONAUT_REDIS_VERSION = "4.0.2"
-MICRONAUT_CACHE_VERSION = "3.0.0.RC1"
-MICRONAUT_SECURITY_VERSION = "3.0.0-M1"
+MICRONAUT_GRPC_VERSION = "2.5.0"
+MICRONAUT_TEST_VERSION = "2.3.7"
+MICRONAUT_REDIS_VERSION = "4.0.3"
+MICRONAUT_CACHE_VERSION = "2.4.0"
+MICRONAUT_SECURITY_VERSION = "2.5.0"
 MICRONAUT_MULTITENANCY_VERSION = "2.2.3"
 
 TESTCONTAINERS_VERSION = "1.15.3"
 TRUTH_VERSION = "1.1.3"
+
+KOTLIN_EXCLUSIONS = [
+    "org.jetbrains.kotlin:kotlin-stdlib",
+    "org.jetbrains.kotlin:kotlin-stdlib-jdk7",
+    "org.jetbrains.kotlin:kotlin-stdlib-jdk8",
+    "org.jetbrains.kotlin:kotlin-stdlib-common",
+]
 
 GRPC_EXCLUSIONS = [
     maven.exclusion(
@@ -211,7 +220,7 @@ GRPC_BUILD_ARTIFACTS = [
     "io.grpc:grpc-stub:%s" % GRPC_JAVA_VERSION,
     "io.grpc:grpc-context:%s" % GRPC_JAVA_VERSION,
     "io.grpc:grpc-protobuf:%s" % GRPC_JAVA_VERSION,
-    "io.grpc:grpc-netty:%s" % GRPC_JAVA_VERSION,
+#    "io.grpc:grpc-netty:%s" % GRPC_JAVA_VERSION,
     "io.grpc:grpc-netty-shaded:%s" % GRPC_JAVA_VERSION,
     "com.google.api.grpc:proto-google-common-protos:%s" % COMMON_PROTOS_VERSION,
     "com.google.api.grpc:grpc-google-common-protos:%s" % COMMON_PROTOS_VERSION,
@@ -275,6 +284,7 @@ MICRONAUT_COORDINATES = [
     "io.micronaut:micronaut-graal",
     "io.micronaut:micronaut-router",
     "io.micronaut:micronaut-tracing",
+    "io.micronaut:micronaut-management",
     "io.micronaut:micronaut-messaging",
     "io.micronaut:micronaut-websocket",
     "io.micronaut:micronaut-session",
@@ -292,6 +302,7 @@ MICRONAUT_EXTRAS = [
     ("io.netty:netty-handler", NETTY_VERSION),
     ("io.netty:netty-handler-proxy", NETTY_VERSION),
     ("io.micronaut:micronaut-context", MICRONAUT_CONTEXT_VERSION),
+    ("io.netty:netty-tcnative", NETTY_BORINGSSL_VERSION),
     ("io.netty:netty-tcnative-boringssl-static", NETTY_BORINGSSL_VERSION),
     ("io.micronaut:micronaut-multitenancy", MICRONAUT_MULTITENANCY_VERSION),
     ("io.micronaut.security:micronaut-security", MICRONAUT_SECURITY_VERSION),
@@ -337,6 +348,7 @@ GOOGLE_CLOUD_COORDINATES = [
     ("com.google.cloud:google-cloud-tasks", GCLOUD_TASKS_VERSION),
     ("com.google.cloud:google-cloud-pubsub", GCLOUD_PUBSUB_VERSION),
     ("com.google.cloud:google-cloud-storage", GCLOUD_STORAGE_VERSION),
+    ("com.google.cloud:google-cloud-spanner", GCLOUD_SPANNER_VERSION),
     ("com.google.cloud:google-cloud-firestore", GCLOUD_FIRESTORE_VERSION),
     ("com.google.api.grpc:proto-google-cloud-firestore-v1", GCLOUD_FIRESTORE_VERSION),
     ("com.google.cloud:google-cloud-monitoring", GCLOUD_MONITORING_VERSION),
@@ -362,6 +374,10 @@ MICRONAUT_TEST_ARTIFACTS = [
 #    maven.artifact("io.kotlintest", "kotlintest-runner-jvm", KOTLIN_TEST_VERSION, testonly = True),
 #    maven.artifact("io.kotlintest", "kotlintest-runner-junit5", KOTLIN_TEST_VERSION, testonly = True),
 #    maven.artifact("io.kotlintest", "kotlintest-runner-console", KOTLIN_TEST_VERSION, testonly = True),
+    maven.artifact("com.google.truth", "truth", GOOGLE_TRUTH_VERSION, testonly = True),
+    maven.artifact("com.google.truth.extensions", "truth-proto-extension", GOOGLE_TRUTH_VERSION, testonly = True),
+    maven.artifact("com.google.truth.extensions", "truth-liteproto-extension", GOOGLE_TRUTH_VERSION, testonly = True),
+    maven.artifact("com.google.truth.extensions", "truth-java8-extension", GOOGLE_TRUTH_VERSION, testonly = True),
     maven.artifact("io.micronaut.test", "micronaut-test-core", MICRONAUT_TEST_VERSION, testonly = True),
     maven.artifact("io.micronaut.test", "micronaut-test-kotlintest", MICRONAUT_TEST_VERSION, testonly = True),
     maven.artifact("io.micronaut.test", "micronaut-test-junit5", MICRONAUT_TEST_VERSION, testonly = True),
@@ -416,7 +432,7 @@ def _format_maven_jar_dep_name(group_id, artifact_id):
     return "@%s//jar" % _format_maven_jar_name(group_id, artifact_id)
 
 
-def _gust_java_deps(
+def gust_java_repositories(
         app_artifacts = [],
         app_repositories = [],
         app_fetch_sources = True,
@@ -464,7 +480,7 @@ def _gust_java_deps(
             ("io.micronaut:micronaut-views", "@io_micronaut_micronaut_views"),
             ("io.micronaut:micronaut-views-soy", "@io_micronaut_micronaut_views_soy"),
             ("com.google.guava:guava", "@com_google_guava"),
-            ("com.google.guava", "@com_google_guava"),
+            ("com.google.guava:guava-jdk15", "@com_google_guava"),
             ("com.google.protobuf:protobuf-java", "@com_google_protobuf//:protobuf_java"),
             ("com.google.protobuf:protobuf-javalite", "@com_google_protobuf//:protobuf_javalite"),
             ("com.google.protobuf:protobuf-java-util", "@com_google_protobuf//:protobuf_java_util"),
@@ -475,6 +491,7 @@ def _gust_java_deps(
             ("com.google.grpc:grpc-protobuf", "@io_grpc_java//protobuf:protobuf"),
             ("com.google.grpc:grpc-context", "@io_grpc_java//context:context"),
             ("com.google.grpc:grpc-netty", "@io_grpc_java//netty:netty"),
+            ("com.google.grpc:grpc-netty", "@io_grpc_java//netty-shaded:netty-shaded"),
             ("com.google.grpc:grpc-netty-shaded", "@io_grpc_java//netty-shaded:netty-shaded"),
             ("com.google.template:soy", "@com_google_template_soy"),
             ("com.google.common.html.types:types", "@safe_html_types//:java"),
@@ -526,6 +543,5 @@ ALL_DEPENDENCIES = (_clean_versions(
     OVERRIDE_DEPS)
 
 
-gust_java_repositories = _gust_java_deps
 format_maven_jar_name = _format_maven_jar_name
 format_maven_jar_dep_name = _format_maven_jar_dep_name

@@ -1,0 +1,194 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<main role="main">
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span><a id="line.1">/*</a>
+<span class="sourceLineNo">002</span><a id="line.2"> * Copyright © 2020, The Gust Framework Authors. All rights reserved.</a>
+<span class="sourceLineNo">003</span><a id="line.3"> *</a>
+<span class="sourceLineNo">004</span><a id="line.4"> * The Gust/Elide framework and tools, and all associated source or object computer code, except where otherwise noted,</a>
+<span class="sourceLineNo">005</span><a id="line.5"> * are licensed under the Zero Prosperity license, which is enclosed in this repository, in the file LICENSE.txt. Use of</a>
+<span class="sourceLineNo">006</span><a id="line.6"> * this code in object or source form requires and implies consent and agreement to that license in principle and</a>
+<span class="sourceLineNo">007</span><a id="line.7"> * practice. Source or object code not listing this header, or unless specified otherwise, remain the property of</a>
+<span class="sourceLineNo">008</span><a id="line.8"> * Elide LLC and its suppliers, if any. The intellectual and technical concepts contained herein are proprietary to</a>
+<span class="sourceLineNo">009</span><a id="line.9"> * Elide LLC and its suppliers and may be covered by U.S. and Foreign Patents, or patents in process, and are protected</a>
+<span class="sourceLineNo">010</span><a id="line.10"> * by trade secret and copyright law. Dissemination of this information, or reproduction of this material, in any form,</a>
+<span class="sourceLineNo">011</span><a id="line.11"> * is strictly forbidden except in adherence with assigned license requirements.</a>
+<span class="sourceLineNo">012</span><a id="line.12"> */</a>
+<span class="sourceLineNo">013</span><a id="line.13">package gust.backend.annotations;</a>
+<span class="sourceLineNo">014</span><a id="line.14"></a>
+<span class="sourceLineNo">015</span><a id="line.15">import io.micronaut.aop.Introduction;</a>
+<span class="sourceLineNo">016</span><a id="line.16">import static tools.elide.backend.builtin.Sitemap.ChangeFrequency;</a>
+<span class="sourceLineNo">017</span><a id="line.17"></a>
+<span class="sourceLineNo">018</span><a id="line.18">import javax.annotation.Nonnull;</a>
+<span class="sourceLineNo">019</span><a id="line.19">import java.lang.annotation.*;</a>
+<span class="sourceLineNo">020</span><a id="line.20"></a>
+<span class="sourceLineNo">021</span><a id="line.21"></a>
+<span class="sourceLineNo">022</span><a id="line.22">/**</a>
+<span class="sourceLineNo">023</span><a id="line.23"> * Specifies settings for a given page method, that may later be applied via outputs like the application's site-map, or</a>
+<span class="sourceLineNo">024</span><a id="line.24"> * other metadata assets.</a>
+<span class="sourceLineNo">025</span><a id="line.25"> */</a>
+<span class="sourceLineNo">026</span><a id="line.26">@Documented</a>
+<span class="sourceLineNo">027</span><a id="line.27">@Introduction</a>
+<span class="sourceLineNo">028</span><a id="line.28">@Target(ElementType.METHOD)</a>
+<span class="sourceLineNo">029</span><a id="line.29">@Retention(RetentionPolicy.RUNTIME)</a>
+<span class="sourceLineNo">030</span><a id="line.30">public @interface Page {</a>
+<span class="sourceLineNo">031</span><a id="line.31">    /** Property name for robots enable/disable. */</a>
+<span class="sourceLineNo">032</span><a id="line.32">    String ROBOTS_ENABLE = "enableIndexing";</a>
+<span class="sourceLineNo">033</span><a id="line.33"></a>
+<span class="sourceLineNo">034</span><a id="line.34">    /** Property name for indexing robot settings. */</a>
+<span class="sourceLineNo">035</span><a id="line.35">    String ROBOTS_SETTINGS = "robotsSettings";</a>
+<span class="sourceLineNo">036</span><a id="line.36"></a>
+<span class="sourceLineNo">037</span><a id="line.37">    /** Property for Googlebot-specific settings. */</a>
+<span class="sourceLineNo">038</span><a id="line.38">    String GOOGLEBOT_SETTINGS = "googlebotSettings";</a>
+<span class="sourceLineNo">039</span><a id="line.39"></a>
+<span class="sourceLineNo">040</span><a id="line.40">    /** Property name for sitemap enable/disable. */</a>
+<span class="sourceLineNo">041</span><a id="line.41">    String SITEMAP = "sitemap";</a>
+<span class="sourceLineNo">042</span><a id="line.42"></a>
+<span class="sourceLineNo">043</span><a id="line.43">    /** Property name for the canonical URL. */</a>
+<span class="sourceLineNo">044</span><a id="line.44">    String CANONICAL = "canonicalUrl";</a>
+<span class="sourceLineNo">045</span><a id="line.45"></a>
+<span class="sourceLineNo">046</span><a id="line.46">    /** Property name for the page's last-modified date. */</a>
+<span class="sourceLineNo">047</span><a id="line.47">    String LAST_MODIFIED = "lastModified";</a>
+<span class="sourceLineNo">048</span><a id="line.48"></a>
+<span class="sourceLineNo">049</span><a id="line.49">    /** Property name for the page's change-frequency value. */</a>
+<span class="sourceLineNo">050</span><a id="line.50">    String CHANGE_FREQUENCY = "changeFrequency";</a>
+<span class="sourceLineNo">051</span><a id="line.51"></a>
+<span class="sourceLineNo">052</span><a id="line.52">    /** Property name for the page's priority value. */</a>
+<span class="sourceLineNo">053</span><a id="line.53">    String PRIORITY = "priority";</a>
+<span class="sourceLineNo">054</span><a id="line.54"></a>
+<span class="sourceLineNo">055</span><a id="line.55">    /** Sentinel for no-value strings. */</a>
+<span class="sourceLineNo">056</span><a id="line.56">    String NO_VALUE = "NO_VALUE";</a>
+<span class="sourceLineNo">057</span><a id="line.57"></a>
+<span class="sourceLineNo">058</span><a id="line.58">    /**</a>
+<span class="sourceLineNo">059</span><a id="line.59">     * Simple name / tag for the page. This can be used to generate URLs or route requests.</a>
+<span class="sourceLineNo">060</span><a id="line.60">     *</a>
+<span class="sourceLineNo">061</span><a id="line.61">     * @return Module name for this script module.</a>
+<span class="sourceLineNo">062</span><a id="line.62">     */</a>
+<span class="sourceLineNo">063</span><a id="line.63">    @Nonnull String value();</a>
+<span class="sourceLineNo">064</span><a id="line.64"></a>
+<span class="sourceLineNo">065</span><a id="line.65">    /**</a>
+<span class="sourceLineNo">066</span><a id="line.66">     * Whether to allow robots on the selected page.</a>
+<span class="sourceLineNo">067</span><a id="line.67">     *</a>
+<span class="sourceLineNo">068</span><a id="line.68">     * @return Defaults to {@code true}.</a>
+<span class="sourceLineNo">069</span><a id="line.69">     */</a>
+<span class="sourceLineNo">070</span><a id="line.70">    boolean enableIndexing() default true;</a>
+<span class="sourceLineNo">071</span><a id="line.71"></a>
+<span class="sourceLineNo">072</span><a id="line.72">    /**</a>
+<span class="sourceLineNo">073</span><a id="line.73">     * Generic settings for indexing robots.</a>
+<span class="sourceLineNo">074</span><a id="line.74">     *</a>
+<span class="sourceLineNo">075</span><a id="line.75">     * @return Indexing settings, if present, or {@code null}.</a>
+<span class="sourceLineNo">076</span><a id="line.76">     */</a>
+<span class="sourceLineNo">077</span><a id="line.77">    String robotsSettings() default NO_VALUE;</a>
+<span class="sourceLineNo">078</span><a id="line.78"></a>
+<span class="sourceLineNo">079</span><a id="line.79">    /**</a>
+<span class="sourceLineNo">080</span><a id="line.80">     * Settings for Googlebot on the selected page.</a>
+<span class="sourceLineNo">081</span><a id="line.81">     *</a>
+<span class="sourceLineNo">082</span><a id="line.82">     * @return Googlebot-specific settings, if present, or {@code null}.</a>
+<span class="sourceLineNo">083</span><a id="line.83">     */</a>
+<span class="sourceLineNo">084</span><a id="line.84">    String googlebotSettings() default NO_VALUE;</a>
+<span class="sourceLineNo">085</span><a id="line.85"></a>
+<span class="sourceLineNo">086</span><a id="line.86">    /**</a>
+<span class="sourceLineNo">087</span><a id="line.87">     * Whether to list this page in the site map.</a>
+<span class="sourceLineNo">088</span><a id="line.88">     *</a>
+<span class="sourceLineNo">089</span><a id="line.89">     * @return Defaults to {@code true}.</a>
+<span class="sourceLineNo">090</span><a id="line.90">     */</a>
+<span class="sourceLineNo">091</span><a id="line.91">    boolean sitemap() default true;</a>
+<span class="sourceLineNo">092</span><a id="line.92"></a>
+<span class="sourceLineNo">093</span><a id="line.93">    /**</a>
+<span class="sourceLineNo">094</span><a id="line.94">     * Specifies the canonical URL to use in sitemaps and robots.txt listings, etc, for this page, if applicable.</a>
+<span class="sourceLineNo">095</span><a id="line.95">     *</a>
+<span class="sourceLineNo">096</span><a id="line.96">     * @return The canonical URL, or {@code null}.</a>
+<span class="sourceLineNo">097</span><a id="line.97">     */</a>
+<span class="sourceLineNo">098</span><a id="line.98">    String canonicalUrl() default NO_VALUE;</a>
+<span class="sourceLineNo">099</span><a id="line.99"></a>
+<span class="sourceLineNo">100</span><a id="line.100">    /**</a>
+<span class="sourceLineNo">101</span><a id="line.101">     * Retrieve the last-modified string for this page. For now, this value is static.</a>
+<span class="sourceLineNo">102</span><a id="line.102">     *</a>
+<span class="sourceLineNo">103</span><a id="line.103">     * @return Last-modified value, or {@code null}.</a>
+<span class="sourceLineNo">104</span><a id="line.104">     */</a>
+<span class="sourceLineNo">105</span><a id="line.105">    String lastModified() default NO_VALUE;</a>
+<span class="sourceLineNo">106</span><a id="line.106"></a>
+<span class="sourceLineNo">107</span><a id="line.107">    /**</a>
+<span class="sourceLineNo">108</span><a id="line.108">     * Retrieve the change frequency set for this page, if any.</a>
+<span class="sourceLineNo">109</span><a id="line.109">     *</a>
+<span class="sourceLineNo">110</span><a id="line.110">     * @return Change frequency value, or {@code null}.</a>
+<span class="sourceLineNo">111</span><a id="line.111">     */</a>
+<span class="sourceLineNo">112</span><a id="line.112">    ChangeFrequency changeFrequency() default ChangeFrequency.UNSPECIFIED_CHANGE_FREQUENCY;</a>
+<span class="sourceLineNo">113</span><a id="line.113"></a>
+<span class="sourceLineNo">114</span><a id="line.114">    /**</a>
+<span class="sourceLineNo">115</span><a id="line.115">     * Priority value for the page.</a>
+<span class="sourceLineNo">116</span><a id="line.116">     *</a>
+<span class="sourceLineNo">117</span><a id="line.117">     * @return Priority value, or {@code null}.</a>
+<span class="sourceLineNo">118</span><a id="line.118">     */</a>
+<span class="sourceLineNo">119</span><a id="line.119">    String priority() default NO_VALUE;</a>
+<span class="sourceLineNo">120</span><a id="line.120">}</a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</main>
+</body>
+</html>

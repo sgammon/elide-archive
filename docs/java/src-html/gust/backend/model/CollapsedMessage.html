@@ -1,0 +1,298 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<main role="main">
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span><a id="line.1">/*</a>
+<span class="sourceLineNo">002</span><a id="line.2"> * Copyright © 2020, The Gust Framework Authors. All rights reserved.</a>
+<span class="sourceLineNo">003</span><a id="line.3"> *</a>
+<span class="sourceLineNo">004</span><a id="line.4"> * The Gust/Elide framework and tools, and all associated source or object computer code, except where otherwise noted,</a>
+<span class="sourceLineNo">005</span><a id="line.5"> * are licensed under the Zero Prosperity license, which is enclosed in this repository, in the file LICENSE.txt. Use of</a>
+<span class="sourceLineNo">006</span><a id="line.6"> * this code in object or source form requires and implies consent and agreement to that license in principle and</a>
+<span class="sourceLineNo">007</span><a id="line.7"> * practice. Source or object code not listing this header, or unless specified otherwise, remain the property of</a>
+<span class="sourceLineNo">008</span><a id="line.8"> * Elide LLC and its suppliers, if any. The intellectual and technical concepts contained herein are proprietary to</a>
+<span class="sourceLineNo">009</span><a id="line.9"> * Elide LLC and its suppliers and may be covered by U.S. and Foreign Patents, or patents in process, and are protected</a>
+<span class="sourceLineNo">010</span><a id="line.10"> * by trade secret and copyright law. Dissemination of this information, or reproduction of this material, in any form,</a>
+<span class="sourceLineNo">011</span><a id="line.11"> * is strictly forbidden except in adherence with assigned license requirements.</a>
+<span class="sourceLineNo">012</span><a id="line.12"> */</a>
+<span class="sourceLineNo">013</span><a id="line.13">package gust.backend.model;</a>
+<span class="sourceLineNo">014</span><a id="line.14"></a>
+<span class="sourceLineNo">015</span><a id="line.15">import tools.elide.core.CollectionMode;</a>
+<span class="sourceLineNo">016</span><a id="line.16">import com.google.protobuf.Message;</a>
+<span class="sourceLineNo">017</span><a id="line.17">import com.google.protobuf.Descriptors;</a>
+<span class="sourceLineNo">018</span><a id="line.18">import javax.annotation.Nonnull;</a>
+<span class="sourceLineNo">019</span><a id="line.19">import javax.annotation.Nullable;</a>
+<span class="sourceLineNo">020</span><a id="line.20"></a>
+<span class="sourceLineNo">021</span><a id="line.21">import java.util.List;</a>
+<span class="sourceLineNo">022</span><a id="line.22">import java.util.Optional;</a>
+<span class="sourceLineNo">023</span><a id="line.23"></a>
+<span class="sourceLineNo">024</span><a id="line.24"></a>
+<span class="sourceLineNo">025</span><a id="line.25">/**</a>
+<span class="sourceLineNo">026</span><a id="line.26"> * Describes a generic, collapsed message (i.e. serialized for storage). When using the universal model layer (based on</a>
+<span class="sourceLineNo">027</span><a id="line.27"> * Protocol Buffer messages), objects can be seamlessly serialized or deserialized to/from key value storage based on</a>
+<span class="sourceLineNo">028</span><a id="line.28"> * this layer / set of objects.</a>
+<span class="sourceLineNo">029</span><a id="line.29"> *</a>
+<span class="sourceLineNo">030</span><a id="line.30"> * &lt;p&gt;In particular, collapsed messages are useful with the Firestore adapter - and other data storage adapters which</a>
+<span class="sourceLineNo">031</span><a id="line.31"> * adopt parent-child style hierarchy. This object is not needed for in-memory storage.&lt;/p&gt;</a>
+<span class="sourceLineNo">032</span><a id="line.32"> */</a>
+<span class="sourceLineNo">033</span><a id="line.33">public final class CollapsedMessage {</a>
+<span class="sourceLineNo">034</span><a id="line.34">  /** Describes a generic collapsed data store operation. */</a>
+<span class="sourceLineNo">035</span><a id="line.35">  public interface Operation {</a>
+<span class="sourceLineNo">036</span><a id="line.36">    /** @return Path for this write. */</a>
+<span class="sourceLineNo">037</span><a id="line.37">    @Nonnull String getPath();</a>
+<span class="sourceLineNo">038</span><a id="line.38"></a>
+<span class="sourceLineNo">039</span><a id="line.39">    /** @return Parent operation for this write, if applicable. */</a>
+<span class="sourceLineNo">040</span><a id="line.40">    @Nonnull Optional&lt;Operation&gt; getParent();</a>
+<span class="sourceLineNo">041</span><a id="line.41"></a>
+<span class="sourceLineNo">042</span><a id="line.42">    /**</a>
+<span class="sourceLineNo">043</span><a id="line.43">     * Execute the underlying operation against the provided write proxy. If there is an additional runtime path</a>
+<span class="sourceLineNo">044</span><a id="line.44">     * prefix, to apply, it is supplied here. Calling this method is sufficient to see change in underlying storage.</a>
+<span class="sourceLineNo">045</span><a id="line.45">     *</a>
+<span class="sourceLineNo">046</span><a id="line.46">     * @param prefix Additional path prefix to apply before executing the operation.</a>
+<span class="sourceLineNo">047</span><a id="line.47">     * @param proxy Write proxy to send our write invocations to.</a>
+<span class="sourceLineNo">048</span><a id="line.48">     * @param scope Scope of the write, which dictates parent context.</a>
+<span class="sourceLineNo">049</span><a id="line.49">     */</a>
+<span class="sourceLineNo">050</span><a id="line.50">    void execute(@Nullable String prefix, @Nonnull WriteProxy&lt;Object&gt; proxy, @Nonnull Optional&lt;Parent&gt; scope);</a>
+<span class="sourceLineNo">051</span><a id="line.51">  }</a>
+<span class="sourceLineNo">052</span><a id="line.52"></a>
+<span class="sourceLineNo">053</span><a id="line.53">  /**</a>
+<span class="sourceLineNo">054</span><a id="line.54">   * Wrap a set of pre-built operations in a collapsed message record.</a>
+<span class="sourceLineNo">055</span><a id="line.55">   *</a>
+<span class="sourceLineNo">056</span><a id="line.56">   * @param operations Set of operations to execute against underlying storage.</a>
+<span class="sourceLineNo">057</span><a id="line.57">   * @return Pre-filled collapsed message.</a>
+<span class="sourceLineNo">058</span><a id="line.58">   */</a>
+<span class="sourceLineNo">059</span><a id="line.59">  public static @Nonnull CollapsedMessage of(@Nonnull List&lt;Operation&gt; operations) {</a>
+<span class="sourceLineNo">060</span><a id="line.60">    return new CollapsedMessage(operations);</a>
+<span class="sourceLineNo">061</span><a id="line.61">  }</a>
+<span class="sourceLineNo">062</span><a id="line.62"></a>
+<span class="sourceLineNo">063</span><a id="line.63">  /** Base operation implementation class. */</a>
+<span class="sourceLineNo">064</span><a id="line.64">  private abstract static class BaseOperation implements Operation {</a>
+<span class="sourceLineNo">065</span><a id="line.65">    /** Path to prefix all writes with. */</a>
+<span class="sourceLineNo">066</span><a id="line.66">    protected final @Nonnull String path;</a>
+<span class="sourceLineNo">067</span><a id="line.67"></a>
+<span class="sourceLineNo">068</span><a id="line.68">    /**</a>
+<span class="sourceLineNo">069</span><a id="line.69">     * Initialize a new base key-value storage operation.</a>
+<span class="sourceLineNo">070</span><a id="line.70">     *</a>
+<span class="sourceLineNo">071</span><a id="line.71">     * @param path Path prefix to apply to the implementing write.</a>
+<span class="sourceLineNo">072</span><a id="line.72">     */</a>
+<span class="sourceLineNo">073</span><a id="line.73">    BaseOperation(@Nonnull String path) {</a>
+<span class="sourceLineNo">074</span><a id="line.74">      this.path = path;</a>
+<span class="sourceLineNo">075</span><a id="line.75">    }</a>
+<span class="sourceLineNo">076</span><a id="line.76">  }</a>
+<span class="sourceLineNo">077</span><a id="line.77"></a>
+<span class="sourceLineNo">078</span><a id="line.78">  /** Parent placeholder for non-root writes to key value stores. */</a>
+<span class="sourceLineNo">079</span><a id="line.79">  final static class Parent extends BaseOperation {</a>
+<span class="sourceLineNo">080</span><a id="line.80">    /** Message backing a write for a parent (optional). */</a>
+<span class="sourceLineNo">081</span><a id="line.81">    protected final @Nonnull Optional&lt;Message&gt; message;</a>
+<span class="sourceLineNo">082</span><a id="line.82"></a>
+<span class="sourceLineNo">083</span><a id="line.83">    /**</a>
+<span class="sourceLineNo">084</span><a id="line.84">     * Construct a write parent placeholder.</a>
+<span class="sourceLineNo">085</span><a id="line.85">     *</a>
+<span class="sourceLineNo">086</span><a id="line.86">     * @param path Path to prefix all writes with.</a>
+<span class="sourceLineNo">087</span><a id="line.87">     * @param message Optional message attached to this parent, if held.</a>
+<span class="sourceLineNo">088</span><a id="line.88">     */</a>
+<span class="sourceLineNo">089</span><a id="line.89">    Parent(@Nonnull String path, @Nonnull Optional&lt;Message&gt; message) {</a>
+<span class="sourceLineNo">090</span><a id="line.90">      super(path);</a>
+<span class="sourceLineNo">091</span><a id="line.91">      this.message = message;</a>
+<span class="sourceLineNo">092</span><a id="line.92">    }</a>
+<span class="sourceLineNo">093</span><a id="line.93"></a>
+<span class="sourceLineNo">094</span><a id="line.94">    /** @return Path prefix for this parent placeholder. */</a>
+<span class="sourceLineNo">095</span><a id="line.95">    @Override public String getPath() {</a>
+<span class="sourceLineNo">096</span><a id="line.96">      return this.path;</a>
+<span class="sourceLineNo">097</span><a id="line.97">    }</a>
+<span class="sourceLineNo">098</span><a id="line.98"></a>
+<span class="sourceLineNo">099</span><a id="line.99">    /** @return `empty` - parent write placeholders never have parents themselves. */</a>
+<span class="sourceLineNo">100</span><a id="line.100">    @Nonnull @Override public Optional&lt;Operation&gt; getParent() {</a>
+<span class="sourceLineNo">101</span><a id="line.101">      return Optional.empty();</a>
+<span class="sourceLineNo">102</span><a id="line.102">    }</a>
+<span class="sourceLineNo">103</span><a id="line.103"></a>
+<span class="sourceLineNo">104</span><a id="line.104">    /** @inheritDoc */</a>
+<span class="sourceLineNo">105</span><a id="line.105">    @Override public void execute(@Nullable String prefix,</a>
+<span class="sourceLineNo">106</span><a id="line.106">                                  @Nonnull WriteProxy&lt;Object&gt; proxy,</a>
+<span class="sourceLineNo">107</span><a id="line.107">                                  @Nonnull Optional&lt;Parent&gt; scope) {</a>
+<span class="sourceLineNo">108</span><a id="line.108">      // no-op (we skip this write symbol, because it's just a placeholder)</a>
+<span class="sourceLineNo">109</span><a id="line.109">    }</a>
+<span class="sourceLineNo">110</span><a id="line.110">  }</a>
+<span class="sourceLineNo">111</span><a id="line.111"></a>
+<span class="sourceLineNo">112</span><a id="line.112">  /** Describes a generic write operation with a key value store. */</a>
+<span class="sourceLineNo">113</span><a id="line.113">  final static class Write extends BaseOperation {</a>
+<span class="sourceLineNo">114</span><a id="line.114">    /** Specifies the disposition (strategy) for the write. */</a>
+<span class="sourceLineNo">115</span><a id="line.115">    private final @Nonnull ModelSerializer.WriteDisposition disposition;</a>
+<span class="sourceLineNo">116</span><a id="line.116"></a>
+<span class="sourceLineNo">117</span><a id="line.117">    /** Operational parent to this write, as applicable. */</a>
+<span class="sourceLineNo">118</span><a id="line.118">    private final @Nullable Operation parent;</a>
+<span class="sourceLineNo">119</span><a id="line.119"></a>
+<span class="sourceLineNo">120</span><a id="line.120">    /** Collection sub-write mode. */</a>
+<span class="sourceLineNo">121</span><a id="line.121">    private final @Nonnull CollectionMode collectionMode;</a>
+<span class="sourceLineNo">122</span><a id="line.122"></a>
+<span class="sourceLineNo">123</span><a id="line.123">    /** Field which this write is satisfying, if applicable. */</a>
+<span class="sourceLineNo">124</span><a id="line.124">    private final @Nullable Descriptors.FieldDescriptor field;</a>
+<span class="sourceLineNo">125</span><a id="line.125"></a>
+<span class="sourceLineNo">126</span><a id="line.126">    /** Serialized object data to write during this operation. */</a>
+<span class="sourceLineNo">127</span><a id="line.127">    protected final @Nonnull SerializedModel data;</a>
+<span class="sourceLineNo">128</span><a id="line.128"></a>
+<span class="sourceLineNo">129</span><a id="line.129">    /**</a>
+<span class="sourceLineNo">130</span><a id="line.130">     * Construct a write operation from scratch.</a>
+<span class="sourceLineNo">131</span><a id="line.131">     *</a>
+<span class="sourceLineNo">132</span><a id="line.132">     * @param path Path prefix to apply to this write operation.</a>
+<span class="sourceLineNo">133</span><a id="line.133">     * @param disposition Disposition (strategy) to apply to this write operation.</a>
+<span class="sourceLineNo">134</span><a id="line.134">     * @param collectionMode Collection mode to apply for this write operation.</a>
+<span class="sourceLineNo">135</span><a id="line.135">     * @param parentOperation Parent operation for this write, if applicable.</a>
+<span class="sourceLineNo">136</span><a id="line.136">     * @param field Field this write is satisfying, if applicable.</a>
+<span class="sourceLineNo">137</span><a id="line.137">     * @param data Data payload to apply with this write operation.</a>
+<span class="sourceLineNo">138</span><a id="line.138">     */</a>
+<span class="sourceLineNo">139</span><a id="line.139">    Write(@Nonnull String path,</a>
+<span class="sourceLineNo">140</span><a id="line.140">          @Nonnull ModelSerializer.WriteDisposition disposition,</a>
+<span class="sourceLineNo">141</span><a id="line.141">          @Nonnull CollectionMode collectionMode,</a>
+<span class="sourceLineNo">142</span><a id="line.142">          @Nonnull Optional&lt;Operation&gt; parentOperation,</a>
+<span class="sourceLineNo">143</span><a id="line.143">          @Nonnull Optional&lt;Descriptors.FieldDescriptor&gt; field,</a>
+<span class="sourceLineNo">144</span><a id="line.144">          @Nonnull SerializedModel data) {</a>
+<span class="sourceLineNo">145</span><a id="line.145">      super(path);</a>
+<span class="sourceLineNo">146</span><a id="line.146">      this.disposition = disposition;</a>
+<span class="sourceLineNo">147</span><a id="line.147">      this.collectionMode = collectionMode;</a>
+<span class="sourceLineNo">148</span><a id="line.148">      this.parent = parentOperation.orElse(null);</a>
+<span class="sourceLineNo">149</span><a id="line.149">      this.field = field.orElse(null);</a>
+<span class="sourceLineNo">150</span><a id="line.150">      this.data = data;</a>
+<span class="sourceLineNo">151</span><a id="line.151">    }</a>
+<span class="sourceLineNo">152</span><a id="line.152"></a>
+<span class="sourceLineNo">153</span><a id="line.153">    /** @return Disposition for this write. */</a>
+<span class="sourceLineNo">154</span><a id="line.154">    public @Nonnull ModelSerializer.WriteDisposition getDisposition() {</a>
+<span class="sourceLineNo">155</span><a id="line.155">      return disposition;</a>
+<span class="sourceLineNo">156</span><a id="line.156">    }</a>
+<span class="sourceLineNo">157</span><a id="line.157"></a>
+<span class="sourceLineNo">158</span><a id="line.158">    /** @return Collection sub-write mode. */</a>
+<span class="sourceLineNo">159</span><a id="line.159">    public @Nonnull CollectionMode getCollectionMode() {</a>
+<span class="sourceLineNo">160</span><a id="line.160">      return collectionMode;</a>
+<span class="sourceLineNo">161</span><a id="line.161">    }</a>
+<span class="sourceLineNo">162</span><a id="line.162"></a>
+<span class="sourceLineNo">163</span><a id="line.163">    /** @return Field this write is satisfying, if applicable. */</a>
+<span class="sourceLineNo">164</span><a id="line.164">    public @Nonnull Optional&lt;Descriptors.FieldDescriptor&gt; getField() {</a>
+<span class="sourceLineNo">165</span><a id="line.165">      return field != null ? Optional.of(field) : Optional.empty();</a>
+<span class="sourceLineNo">166</span><a id="line.166">    }</a>
+<span class="sourceLineNo">167</span><a id="line.167"></a>
+<span class="sourceLineNo">168</span><a id="line.168">    public @Nonnull SerializedModel getData() {</a>
+<span class="sourceLineNo">169</span><a id="line.169">      return data;</a>
+<span class="sourceLineNo">170</span><a id="line.170">    }</a>
+<span class="sourceLineNo">171</span><a id="line.171"></a>
+<span class="sourceLineNo">172</span><a id="line.172">    /** @return Path prefix for this parent placeholder. */</a>
+<span class="sourceLineNo">173</span><a id="line.173">    @Override public String getPath() {</a>
+<span class="sourceLineNo">174</span><a id="line.174">      return this.path;</a>
+<span class="sourceLineNo">175</span><a id="line.175">    }</a>
+<span class="sourceLineNo">176</span><a id="line.176"></a>
+<span class="sourceLineNo">177</span><a id="line.177">    /** @return Parent operation for this parent write. */</a>
+<span class="sourceLineNo">178</span><a id="line.178">    @Override public Optional&lt;Operation&gt; getParent() {</a>
+<span class="sourceLineNo">179</span><a id="line.179">      return this.parent == null ? Optional.empty() : Optional.of(this.parent);</a>
+<span class="sourceLineNo">180</span><a id="line.180">    }</a>
+<span class="sourceLineNo">181</span><a id="line.181"></a>
+<span class="sourceLineNo">182</span><a id="line.182">    /** @inheritDoc */</a>
+<span class="sourceLineNo">183</span><a id="line.183">    @Override public void execute(@Nullable String prefix,</a>
+<span class="sourceLineNo">184</span><a id="line.184">                                  @Nonnull WriteProxy&lt;Object&gt; proxy,</a>
+<span class="sourceLineNo">185</span><a id="line.185">                                  @Nonnull Optional&lt;Parent&gt; scope) {</a>
+<span class="sourceLineNo">186</span><a id="line.186">      switch (this.disposition) {</a>
+<span class="sourceLineNo">187</span><a id="line.187">        case BLIND:</a>
+<span class="sourceLineNo">188</span><a id="line.188">          proxy.put(proxy.ref(this.path, prefix), this.data);</a>
+<span class="sourceLineNo">189</span><a id="line.189">          return;</a>
+<span class="sourceLineNo">190</span><a id="line.190">        case CREATE:</a>
+<span class="sourceLineNo">191</span><a id="line.191">          proxy.create(proxy.ref(this.path, prefix), this.data);</a>
+<span class="sourceLineNo">192</span><a id="line.192">          return;</a>
+<span class="sourceLineNo">193</span><a id="line.193">        case UPDATE:</a>
+<span class="sourceLineNo">194</span><a id="line.194">          proxy.update(proxy.ref(this.path, prefix), this.data);</a>
+<span class="sourceLineNo">195</span><a id="line.195">      }</a>
+<span class="sourceLineNo">196</span><a id="line.196">    }</a>
+<span class="sourceLineNo">197</span><a id="line.197">  }</a>
+<span class="sourceLineNo">198</span><a id="line.198"></a>
+<span class="sourceLineNo">199</span><a id="line.199">  /** Operations held by this collapsed message. */</a>
+<span class="sourceLineNo">200</span><a id="line.200">  private final List&lt;Operation&gt; operations;</a>
+<span class="sourceLineNo">201</span><a id="line.201"></a>
+<span class="sourceLineNo">202</span><a id="line.202">  /**</a>
+<span class="sourceLineNo">203</span><a id="line.203">   * Create a collapsed message from scratch.</a>
+<span class="sourceLineNo">204</span><a id="line.204">   *</a>
+<span class="sourceLineNo">205</span><a id="line.205">   * @param operations Set of operations to wrap.</a>
+<span class="sourceLineNo">206</span><a id="line.206">   */</a>
+<span class="sourceLineNo">207</span><a id="line.207">  private CollapsedMessage(List&lt;Operation&gt; operations) {</a>
+<span class="sourceLineNo">208</span><a id="line.208">    this.operations = operations;</a>
+<span class="sourceLineNo">209</span><a id="line.209">  }</a>
+<span class="sourceLineNo">210</span><a id="line.210"></a>
+<span class="sourceLineNo">211</span><a id="line.211">  /**</a>
+<span class="sourceLineNo">212</span><a id="line.212">   * Execute the collapsed message against the provided {@link WriteProxy}, which creates it in underlying storage (once</a>
+<span class="sourceLineNo">213</span><a id="line.213">   * any wrapping transaction finishes).</a>
+<span class="sourceLineNo">214</span><a id="line.214">   *</a>
+<span class="sourceLineNo">215</span><a id="line.215">   * @param prefix Path prefix to apply to all sub-writes.</a>
+<span class="sourceLineNo">216</span><a id="line.216">   * @param proxy Write proxy to employ.</a>
+<span class="sourceLineNo">217</span><a id="line.217">   */</a>
+<span class="sourceLineNo">218</span><a id="line.218">  public void persist(@Nullable String prefix, @Nonnull WriteProxy&lt;?&gt; proxy) {</a>
+<span class="sourceLineNo">219</span><a id="line.219">    operations.forEach(operation -&gt; {</a>
+<span class="sourceLineNo">220</span><a id="line.220">      //noinspection unchecked</a>
+<span class="sourceLineNo">221</span><a id="line.221">      operation.execute(prefix, (WriteProxy&lt;Object&gt;)proxy, Optional.empty());</a>
+<span class="sourceLineNo">222</span><a id="line.222">    });</a>
+<span class="sourceLineNo">223</span><a id="line.223">  }</a>
+<span class="sourceLineNo">224</span><a id="line.224">}</a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</main>
+</body>
+</html>

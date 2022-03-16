@@ -45,6 +45,12 @@ plugins:
     config:
       file: "tools/checkstyle.xml"
     checks:
+      com.puppycrawl.tools.checkstyle.checks.coding.VariableDeclarationUsageDistanceCheck:
+        enabled: false
+      com.puppycrawl.tools.checkstyle.checks.naming.ClassTypeParameterNameCheck:
+        enabled: false
+      com.puppycrawl.tools.checkstyle.checks.naming.MethodTypeParameterNameCheck:
+        enabled: false
       com.puppycrawl.tools.checkstyle.checks.coding.OneStatementPerLineCheck:
         enabled: false
       com.puppycrawl.tools.checkstyle.checks.whitespace.EmptyLineSeparatorCheck:
@@ -123,6 +129,10 @@ plugins:
   sonar-java:
     enabled: true
     checks:
+      squid:S00107:
+        enabled: false
+      squid:S3358:
+        enabled: false
       squid:S3776:
         enabled: false
       squid:SwitchLastCaseIsDefaultCheck:
@@ -159,4 +169,11 @@ exclude_patterns:
 - "**/vendor/"
 - "**/*_test.go"
 - "**/*.d.ts"
+- "docs/"
+- "docs/**.*"
+- "tests/"
+- "tests/**.*"
+- "*tests/**.*"
+- "javatests/"
+- "jstests/"
 

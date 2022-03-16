@@ -116,6 +116,7 @@ java_library(
     srcs = ["FirestoreManager.java"],
     deps = [
         ":FirestoreDriver",
+        ":FirestoreAdapter",
         "//java/gust/backend/model:DatabaseManager",
     ] + _COMMON_DEPS,
 )

@@ -29,10 +29,6 @@ def _impl(ctx):
     if content and matches != -1:
         fail("matches only makes sense with regexp")
     if not regexp:
-        # Make sure content ends with new file since sed will always add one in Mac
-        if content and not content.endswith("\n"):
-            content += "\n"
-
         expected = ctx.actions.declare_file(exe.basename + ".expected")
         ctx.actions.write(
             output = expected,
@@ -49,7 +45,7 @@ def _impl(ctx):
 
         ctx.actions.write(
             output = exe,
-            content = "diff -u %s %s" % (expected.short_path, actual.short_path),
+            content = "diff -w --strip-trailing-cr -u %s %s" % (expected.short_path, actual.short_path),
             is_executable = True,
         )
         return struct(runfiles = ctx.runfiles([exe, expected, actual]))

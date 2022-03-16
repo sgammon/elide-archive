@@ -16,6 +16,7 @@ package gust.backend.model;
 /**
  *
  */
+@SuppressWarnings("rawtypes")
 public interface PersistenceManager<Driver extends PersistenceDriver> {
   /* Nothing yet. */
 }

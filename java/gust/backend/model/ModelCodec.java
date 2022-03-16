@@ -55,6 +55,14 @@ public interface ModelCodec<Model extends Message, WriteIntermediate, ReadInterm
    */
   @Nonnull ModelDeserializer<ReadIntermediate, Model> deserializer();
 
+  /**
+   * Retrieve the default instance stored with this codec. Each {@link Message} with a paired {@link ModelCodec} retains
+   * a reference to its corresponding default instance.
+   *
+   * @return Default model instance.
+   */
+  @Nonnull Model instance();
+
   // -- Proxies -- //
   /**
    * Sugar shortcut to serialize a model through the current codec's installed {@link ModelSerializer}.

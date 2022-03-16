@@ -19,6 +19,6 @@ import io.micronaut.context.annotation.Factory;
 /**
  *
  */
-@Factory
-public final class FirestoreManager implements DatabaseManager<FirestoreDriver> {
+@SuppressWarnings("rawtypes")
+public final class FirestoreManager implements DatabaseManager<FirestoreAdapter, FirestoreDriver> {
 }

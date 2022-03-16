@@ -63,3 +63,11 @@ js_test(
 #    srcs = ["DomBrowserTest.java"],
 #    test_class = "javatests.dom.DomBrowserTest",
 #)
+
+test_suite(
+    name = "suite",
+    testonly = True,
+    tests = [
+        ":basic-dom-js-test",
+    ],
+)

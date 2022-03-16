@@ -113,7 +113,7 @@ def _style_binary(name,
     debug_state = select({
         "@gust//defs/config:release": False,
         "@gust//defs/config:debug": True,
-        "//conditions:default": False
+        "//conditions:default": debug
     })
 
     if src != None and (src.endswith(".sass") or src.endswith(".scss")):
@@ -129,7 +129,7 @@ def _style_binary(name,
 
         _closure_css_library(
             name = "%s-lib" % name,
-            srcs = [":%s-sass" % name],
+            srcs = [":%s-inter.css" % name],
         )
 
         _closure_css_binary(

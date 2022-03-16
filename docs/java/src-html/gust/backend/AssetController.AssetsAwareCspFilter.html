@@ -1,0 +1,721 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../stylesheet.css" title="Style">
+</head>
+<body>
+<main role="main">
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span><a id="line.1">/*</a>
+<span class="sourceLineNo">002</span><a id="line.2"> * Copyright © 2020, The Gust Framework Authors. All rights reserved.</a>
+<span class="sourceLineNo">003</span><a id="line.3"> *</a>
+<span class="sourceLineNo">004</span><a id="line.4"> * The Gust/Elide framework and tools, and all associated source or object computer code, except where otherwise noted,</a>
+<span class="sourceLineNo">005</span><a id="line.5"> * are licensed under the Zero Prosperity license, which is enclosed in this repository, in the file LICENSE.txt. Use of</a>
+<span class="sourceLineNo">006</span><a id="line.6"> * this code in object or source form requires and implies consent and agreement to that license in principle and</a>
+<span class="sourceLineNo">007</span><a id="line.7"> * practice. Source or object code not listing this header, or unless specified otherwise, remain the property of</a>
+<span class="sourceLineNo">008</span><a id="line.8"> * Elide LLC and its suppliers, if any. The intellectual and technical concepts contained herein are proprietary to</a>
+<span class="sourceLineNo">009</span><a id="line.9"> * Elide LLC and its suppliers and may be covered by U.S. and Foreign Patents, or patents in process, and are protected</a>
+<span class="sourceLineNo">010</span><a id="line.10"> * by trade secret and copyright law. Dissemination of this information, or reproduction of this material, in any form,</a>
+<span class="sourceLineNo">011</span><a id="line.11"> * is strictly forbidden except in adherence with assigned license requirements.</a>
+<span class="sourceLineNo">012</span><a id="line.12"> */</a>
+<span class="sourceLineNo">013</span><a id="line.13">package gust.backend;</a>
+<span class="sourceLineNo">014</span><a id="line.14"></a>
+<span class="sourceLineNo">015</span><a id="line.15"></a>
+<span class="sourceLineNo">016</span><a id="line.16">import com.google.common.annotations.VisibleForTesting;</a>
+<span class="sourceLineNo">017</span><a id="line.17">import com.google.common.base.Joiner;</a>
+<span class="sourceLineNo">018</span><a id="line.18">import com.google.common.collect.ImmutableSet;</a>
+<span class="sourceLineNo">019</span><a id="line.19">import com.google.common.collect.Sets;</a>
+<span class="sourceLineNo">020</span><a id="line.20">import com.google.protobuf.Timestamp;</a>
+<span class="sourceLineNo">021</span><a id="line.21">import gust.Core;</a>
+<span class="sourceLineNo">022</span><a id="line.22">import gust.backend.runtime.AssetManager;</a>
+<span class="sourceLineNo">023</span><a id="line.23">import gust.backend.runtime.Logging;</a>
+<span class="sourceLineNo">024</span><a id="line.24">import io.micronaut.context.annotation.Replaces;</a>
+<span class="sourceLineNo">025</span><a id="line.25">import io.micronaut.core.util.StringUtils;</a>
+<span class="sourceLineNo">026</span><a id="line.26">import io.micronaut.http.*;</a>
+<span class="sourceLineNo">027</span><a id="line.27">import io.micronaut.http.annotation.Controller;</a>
+<span class="sourceLineNo">028</span><a id="line.28">import io.micronaut.http.annotation.Get;</a>
+<span class="sourceLineNo">029</span><a id="line.29">import io.micronaut.http.filter.ServerFilterChain;</a>
+<span class="sourceLineNo">030</span><a id="line.30">import io.micronaut.security.annotation.Secured;</a>
+<span class="sourceLineNo">031</span><a id="line.31">import io.micronaut.validation.Validated;</a>
+<span class="sourceLineNo">032</span><a id="line.32">import io.micronaut.views.csp.CspConfiguration;</a>
+<span class="sourceLineNo">033</span><a id="line.33">import io.micronaut.views.csp.CspFilter;</a>
+<span class="sourceLineNo">034</span><a id="line.34">import io.reactivex.Flowable;</a>
+<span class="sourceLineNo">035</span><a id="line.35">import org.reactivestreams.Publisher;</a>
+<span class="sourceLineNo">036</span><a id="line.36">import org.slf4j.Logger;</a>
+<span class="sourceLineNo">037</span><a id="line.37">import tools.elide.core.data.CompressedData;</a>
+<span class="sourceLineNo">038</span><a id="line.38">import tools.elide.core.data.CompressionMode;</a>
+<span class="sourceLineNo">039</span><a id="line.39">import tools.elide.page.Context.CrossOriginResourcePolicy;</a>
+<span class="sourceLineNo">040</span><a id="line.40"></a>
+<span class="sourceLineNo">041</span><a id="line.41">import javax.annotation.Nonnull;</a>
+<span class="sourceLineNo">042</span><a id="line.42">import javax.annotation.Nullable;</a>
+<span class="sourceLineNo">043</span><a id="line.43">import javax.inject.Inject;</a>
+<span class="sourceLineNo">044</span><a id="line.44"></a>
+<span class="sourceLineNo">045</span><a id="line.45">import java.nio.charset.StandardCharsets;</a>
+<span class="sourceLineNo">046</span><a id="line.46">import java.text.ParseException;</a>
+<span class="sourceLineNo">047</span><a id="line.47">import java.text.SimpleDateFormat;</a>
+<span class="sourceLineNo">048</span><a id="line.48">import java.time.Instant;</a>
+<span class="sourceLineNo">049</span><a id="line.49">import java.util.*;</a>
+<span class="sourceLineNo">050</span><a id="line.50">import java.util.concurrent.TimeUnit;</a>
+<span class="sourceLineNo">051</span><a id="line.51">import java.util.stream.Collectors;</a>
+<span class="sourceLineNo">052</span><a id="line.52"></a>
+<span class="sourceLineNo">053</span><a id="line.53">import static java.lang.String.format;</a>
+<span class="sourceLineNo">054</span><a id="line.54"></a>
+<span class="sourceLineNo">055</span><a id="line.55"></a>
+<span class="sourceLineNo">056</span><a id="line.56">/**</a>
+<span class="sourceLineNo">057</span><a id="line.57"> * Built-in backend controller for serving dynamic managed assets. Assets managed in this manner are hooked into the</a>
+<span class="sourceLineNo">058</span><a id="line.58"> * build pipeline, so that a binary asset manifest is produced at the root of the application JAR.</a>
+<span class="sourceLineNo">059</span><a id="line.59"> *</a>
+<span class="sourceLineNo">060</span><a id="line.60"> * &lt;p&gt;{@link AssetManager} loads the binary manifest/bundle, and then using this controller, we serve the URLs and</a>
+<span class="sourceLineNo">061</span><a id="line.61"> * assets mentioned therein. Controllers may then reference these assets (to be served here), via utility methods on</a>
+<span class="sourceLineNo">062</span><a id="line.62"> * {@link BaseController}.&lt;/p&gt;</a>
+<span class="sourceLineNo">063</span><a id="line.63"> */</a>
+<span class="sourceLineNo">064</span><a id="line.64">@Controller("/_/assets")</a>
+<span class="sourceLineNo">065</span><a id="line.65">@Secured("isAnonymous()")</a>
+<span class="sourceLineNo">066</span><a id="line.66">public class AssetController {</a>
+<span class="sourceLineNo">067</span><a id="line.67">  /** Private logging pipe. */</a>
+<span class="sourceLineNo">068</span><a id="line.68">  private static final @Nonnull Logger logging = Logging.logger(AssetController.class);</a>
+<span class="sourceLineNo">069</span><a id="line.69"></a>
+<span class="sourceLineNo">070</span><a id="line.70">  /** Testing flag, indicating that compression should be forced, regardless of whether it saves time/space. */</a>
+<span class="sourceLineNo">071</span><a id="line.71">  private static final boolean FORCE_COMPRESSION_IF_SUPPORTED = false;</a>
+<span class="sourceLineNo">072</span><a id="line.72"></a>
+<span class="sourceLineNo">073</span><a id="line.73">  /** Static {@code Content-Encoding} value for non-compressed content. */</a>
+<span class="sourceLineNo">074</span><a id="line.74">  private static final @Nonnull String IDENTITY_CONTENT_ENCODING = "identity";</a>
+<span class="sourceLineNo">075</span><a id="line.75"></a>
+<span class="sourceLineNo">076</span><a id="line.76">  /** Static {@code Content-Encoding} value for gzip-compressed content. */</a>
+<span class="sourceLineNo">077</span><a id="line.77">  private static final @Nonnull String GZIP_CONTENT_ENCODING = "gzip";</a>
+<span class="sourceLineNo">078</span><a id="line.78"></a>
+<span class="sourceLineNo">079</span><a id="line.79">  /** Static {@code Content-Encoding} value for Brotli-compressed content. */</a>
+<span class="sourceLineNo">080</span><a id="line.80">  private static final @Nonnull String BROTLI_CONTENT_ENCODING = "br";</a>
+<span class="sourceLineNo">081</span><a id="line.81"></a>
+<span class="sourceLineNo">082</span><a id="line.82">  /** Static {@code Cross-Origin-Resource-Policy} header name. */</a>
+<span class="sourceLineNo">083</span><a id="line.83">  private static final @Nonnull String CROSS_ORIGIN_RESOURCE_POLICY_HEADER = "Cross-Origin-Resource-Policy";</a>
+<span class="sourceLineNo">084</span><a id="line.84"></a>
+<span class="sourceLineNo">085</span><a id="line.85">  /** Date/time tool for HTTP-formatted timestamps. */</a>
+<span class="sourceLineNo">086</span><a id="line.86">  private static final @Nonnull SimpleDateFormat isoDateTimeFormat = (</a>
+<span class="sourceLineNo">087</span><a id="line.87">    new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz"));</a>
+<span class="sourceLineNo">088</span><a id="line.88"></a>
+<span class="sourceLineNo">089</span><a id="line.89">  /** Main asset manager singleton. */</a>
+<span class="sourceLineNo">090</span><a id="line.90">  private final @Nonnull AssetManager assetManager;</a>
+<span class="sourceLineNo">091</span><a id="line.91"></a>
+<span class="sourceLineNo">092</span><a id="line.92">  /** Configuration for the asset engine. */</a>
+<span class="sourceLineNo">093</span><a id="line.93">  private final @Nonnull AssetConfiguration config;</a>
+<span class="sourceLineNo">094</span><a id="line.94"></a>
+<span class="sourceLineNo">095</span><a id="line.95">  /** Replacement for {@link CspFilter} which disables itself when assets (or non-HTML content) are served. */</a>
+<span class="sourceLineNo">096</span><a id="line.96">  @Replaces(CspFilter.class)</a>
+<span class="sourceLineNo">097</span><a id="line.97">  public static final class AssetsAwareCspFilter extends CspFilter {</a>
+<span class="sourceLineNo">098</span><a id="line.98">    AssetsAwareCspFilter(Optional&lt;CspConfiguration&gt; cspConfiguration) {</a>
+<span class="sourceLineNo">099</span><a id="line.99">      super(cspConfiguration.isPresent() ? cspConfiguration.get() :</a>
+<span class="sourceLineNo">100</span><a id="line.100">        new CspConfiguration() {</a>
+<span class="sourceLineNo">101</span><a id="line.101">          @Override</a>
+<span class="sourceLineNo">102</span><a id="line.102">          public boolean isEnabled() { return false; }</a>
+<span class="sourceLineNo">103</span><a id="line.103"></a>
+<span class="sourceLineNo">104</span><a id="line.104">          @Override</a>
+<span class="sourceLineNo">105</span><a id="line.105">          public Optional&lt;String&gt; getPolicyDirectives() { return Optional.empty(); }</a>
+<span class="sourceLineNo">106</span><a id="line.106">        } /** pass in defaults */);</a>
+<span class="sourceLineNo">107</span><a id="line.107">    }</a>
+<span class="sourceLineNo">108</span><a id="line.108"></a>
+<span class="sourceLineNo">109</span><a id="line.109">    private static boolean nonAssetRequest(@Nonnull HttpRequest request) {</a>
+<span class="sourceLineNo">110</span><a id="line.110">      return !(request.getPath().startsWith(Core.getDynamicAssetPrefix()));</a>
+<span class="sourceLineNo">111</span><a id="line.111">    }</a>
+<span class="sourceLineNo">112</span><a id="line.112"></a>
+<span class="sourceLineNo">113</span><a id="line.113">    private @Nullable String nonceValue(@Nonnull HttpRequest&lt;?&gt; request) {</a>
+<span class="sourceLineNo">114</span><a id="line.114">      return (this.cspConfiguration.isNonceEnabled() &amp;&amp; nonAssetRequest(request)) ?</a>
+<span class="sourceLineNo">115</span><a id="line.115">        this.cspConfiguration.generateNonce() : null;</a>
+<span class="sourceLineNo">116</span><a id="line.116">    }</a>
+<span class="sourceLineNo">117</span><a id="line.117"></a>
+<span class="sourceLineNo">118</span><a id="line.118">    @Override</a>
+<span class="sourceLineNo">119</span><a id="line.119">    public Publisher&lt;MutableHttpResponse&lt;?&gt;&gt; doFilter(HttpRequest&lt;?&gt; request, ServerFilterChain chain) {</a>
+<span class="sourceLineNo">120</span><a id="line.120">      String nonce = this.nonceValue(request);</a>
+<span class="sourceLineNo">121</span><a id="line.121">      if (logging.isDebugEnabled())</a>
+<span class="sourceLineNo">122</span><a id="line.122">        logging.debug(format("Generated nonce: '%s'.", nonce));</a>
+<span class="sourceLineNo">123</span><a id="line.123">      return Flowable.fromPublisher(</a>
+<span class="sourceLineNo">124</span><a id="line.124">        chain.proceed(request.setAttribute("cspNonce", nonce))).doOnNext((response) -&gt; {</a>
+<span class="sourceLineNo">125</span><a id="line.125">        if (nonAssetRequest(request)</a>
+<span class="sourceLineNo">126</span><a id="line.126">            &amp;&amp; request.getContentType().orElse(MediaType.TEXT_HTML_TYPE).equals(MediaType.TEXT_HTML_TYPE)) {</a>
+<span class="sourceLineNo">127</span><a id="line.127">          if (logging.isDebugEnabled())</a>
+<span class="sourceLineNo">128</span><a id="line.128">            logging.debug("Encountered a non-asset request. Applying CSP.");</a>
+<span class="sourceLineNo">129</span><a id="line.129"></a>
+<span class="sourceLineNo">130</span><a id="line.130">          // it's not an asset request. apply CSP.</a>
+<span class="sourceLineNo">131</span><a id="line.131">          this.cspConfiguration.getPolicyDirectives().map(StringUtils::trimToNull).ifPresent((directives) -&gt; {</a>
+<span class="sourceLineNo">132</span><a id="line.132">            String header = this.cspConfiguration.isReportOnly() ?</a>
+<span class="sourceLineNo">133</span><a id="line.133">              "Content-Security-Policy-Report-Only" : "Content-Security-Policy";</a>
+<span class="sourceLineNo">134</span><a id="line.134">            String headerValue;</a>
+<span class="sourceLineNo">135</span><a id="line.135">            if (directives.contains("{#nonceValue}")) {</a>
+<span class="sourceLineNo">136</span><a id="line.136">              if (nonce == null) {</a>
+<span class="sourceLineNo">137</span><a id="line.137">                throw new IllegalArgumentException(</a>
+<span class="sourceLineNo">138</span><a id="line.138">                  "Must enable CSP nonce generation to use '{#nonceValue}' placeholder.");</a>
+<span class="sourceLineNo">139</span><a id="line.139">              }</a>
+<span class="sourceLineNo">140</span><a id="line.140"></a>
+<span class="sourceLineNo">141</span><a id="line.141">              headerValue = directives.replace("{#nonceValue}", nonce);</a>
+<span class="sourceLineNo">142</span><a id="line.142">            } else {</a>
+<span class="sourceLineNo">143</span><a id="line.143">              headerValue = directives;</a>
+<span class="sourceLineNo">144</span><a id="line.144">            }</a>
+<span class="sourceLineNo">145</span><a id="line.145">            response.getHeaders().add(header, headerValue);</a>
+<span class="sourceLineNo">146</span><a id="line.146">          });</a>
+<span class="sourceLineNo">147</span><a id="line.147">        } else {</a>
+<span class="sourceLineNo">148</span><a id="line.148">          // it's an asset request. let it through without appending CSP.</a>
+<span class="sourceLineNo">149</span><a id="line.149">          if (logging.isDebugEnabled())</a>
+<span class="sourceLineNo">150</span><a id="line.150">            logging.debug("CSP policy skipped because this request is being served as an asset.");</a>
+<span class="sourceLineNo">151</span><a id="line.151">        }</a>
+<span class="sourceLineNo">152</span><a id="line.152">      });</a>
+<span class="sourceLineNo">153</span><a id="line.153">    }</a>
+<span class="sourceLineNo">154</span><a id="line.154">  }</a>
+<span class="sourceLineNo">155</span><a id="line.155"></a>
+<span class="sourceLineNo">156</span><a id="line.156">  /** Construct a new asset controller from scratch. Usually invoked from DI. */</a>
+<span class="sourceLineNo">157</span><a id="line.157">  @Inject AssetController(@Nonnull AssetConfiguration config,</a>
+<span class="sourceLineNo">158</span><a id="line.158">                          @Nonnull AssetManager assetManager) {</a>
+<span class="sourceLineNo">159</span><a id="line.159">    this.config = config;</a>
+<span class="sourceLineNo">160</span><a id="line.160">    this.assetManager = assetManager;</a>
+<span class="sourceLineNo">161</span><a id="line.161">  }</a>
+<span class="sourceLineNo">162</span><a id="line.162"></a>
+<span class="sourceLineNo">163</span><a id="line.163">  /**</a>
+<span class="sourceLineNo">164</span><a id="line.164">   * Produce a token for the specified {@code Cross-Origin-Resource-Policy}.</a>
+<span class="sourceLineNo">165</span><a id="line.165">   *</a>
+<span class="sourceLineNo">166</span><a id="line.166">   * @param policy Policy to produce a token for.</a>
+<span class="sourceLineNo">167</span><a id="line.167">   * @return String token.</a>
+<span class="sourceLineNo">168</span><a id="line.168">   */</a>
+<span class="sourceLineNo">169</span><a id="line.169">  @VisibleForTesting</a>
+<span class="sourceLineNo">170</span><a id="line.170">  @SuppressWarnings("WeakerAccess")</a>
+<span class="sourceLineNo">171</span><a id="line.171">  static @Nonnull Optional&lt;String&gt; tokenForCrossOriginResourcePolicy(@Nonnull CrossOriginResourcePolicy policy) {</a>
+<span class="sourceLineNo">172</span><a id="line.172">    switch (policy) {</a>
+<span class="sourceLineNo">173</span><a id="line.173">      case SAME_SITE: return Optional.of("same-site");</a>
+<span class="sourceLineNo">174</span><a id="line.174">      case SAME_ORIGIN: return Optional.of("same-origin");</a>
+<span class="sourceLineNo">175</span><a id="line.175">      case CROSS_ORIGIN: return Optional.of("cross-origin");</a>
+<span class="sourceLineNo">176</span><a id="line.176">      default: return Optional.empty();</a>
+<span class="sourceLineNo">177</span><a id="line.177">    }</a>
+<span class="sourceLineNo">178</span><a id="line.178">  }</a>
+<span class="sourceLineNo">179</span><a id="line.179"></a>
+<span class="sourceLineNo">180</span><a id="line.180">  /** Resolve a {@code Content-Encoding} value for the supplied {@code compressionMode}. */</a>
+<span class="sourceLineNo">181</span><a id="line.181">  private @Nonnull CharSequence resolveContentEncoding(@Nonnull CompressionMode compressionMode) {</a>
+<span class="sourceLineNo">182</span><a id="line.182">    switch (compressionMode) {</a>
+<span class="sourceLineNo">183</span><a id="line.183">      case IDENTITY: return IDENTITY_CONTENT_ENCODING;</a>
+<span class="sourceLineNo">184</span><a id="line.184">      case GZIP: return GZIP_CONTENT_ENCODING;</a>
+<span class="sourceLineNo">185</span><a id="line.185">      case BROTLI: return BROTLI_CONTENT_ENCODING;</a>
+<span class="sourceLineNo">186</span><a id="line.186">      default:</a>
+<span class="sourceLineNo">187</span><a id="line.187">        throw new IllegalStateException(format("Unrecognized compression mode: '%s'.", compressionMode.name()));</a>
+<span class="sourceLineNo">188</span><a id="line.188">    }</a>
+<span class="sourceLineNo">189</span><a id="line.189">  }</a>
+<span class="sourceLineNo">190</span><a id="line.190"></a>
+<span class="sourceLineNo">191</span><a id="line.191">  /** Resolve a {@code Content-Type} value for the supplied {@code ext}. */</a>
+<span class="sourceLineNo">192</span><a id="line.192">  private @Nonnull MediaType resolveMediaType(@Nonnull String ext) {</a>
+<span class="sourceLineNo">193</span><a id="line.193">    final MediaType mediaType;</a>
+<span class="sourceLineNo">194</span><a id="line.194">    Optional&lt;MediaType&gt; mediaTypeResolved = MediaType.forExtension(ext);</a>
+<span class="sourceLineNo">195</span><a id="line.195">    if (!mediaTypeResolved.isPresent()) {</a>
+<span class="sourceLineNo">196</span><a id="line.196">      logging.error(format("Failed to resolve MIME type for asset extension '%s'", ext));</a>
+<span class="sourceLineNo">197</span><a id="line.197">      mediaType = MediaType.APPLICATION_OCTET_STREAM_TYPE;</a>
+<span class="sourceLineNo">198</span><a id="line.198">    } else {</a>
+<span class="sourceLineNo">199</span><a id="line.199">      String charsetToken = StandardCharsets.UTF_8.displayName();</a>
+<span class="sourceLineNo">200</span><a id="line.200">      mediaType = new MediaType(</a>
+<span class="sourceLineNo">201</span><a id="line.201">        mediaTypeResolved.get().getName(),</a>
+<span class="sourceLineNo">202</span><a id="line.202">        mediaTypeResolved.get().getExtension(),</a>
+<span class="sourceLineNo">203</span><a id="line.203">        Collections.singletonMap("charset", charsetToken));</a>
+<span class="sourceLineNo">204</span><a id="line.204">      if (logging.isTraceEnabled())</a>
+<span class="sourceLineNo">205</span><a id="line.205">        logging.trace(format("Resolved MIME type for asset as '%s' (extension '%s', charset '%s').",</a>
+<span class="sourceLineNo">206</span><a id="line.206">          mediaType.getType(),</a>
+<span class="sourceLineNo">207</span><a id="line.207">          ext,</a>
+<span class="sourceLineNo">208</span><a id="line.208">          charsetToken));</a>
+<span class="sourceLineNo">209</span><a id="line.209">    }</a>
+<span class="sourceLineNo">210</span><a id="line.210">    return mediaType;</a>
+<span class="sourceLineNo">211</span><a id="line.211">  }</a>
+<span class="sourceLineNo">212</span><a id="line.212"></a>
+<span class="sourceLineNo">213</span><a id="line.213">  /** Resolve an HTTP-compliant timestamp value from a Protobuf timestamp, for the {@code Last-Modified} header. */</a>
+<span class="sourceLineNo">214</span><a id="line.214">  private @Nonnull Optional&lt;String&gt; resolveLastModified(@Nonnull Timestamp timestamp) {</a>
+<span class="sourceLineNo">215</span><a id="line.215">    //noinspection ConstantConditions</a>
+<span class="sourceLineNo">216</span><a id="line.216">    if (timestamp == null || !timestamp.isInitialized() || timestamp.getSeconds() &lt; 100) {</a>
+<span class="sourceLineNo">217</span><a id="line.217">      return Optional.empty();</a>
+<span class="sourceLineNo">218</span><a id="line.218">    }</a>
+<span class="sourceLineNo">219</span><a id="line.219">    return Optional.of(</a>
+<span class="sourceLineNo">220</span><a id="line.220">      isoDateTimeFormat.format(Date.from(Instant.ofEpochSecond(timestamp.getSeconds()))));</a>
+<span class="sourceLineNo">221</span><a id="line.221">  }</a>
+<span class="sourceLineNo">222</span><a id="line.222"></a>
+<span class="sourceLineNo">223</span><a id="line.223">  /** Setup HTTP cache control settings. */</a>
+<span class="sourceLineNo">224</span><a id="line.224">  private void resolveCacheControl(@Nonnull MutableHttpResponse response) {</a>
+<span class="sourceLineNo">225</span><a id="line.225">    if (response.getHeaders().contains("Set-Cookie")) {</a>
+<span class="sourceLineNo">226</span><a id="line.226">      logging.warn("Refusing to enable HTTP cache control on response: noticed `Set-Cookie` header.");</a>
+<span class="sourceLineNo">227</span><a id="line.227">      return;</a>
+<span class="sourceLineNo">228</span><a id="line.228">    }</a>
+<span class="sourceLineNo">229</span><a id="line.229"></a>
+<span class="sourceLineNo">230</span><a id="line.230">    // resolve main TTL</a>
+<span class="sourceLineNo">231</span><a id="line.231">    var mode = config.httpCaching().mode();</a>
+<span class="sourceLineNo">232</span><a id="line.232">    var ttl = config.httpCaching().ttl();</a>
+<span class="sourceLineNo">233</span><a id="line.233">    var ttlUnit = config.httpCaching().ttlUnit();</a>
+<span class="sourceLineNo">234</span><a id="line.234">    var ttlValue = ttlUnit.convert(ttl, TimeUnit.SECONDS);</a>
+<span class="sourceLineNo">235</span><a id="line.235"></a>
+<span class="sourceLineNo">236</span><a id="line.236">    StringBuilder spec = new StringBuilder();</a>
+<span class="sourceLineNo">237</span><a id="line.237">    if (mode != null &amp;&amp; !mode.isEmpty() &amp;&amp; ttlValue &gt; -1L) {</a>
+<span class="sourceLineNo">238</span><a id="line.238">      if (logging.isDebugEnabled())</a>
+<span class="sourceLineNo">239</span><a id="line.239">        logging.debug(format("Indicating `Cache-Control` mode and TTL: %s, max-age=%s.",</a>
+<span class="sourceLineNo">240</span><a id="line.240">          mode,</a>
+<span class="sourceLineNo">241</span><a id="line.241">          String.valueOf(ttl)));</a>
+<span class="sourceLineNo">242</span><a id="line.242"></a>
+<span class="sourceLineNo">243</span><a id="line.243">      spec.append(format("%s; max-age=%s",</a>
+<span class="sourceLineNo">244</span><a id="line.244">        mode,</a>
+<span class="sourceLineNo">245</span><a id="line.245">        String.valueOf(ttl)));</a>
+<span class="sourceLineNo">246</span><a id="line.246"></a>
+<span class="sourceLineNo">247</span><a id="line.247">      if (config.httpCaching().enableShared()) {</a>
+<span class="sourceLineNo">248</span><a id="line.248">        // affix the shared-cache settings, too, if so directed</a>
+<span class="sourceLineNo">249</span><a id="line.249">        var sharedTtl = config.httpCaching().sharedTtl();</a>
+<span class="sourceLineNo">250</span><a id="line.250">        var sharedTtlUnit = config.httpCaching().sharedTtlUnit();</a>
+<span class="sourceLineNo">251</span><a id="line.251">        var sharedTtlValue = sharedTtlUnit.convert(sharedTtl, TimeUnit.SECONDS);</a>
+<span class="sourceLineNo">252</span><a id="line.252">        if (sharedTtlValue &gt; -1L) {</a>
+<span class="sourceLineNo">253</span><a id="line.253">          if (logging.isDebugEnabled())</a>
+<span class="sourceLineNo">254</span><a id="line.254">            logging.debug(format("Indicating `Cache-Control` shared TTL: s-max-age=%s.",</a>
+<span class="sourceLineNo">255</span><a id="line.255">              String.valueOf(sharedTtlValue)));</a>
+<span class="sourceLineNo">256</span><a id="line.256"></a>
+<span class="sourceLineNo">257</span><a id="line.257">          spec.append(format(" s-max-age=%s%s",</a>
+<span class="sourceLineNo">258</span><a id="line.258">            String.valueOf(sharedTtlValue),</a>
+<span class="sourceLineNo">259</span><a id="line.259">            config.httpCaching().additionalDirectives().isPresent() ?</a>
+<span class="sourceLineNo">260</span><a id="line.260">              " " + Joiner.on(" ").join(config.httpCaching().additionalDirectives().get()) :</a>
+<span class="sourceLineNo">261</span><a id="line.261">              ""));</a>
+<span class="sourceLineNo">262</span><a id="line.262"></a>
+<span class="sourceLineNo">263</span><a id="line.263">          if (logging.isDebugEnabled() &amp;&amp; config.httpCaching().additionalDirectives().isPresent()) {</a>
+<span class="sourceLineNo">264</span><a id="line.264">            logging.debug(format("Indicating `Cache-Control` additional directives: %s.",</a>
+<span class="sourceLineNo">265</span><a id="line.265">              Joiner.on(" ").join(config.httpCaching().additionalDirectives().get())));</a>
+<span class="sourceLineNo">266</span><a id="line.266">          }</a>
+<span class="sourceLineNo">267</span><a id="line.267">        } else {</a>
+<span class="sourceLineNo">268</span><a id="line.268">          logging.warn("`Cache-Control` shared caching was enabled, but a TTL value was invalid or missing.");</a>
+<span class="sourceLineNo">269</span><a id="line.269">        }</a>
+<span class="sourceLineNo">270</span><a id="line.270">      } else if (logging.isDebugEnabled()) {</a>
+<span class="sourceLineNo">271</span><a id="line.271">        logging.debug("Shared HTTP caching is disabled.");</a>
+<span class="sourceLineNo">272</span><a id="line.272">      }</a>
+<span class="sourceLineNo">273</span><a id="line.273">    } else {</a>
+<span class="sourceLineNo">274</span><a id="line.274">      logging.warn("`Cache-Control` value was invalid or missing.");</a>
+<span class="sourceLineNo">275</span><a id="line.275">    }</a>
+<span class="sourceLineNo">276</span><a id="line.276">    var renderedSpec = spec.toString();</a>
+<span class="sourceLineNo">277</span><a id="line.277">    if (!renderedSpec.isEmpty()) {</a>
+<span class="sourceLineNo">278</span><a id="line.278">      response.header(HttpHeaders.CACHE_CONTROL, renderedSpec);</a>
+<span class="sourceLineNo">279</span><a id="line.279">    }</a>
+<span class="sourceLineNo">280</span><a id="line.280">  }</a>
+<span class="sourceLineNo">281</span><a id="line.281"></a>
+<span class="sourceLineNo">282</span><a id="line.282">  /** Affix headers for the asset to the response. */</a>
+<span class="sourceLineNo">283</span><a id="line.283">  private void affixHeaders(@Nonnull MediaType type,</a>
+<span class="sourceLineNo">284</span><a id="line.284">                            @Nonnull CompressionMode compression,</a>
+<span class="sourceLineNo">285</span><a id="line.285">                            @Nonnull Timestamp modified,</a>
+<span class="sourceLineNo">286</span><a id="line.286">                            @Nonnull AssetManager.ManagedAssetContent asset,</a>
+<span class="sourceLineNo">287</span><a id="line.287">                            @Nonnull MutableHttpResponse response) {</a>
+<span class="sourceLineNo">288</span><a id="line.288">    // start with content type and encodings</a>
+<span class="sourceLineNo">289</span><a id="line.289">    response.contentType(type);</a>
+<span class="sourceLineNo">290</span><a id="line.290">    var contentEncoding = resolveContentEncoding(compression);</a>
+<span class="sourceLineNo">291</span><a id="line.291">    response.contentEncoding(contentEncoding);</a>
+<span class="sourceLineNo">292</span><a id="line.292">    if (logging.isTraceEnabled()) {</a>
+<span class="sourceLineNo">293</span><a id="line.293">      logging.trace(format("Indicating `Content-Encoding`: '%s'.", contentEncoding));</a>
+<span class="sourceLineNo">294</span><a id="line.294">    }</a>
+<span class="sourceLineNo">295</span><a id="line.295"></a>
+<span class="sourceLineNo">296</span><a id="line.296">    // next up is `Vary`</a>
+<span class="sourceLineNo">297</span><a id="line.297">    if (config.variance().enabled()) {</a>
+<span class="sourceLineNo">298</span><a id="line.298">      Set&lt;String&gt; segments = new TreeSet&lt;&gt;();</a>
+<span class="sourceLineNo">299</span><a id="line.299"></a>
+<span class="sourceLineNo">300</span><a id="line.300">      // if the asset is a CSS or JS bundle, we must examine configuration to decide whether to specify `Accept` as a</a>
+<span class="sourceLineNo">301</span><a id="line.301">      // `Vary` header entry, which is generally done to enable differential serving of photos (as WebP, for instance).</a>
+<span class="sourceLineNo">302</span><a id="line.302">      if (type.getName().equals("css") || type.getName().equals("javascript") &amp;&amp; config.variance().accept())</a>
+<span class="sourceLineNo">303</span><a id="line.303">        segments.add(HttpHeaders.ACCEPT);</a>
+<span class="sourceLineNo">304</span><a id="line.304">      else if (logging.isDebugEnabled())</a>
+<span class="sourceLineNo">305</span><a id="line.305">        logging.debug(format("Asset type '%s' did not qualify for `Accept` variance.", type));</a>
+<span class="sourceLineNo">306</span><a id="line.306"></a>
+<span class="sourceLineNo">307</span><a id="line.307">      // if the application is internationalized, we can indicate asset variance based on the provided request value of</a>
+<span class="sourceLineNo">308</span><a id="line.308">      // the `Accept-Language` header, so apply that if it is configured.</a>
+<span class="sourceLineNo">309</span><a id="line.309">      if (config.variance().language()) segments.add(HttpHeaders.ACCEPT_LANGUAGE);</a>
+<span class="sourceLineNo">310</span><a id="line.310">      else if (logging.isDebugEnabled()) logging.debug("Asset variance by language is disabled in asset config.");</a>
+<span class="sourceLineNo">311</span><a id="line.311"></a>
+<span class="sourceLineNo">312</span><a id="line.312">      // if the application is internationalized to the point of using custom/special charsets, we can indicate asset</a>
+<span class="sourceLineNo">313</span><a id="line.313">      // variance based on the browser's accepted character sets. this is generally a bad idea, but is needed for some</a>
+<span class="sourceLineNo">314</span><a id="line.314">      // corner cases, so we apply it here.</a>
+<span class="sourceLineNo">315</span><a id="line.315">      if (config.variance().charset()) segments.add(HttpHeaders.ACCEPT_CHARSET);</a>
+<span class="sourceLineNo">316</span><a id="line.316">      else if (logging.isDebugEnabled()) logging.debug("Asset variance by charset is disabled in asset config.");</a>
+<span class="sourceLineNo">317</span><a id="line.317"></a>
+<span class="sourceLineNo">318</span><a id="line.318">      // if the application hosts dynamically originated content (i.e. in a multi-tenant posture), config can opt-in to</a>
+<span class="sourceLineNo">319</span><a id="line.319">      // varying by browser origin.</a>
+<span class="sourceLineNo">320</span><a id="line.320">      if (config.variance().origin()) segments.add(HttpHeaders.ORIGIN);</a>
+<span class="sourceLineNo">321</span><a id="line.321">      else if (logging.isDebugEnabled()) logging.debug("Asset variance by variance is disabled in asset config.");</a>
+<span class="sourceLineNo">322</span><a id="line.322"></a>
+<span class="sourceLineNo">323</span><a id="line.323">      // if we have more than one representation of the asset, and compression is enabled, and `Vary` is not disabled,</a>
+<span class="sourceLineNo">324</span><a id="line.324">      // we must affix the `Vary` tag. generally for CSS and JS this might include `Accept`, so we look for that in the</a>
+<span class="sourceLineNo">325</span><a id="line.325">      // asset configuration, too.</a>
+<span class="sourceLineNo">326</span><a id="line.326">      if (config.compression().enabled() &amp;&amp; config.compression().enableVary()</a>
+<span class="sourceLineNo">327</span><a id="line.327">          &amp;&amp; asset.getContent().getVariantList().size() &gt; 1)</a>
+<span class="sourceLineNo">328</span><a id="line.328">        segments.add(HttpHeaders.ACCEPT_ENCODING);</a>
+<span class="sourceLineNo">329</span><a id="line.329">      else if (logging.isDebugEnabled())</a>
+<span class="sourceLineNo">330</span><a id="line.330">        logging.debug("No need for compression variance: too few representations, or disabled by config.");</a>
+<span class="sourceLineNo">331</span><a id="line.331"></a>
+<span class="sourceLineNo">332</span><a id="line.332">      if (!segments.isEmpty()) {</a>
+<span class="sourceLineNo">333</span><a id="line.333">        String varyHeader = Joiner.on(", ").join(segments);</a>
+<span class="sourceLineNo">334</span><a id="line.334">        if (logging.isDebugEnabled())</a>
+<span class="sourceLineNo">335</span><a id="line.335">          logging.debug(format("Calculated `Vary` header value: '%s'.", varyHeader));</a>
+<span class="sourceLineNo">336</span><a id="line.336">        response.header(HttpHeaders.VARY, varyHeader);</a>
+<span class="sourceLineNo">337</span><a id="line.337"></a>
+<span class="sourceLineNo">338</span><a id="line.338">      } else if (logging.isDebugEnabled()) {</a>
+<span class="sourceLineNo">339</span><a id="line.339">        logging.debug("No segments to apply to the `Vary` header value. Skipping.");</a>
+<span class="sourceLineNo">340</span><a id="line.340">      }</a>
+<span class="sourceLineNo">341</span><a id="line.341">    }</a>
+<span class="sourceLineNo">342</span><a id="line.342"></a>
+<span class="sourceLineNo">343</span><a id="line.343">    // next up is etags and last-modified</a>
+<span class="sourceLineNo">344</span><a id="line.344">    if (config.enableETags()) {</a>
+<span class="sourceLineNo">345</span><a id="line.345">      if (logging.isDebugEnabled())</a>
+<span class="sourceLineNo">346</span><a id="line.346">        logging.debug(format("Indicating `ETag`: '%s'.", asset.getETag()));</a>
+<span class="sourceLineNo">347</span><a id="line.347">      response.header(HttpHeaders.ETAG, "\"" + asset.getETag() + "\"");</a>
+<span class="sourceLineNo">348</span><a id="line.348">    } else if (logging.isDebugEnabled()) {</a>
+<span class="sourceLineNo">349</span><a id="line.349">      logging.debug("`ETag`s are disabled.");</a>
+<span class="sourceLineNo">350</span><a id="line.350">    }</a>
+<span class="sourceLineNo">351</span><a id="line.351"></a>
+<span class="sourceLineNo">352</span><a id="line.352">    if (config.enableLastModified()) {</a>
+<span class="sourceLineNo">353</span><a id="line.353">      Optional&lt;String&gt; lastModifiedValue = resolveLastModified(modified);</a>
+<span class="sourceLineNo">354</span><a id="line.354">      if (lastModifiedValue.isPresent()) {</a>
+<span class="sourceLineNo">355</span><a id="line.355">        String lastModified = lastModifiedValue.get();</a>
+<span class="sourceLineNo">356</span><a id="line.356">        response.header(HttpHeaders.LAST_MODIFIED, lastModified);</a>
+<span class="sourceLineNo">357</span><a id="line.357">        if (logging.isDebugEnabled())</a>
+<span class="sourceLineNo">358</span><a id="line.358">          logging.debug(format("Indicating `Last-Modified`: '%s'.", lastModified));</a>
+<span class="sourceLineNo">359</span><a id="line.359">      } else {</a>
+<span class="sourceLineNo">360</span><a id="line.360">        logging.warn(format("`Last-Modified` headers are enabled, but none could be generated for asset '%s'.",</a>
+<span class="sourceLineNo">361</span><a id="line.361">          asset.getToken()));</a>
+<span class="sourceLineNo">362</span><a id="line.362">      }</a>
+<span class="sourceLineNo">363</span><a id="line.363">    } else if (logging.isDebugEnabled()) {</a>
+<span class="sourceLineNo">364</span><a id="line.364">      logging.debug("`Last-Modified` is disabled.");</a>
+<span class="sourceLineNo">365</span><a id="line.365">    }</a>
+<span class="sourceLineNo">366</span><a id="line.366"></a>
+<span class="sourceLineNo">367</span><a id="line.367">    // mention original filename if operating in debug mode</a>
+<span class="sourceLineNo">368</span><a id="line.368">    if (Core.isDebugMode()) {</a>
+<span class="sourceLineNo">369</span><a id="line.369">      logging.debug(format("Serving managed asset '%s'.", asset.getFilename()));</a>
+<span class="sourceLineNo">370</span><a id="line.370">      response.header(HttpHeaders.CONTENT_DISPOSITION, format("inline; filename=\"%s\"", asset.getFilename()));</a>
+<span class="sourceLineNo">371</span><a id="line.371">    }</a>
+<span class="sourceLineNo">372</span><a id="line.372"></a>
+<span class="sourceLineNo">373</span><a id="line.373">    // `Cross-Origin-Resource-Policy`</a>
+<span class="sourceLineNo">374</span><a id="line.374">    if (config.crossOriginResources().enabled()) {</a>
+<span class="sourceLineNo">375</span><a id="line.375">      Optional&lt;String&gt; policyToken = tokenForCrossOriginResourcePolicy(</a>
+<span class="sourceLineNo">376</span><a id="line.376">        config.crossOriginResources().policy());</a>
+<span class="sourceLineNo">377</span><a id="line.377">      if (policyToken.isPresent()) {</a>
+<span class="sourceLineNo">378</span><a id="line.378">        if (logging.isDebugEnabled())</a>
+<span class="sourceLineNo">379</span><a id="line.379">          logging.debug(format("Applying `Cross-Origin-Resource-Policy` '%s'.", policyToken.get()));</a>
+<span class="sourceLineNo">380</span><a id="line.380">        response.getHeaders().add(</a>
+<span class="sourceLineNo">381</span><a id="line.381">          CROSS_ORIGIN_RESOURCE_POLICY_HEADER,</a>
+<span class="sourceLineNo">382</span><a id="line.382">          policyToken.get());</a>
+<span class="sourceLineNo">383</span><a id="line.383">      }</a>
+<span class="sourceLineNo">384</span><a id="line.384">    } else if (logging.isTraceEnabled()) {</a>
+<span class="sourceLineNo">385</span><a id="line.385">      logging.trace("No `Cross-Origin-Resource-Policy` applied: policy token was not present.");</a>
+<span class="sourceLineNo">386</span><a id="line.386">    }</a>
+<span class="sourceLineNo">387</span><a id="line.387"></a>
+<span class="sourceLineNo">388</span><a id="line.388">    // apply HTTP caching, if enabled</a>
+<span class="sourceLineNo">389</span><a id="line.389">    if (config.httpCaching().enabled()) {</a>
+<span class="sourceLineNo">390</span><a id="line.390">      if (logging.isDebugEnabled())</a>
+<span class="sourceLineNo">391</span><a id="line.391">        logging.debug("HTTP caching is enabled.");</a>
+<span class="sourceLineNo">392</span><a id="line.392">      resolveCacheControl(response);</a>
+<span class="sourceLineNo">393</span><a id="line.393">    } else if (logging.isDebugEnabled()) {</a>
+<span class="sourceLineNo">394</span><a id="line.394">      logging.debug("HTTP caching is disabled.");</a>
+<span class="sourceLineNo">395</span><a id="line.395">    }</a>
+<span class="sourceLineNo">396</span><a id="line.396"></a>
+<span class="sourceLineNo">397</span><a id="line.397">    // apply no-sniff policy</a>
+<span class="sourceLineNo">398</span><a id="line.398">    if (config.enableNoSniff()) {</a>
+<span class="sourceLineNo">399</span><a id="line.399">      // @TODO get this into Micronaut main</a>
+<span class="sourceLineNo">400</span><a id="line.400">      response.header("X-Content-Type-Options", "nosniff");</a>
+<span class="sourceLineNo">401</span><a id="line.401">    }</a>
+<span class="sourceLineNo">402</span><a id="line.402">  }</a>
+<span class="sourceLineNo">403</span><a id="line.403"></a>
+<span class="sourceLineNo">404</span><a id="line.404">  /** Calculate the set of supported compression modes for a given HTTP request's Accept-Encoding header. */</a>
+<span class="sourceLineNo">405</span><a id="line.405">  private EnumSet&lt;CompressionMode&gt; supportedCompressionModes(@Nonnull HttpRequest request) {</a>
+<span class="sourceLineNo">406</span><a id="line.406">    if (request.getHeaders().contains(HttpHeaders.ACCEPT_ENCODING)) {</a>
+<span class="sourceLineNo">407</span><a id="line.407">      @Nonnull String encodingSpec = Objects.requireNonNull(request.getHeaders().get(HttpHeaders.ACCEPT_ENCODING));</a>
+<span class="sourceLineNo">408</span><a id="line.408">      EnumSet&lt;CompressionMode&gt; modes = EnumSet.allOf(CompressionMode.class);</a>
+<span class="sourceLineNo">409</span><a id="line.409">      modes.remove(CompressionMode.UNRECOGNIZED);</a>
+<span class="sourceLineNo">410</span><a id="line.410"></a>
+<span class="sourceLineNo">411</span><a id="line.411">      for (CompressionMode mode : CompressionMode.values()) {</a>
+<span class="sourceLineNo">412</span><a id="line.412">        final String token;</a>
+<span class="sourceLineNo">413</span><a id="line.413">        switch (mode) {</a>
+<span class="sourceLineNo">414</span><a id="line.414">          case GZIP: token = "gzip"; break;</a>
+<span class="sourceLineNo">415</span><a id="line.415">          case BROTLI: token = "br"; break;</a>
+<span class="sourceLineNo">416</span><a id="line.416">          case IDENTITY:</a>
+<span class="sourceLineNo">417</span><a id="line.417">          case UNRECOGNIZED: continue;</a>
+<span class="sourceLineNo">418</span><a id="line.418">          default:</a>
+<span class="sourceLineNo">419</span><a id="line.419">            throw new IllegalStateException(format("Unsupported compression mode: '%s'.", mode.name()));</a>
+<span class="sourceLineNo">420</span><a id="line.420">        }</a>
+<span class="sourceLineNo">421</span><a id="line.421"></a>
+<span class="sourceLineNo">422</span><a id="line.422">        if (!encodingSpec.contains(token))</a>
+<span class="sourceLineNo">423</span><a id="line.423">          modes.remove(mode);</a>
+<span class="sourceLineNo">424</span><a id="line.424">      }</a>
+<span class="sourceLineNo">425</span><a id="line.425">      return modes;</a>
+<span class="sourceLineNo">426</span><a id="line.426">    }</a>
+<span class="sourceLineNo">427</span><a id="line.427">    // no compression support indicated at all</a>
+<span class="sourceLineNo">428</span><a id="line.428">    return EnumSet.noneOf(CompressionMode.class);</a>
+<span class="sourceLineNo">429</span><a id="line.429">  }</a>
+<span class="sourceLineNo">430</span><a id="line.430"></a>
+<span class="sourceLineNo">431</span><a id="line.431">  /** Check if the request is conditional, and, if so, if the conditions match the static asset. */</a>
+<span class="sourceLineNo">432</span><a id="line.432">  private boolean conditionalRequestMatches(@Nonnull HttpRequest request,</a>
+<span class="sourceLineNo">433</span><a id="line.433">                                            @Nonnull AssetManager.ManagedAssetContent asset) {</a>
+<span class="sourceLineNo">434</span><a id="line.434">    if (config.enableETags() &amp;&amp; request.getHeaders().contains(HttpHeaders.IF_NONE_MATCH)) {</a>
+<span class="sourceLineNo">435</span><a id="line.435">      // the request has an etag, and etags are on. match them.</a>
+<span class="sourceLineNo">436</span><a id="line.436">      String etagValue = request.getHeaders().get(HttpHeaders.IF_NONE_MATCH);</a>
+<span class="sourceLineNo">437</span><a id="line.437">      if (logging.isTraceEnabled()) {</a>
+<span class="sourceLineNo">438</span><a id="line.438">        logging.trace(format("`ETag` value from asset: '%s'", asset.getETag()));</a>
+<span class="sourceLineNo">439</span><a id="line.439">        logging.trace(format("`ETag` value from request: '%s'", etagValue));</a>
+<span class="sourceLineNo">440</span><a id="line.440">      }</a>
+<span class="sourceLineNo">441</span><a id="line.441"></a>
+<span class="sourceLineNo">442</span><a id="line.442">      boolean match = (asset.getETag().equals(etagValue));</a>
+<span class="sourceLineNo">443</span><a id="line.443">      if (match &amp;&amp; logging.isDebugEnabled()) {</a>
+<span class="sourceLineNo">444</span><a id="line.444">        logging.debug("`ETag` value matched.");</a>
+<span class="sourceLineNo">445</span><a id="line.445">      } else if (logging.isDebugEnabled()) {</a>
+<span class="sourceLineNo">446</span><a id="line.446">        logging.debug("`ETag` value did not match.");</a>
+<span class="sourceLineNo">447</span><a id="line.447">      }</a>
+<span class="sourceLineNo">448</span><a id="line.448">      return match;</a>
+<span class="sourceLineNo">449</span><a id="line.449"></a>
+<span class="sourceLineNo">450</span><a id="line.450">    } else if (config.enableLastModified() &amp;&amp; request.getHeaders().contains(HttpHeaders.IF_MODIFIED_SINCE)) {</a>
+<span class="sourceLineNo">451</span><a id="line.451">      // the request has an if-modified-since, and last-modified is on. calculate a result.</a>
+<span class="sourceLineNo">452</span><a id="line.452">      try {</a>
+<span class="sourceLineNo">453</span><a id="line.453">        var ifModifiedSince = request.getHeaders().get(HttpHeaders.IF_MODIFIED_SINCE);</a>
+<span class="sourceLineNo">454</span><a id="line.454">        if (logging.isTraceEnabled())</a>
+<span class="sourceLineNo">455</span><a id="line.455">          logging.trace(format("Parsing '%s' `If-Modified-Since` value...", ifModifiedSince));</a>
+<span class="sourceLineNo">456</span><a id="line.456">        Date parsed = isoDateTimeFormat.parse(ifModifiedSince);</a>
+<span class="sourceLineNo">457</span><a id="line.457"></a>
+<span class="sourceLineNo">458</span><a id="line.458">        if (parsed != null) {</a>
+<span class="sourceLineNo">459</span><a id="line.459">          long requestSince = parsed.toInstant().getEpochSecond();</a>
+<span class="sourceLineNo">460</span><a id="line.460">          long assetTimestamp = asset.getLastModified().getSeconds();</a>
+<span class="sourceLineNo">461</span><a id="line.461">          boolean match = assetTimestamp &lt;= requestSince;</a>
+<span class="sourceLineNo">462</span><a id="line.462"></a>
+<span class="sourceLineNo">463</span><a id="line.463">          if (logging.isDebugEnabled()) {</a>
+<span class="sourceLineNo">464</span><a id="line.464">            logging.debug(format("Parsed `If-Modified-Since` at timestamp %s.", requestSince));</a>
+<span class="sourceLineNo">465</span><a id="line.465">            logging.debug(format("Asset timestamp loaded as %s.", assetTimestamp));</a>
+<span class="sourceLineNo">466</span><a id="line.466">            if (match) logging.debug("Asset timestamp occurs before-or-at request. Match.");</a>
+<span class="sourceLineNo">467</span><a id="line.467">            else logging.debug("Asset timestamp occurs after request. No match.");</a>
+<span class="sourceLineNo">468</span><a id="line.468">          }</a>
+<span class="sourceLineNo">469</span><a id="line.469">          return match;</a>
+<span class="sourceLineNo">470</span><a id="line.470">        }</a>
+<span class="sourceLineNo">471</span><a id="line.471">      } catch (ParseException err) {</a>
+<span class="sourceLineNo">472</span><a id="line.472">        logging.error(format("Failed to parse `If-Modified-Since`: %s.", err.getMessage()));</a>
+<span class="sourceLineNo">473</span><a id="line.473">      }</a>
+<span class="sourceLineNo">474</span><a id="line.474">    }</a>
+<span class="sourceLineNo">475</span><a id="line.475">    return false;  // either nothing is on, or the request was not conditional.</a>
+<span class="sourceLineNo">476</span><a id="line.476">  }</a>
+<span class="sourceLineNo">477</span><a id="line.477"></a>
+<span class="sourceLineNo">478</span><a id="line.478">  /** Choose the optimal variant to serve, and serve it. */</a>
+<span class="sourceLineNo">479</span><a id="line.479">  private Flowable&lt;HttpResponse&gt; chooseAndServeVariant(@Nonnull HttpRequest request,</a>
+<span class="sourceLineNo">480</span><a id="line.480">                                                       @Nonnull MediaType type,</a>
+<span class="sourceLineNo">481</span><a id="line.481">                                                       @Nonnull AssetManager.ManagedAssetContent asset,</a>
+<span class="sourceLineNo">482</span><a id="line.482">                                                       @Nonnull MutableHttpResponse&lt;byte[]&gt; response) {</a>
+<span class="sourceLineNo">483</span><a id="line.483">    if (this.conditionalRequestMatches(request, asset)) {</a>
+<span class="sourceLineNo">484</span><a id="line.484">      if (logging.isDebugEnabled())</a>
+<span class="sourceLineNo">485</span><a id="line.485">        logging.debug("Conditional request matches response. Serving 304-Not-Modified.");</a>
+<span class="sourceLineNo">486</span><a id="line.486">      return Flowable.just(HttpResponse.notModified());</a>
+<span class="sourceLineNo">487</span><a id="line.487">    } else if (logging.isDebugEnabled()) {</a>
+<span class="sourceLineNo">488</span><a id="line.488">      if (!config.enableETags() &amp;&amp; !config.enableLastModified()) logging.debug(</a>
+<span class="sourceLineNo">489</span><a id="line.489">        "Conditional requests were not considered because `ETag`s and `Last-Modified` are disabled.");</a>
+<span class="sourceLineNo">490</span><a id="line.490">      else</a>
+<span class="sourceLineNo">491</span><a id="line.491">        logging.debug("Request was not conditional, or did not match.");</a>
+<span class="sourceLineNo">492</span><a id="line.492">    }</a>
+<span class="sourceLineNo">493</span><a id="line.493"></a>
+<span class="sourceLineNo">494</span><a id="line.494">    // based on the request, calculate supported compression modes</a>
+<span class="sourceLineNo">495</span><a id="line.495">    EnumSet&lt;CompressionMode&gt; supportedCompressions = supportedCompressionModes(request);</a>
+<span class="sourceLineNo">496</span><a id="line.496">    EnumSet&lt;CompressionMode&gt; supportedVariants = asset.getCompressionOptions();</a>
+<span class="sourceLineNo">497</span><a id="line.497">    ImmutableSet&lt;CompressionMode&gt; compressionOptions = Sets.immutableEnumSet(</a>
+<span class="sourceLineNo">498</span><a id="line.498">      Sets.intersection(</a>
+<span class="sourceLineNo">499</span><a id="line.499">        Sets.intersection(supportedCompressions, supportedVariants),</a>
+<span class="sourceLineNo">500</span><a id="line.500">        config.compression().compressionModes()));</a>
+<span class="sourceLineNo">501</span><a id="line.501"></a>
+<span class="sourceLineNo">502</span><a id="line.502">    if (logging.isTraceEnabled()) {</a>
+<span class="sourceLineNo">503</span><a id="line.503">      // describe the conditions that led to our compression decisions</a>
+<span class="sourceLineNo">504</span><a id="line.504">      logging.trace(format("Client indicated compression support: '%s'.", Joiner.on(", ").join(</a>
+<span class="sourceLineNo">505</span><a id="line.505">        supportedCompressions.stream().map(Enum::name).collect(Collectors.toSet()))));</a>
+<span class="sourceLineNo">506</span><a id="line.506">      logging.trace(format("Asset variant options: '%s'.", Joiner.on(", ").join(</a>
+<span class="sourceLineNo">507</span><a id="line.507">        supportedVariants.stream().map(Enum::name).collect(Collectors.toSet()))));</a>
+<span class="sourceLineNo">508</span><a id="line.508">    }</a>
+<span class="sourceLineNo">509</span><a id="line.509"></a>
+<span class="sourceLineNo">510</span><a id="line.510">    final Optional&lt;CompressedData&gt; resolvedData;</a>
+<span class="sourceLineNo">511</span><a id="line.511"></a>
+<span class="sourceLineNo">512</span><a id="line.512">    if (/* if we can't use compression... */ supportedCompressions.size() == 0 ||</a>
+<span class="sourceLineNo">513</span><a id="line.513">        /* or compression is disabled entirely... */ (!config.compression().enabled()) ||</a>
+<span class="sourceLineNo">514</span><a id="line.514">        /* or no compression algorithms are enabled... */ (config.compression().compressionModes().isEmpty()) ||</a>
+<span class="sourceLineNo">515</span><a id="line.515">        /* or the optimal compression is none... */ (asset.getOptimalCompression() == CompressionMode.IDENTITY &amp;&amp;</a>
+<span class="sourceLineNo">516</span><a id="line.516">        /* and we aren't forcing compression where available... */ !FORCE_COMPRESSION_IF_SUPPORTED) ||</a>
+<span class="sourceLineNo">517</span><a id="line.517">        /* or the variant has no compressed options... */ asset.getVariantCount() &lt; 2) {</a>
+<span class="sourceLineNo">518</span><a id="line.518">      if (logging.isDebugEnabled()) {</a>
+<span class="sourceLineNo">519</span><a id="line.519">        // explain why we got here</a>
+<span class="sourceLineNo">520</span><a id="line.520">        if (supportedVariants.size() == 0) logging.debug("Compression disabled: unsupported by asset.");</a>
+<span class="sourceLineNo">521</span><a id="line.521">        else if (supportedCompressions.size() == 0) logging.debug("Compression disabled: unsupported by client.");</a>
+<span class="sourceLineNo">522</span><a id="line.522">        else if (compressionOptions.size() == 0) logging.debug("Compression disabled: no agreement with client.");</a>
+<span class="sourceLineNo">523</span><a id="line.523">        else if (asset.getVariantCount() &lt; 2) logging.debug("Compression disabled: no variance for asset.");</a>
+<span class="sourceLineNo">524</span><a id="line.524">        else if (asset.getOptimalCompression() == CompressionMode.IDENTITY)</a>
+<span class="sourceLineNo">525</span><a id="line.525">          logging.debug("Compression disabled: un-compressed is optimal.");</a>
+<span class="sourceLineNo">526</span><a id="line.526">      }</a>
+<span class="sourceLineNo">527</span><a id="line.527"></a>
+<span class="sourceLineNo">528</span><a id="line.528">      // no ability to serve a compressed response.</a>
+<span class="sourceLineNo">529</span><a id="line.529">      resolvedData = asset.getContent().getVariantList()</a>
+<span class="sourceLineNo">530</span><a id="line.530">        .stream()</a>
+<span class="sourceLineNo">531</span><a id="line.531">        .filter((bundle) -&gt; bundle.getCompression().equals(CompressionMode.IDENTITY))</a>
+<span class="sourceLineNo">532</span><a id="line.532">        .findFirst();</a>
+<span class="sourceLineNo">533</span><a id="line.533">    } else {</a>
+<span class="sourceLineNo">534</span><a id="line.534">      // if the optimal compression choice is supported by the client, choose it</a>
+<span class="sourceLineNo">535</span><a id="line.535">      var optimal = asset.getOptimalCompression();</a>
+<span class="sourceLineNo">536</span><a id="line.536">      if ((!FORCE_COMPRESSION_IF_SUPPORTED || !optimal.equals(CompressionMode.IDENTITY))</a>
+<span class="sourceLineNo">537</span><a id="line.537">          &amp;&amp; compressionOptions.contains(optimal)) {</a>
+<span class="sourceLineNo">538</span><a id="line.538">        if (logging.isDebugEnabled())</a>
+<span class="sourceLineNo">539</span><a id="line.539">          logging.debug(format("Optimal compression (%s) is supported and was selected.",</a>
+<span class="sourceLineNo">540</span><a id="line.540">            optimal.name()));</a>
+<span class="sourceLineNo">541</span><a id="line.541"></a>
+<span class="sourceLineNo">542</span><a id="line.542">        resolvedData = asset.getContent().getVariantList()</a>
+<span class="sourceLineNo">543</span><a id="line.543">          .stream()</a>
+<span class="sourceLineNo">544</span><a id="line.544">          .filter((bundle) -&gt; bundle.getCompression().equals(optimal))</a>
+<span class="sourceLineNo">545</span><a id="line.545">          .findFirst();</a>
+<span class="sourceLineNo">546</span><a id="line.546">      } else {</a>
+<span class="sourceLineNo">547</span><a id="line.547">        // otherwise, pick the next-optimal-choice supported by the client</a>
+<span class="sourceLineNo">548</span><a id="line.548">        resolvedData = compressionOptions.stream()</a>
+<span class="sourceLineNo">549</span><a id="line.549">          .flatMap((mode) -&gt; asset.getContent().getVariantList().stream()</a>
+<span class="sourceLineNo">550</span><a id="line.550">            .filter((variant) -&gt; !variant.getCompression().equals(CompressionMode.IDENTITY))</a>
+<span class="sourceLineNo">551</span><a id="line.551">            .filter((variant) -&gt; compressionOptions.contains(variant.getCompression())))</a>
+<span class="sourceLineNo">552</span><a id="line.552">          .peek((variant) -&gt; {</a>
+<span class="sourceLineNo">553</span><a id="line.553">            if (logging.isDebugEnabled()) {</a>
+<span class="sourceLineNo">554</span><a id="line.554">              logging.debug(format("Considering variant of size %sb (%s)...",</a>
+<span class="sourceLineNo">555</span><a id="line.555">                variant.getSize(),</a>
+<span class="sourceLineNo">556</span><a id="line.556">                variant.getCompression().name()));</a>
+<span class="sourceLineNo">557</span><a id="line.557">            }</a>
+<span class="sourceLineNo">558</span><a id="line.558">          })</a>
+<span class="sourceLineNo">559</span><a id="line.559">          .min(Comparator.comparing(CompressedData::getSize));</a>
+<span class="sourceLineNo">560</span><a id="line.560"></a>
+<span class="sourceLineNo">561</span><a id="line.561">        if (resolvedData.isPresent() &amp;&amp; logging.isDebugEnabled()) {</a>
+<span class="sourceLineNo">562</span><a id="line.562">          logging.debug(format("Selected variant %s, of size %s bytes.",</a>
+<span class="sourceLineNo">563</span><a id="line.563">            resolvedData.get().getCompression().name(),</a>
+<span class="sourceLineNo">564</span><a id="line.564">            resolvedData.get().getSize()));</a>
+<span class="sourceLineNo">565</span><a id="line.565">        }</a>
+<span class="sourceLineNo">566</span><a id="line.566">      }</a>
+<span class="sourceLineNo">567</span><a id="line.567">    }</a>
+<span class="sourceLineNo">568</span><a id="line.568"></a>
+<span class="sourceLineNo">569</span><a id="line.569">    if (!resolvedData.isPresent()) {</a>
+<span class="sourceLineNo">570</span><a id="line.570">      // we were unable to agree on a content variant. this essentially should not happen.</a>
+<span class="sourceLineNo">571</span><a id="line.571">      logging.warn("Failed to agree with client on a variant for asset. Failing.");</a>
+<span class="sourceLineNo">572</span><a id="line.572">      return Flowable.just(HttpResponse.badRequest("UNSUPPORTED_ENCODING"));</a>
+<span class="sourceLineNo">573</span><a id="line.573">    } else {</a>
+<span class="sourceLineNo">574</span><a id="line.574">      // we've resolved the correct data for the body. calculate headers and send it.</a>
+<span class="sourceLineNo">575</span><a id="line.575">      this.affixHeaders(</a>
+<span class="sourceLineNo">576</span><a id="line.576">        type,</a>
+<span class="sourceLineNo">577</span><a id="line.577">        resolvedData.get().getCompression(),</a>
+<span class="sourceLineNo">578</span><a id="line.578">        asset.getLastModified(),</a>
+<span class="sourceLineNo">579</span><a id="line.579">        asset,</a>
+<span class="sourceLineNo">580</span><a id="line.580">        response);</a>
+<span class="sourceLineNo">581</span><a id="line.581"></a>
+<span class="sourceLineNo">582</span><a id="line.582">      byte[] assetPayload = resolvedData</a>
+<span class="sourceLineNo">583</span><a id="line.583">        .get()</a>
+<span class="sourceLineNo">584</span><a id="line.584">        .getData()</a>
+<span class="sourceLineNo">585</span><a id="line.585">        .getRaw()</a>
+<span class="sourceLineNo">586</span><a id="line.586">        .toByteArray();</a>
+<span class="sourceLineNo">587</span><a id="line.587"></a>
+<span class="sourceLineNo">588</span><a id="line.588">      if (logging.isDebugEnabled()) {</a>
+<span class="sourceLineNo">589</span><a id="line.589">        logging.debug(format("Serving payload of size (%s bytes) for asset '%s'.",</a>
+<span class="sourceLineNo">590</span><a id="line.590">          assetPayload.length,</a>
+<span class="sourceLineNo">591</span><a id="line.591">          asset.getToken()));</a>
+<span class="sourceLineNo">592</span><a id="line.592">      }</a>
+<span class="sourceLineNo">593</span><a id="line.593">      return Flowable.just(response.body(assetPayload));</a>
+<span class="sourceLineNo">594</span><a id="line.594">    }</a>
+<span class="sourceLineNo">595</span><a id="line.595">  }</a>
+<span class="sourceLineNo">596</span><a id="line.596"></a>
+<span class="sourceLineNo">597</span><a id="line.597">  /**</a>
+<span class="sourceLineNo">598</span><a id="line.598">   * Main GET serving endpoint for dynamic managed assets. Assets come through this endpoint mentioning their unique</a>
+<span class="sourceLineNo">599</span><a id="line.599">   * token and file extension, and we do the rest.</a>
+<span class="sourceLineNo">600</span><a id="line.600">   *</a>
+<span class="sourceLineNo">601</span><a id="line.601">   * &lt;p&gt;We accomplish this by (1) querying the {@link AssetManager} for a matching asset (404 is yielded if a match</a>
+<span class="sourceLineNo">602</span><a id="line.602">   * cannot be located), then (2) calculating headers and an appropriate variant for the subject asset, and finally (3)</a>
+<span class="sourceLineNo">603</span><a id="line.603">   * writing the headers and the asset body to the response.&lt;/p&gt;</a>
+<span class="sourceLineNo">604</span><a id="line.604">   *</a>
+<span class="sourceLineNo">605</span><a id="line.605">   * @return Response</a>
+<span class="sourceLineNo">606</span><a id="line.606">   */</a>
+<span class="sourceLineNo">607</span><a id="line.607">  @Validated</a>
+<span class="sourceLineNo">608</span><a id="line.608">  @Get(value = "/{asset}.{ext}", produces = {</a>
+<span class="sourceLineNo">609</span><a id="line.609">    "text/html",</a>
+<span class="sourceLineNo">610</span><a id="line.610">    "text/css",</a>
+<span class="sourceLineNo">611</span><a id="line.611">    "application/javascript"</a>
+<span class="sourceLineNo">612</span><a id="line.612">  })</a>
+<span class="sourceLineNo">613</span><a id="line.613">  public @Nonnull Flowable&lt;HttpResponse&gt; asset(@Nonnull String asset,</a>
+<span class="sourceLineNo">614</span><a id="line.614">                                               @Nonnull String ext,</a>
+<span class="sourceLineNo">615</span><a id="line.615">                                               @Nonnull HttpRequest request) {</a>
+<span class="sourceLineNo">616</span><a id="line.616">    //noinspection ConstantConditions</a>
+<span class="sourceLineNo">617</span><a id="line.617">    if (asset == null || ext == null</a>
+<span class="sourceLineNo">618</span><a id="line.618">        || asset.isEmpty() || ext.isEmpty()</a>
+<span class="sourceLineNo">619</span><a id="line.619">        || asset.length() &lt; 2 || ext.length() &lt; 2) {</a>
+<span class="sourceLineNo">620</span><a id="line.620">      logging.warn("Invalid asset token or extension. Returning 400.");</a>
+<span class="sourceLineNo">621</span><a id="line.621">      return Flowable.just(HttpResponse.badRequest());</a>
+<span class="sourceLineNo">622</span><a id="line.622">    }</a>
+<span class="sourceLineNo">623</span><a id="line.623"></a>
+<span class="sourceLineNo">624</span><a id="line.624">    // okay, resolve content through the cache, backed by the asset manager</a>
+<span class="sourceLineNo">625</span><a id="line.625">    @Nonnull Optional&lt;AssetManager.ManagedAssetContent&gt; assetContent = this.assetManager.assetDataByToken(asset);</a>
+<span class="sourceLineNo">626</span><a id="line.626">    if (assetContent.isPresent() &amp;&amp; assetContent.get().getVariantCount() &gt; 0) {</a>
+<span class="sourceLineNo">627</span><a id="line.627">      // make sure the user is asking for this kind of content</a>
+<span class="sourceLineNo">628</span><a id="line.628">      var content = assetContent.get();</a>
+<span class="sourceLineNo">629</span><a id="line.629">      String[] ogFilename = content.getFilename().split("\\.");</a>
+<span class="sourceLineNo">630</span><a id="line.630">      if (ogFilename.length &gt; 1 &amp;&amp; ogFilename[ogFilename.length - 1].equals(ext)) {</a>
+<span class="sourceLineNo">631</span><a id="line.631">        // create response, affix other asset headers, and serve</a>
+<span class="sourceLineNo">632</span><a id="line.632">        return this.chooseAndServeVariant(</a>
+<span class="sourceLineNo">633</span><a id="line.633">          request,</a>
+<span class="sourceLineNo">634</span><a id="line.634">          resolveMediaType(ext),</a>
+<span class="sourceLineNo">635</span><a id="line.635">          content,</a>
+<span class="sourceLineNo">636</span><a id="line.636">          HttpResponse.ok());</a>
+<span class="sourceLineNo">637</span><a id="line.637">      } else {</a>
+<span class="sourceLineNo">638</span><a id="line.638">        logging.warn(format("Asset extension mismatch: '%s' does not match expected value for asset '%s' ('%s').",</a>
+<span class="sourceLineNo">639</span><a id="line.639">          ext,</a>
+<span class="sourceLineNo">640</span><a id="line.640">          asset,</a>
+<span class="sourceLineNo">641</span><a id="line.641">          ogFilename[ogFilename.length - 1]));</a>
+<span class="sourceLineNo">642</span><a id="line.642">      }</a>
+<span class="sourceLineNo">643</span><a id="line.643">    }</a>
+<span class="sourceLineNo">644</span><a id="line.644">    logging.warn(format("Asset '%s' not found.", asset));</a>
+<span class="sourceLineNo">645</span><a id="line.645">    return Flowable.just(HttpResponse.notFound());</a>
+<span class="sourceLineNo">646</span><a id="line.646">  }</a>
+<span class="sourceLineNo">647</span><a id="line.647">}</a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</main>
+</body>
+</html>

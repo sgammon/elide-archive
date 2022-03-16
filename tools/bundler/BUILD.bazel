@@ -63,6 +63,7 @@ jdk_binary(
         "@com_google_template_soy",
         maven("ch.qos.logback:logback-classic"),
     ],
+    enable_debug = False,
     classpath_resources = [
         "//tools:logback.xml",
     ],
